@@ -133,10 +133,22 @@ class Containers(unittest.TestCase):
         self.assertEqual(stack.get_material(-4.9, 7.0), self.gan)
         self.assertEqual(stack.get_material(-5.1, 7.0), None)
         self.assertEqual(stack.get_material(0.1, 7.0), None)
-        self.assertEqual( list(stack.get_leafs_bboxes()), [plask.geometry.Box2D(-2.5,0,2.5,3), plask.geometry.Box2D(0.0,3,5.0,6), plask.geometry.Box2D(-5.0,6,0.0,9)])
+        self.assertEqual(list(stack.get_leafs_bboxes()),
+                         [plask.geometry.Box2D(-2.5,0,2.5,3),
+                          plask.geometry.Box2D(0.0,3,5.0,6),
+                          plask.geometry.Box2D(-5.0,6,0.0,9)])
         stack.move_item(0, left=0)
         stack.move_item(third, left=0)
-        self.assertEqual( list(stack.get_leafs_bboxes()), [plask.geometry.Box2D(0.0,0,5.0,3), plask.geometry.Box2D(0.0,3,5.0,6), plask.geometry.Box2D(0.0,6,5.0,9)])
+        self.assertEqual(list(stack.get_leafs_bboxes()),
+                         [plask.geometry.Box2D(0.0,0,5.0,3),
+                          plask.geometry.Box2D(0.0,3,5.0,6),
+                          plask.geometry.Box2D(0.0,6,5.0,9)])
+        container = plask.geometry.Align2D()
+        pth = container.append(self.block1, y=0, z=0)
+        container.move_item(0, z=1)
+        self.assertEqual(container.get_object_positions(self.block1)[0], plask.vec(0.,1.))
+        container.move_item(pth, y=2)
+        self.assertEqual(container.get_object_positions(self.block1)[0], plask.vec(2.,1.))
 
     def testMultiStack(self):
         multistack = plask.geometry.MultiStack2D(5, 10.0)

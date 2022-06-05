@@ -9,7 +9,7 @@
 namespace plask { namespace python {
 
 extern AxisNames current_axes;
-    
+
 namespace detail {
 
     template <align::Direction... directions>
@@ -32,18 +32,6 @@ namespace detail {
         return obj;
     }
 
-    static std::map<std::string, double> to_map(PyObject* obj) {
-        std::map<std::string, double> map;
-
-        PyObject *key, *value;
-        Py_ssize_t pos = 0;
-        while (PyDict_Next(obj, &pos, &key, &value)) {
-            map[py::extract<std::string>(key)] = py::extract<double>(value);
-        }
-
-        return map;
-    }
-
     template <align::Direction... directions>
     static void aligner_construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data)
     {
@@ -52,7 +40,7 @@ namespace detail {
         // Grab pointer to memory into which to construct the new Aligner
         void* storage = ((boost::python::converter::rvalue_from_python_storage<AlignerType>*)data)->storage.bytes;
 
-        std::map<std::string, double> map = to_map(obj);
+        std::map<std::string, double> map = dict_to_map<std::string, double>(obj);
 
         auto aligner = new(storage) AlignerType;
 
@@ -74,45 +62,12 @@ namespace detail {
         data->convertible = storage;
     }
 
-    static void aligner_construct3D(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data)
-    {
-        typedef align::Aligner<> AlignerType;
-
-        // Grab pointer to memory into which to construct the new Aligner
-        void* storage = ((boost::python::converter::rvalue_from_python_storage<AlignerType>*)data)->storage.bytes;
-
-        std::map<std::string, double> map = to_map(obj);
-
-        auto aligner = new(storage) AlignerType;
-
-        *aligner = align::fromDictionary([&](const std::string& name) -> plask::optional<double> {
-                                                            plask::optional<double> result;
-                                                            auto found = map.find(name);
-                                                            if (found != map.end()) {
-                                                                result.reset(found->second);
-                                                                map.erase(found);
-                                                            }
-                                                            return result;
-                                                        },
-                                                        current_axes
-                                                       );
-
-        if (!map.empty()) throw TypeError(u8"Got unexpected alignment keyword '{0}'", map.begin()->first);
-
-        // Stash the memory chunk pointer for later use by boost.python
-        data->convertible = storage;
-    }
 }
 
 template <align::Direction... directions>
 static inline void register_aligner() {
     py::to_python_converter<align::Aligner<directions...>, detail::Aligner_to_Python<directions...>>();
     py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct<directions...>, py::type_id<align::Aligner<directions...>>());
-}
-
-static inline void register_aligner3D() {
-    py::to_python_converter<align::Aligner<>, detail::Aligner_to_Python<>>();
-    py::converter::registry::push_back(&detail::aligner_convertible, &detail::aligner_construct3D, py::type_id<align::Aligner<>>());
 }
 
 void register_geometry_aligners()
@@ -129,7 +84,7 @@ void register_geometry_aligners()
     register_aligner<L,V>();
     register_aligner<T,V>();
 
-    register_aligner3D();
+    register_aligner<L,T,V>();
 }
 
 

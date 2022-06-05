@@ -467,7 +467,7 @@ typedef Aligner<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_VERT> Alig
  * Three directions aligner in 3D space, compose and use three 1D aligners.
  */
 template <>
-struct Aligner<> {
+struct Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(1), Primitive<3>::Direction(2)> {
 
     Aligner<Primitive<3>::DIRECTION_LONG> dir1aligner;
     Aligner<Primitive<3>::DIRECTION_TRAN> dir2aligner;
@@ -519,7 +519,7 @@ struct Aligner<> {
     * @param to_print aligner to print
     * @return out stream
     */
-    friend inline std::ostream& operator<<(std::ostream& out, const Aligner<>& to_print) {
+    friend inline std::ostream& operator<<(std::ostream& out, const Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(1), Primitive<3>::Direction(2)>& to_print) {
         return out << to_print.dir1aligner << ", " << to_print.dir2aligner << ", " << to_print.dir3aligner;
     }
 
@@ -557,7 +557,9 @@ struct Aligner<> {
 
 };
 
-typedef Aligner<> Aligner3D;
+
+
+typedef Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(1), Primitive<3>::Direction(2)> Aligner3D;
 
 /// Aligner2D if dim == 2, Aligner3D if dim == 3
 template <int dim> using AlignerD = typename chooseType<dim-2, Aligner2D, Aligner3D>::type;
@@ -588,27 +590,27 @@ inline Aligner<Primitive<3>::Direction(1), Primitive<3>::Direction(2)> operator&
 }
 
 //1D aligner & 2D aligner = 3D aligner
-inline Aligner<> operator&(const Aligner<Primitive<3>::Direction(1), Primitive<3>::Direction(2)>& dir12aligner, const Aligner<Primitive<3>::Direction(0)>& dir0aligner) {
-    return Aligner<>(dir0aligner, dir12aligner.dir1aligner, dir12aligner.dir2aligner);
+inline Aligner3D operator&(const Aligner<Primitive<3>::Direction(1), Primitive<3>::Direction(2)>& dir12aligner, const Aligner<Primitive<3>::Direction(0)>& dir0aligner) {
+    return Aligner3D(dir0aligner, dir12aligner.dir1aligner, dir12aligner.dir2aligner);
 }
 
-inline Aligner<> operator&(const Aligner<Primitive<3>::Direction(0)>& dir0aligner, const Aligner<Primitive<3>::Direction(1), Primitive<3>::Direction(2)>& dir12aligner) {
+inline Aligner3D operator&(const Aligner<Primitive<3>::Direction(0)>& dir0aligner, const Aligner<Primitive<3>::Direction(1), Primitive<3>::Direction(2)>& dir12aligner) {
     return dir12aligner & dir0aligner;
 }
 
-inline Aligner<> operator&(const Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(2)>& dir02aligner, const Aligner<Primitive<3>::Direction(1)>& dir1aligner) {
-    return Aligner<>(dir02aligner.dir1aligner, dir1aligner, dir02aligner.dir2aligner);
+inline Aligner3D operator&(const Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(2)>& dir02aligner, const Aligner<Primitive<3>::Direction(1)>& dir1aligner) {
+    return Aligner3D(dir02aligner.dir1aligner, dir1aligner, dir02aligner.dir2aligner);
 }
 
-inline Aligner<> operator&(const Aligner<Primitive<3>::Direction(1)>& dir1aligner, const Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(2)>& dir02aligner) {
+inline Aligner3D operator&(const Aligner<Primitive<3>::Direction(1)>& dir1aligner, const Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(2)>& dir02aligner) {
     return dir02aligner & dir1aligner;
 }
 
-inline Aligner<> operator&(const Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(1)>& dir01aligner, const Aligner<Primitive<3>::Direction(2)>& dir2aligner) {
-    return Aligner<>(dir01aligner.dir1aligner, dir01aligner.dir2aligner, dir2aligner);
+inline Aligner3D operator&(const Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(1)>& dir01aligner, const Aligner<Primitive<3>::Direction(2)>& dir2aligner) {
+    return Aligner3D(dir01aligner.dir1aligner, dir01aligner.dir2aligner, dir2aligner);
 }
 
-inline Aligner<> operator&(const Aligner<Primitive<3>::Direction(2)>& dir2aligner, const Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(1)>& dir01aligner) {
+inline Aligner3D operator&(const Aligner<Primitive<3>::Direction(2)>& dir2aligner, const Aligner<Primitive<3>::Direction(0), Primitive<3>::Direction(1)>& dir01aligner) {
     return dir01aligner & dir2aligner;
 }
 
@@ -699,7 +701,7 @@ namespace details {
 /**
  * Construct aligner in given direction from dictionary.
  *
- * Throw excpetion if @p dic contains information about multiple aligners in given @p direction.
+ * Throw exception if @p dic contains information about multiple aligners in given @p direction.
  * @param dictionary dictionary which can describe aligner
  * @param axis_name name of axis in given @p direction
  * @return parsed aligner or @c nullptr if no information about aligner was found in @p dictionary
@@ -847,14 +849,15 @@ inline Aligner<direction1, direction2> fromXML(const XMLReader& reader, const Ax
  * @param axis_names names of axes
  * @return constructed aligner
  */
-inline Aligner<> fromDictionary(Dictionary dictionary, const AxisNames& axis_names) {
+template <Direction direction1, Direction direction2, Direction direction3>
+inline Aligner3D fromDictionary(Dictionary dictionary, const AxisNames& axis_names) {
     Aligner<Primitive<3>::Direction(0)> a0 = fromDictionary<Primitive<3>::Direction(0)>(dictionary, axis_names);
     if (a0.isNull()) throw Exception("No aligner for axis{0} defined.", 0);
     Aligner<Primitive<3>::Direction(1)> a1 = fromDictionary<Primitive<3>::Direction(1)>(dictionary, axis_names);
     if (a1.isNull()) throw Exception("No aligner for axis{0} defined.", 1);
     Aligner<Primitive<3>::Direction(2)> a2 = fromDictionary<Primitive<3>::Direction(2)>(dictionary, axis_names);
     if (a2.isNull()) throw Exception("No aligner for axis{0} defined.", 2);
-    return Aligner<>(a0, a1, a2);
+    return Aligner3D(a0, a1, a2);
 }
 
 /**
@@ -866,8 +869,9 @@ inline Aligner<> fromDictionary(Dictionary dictionary, const AxisNames& axis_nam
  * @param axes names of axes
  * @return constructed aligner
  */
-inline Aligner<> fromXML(const XMLReader& reader, const AxisNames& axes) {
-    return fromDictionary(DictionaryFromXML(reader), axes);
+template <Direction direction1, Direction direction2, Direction direction3>
+inline Aligner3D fromXML(const XMLReader& reader, const AxisNames& axes) {
+    return fromDictionary<direction1,direction2,direction3>(DictionaryFromXML(reader), axes);
 }
 
 /**
@@ -879,8 +883,9 @@ inline Aligner<> fromXML(const XMLReader& reader, const AxisNames& axes) {
  * @param default3D default aligner in all directions, used when there is no information about aligner in some direction in @p dictionary
  * @return constructed aligner
  */
-inline Aligner<> fromDictionary(Dictionary dic, const AxisNames& axes, Aligner<> default3D) {
-    return Aligner<>(fromDictionary(dic, axes, default3D.dir1aligner), fromDictionary(dic, axes, default3D.dir2aligner), fromDictionary(dic, axes, default3D.dir3aligner));
+template <Direction direction1, Direction direction2, Direction direction3>
+inline Aligner3D fromDictionary(Dictionary dic, const AxisNames& axes, Aligner<direction1,direction2,direction3> default3D) {
+    return Aligner3D(fromDictionary(dic, axes, default3D.dir1aligner), fromDictionary(dic, axes, default3D.dir2aligner), fromDictionary(dic, axes, default3D.dir3aligner));
 }
 
 /**
@@ -892,7 +897,8 @@ inline Aligner<> fromDictionary(Dictionary dic, const AxisNames& axes, Aligner<>
  * @param default3D default aligner in all directions, used when there is no information about aligner in some direction in @p reader
  * @return constructed aligner
  */
-inline Aligner<> fromXML(const XMLReader& reader, const AxisNames& axes, Aligner<> default3D) {
+template <Direction direction1, Direction direction2, Direction direction3>
+inline Aligner3D fromXML(const XMLReader& reader, const AxisNames& axes, Aligner<direction1,direction2,direction3> default3D) {
     return fromDictionary(DictionaryFromXML(reader), axes, default3D);
 }
 

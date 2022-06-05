@@ -475,6 +475,13 @@ template <typename ParentType, typename ChildAlignerType> struct WithAligners : 
     void move(const TranslationT& child, ChildAligner aligner) {
         move(static_pointer_cast<const TranslationT>(child.shared_from_this()), aligner);
     }
+
+    /**
+     * Get const reference to aligners
+     */
+    const std::vector<ChildAligner>& getAligners() const {
+        return aligners;
+    }
 };
 
 }  // namespace plask

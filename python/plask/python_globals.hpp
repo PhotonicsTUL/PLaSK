@@ -305,6 +305,23 @@ static inline void parseKwargs(const std::string& fname, py::tuple& args, py::di
     args = py::tuple(arglist);
 }
 
+/// Convert Python dict to std::map
+template <typename TK, typename TV>
+std::map<TK,TV> dict_to_map(PyObject* obj) {
+    std::map<TK,TV> map;
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+    while (PyDict_Next(obj, &pos, &key, &value)) {
+        map[py::extract<TK>(key)] = py::extract<TV>(value);
+    }
+    return map;
+}
+
+template <typename TK, typename TV>
+std::map<TK,TV> dict_to_map(const py::object& obj) {
+    return dict_to_map<TK,TV>(obj.ptr());
+}
+
 // ----------------------------------------------------------------------------------------------------------------------
 // Parallel locking
 

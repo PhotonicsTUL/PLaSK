@@ -3,6 +3,7 @@
 
 #include "../python_globals.hpp"
 #include "plask/geometry/path.hpp"
+#include "plask/geometry/align.hpp"
 
 
 #define DECLARE_GEOMETRY_ELEMENT_23D(cls, pyname, pydoc1, pydoc2) \
@@ -35,27 +36,51 @@
 
 namespace plask { namespace python {
 
+template<typename AlignerT>
+inline AlignerT update_aligner_from_dict(const AlignerT& original_aligner, const py::dict& dict) {
+    std::map<std::string, double> map = dict_to_map<std::string, double>(dict);
+    AlignerT aligner = align::fromDictionary([&](const std::string& name) -> plask::optional<double> {
+                                                plask::optional<double> result;
+                                                auto found = map.find(name);
+                                                if (found != map.end()) {
+                                                    result.reset(found->second);
+                                                    map.erase(found);
+                                                }
+                                                return result;
+                                            },
+                                            current_axes,
+                                            original_aligner
+                                            );
+    if (!map.empty()) throw TypeError(u8"Got unexpected alignment keyword '{0}'", map.begin()->first);
+    return aligner;
+}
+
+
 template <typename ContainerT>
 py::object Container_move(py::tuple args, py::dict kwargs) {
     parseKwargs("move_item", args, kwargs, "self", "path");
     ContainerT* self = py::extract<ContainerT*>(args[0]);
-    typename ContainerT::ChildAligner aligner = py::extract<typename ContainerT::ChildAligner>(kwargs);
-    try {
-        int i = py::extract<int>(args[1]);
+    py::extract<int> ei(args[1]);
+    int i;
+    if (ei.check()) {
+        i = ei();
         if (i < 0) i += int(self->getChildrenCount());
         if (i < 0 || std::size_t(i) >= self->getChildrenCount()) {
             throw IndexError("{0} index {1} out of range (0 <= index < {2})",
                 std::string(py::extract<std::string>(args[0].attr("__class__").attr("__name__"))), i, self->getChildrenCount());
         }
-        self->move(i, aligner);
-    } catch (py::error_already_set&) {
-        PyErr_Clear();
+    } else {
         PathHints path = py::extract<PathHints>(args[1]);
-        auto children = path.getTranslationChildren<ContainerT::DIM>(*self);
-        if (children.size() != 1)
+        auto specified = path.getTranslationChildren<ContainerT::DIM>(*self);
+        if (specified.size() != 1)
             throw ValueError("Non-unique item specified");
-        self->move(*children.begin(), aligner);
+        auto children = self->getChildrenVector();
+        auto it = std::find(children.begin(), children.end(), *specified.begin());
+        if (it != children.end()) i = it - children.begin();
     }
+    auto current_aligner = self->getAligners()[i];
+    typename ContainerT::ChildAligner aligner = update_aligner_from_dict(current_aligner, kwargs);
+    self->move(i, aligner);
     return py::object();
 }
 
