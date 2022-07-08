@@ -135,21 +135,16 @@ class LaunchDialog(QDialog):
             self.defines.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             self.layout.addWidget(self.defines)
             self.defines.setVisible(_DEFS_VISIBLE)
-            self.edited_defines = '\n'.join(e.name + '=' for e in window.document.defines.model.entries)
+            self.current_defines = [e.name for e in window.document.defines.model.entries]
+            self.edited_defines = '\n'.join(d + '=' for d in self.current_defines)
             self.defines.setPlainText(self.edited_defines)
-            self.highlighter = DefinesSyntaxHighlighter(
-                self.defines.document(), [e.name for e in window.document.defines.model.entries]
-            )
+            self.highlighter = DefinesSyntaxHighlighter(self.defines.document(), [d for d in self.current_defines])
             self.highlighter.rehighlight()
             self.recent_defines = launch_config.setdefault('defines', [])
             self.recent_defines_combo = ComboBox()
             self.recent_defines_combo.setView(_CombolItemView(self.recent_defines_combo, self.recent_defines, 1))
-            self.recent_defines_combo.addItems([''] + [
-                '; '.join(
-                    '{}={}'.format(it[0], it[1]) for it in ([i.strip() for i in ln.split('=', 1)]
-                                                            for ln in defs.splitlines()) if len(it) == 2 and it[1]
-                ) for defs in self.recent_defines
-            ])
+            self.recent_defines_combo.addItems([''] + ['; '.join("{}={}".format(*i) for i in defs.items())
+                                                       for defs in self.recent_defines])
             self.layout.addWidget(self.recent_defines_combo)
             self.recent_defines_combo.setVisible(_DEFS_VISIBLE)
             self.recent_defines_combo.currentIndexChanged.connect(self.recent_defines_selected)
@@ -221,7 +216,9 @@ class LaunchDialog(QDialog):
             if i == 0:
                 self.defines.setPlainText(self.edited_defines)
             else:
-                self.defines.setPlainText(self.recent_defines[i - 1])
+                defines = '\n'.join(d + '=' + self.recent_defines[i - 1].get(d, '') for d in self.current_defines) + \
+                    ''.join("\n{}={}".format(k, v) for k, v in self.recent_defines[i-1].items() if k not in self.current_defines)
+                self.defines.setPlainText(defines)
 
     def defines_edited(self):
         self.edited_defines = self.defines.toPlainText()
@@ -252,7 +249,14 @@ def _get_config_filename(filename):
 
 def load_launch_config(filename):
     with open(_get_config_filename(filename)) as config_file:
-        return json.load(config_file).get('launch', {})
+        config = json.load(config_file).get('launch', {})
+    if 'defines' in config:
+        config['defines'] = [
+            defs if isinstance(defs, dict) else
+            {it[0]: it[1] for it in ([i.strip() for i in ln.split('=', 1)] for ln in defs.splitlines()) if len(it) == 2 and it[1]}
+            for defs in config['defines']
+        ]
+    return config
 
 
 def save_launch_config(filename):
@@ -303,6 +307,7 @@ def launch_plask(window):
         if launch_config['args'] == ['']:
             del launch_config['args']
         launch_defs = []
+        save_defs = {}
         if window.document.defines is not None:
             defines = dialog.defines.toPlainText()
             for line in defines.split('\n'):
@@ -320,12 +325,13 @@ def launch_plask(window):
                 value = items[1].strip()
                 if value:
                     launch_defs.append('-D{}={}'.format(name, value))
+                    save_defs[name] = value
             try:
-                launch_config['defines'].remove(defines)
+                launch_config['defines'].remove(save_defs)
             except ValueError:
                 pass
             if launch_defs:
-                launch_config['defines'].insert(0, defines)
+                launch_config['defines'].insert(0, save_defs)
         launcher.launch(window, shlex.split(launch_args), launch_defs)
     if launch_config.get('defines') == []:  # None != []
         del launch_config['defines']
