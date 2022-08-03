@@ -556,7 +556,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
     if (periodic_tran && periodic_long && !nondiagonal) {
         diagonals[layer] = true;
         for (size_t i = 1; i != nN; ++i) {
-            if (coeffs[i].differs(coeffs[0])) {
+            if (coeffs[i].c00 != coeffs[i].c22 || coeffs[i].c11 != coeffs[i].c22 || coeffs[i].differs(coeffs[0])) {
                 diagonals[layer] = false;
                 break;
             }

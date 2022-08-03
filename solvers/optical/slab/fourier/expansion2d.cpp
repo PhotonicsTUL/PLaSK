@@ -374,7 +374,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                     if (!is_zero(coeffs[layer].zz[i] - coeffs[layer].zz[0])) {
                         diagonals[layer] = false; break;
                     }
-            } else {
+            } else if (polarization == E_TRAN) {
                 if (epsilon_isotropic) {
                     for (size_t i = 1; i != nN; ++i)
                         if (!is_zero(coeffs[layer].yy[i] - coeffs[layer].yy[0])) {
@@ -392,6 +392,14 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                             diagonals[layer] = false; break;
                         }
                 }
+            } else {
+                if (epsilon_isotropic) {
+                    for (size_t i = 1; i != nN; ++i)
+                        if (!is_zero(coeffs[layer].yy[i] - coeffs[layer].yy[0])) {
+                            diagonals[layer] = false; break;
+                        }
+                } else
+                    diagonals[layer] = false;
             }
         } else {
             diagonals[layer] = false;
