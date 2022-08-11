@@ -233,7 +233,7 @@ if (BLA_VENDOR STREQUAL "Generic" OR
   endif ( NOT LAPACK_LIBRARIES )
 endif ()
 #intel mkl
-if (BLA_VENDOR STREQUAL "MKL" OR BLA_VENDOR STREQUAL "All")
+if (BLA_VENDOR MATCHES "Intel[0-9]*_64_dyn" OR BLA_VENDOR STREQUAL "All")
   if ( NOT LAPACK_LIBRARIES )
     check_lapack_libraries(
     LAPACK_LIBRARIES
@@ -247,7 +247,7 @@ if (BLA_VENDOR STREQUAL "MKL" OR BLA_VENDOR STREQUAL "All")
   endif ( NOT LAPACK_LIBRARIES )
 endif ()
 #intel lapack
-if (BLA_VENDOR MATCHES "Intel*" OR BLA_VENDOR STREQUAL "All")
+if (BLA_VENDOR MATCHES "Intel.*" OR BLA_VENDOR STREQUAL "All")
   if (NOT WIN32)
     set(LM "-lm")
   endif ()
@@ -315,7 +315,7 @@ if (BLA_VENDOR MATCHES "Intel*" OR BLA_VENDOR STREQUAL "All")
       endif(NOT LAPACK_LIBRARIES)
     endif(BLA_F95)
   endif (_LANGUAGES_ MATCHES C OR _LANGUAGES_ MATCHES CXX)
-endif(BLA_VENDOR MATCHES "Intel*" OR BLA_VENDOR STREQUAL "All")
+endif(BLA_VENDOR MATCHES "Intel.*" OR BLA_VENDOR STREQUAL "All")
 else(BLAS_FOUND)
   message(STATUS "LAPACK requires BLAS")
 endif(BLAS_FOUND)

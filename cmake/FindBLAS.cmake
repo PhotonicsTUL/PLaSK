@@ -466,7 +466,7 @@ if (BLA_VENDOR STREQUAL "Generic" OR BLA_VENDOR STREQUAL "All")
 endif (BLA_VENDOR STREQUAL "Generic" OR BLA_VENDOR STREQUAL "All")
 
 #BLAS in intel mkl_rt
-if (BLA_VENDOR STREQUAL "MKL" OR BLA_VENDOR STREQUAL "All")
+if (BLA_VENDOR MATCHES "Intel[0-9]*_64_dyn" OR BLA_VENDOR STREQUAL "All")
  if(NOT BLAS_LIBRARIES)
   check_fortran_libraries(
   BLAS_LIBRARIES
@@ -477,11 +477,11 @@ if (BLA_VENDOR STREQUAL "MKL" OR BLA_VENDOR STREQUAL "All")
   ""
   )
  endif(NOT BLAS_LIBRARIES)
-endif (BLA_VENDOR STREQUAL "MKL" OR BLA_VENDOR STREQUAL "All")
+endif ()
 
 
 #BLAS in intel mkl 10 library? (em64t 64bit)
-if (BLA_VENDOR MATCHES "Intel*" OR BLA_VENDOR STREQUAL "All")
+if (BLA_VENDOR MATCHES "Intel.*" OR BLA_VENDOR STREQUAL "All")
  if (NOT WIN32)
   set(LM "-lm")
  endif ()
@@ -501,12 +501,12 @@ if (BLA_VENDOR MATCHES "Intel*" OR BLA_VENDOR STREQUAL "All")
       list(APPEND BLAS_SEARCH_LIBS
         "mkl_blas95 mkl_intel_c mkl_intel_thread mkl_core libguide40")
     else (WIN32)
-      if (BLA_VENDOR STREQUAL "Intel_32" OR BLA_VENDOR STREQUAL "All")
+      if (BLA_VENDOR MATCHES "Intel[0-9]*_32" OR BLA_VENDOR STREQUAL "All")
         list(APPEND BLAS_SEARCH_LIBS
           "mkl_blas95 mkl_intel mkl_intel_thread mkl_core guide")
       endif ()
-      if (BLA_VENDOR STREQUAL "Intel_64lp" OR BLA_VENDOR STREQUAL "All")
-        # old version
+      if (BLA_VENDOR MATCHES "Intel[0-9]*_64lp$" OR BLA_VENDOR STREQUAL "All")
+      # old version
         list(APPEND BLAS_SEARCH_LIBS
           "mkl_blas95 mkl_intel_lp64 mkl_intel_thread mkl_core guide")
 
@@ -521,7 +521,7 @@ if (BLA_VENDOR MATCHES "Intel*" OR BLA_VENDOR STREQUAL "All")
         endif ()
       endif ()
     endif (WIN32)
-    if (BLA_VENDOR STREQUAL "Intel_64lp_seq" OR BLA_VENDOR STREQUAL "All")
+    if (BLA_VENDOR MATCHES "Intel[0-9]*_64lp_seq" OR BLA_VENDOR STREQUAL "All")
       list(APPEND BLAS_SEARCH_LIBS
         "mkl_blas95_lp64 mkl_intel_lp64 mkl_sequential mkl_core")
     endif ()
@@ -532,11 +532,11 @@ if (BLA_VENDOR MATCHES "Intel*" OR BLA_VENDOR STREQUAL "All")
       list(APPEND BLAS_SEARCH_LIBS
         "mkl_c_dll mkl_intel_thread_dll mkl_avx2_dll mkd_def_dll mkl_core_dll libguide40")
     else (WIN32)
-      if (BLA_VENDOR STREQUAL "Intel_32" OR BLA_VENDOR STREQUAL "All")
+      if (BLA_VENDOR MATCHES "Intel[0-9]*_32" OR BLA_VENDOR STREQUAL "All")
         list(APPEND BLAS_SEARCH_LIBS
           "mkl_intel mkl_intel_thread mkl_core guide")
       endif ()
-      if (BLA_VENDOR STREQUAL "Intel_64lp" OR BLA_VENDOR STREQUAL "All")
+      if (BLA_VENDOR MATCHES "Intel[0-9]*_64lp$" OR BLA_VENDOR STREQUAL "All")
 
         # mkl >= 10.3
         if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -549,7 +549,7 @@ if (BLA_VENDOR MATCHES "Intel*" OR BLA_VENDOR STREQUAL "All")
         endif ()
       endif ()
     endif (WIN32)
-    if (BLA_VENDOR STREQUAL "Intel_64lp_seq" OR BLA_VENDOR STREQUAL "All")
+    if (BLA_VENDOR MATCHES "Intel[0-9]*_64lp_seq" OR BLA_VENDOR STREQUAL "All")
       list(APPEND BLAS_SEARCH_LIBS
         "mkl_intel_lp64 mkl_sequential mkl_core mkl_avx2 mkl_def")
     endif ()
@@ -571,7 +571,7 @@ if (BLA_VENDOR MATCHES "Intel*" OR BLA_VENDOR STREQUAL "All")
   endforeach ()
 
  endif (_LANGUAGES_ MATCHES C OR _LANGUAGES_ MATCHES CXX)
-endif (BLA_VENDOR MATCHES "Intel*" OR BLA_VENDOR STREQUAL "All")
+endif (BLA_VENDOR MATCHES "Intel.*" OR BLA_VENDOR STREQUAL "All")
 
 
 if(BLA_F95)
