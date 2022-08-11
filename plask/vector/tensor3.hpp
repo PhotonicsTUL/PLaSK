@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#ifndef PLASK__TESNOR3_H
-#define PLASK__TESNOR3_H
+#ifndef PLASK__TENSOR3_H
+#define PLASK__TENSOR3_H
 
 /** @file
 This file contains implementation of tensor in 2D space.
@@ -29,9 +29,9 @@ namespace plask {
 
 /**
  * Non-diagonal tensor with all non-diagonal lateral projection.
- * [ c00 c01  0  ]
- * [ c01 c11  0  ]
- * [  0   0  c22 ]
+ * [ c00  c01  c02 ]
+ * [ c01* c11  c12 ]
+ * [ c02* c12* c22 ]
  */
 template <typename T>
 struct Tensor3 {
@@ -40,6 +40,8 @@ struct Tensor3 {
       c11, ///< Value of the tensor in TRAN direction
       c22, ///< Value of the tensor in VERT direction
       c01; ///< Non-diagonal component LONG-TRAN
+      c02; ///< Non-diagonal component LONG-VERT
+      c12; ///< Non-diagonal component TRAN-VERT
 
     T& tran() { return c00; }
     const T& lon() const { return c00; }
@@ -58,56 +60,63 @@ struct Tensor3 {
      * @param p tensor to copy from
      */
     template <typename OtherT>
-    Tensor3(const Tensor3<OtherT>& p): c00(p.c00), c11(p.c11), c22(p.c22), c01(p.c01) {}
+    Tensor3(const Tensor3<OtherT>& p): c00(p.c00), c11(p.c11), c22(p.c22), c01(p.c01), c02(p.c01), c12(p.c01) {}
 
     /**
      * Construct isotropic tensor.
      * @param val value
      */
-    Tensor3(const T& val): c00(val), c11(val), c22(val), c01(0.) {}
+    Tensor3(const T& val): c00(val), c11(val), c22(val), c01(0.), c02(0.), c12(0.) {}
 
     /**
      * Construct tensor with given diagonal values.
      * @param c00, c22 components
      */
-    Tensor3(const T& c00, const T& c22): c00(c00), c11(c00), c22(c22), c01(0.) {}
+    Tensor3(const T& c00, const T& c22): c00(c00), c11(c00), c22(c22), c01(0.), c02(0.), c12(0.) {}
 
     /**
-     * Construct tesors with given diagonal values.
+     * Construct tensors with given diagonal values.
      * @param c00, c11, c22 components
      */
-    Tensor3(const T& c00, const T& c11, const T& c22): c00(c00), c11(c11), c22(c22), c01(0.) {}
+    Tensor3(const T& c00, const T& c11, const T& c22): c00(c00), c11(c11), c22(c22), c01(0.), c02(0.), c12(0.) {}
 
     /**
-     * Construct tesors with given all values.
+     * Construct tensors with given almost all values.
      * @param c00, c11, c22, c01 components
      */
-    Tensor3(const T& c00, const T& c11, const T& c22, const T& c01): c00(c00), c11(c11), c22(c22), c01(c01) {}
+    Tensor3(const T& c00, const T& c11, const T& c22, const T& c01): c00(c00), c11(c11), c22(c22), c01(c01), c02(0.), c12(0.) {}
+
+    /**
+     * Construct tensors with given all values.
+     * @param c00, c11, c22, c01, c02, c12 components
+     */
+    Tensor3(const T& c00, const T& c11, const T& c22, const T& c01, const T& c02, const T& c12):
+        c00(c00), c11(c11), c22(c22), c01(c01), c02(C02), c12(c12) {}
 
     /**
      * Construct tensor components given in std::pair.
      * @param comp components
      */
     template <typename T0, typename T1>
-    Tensor3(const std::pair<T0,T1>& comp): c00(comp.first), c11(comp.first), c22(comp.second), c01(0.) {}
+    Tensor3(const std::pair<T0,T1>& comp): c00(comp.first), c11(comp.first), c22(comp.second), c01(0.), c02(0.), c12(0.) {}
 
     /**
      * Construct tensor from 2D tensor
      * \param tens tensor
      */
-    Tensor3(const Tensor2<T>& tens): c00(tens.c00), c11(tens.c00), c22(tens.c11), c01(0.) {}
+    Tensor3(const Tensor2<T>& tens): c00(tens.c00), c11(tens.c00), c22(tens.c11), c01(0.), c02(0.), c12(0.) {}
 
     /**
      * Construct tensor from 2D vector
      * \param vec vector
      */
-    Tensor3(const Vec<2,T>& vec): c00(vec.c0), c11(vec.c0), c22(vec.c1), c01(0.) {}
+    Tensor3(const Vec<2,T>& vec): c00(vec.c0), c11(vec.c0), c22(vec.c1), c01(0.), c02(0.), c12(0.) {}
 
     /**
      * Construct tensor from 3D vector
      * \param vec vector
      */
-    Tensor3(const Vec<3,T>& vec): c00(vec.c0), c11(vec.c1), c22(vec.c2), c01(0.) {}
+    Tensor3(const Vec<3,T>& vec): c00(vec.c0), c11(vec.c1), c22(vec.c2), c01(0.), c02(0.), c12(0.) {}
 
    /**
      * Get i-th component
@@ -133,7 +142,7 @@ struct Tensor3 {
 
     /// Convert to std::tuple
     operator std::tuple<T,T,T,T>() const {
-        return std::make_tuple(c00, c11, c22, c01);
+        return std::make_tuple(c00, c11, c22, c01, c02, c12);
     }
 
     /**
@@ -143,7 +152,7 @@ struct Tensor3 {
      */
     template <typename OtherT>
     bool operator==(const Tensor3<OtherT>& p) const {
-        return p.c00 == c00 && p.c11 == c11 && p.c22 == c22 && p.c01 == c01;
+        return p.c00 == c00 && p.c11 == c11 && p.c22 == c22 && p.c01 == c01 && p.c02 == c02 && p.c12 == c12;
     }
 
     /**
@@ -153,7 +162,8 @@ struct Tensor3 {
      */
     template <typename OtherT>
     constexpr bool equals(const Tensor3<OtherT>& p) const {
-        return is_zero(p.c00 - c00) && is_zero(p.c11 - c11) && is_zero(p.c22 - c22) && is_zero(p.c01 - c01);
+        return is_zero(p.c00 - c00) && is_zero(p.c11 - c11) && is_zero(p.c22 - c22) &&
+               is_zero(p.c01 - c01) && is_zero(p.c02 - c02) && is_zero(p.c12 - c12);
     }
 
     /**
@@ -163,18 +173,18 @@ struct Tensor3 {
      */
     template <typename OtherT>
     bool operator!=(const Tensor3<OtherT>& p) const {
-        return p.c00 != c00 || p.c11 != c11 || p.c22 != c22 || p.c01 != c01;
+        return p.c00 != c00 || p.c11 != c11 || p.c22 != c22 || p.c01 != c01 || p.c02 != c02 || p.c12 != c12
     }
 
     /**
-     * Calculate sum of two tesnors, @c this and @p other.
+     * Calculate sum of two tensors, @c this and @p other.
      * @param other tensor to add, can have different data type (than result type will be found using C++ types promotions rules)
      * @return tensors sum
      */
     template <typename OtherT>
     auto operator+(const Tensor3<OtherT>& other) const -> Tensor3<decltype(c00 + other.c00)> {
         return Tensor3<decltype(this->c00 + other.c00)>
-            (c00 + other.c00, c11 + other.c11, c22 + other.c22, c01 + other.c01);
+            (c00 + other.c00, c11 + other.c11, c22 + other.c22, c01 + other.c01, c02 + other.c02, c12 + other.c12);
     }
 
     /**
@@ -187,6 +197,8 @@ struct Tensor3 {
         c11 += other.c11;
         c22 += other.c22;
         c01 += other.c01;
+        c02 += other.c02;
+        c12 += other.c12;
         return *this;
     }
 
@@ -198,7 +210,7 @@ struct Tensor3 {
     template <typename OtherT>
     auto operator-(const Tensor3<OtherT>& other) const -> Tensor3<decltype(c00 - other.c00)> {
         return Tensor3<decltype(this->c00 - other.c00)>
-            (c00 - other.c00, c11 - other.c11, c22 - other.c22, c01 - other.c01);
+            (c00 - other.c00, c11 - other.c11, c22 - other.c22, c01 - other.c01, c02 - other.c02, c12 - other.c12);
     }
 
     /**
@@ -211,6 +223,8 @@ struct Tensor3 {
         c11 -= other.c11;
         c22 -= other.c22;
         c01 -= other.c01;
+        c02 -= other.c02;
+        c12 -= other.c12;
         return *this;
     }
 
@@ -221,7 +235,7 @@ struct Tensor3 {
      */
     template <typename OtherT>
     auto operator*(const OtherT scale) const -> Tensor3<decltype(c00*scale)> {
-        return Tensor3<decltype(c00*scale)>(c00 * scale, c11 * scale, c22 * scale, c01 * scale);
+        return Tensor3<decltype(c00*scale)>(c00 * scale, c11 * scale, c22 * scale, c01 * scale, c02 * scale, c12 * scale);
     }
 
     /**
@@ -234,6 +248,8 @@ struct Tensor3 {
         c11 *= scalar;
         c22 *= scalar;
         c01 *= scalar;
+        c02 *= scalar;
+        c12 *= scalar;
         return *this;
     }
 
@@ -243,7 +259,7 @@ struct Tensor3 {
      * @return this tensor divided by scalar
      */
     Tensor3<T> operator/(const T scale) const {
-        return Tensor3<decltype(c00/scale)>(c00 / scale, c11 / scale, c22 / scale, c01 / scale);
+        return Tensor3<decltype(c00/scale)>(c00 / scale, c11 / scale, c22 / scale, c01 / scale, c02 / scale, c12 / scale);
     }
 
     /**
@@ -256,6 +272,8 @@ struct Tensor3 {
         c11 /= scalar;
         c22 /= scalar;
         c01 /= scalar;
+        c02 /= scalar;
+        c12 /= scalar;
         return *this;
     }
 
@@ -264,7 +282,7 @@ struct Tensor3 {
      * @return Tensor3<T>(-c00, -c11)
      */
     Tensor3<T> operator-() const {
-        return Tensor3<T>(-c00, -c11, -c22, -c01);
+        return Tensor3<T>(-c00, -c11, -c22, -c01, -c02, -c12);
     }
 
     /**
@@ -272,7 +290,7 @@ struct Tensor3 {
      * \return squared tensor
      */
     Tensor3<T> sqr() const {
-        return Tensor3<T>(c00*c00, c11*c11, c22*c22, c01*c01);
+        return Tensor3<T>(c00*c00, c11*c11, c22*c22, c01*c01, c02*c02, c12*c12);
     }
 
     /**
@@ -280,7 +298,7 @@ struct Tensor3 {
      * \return *this (squared)
      */
     Tensor3<T>& sqr_inplace() {
-        c00 *= c00; c11 *= c11; c22 *= c22; c01 *= c01;
+        c00 *= c00; c11 *= c11; c22 *= c22; c01 *= c01; c02 *= c02; c12 *= c12;
         return *this;
     }
 
@@ -289,7 +307,7 @@ struct Tensor3 {
      * \return squared tensor
      */
     Tensor3<T> sqrt() const {
-        return Tensor3<T>(std::sqrt(c00), std::sqrt(c11), std::sqrt(c22), std::sqrt(c01));
+        return Tensor3<T>(std::sqrt(c00), std::sqrt(c11), std::sqrt(c22), std::sqrt(c01), std::sqrt(c02), std::sqrt(c12));
     }
 
     /**
@@ -328,7 +346,7 @@ struct Tensor3 {
      */
     friend inline std::ostream& operator<<(std::ostream& out, const Tensor3<T>& to_print) {
         return out << '(' << str(to_print.c00) << ", " <<  str(to_print.c11) << ", " << str(to_print.c22) << ", "
-                          << str(to_print.c01) << ")";
+                          << str(to_print.c01) << ", " << str(to_print.c02) << ", " << str(to_print.c12) << ")";
     }
 };
 
@@ -349,7 +367,9 @@ auto operator*(const OtherT scale, const Tensor3<T>& tensor) -> decltype(tensor*
  * @return conjugate tensor
  */
 template <typename T>
-inline Tensor3<T> conj(const Tensor3<T>& v) { return Tensor3<T>(conj(v.c00), conj(v.c11), conj(v.c22), conj(v.c01)); }
+inline Tensor3<T> conj(const Tensor3<T>& v) {
+     return Tensor3<T>(conj(v.c00), conj(v.c11), conj(v.c22), conj(v.c01), conj(v.c02), conj(v.c12));
+}
 
 /// Specialization of NaNImpl which add support for 3D tensors.
 template <typename T>
@@ -357,7 +377,7 @@ struct NaNImpl<Tensor3<T>> {
     static constexpr Tensor3<T> get() { return Tensor3<T>(NaN<T>()); }
 };
 
-/// Specialization of ZeroImpl which add support for 2D vectors.
+/// Specialization of ZeroImpl which add support for 3D vectors.
 template <typename T>
 struct ZeroImpl<Tensor3<T>> {
     static constexpr Tensor3<T> get() { return Tensor3<T>(0.); }
@@ -367,7 +387,7 @@ struct ZeroImpl<Tensor3<T>> {
 /// \param v tensor to verify
 template <typename T>
 inline bool is_zero(const Tensor3<T>& v) {
-    return is_zero(v.c00) && is_zero(v.c11) && is_zero(v.c22) && is_zero(v.c01);
+    return is_zero(v.c00) && is_zero(v.c11) && is_zero(v.c22) && is_zero(v.c01) && is_zero(v.c02) && is_zero(v.c12);
 }
 
 /*
@@ -389,4 +409,4 @@ namespace std {
     }
 }
 
-#endif // PLASK__TESNOR3_H
+#endif // PLASK__TENSOR3_H
