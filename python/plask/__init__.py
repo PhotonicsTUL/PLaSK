@@ -339,13 +339,16 @@ class StepProfile:
 
     def __getattr__(self, name):
         if name[:3] != 'out':
-            super().__getattr__(name)
+            super().__getattribute__(name)
         if name in self.providers:
             return self.providers[name]
         suffix = { geometry.Cartesian2D: '2D',
                    geometry.Cylindrical: 'Cyl',
                    geometry.Cartesian3D: '3D' }[type(self._geometry)]
-        provider = flow.__dict__[name[3:] + "Provider" + suffix](self)
+        try:
+            provider = flow.__dict__[name[3:] + "Provider" + suffix](self)
+        except KeyError:
+            raise AttributeError("'{}' object has no attribute '{}'".format(self.__class__.__name__, name))
         self.providers[name] = provider
         return provider
 
