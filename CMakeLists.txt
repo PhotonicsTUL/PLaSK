@@ -100,7 +100,6 @@ cmake_dependent_option(INSTALL_PYTHON_PTH "Install 'plask.pth' into Python direc
 cmake_dependent_option(BUILD_GUI "Build and install GUI." ON "BUILD_PYTHON" OFF)
 
 option(BUILD_TESTING "Build unit tests." ON)
-cmake_dependent_option(RUN_TESTS "Run unit tests." ON "BUILD_TESTING" OFF)
 cmake_dependent_option(BUILD_GUI_TESTING "Build unit tests for GUI." ON "BUILD_TESTING;BUILD_GUI" OFF)
 
 option(USE_OMP "Use OpenMP" ON)
@@ -823,12 +822,6 @@ if(BUILD_TESTING)
         set(CTEST_EXTRA_PARAMS "-C ${CTEST_CONFIGURATION_TYPE}")
     else()
         set(CTEST_EXTRA_PARAMS "")
-    endif()
-
-    if (RUN_TESTS)
-        add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} ${CTEST_EXTRA_PARAMS} --output-on-failure --timeout 180 DEPENDS ${plask_test_depends} ${solvers_test_targets})  #-C ${CTEST_CONFIGURATION_TYPE}
-    else()
-        add_custom_target(tests ${CMAKE_CTEST_COMMAND} ${CTEST_EXTRA_PARAMS} --output-on-failure --timeout 180 DEPENDS ${plask_test_depends} ${solvers_test_targets})
     endif()
 
 endif(BUILD_TESTING)
