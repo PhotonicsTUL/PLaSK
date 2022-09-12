@@ -94,40 +94,40 @@ class VCSEL:
         fourier3d.size = 5
         fourier3d.root.method = 'broyden'
         fourier3d.symmetry = 'Ex', 'Ex'
-        fourier3d.rule = 'new'
 
 
-class NewRule(VCSEL, unittest.TestCase):
+class InverseRule(VCSEL, unittest.TestCase):
 
-    def testComputations(self):
-        m = fourier3d.find_mode(lam=979.75)
-        self.assertEqual(m, 0)
-        self.assertEqual(len(fourier3d.modes), 1)
-        self.assertAlmostEqual(fourier3d.modes[m].lam, 979.691-0.0263j, 3)    # 979.686-0.0210j
-
-
-class Old1Rule(VCSEL, unittest.TestCase):
-
-    def testComputations(self):
-        fourier3d.rule = 'old1'
-        m = fourier3d.find_mode(lam=979.75)
-        self.assertEqual(m, 0)
-        self.assertEqual(len(fourier3d.modes), 1)
-        self.assertAlmostEqual(fourier3d.modes[m].lam, 979.678-0.0210j, 3)
-
-
-class Old2Rule(VCSEL, unittest.TestCase):
-
-    def testComputations(self):
-        fourier3d.rule = 'old2'
+    def testComputations(self):    # 979.686-0.0210j
+        fourier3d.rule = 'inverse'
         m = fourier3d.find_mode(lam=979.75)
         self.assertEqual(m, 0)
         self.assertEqual(len(fourier3d.modes), 1)
         self.assertAlmostEqual(fourier3d.modes[m].lam, 979.678-0.0208j, 3)
 
 
+class MultiInverseRule(VCSEL, unittest.TestCase):
+
+    def testComputations(self):
+        fourier3d.rule = 'multi-inverse'
+        m = fourier3d.find_mode(lam=979.75)
+        self.assertEqual(m, 0)
+        self.assertEqual(len(fourier3d.modes), 1)
+        self.assertAlmostEqual(fourier3d.modes[m].lam, 979.691-0.0263j, 3)
+
+
+class OldRule(VCSEL, unittest.TestCase):
+
+    def testComputations(self):
+        fourier3d.rule = 'old'
+        m = fourier3d.find_mode(lam=979.75)
+        self.assertEqual(m, 0)
+        self.assertEqual(len(fourier3d.modes), 1)
+        self.assertAlmostEqual(fourier3d.modes[m].lam, 979.678-0.0210j, 3)
+
+
 if __name__ == "__main__":
-    vcsel = NewRule('testComputations')
+    vcsel = MultiInverseRule('testComputations')
     vcsel.setUp()
 
     fourier3d.initialize()

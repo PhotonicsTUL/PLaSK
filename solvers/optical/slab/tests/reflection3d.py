@@ -31,7 +31,7 @@ class Reflection3D_Test(unittest.TestCase):
         self.solver.smooth = 0.
         self.solver.size = 11, 11        # number of material coefficients in each direction 4*11+1 = 45
         self.solver.refine = 16, 16
-        self.solver.rule = 'old2'
+        self.solver.rule = 'inverse'
 
     # 2.5 = ( 1**2 + 2**2 ) / 2
     # 1.6 = 2 / ( 1**(-2) + 2**(-2) )

@@ -6,7 +6,7 @@
   <define name="symy" value="'Ex'"/>
   <define name="num" value="3"/>
   <define name="size" value="ARRAYID if  ARRAYID is not None else 19"/>
-  <define name="rule" value="'new'"/>
+  <define name="rule" value="'multi-inverse'"/>
   <define name="pml_dist" value="2"/>
   <define name="pml_size" value="1"/>
   <define name="pml_factor" value="1-2j"/>

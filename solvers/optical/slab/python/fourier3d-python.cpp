@@ -478,11 +478,12 @@ static shared_ptr<Scattering<FourierSolver3D>> FourierSolver3D_scatteringGaussia
 void export_FourierSolver3D()
 {
     py_enum<FourierSolver3D::ExpansionRule>()
-        .value("NEW", FourierSolver3D::RULE_NEW)
-        .value("SEMI", FourierSolver3D::RULE_OLD2)
+        .value("MULTI_INVERSE", FourierSolver3D::RULE_NEW)
+        .value("INVERSE", FourierSolver3D::RULE_OLD2)
         .value("OLD", FourierSolver3D::RULE_OLD1)
-        .value("OLD1", FourierSolver3D::RULE_OLD1)
-        .value("OLD2", FourierSolver3D::RULE_OLD2)
+        .value("MULTI", FourierSolver3D::RULE_NEW)
+        .value("INVERSE2", FourierSolver3D::RULE_NEW)
+        .value("SEMI", FourierSolver3D::RULE_OLD2)
     ;
 
     registerProvider<ProviderFor<GradientFunctions,Geometry3D>>();

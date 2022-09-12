@@ -22,8 +22,6 @@ BesselSolverCyl::BesselSolverCyl(const std::string& name)
 }
 
 void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager) {
-    bool obsolete_rule_warning = true;  // TODO remove in the future
-
     while (reader.requireTagOrEnd()) {
         std::string param = reader.getNodeName();
         if (param == "expansion") {
@@ -85,7 +83,6 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager) {
                            .value("inverse2", RULE_INVERSE_2)
                            .value("direct", RULE_DIRECT)
                            .require();
-                obsolete_rule_warning = false;  // TODO remove in the future
             }
             reader.requireTagEnd();
         } else if (param == "mode") {
@@ -116,10 +113,6 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager) {
         } else
             parseCommonSlabConfiguration(reader, manager);
     }
-    if (obsolete_rule_warning)  // TODO remove in the future
-        writelog(LOG_WARNING,
-                 "New Bessel solver uses inverse rule by default, which may cause different results: "
-                 "set rule=\"direct\" for old behavior");
 }
 
 void BesselSolverCyl::onInitialize() {

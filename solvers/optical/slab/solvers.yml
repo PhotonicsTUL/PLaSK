@@ -451,13 +451,15 @@
       label: Expansion rule
       type: choice
       choices:
-        - new
-        - semi
-        - old
+        - direct
+        - inverse
+        - multi-inverse
       other:
-        - old1
-        - old2
-      default: new
+        - multi
+        - inverse2
+        - old
+        - semi
+      default: inverse
       help: >
         Permittivity inversion rule. The new rule is supposed to provide the best convergence. 'old' and 'semi' are available
         for consistency with old results.
