@@ -3,7 +3,7 @@
 from pylab import *
 sqr32 = sqrt(3) / 2.
 
-results = loadtxt('bands.out', unpack=True)
+results = loadtxt('bands6.out', unpack=True)
 
 plot(results[0], sqrt(results[1]**2 + results[2]**2), 'k--')
 

@@ -39,7 +39,7 @@
     <geometry ref="main"/>
     <expansion lam0="980." size="{N}"/>
     <interface position="0."/>
-    <lattice long0="0.0" long1="{sqrt(3)/2}" tran0="1.0" tran1="0.5"/>
+    <!--lattice long0="0.0" long1="{sqrt(3)/2}" tran0="1.0" tran1="0.5"/-->
   </optical>
 </solvers>
 
@@ -98,7 +98,7 @@ if __name__ == "__main__":
 
     results = []
 
-    with open('bands.out', 'w') as out:
+    with open('bands6.out', 'w') as out:
         out.write("#_po__ _kx__ _ky__  omega/c\n")
 
         for i,(K,pos) in enumerate(zip(wavevectors, graphpos)):
@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
     tight_layout(0.1)
     gcf().canvas.set_window_title('Photonic Bands')
-    savefig('bands.png')
+    savefig('bands6.png')
 
     def show_field(kt, kl, k0):
         OPTICAL.ktran, OPTICAL.klong = kt, kl
