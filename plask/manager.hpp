@@ -73,7 +73,7 @@ struct PLASK_API Manager {
         }
 
         /**
-         * Create ExternalSourcesFromFile which dosn't support relative file names
+         * Create ExternalSourcesFromFile which doesn't support relative file names
          * (original file name is not known).
          */
         ExternalSourcesFromFile(): prev(nullptr) {}
@@ -81,7 +81,7 @@ struct PLASK_API Manager {
         /**
          * Create ExternalSourcesFromFile which support relative file names.
          * @param originalFileName name of file from which XML is read now
-         * @param currentSection name of currenct section
+         * @param currentSection name of current section
          * @param prev previous source (needed to cycle detection)
          */
         ExternalSourcesFromFile(const boost::filesystem::path& originalFileName,
@@ -292,7 +292,7 @@ private:
      * Call getObject(name) and try dynamic cast it to @a RequiredObjectType.
      * @param name name of object
      * @return object (casted to RequiredObjectType) with given @p name or @c nullptr if there is no object with given name or object with given name is not of type @a RequiredObjectType
-     * @tparam RequiredObjectType required type of object
+     * @tparm RequiredObjectType required type of object
      */
     template <typename RequiredObjectType>
     shared_ptr<RequiredObjectType> getGeometryObject(const std::string& name) const;

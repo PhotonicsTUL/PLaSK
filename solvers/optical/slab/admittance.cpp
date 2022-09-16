@@ -224,7 +224,7 @@ void AdmittanceTransfer::determineFields()
             // H0 = y1 * E0 + y2 * Ed
             // for (int i = 0; i < N; i++)
             //     fields[n].H0[i] = y1[i] * fields[n].E0[i]  +  y2[i] * fields[n].Ed[i];
-            // However in some cases this can make the magnetic field discontinous.
+            // However in some cases this can make the magnetic field discontinuous.
         }
         if (start != end) {
             // anyway, we must do it in the last layer
@@ -353,7 +353,7 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
     fields[start].H0 = Y * fields[start].E0;
 
     // E(z) =  cosh(iΓz) A + sinh(iΓz) B
-    // H(z) = -sinh(iΓz) A - coshh(iΓz) B
+    // H(z) = -sinh(iΓz) A - cosh(iΓz) B
     // A = E(0)   B = -H(0)
 
     gamma = diagonalizer->Gamma(solver->stack[start]);
@@ -440,7 +440,7 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
         // H0 = y1 * E0 + y2 * Ed
         // for (int i = 0; i < N; i++)
         //     fields[n].H0[i] = y1[i] * fields[n].E0[i]  +  y2[i] * fields[n].Ed[i];
-        // However in some cases this can make the magnetic field discontinous
+        // However in some cases this can make the magnetic field discontinuous
     }
 
     // Replace F and B at one side of the interface for consistency in getFieldVectorE and getFieldVectorH

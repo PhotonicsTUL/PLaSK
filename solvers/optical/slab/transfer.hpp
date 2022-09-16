@@ -13,7 +13,7 @@ enum WhichField {
     FIELD_H   ///< Magnetic field
 };
 
-/// Light propagtion direction
+/// Light propagation direction
 enum PropagationDirection {
     PROPAGATION_TOTAL = 0,     ///< Both directions in total
     PROPAGATION_UPWARDS = 1,   ///< Upwards or towards the interface

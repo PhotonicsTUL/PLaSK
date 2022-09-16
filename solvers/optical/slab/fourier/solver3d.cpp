@@ -70,15 +70,15 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             readComaAttr(reader, "refine", refine_long, refine_tran);
             if (reader.hasAttribute("oversampling")) {
                 reader.ignoreAttribute("oversampling");
-                writelog(LOG_WARNING, "obsolete 'oversampling' atribute in XML line {}", reader.getLineNr());
+                writelog(LOG_WARNING, "obsolete 'oversampling' attribute in XML line {}", reader.getLineNr());
             }
             if (reader.hasAttribute("oversampling-long")) {
                 reader.ignoreAttribute("oversampling-long");
-                writelog(LOG_WARNING, "obsolete 'oversampling-long' atribute in XML line {}", reader.getLineNr());
+                writelog(LOG_WARNING, "obsolete 'oversampling-long' attribute in XML line {}", reader.getLineNr());
             }
             if (reader.hasAttribute("oversampling-tran")) {
                 reader.ignoreAttribute("oversampling-tran");
-                writelog(LOG_WARNING, "obsolete 'oversampling-tran' atribute in XML line {}", reader.getLineNr());
+                writelog(LOG_WARNING, "obsolete 'oversampling-tran' attribute in XML line {}", reader.getLineNr());
             }
             smooth = reader.getAttribute<double>("smooth", smooth);
             int dc = reader.getAttribute<int>("dct", dct);
@@ -94,7 +94,6 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             expansion_rule = reader.enumAttribute<ExpansionRule>("rule")
                                 .value("multi-inverse", RULE_NEW)
                                 .value("multi", RULE_NEW)
-                                .value("inverse2", RULE_NEW)
                                 .value("inverse", RULE_OLD2)
                                 .value("direct", RULE_OLD1)
                                 // some obsolete names

@@ -190,7 +190,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     /// Expected integration estimate error
     double integral_error;
 
-    /// Maximum number of integration points in a single segemnt
+    /// Maximum number of integration points in a single segment
     size_t max_integration_points;
 
     /// Lateral PMLs
@@ -388,6 +388,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         this->writelog(LOG_WARNING, "Integral functions give wrong results and will be removed in the future!");
         return transfer->getScatteredFieldIntegral(FIELD_H, incident, side, z1, z2);
     }
+
     /// Check if the current parameters correspond to some mode and insert it
     size_t setMode() {
         if (abs2(this->getDeterminant()) > root.tolf_max*root.tolf_max)
@@ -396,7 +397,6 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     }
 
   protected:
-
     /// Insert mode to the list or return the index of the exiting one
     size_t insertMode() {
         static bool warn = true;

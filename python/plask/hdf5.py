@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-This is an interface to h5py. It constains useful functions for saving
+This is an interface to h5py. It contains useful functions for saving
 and loading data to/from HDF5 files.
 
 
@@ -48,7 +48,7 @@ def save_field(field, file, path='', mode='a', compress=None):
 
     Args:
         file (str or file): File to save to.
-            It should be eiher a filename or a h5py.File object opened for
+            It should be either a filename or a h5py.File object opened for
             writing.
         field (plask.Data): Field to save.
            It should be an object returned by PLaSK provider that contains
@@ -142,7 +142,7 @@ def load_field(file, path='/'):
 
     Args:
         file (str or file): File to load from.
-            It should be eiher a filename or a h5py.File object opened for
+            It should be either a filename or a h5py.File object opened for
             reading.
         path (str): HDF5 path (group and dataset name), under which the
            data is located in the HDF5 file.

@@ -28,7 +28,7 @@ Transfer::Transfer(SlabBase* solver, Expansion& expansion)
 }
 
 Transfer::~Transfer() {
-    // no need for aligned_delete_array becase array memebers have trivial destructor
+    // no need for aligned_delete_array because array members have trivial destructor
     aligned_free<dcomplex>(evals);
     evals = nullptr;
     aligned_free<double>(rwrk);

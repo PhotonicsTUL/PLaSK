@@ -114,7 +114,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
   public:
 
-    /// Class responsoble for computing expansion coefficients
+    /// Class responsible for computing expansion coefficients
     ExpansionPW3D expansion;
 
     /// Computed modes
