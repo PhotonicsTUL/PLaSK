@@ -91,7 +91,7 @@ DEFAULTS = {
     'geometry/edges_alpha': 0.2,
     'help/fontsize': 13,
     'help/online': False,
-    'launcher/default': 'Local Process',
+    'launcher/default': 'local',
     'launcher_local/background_color': '#eeeeec',
     'launcher_local/color_0': '#2e3436',
     'launcher_local/color_1': '#ef2929',

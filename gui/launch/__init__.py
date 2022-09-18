@@ -30,9 +30,10 @@ LAUNCH_CONFIG = {}
 
 _DEFS_VISIBLE = False
 
-LAUNCHERS = [LocalLauncher(), ConsoleLauncher()]
-
-current_launcher = 0
+LAUNCHERS = {
+    'local': LocalLauncher(),
+    'console': ConsoleLauncher()
+}
 
 
 class DefinesSyntaxHighlighter(QSyntaxHighlighter):
@@ -108,7 +109,7 @@ class LaunchDialog(QDialog):
         self.setLayout(self.layout)
 
         combo = ComboBox()
-        combo.insertItems(len(LAUNCHERS), [item.name for item in LAUNCHERS])
+        combo.insertItems(len(LAUNCHERS), [item.name for item in LAUNCHERS.values()])
         combo.currentIndexChanged.connect(self.launcher_changed, Qt.ConnectionType.QueuedConnection)
         self.layout.addWidget(combo)
 
@@ -162,17 +163,23 @@ class LaunchDialog(QDialog):
         self.layout.addWidget(args_label)
         self.layout.addWidget(self.args_edit)
 
-        self.launcher_widgets = [l.widget(window) for l in LAUNCHERS]
-        global current_launcher
-        if current_launcher is None:
-            current_launcher = combo.findText(CONFIG['launcher/default'])
-            if current_launcher == -1:
-                current_launcher = combo.findText(LocalLauncher.name)
-        for i, widget in enumerate(self.launcher_widgets):
-            widget.setVisible(i == current_launcher)
-            self.layout.addWidget(widget)
+        self.launch_config = launch_config
 
-        combo.setCurrentIndex(current_launcher)
+        self.launchers = list(LAUNCHERS.keys())
+        self.launcher_widgets = [l.widget(window) for l in LAUNCHERS.values()]
+        current_launcher = launch_config.get('current_launcher', CONFIG['launcher/default'])
+        try:
+            self.current_index = self.launchers.index(current_launcher)
+        except ValueError:
+            try:
+                self.current_index = self.launchers.index('local')
+            except ValueError:
+                self.current_index = 0
+        for i, widget in enumerate(self.launcher_widgets):
+            widget.setVisible(i == self.current_index)
+            self.layout.addWidget(widget)
+        combo.setCurrentIndex(self.current_index)
+        launch_config['current_launcher'] = self.current_launcher
 
         self.setFixedWidth(5 * QFontMetrics(QFont()).horizontalAdvance(self.windowTitle()))
 
@@ -203,7 +210,7 @@ class LaunchDialog(QDialog):
             height = screen_height
         self.setMinimumHeight(height)
         try:
-            allow_expand = LAUNCHERS[current_launcher].allow_expand
+            allow_expand = LAUNCHERS[self.current_launchers].allow_expand
         except AttributeError:
             allow_expand = False
         self.setMaximumHeight(
@@ -235,12 +242,15 @@ class LaunchDialog(QDialog):
         self.adjust_height()
 
     def launcher_changed(self, index):
-        global current_launcher
-        self.launcher_widgets[current_launcher].setVisible(False)
-        current_launcher = index
-        self.launcher_widgets[current_launcher].setVisible(True)
+        self.launcher_widgets[self.current_index].setVisible(False)
+        self.current_index = index
+        self.launch_config['current_launcher'] = self.current_launcher
+        self.launcher_widgets[self.current_index].setVisible(True)
         self.adjust_height()
 
+    @property
+    def current_launcher(self):
+        return self.launchers[self.current_index]
 
 def _get_config_filename(filename):
     dirname, basename = os.path.split(filename)
@@ -292,52 +302,54 @@ def launch_plask(window):
     else:
         if not isinstance(launch_config, dict): launch_config = {}
         LAUNCH_CONFIG[window.document.filename] = launch_config
-    dialog = LaunchDialog(window, launch_config)
-    result = qt_exec(dialog)
-    launcher = LAUNCHERS[current_launcher]
-    launch_args = dialog.args_edit.currentText().strip()
-    if result == QDialog.DialogCode.Accepted:
-        try:
-            launch_config['args'].remove(launch_args)
-        except KeyError:
-            launch_config['args'] = []
-        except ValueError:
-            pass
-        launch_config['args'].insert(0, launch_args)
-        if launch_config['args'] == ['']:
-            del launch_config['args']
-        launch_defs = []
-        save_defs = {}
-        if window.document.defines is not None:
-            defines = dialog.defines.toPlainText()
-            for line in defines.split('\n'):
-                if not line.strip(): continue
-                if '=' not in line or line.startswith('-'):
-                    msgbox = QMessageBox()
-                    msgbox.setWindowTitle("Wrong Defines")
-                    msgbox.setText("Wrong define: '{}'".format(line))
-                    msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
-                    msgbox.setIcon(QMessageBox.Icon.Critical)
-                    qt_exec(msgbox)
-                    return
-                items = line.split('=', 1)
-                name = items[0].strip()
-                value = items[1].strip()
-                if value:
-                    launch_defs.append('-D{}={}'.format(name, value))
-                    save_defs[name] = value
+    try:
+        dialog = LaunchDialog(window, launch_config)
+        result = qt_exec(dialog)
+        launcher = LAUNCHERS[dialog.current_launcher]
+        launch_args = dialog.args_edit.currentText().strip()
+        if result == QDialog.DialogCode.Accepted:
             try:
-                launch_config['defines'].remove(save_defs)
+                launch_config['args'].remove(launch_args)
+            except KeyError:
+                launch_config['args'] = []
             except ValueError:
                 pass
-            if launch_defs:
-                launch_config['defines'].insert(0, save_defs)
-        launcher.launch(window, shlex.split(launch_args), launch_defs)
-    if launch_config.get('defines') == []:  # None != []
-        del launch_config['defines']
-    for launch in LAUNCHERS:
-        try:
-            launch.exit(window, launch is launcher)
-        except AttributeError:
-            pass
-    save_launch_config(window.document.filename)
+            launch_config['args'].insert(0, launch_args)
+            if launch_config['args'] == ['']:
+                del launch_config['args']
+            launch_defs = []
+            save_defs = {}
+            if window.document.defines is not None:
+                defines = dialog.defines.toPlainText()
+                for line in defines.split('\n'):
+                    if not line.strip(): continue
+                    if '=' not in line or line.startswith('-'):
+                        msgbox = QMessageBox()
+                        msgbox.setWindowTitle("Wrong Defines")
+                        msgbox.setText("Wrong define: '{}'".format(line))
+                        msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
+                        msgbox.setIcon(QMessageBox.Icon.Critical)
+                        qt_exec(msgbox)
+                        return
+                    items = line.split('=', 1)
+                    name = items[0].strip()
+                    value = items[1].strip()
+                    if value:
+                        launch_defs.append('-D{}={}'.format(name, value))
+                        save_defs[name] = value
+                try:
+                    launch_config['defines'].remove(save_defs)
+                except ValueError:
+                    pass
+                if launch_defs:
+                    launch_config['defines'].insert(0, save_defs)
+            launcher.launch(window, shlex.split(launch_args), launch_defs)
+    finally:
+        if launch_config.get('defines') == []:  # None != []
+            del launch_config['defines']
+        for launch in LAUNCHERS.values():
+            try:
+                launch.exit(window, launch is launcher)
+            except AttributeError:
+                pass
+        save_launch_config(window.document.filename)

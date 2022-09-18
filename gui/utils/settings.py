@@ -266,7 +266,7 @@ class PluginsConfig(QWidget):
 
 def get_launchers():
     from ..launch import LAUNCHERS
-    return [l.name for l in LAUNCHERS]
+    return {i: l.name for i,l in LAUNCHERS.items()}
 
 
 def keyboard_shortcut_editors():
@@ -530,12 +530,17 @@ class SettingsDialog(QDialog):
             self.entry = entry
             if callable(options):
                 options = options()
-            self.addItems(options)
+            if isinstance(options, dict):
+                self._options = list(options.keys())
+                self.addItems(options.values())
+            else:
+                self._options = options
+                self.addItems(options)
             if help is not None:
                 self.setWhatsThis(help)
             self.needs_restart = needs_restart
             try:
-                index = options.index(CONFIG[entry])
+                index = self._options.index(CONFIG[entry])
             except ValueError:
                 index = 0
             self.setCurrentIndex(index)
@@ -543,11 +548,14 @@ class SettingsDialog(QDialog):
         def changed(self):
             return CONFIG[self.entry] != self.currentText()
         def load(self, value):
-            index = self.findText(value)
-            if index != -1:
+            try:
+                index = self._options.index(self.entry)
+            except ValueError:
+                pass
+            else:
                 self.setCurrentIndex(index)
         def save(self):
-            CONFIG[self.entry] = self.currentText()
+            CONFIG[self.entry] = self._options[self.currentIndex()]
         @property
         def str(self):
             return self.currentText()

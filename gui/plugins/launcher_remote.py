@@ -964,4 +964,4 @@ else:
                 item.setChildIndicatorPolicy(QTreeWidgetItem.ChildIndicatorPolicy.DontShowIndicatorWhenChildless)
 
 
-LAUNCHERS.append(Launcher())
+LAUNCHERS['remote'] = Launcher()

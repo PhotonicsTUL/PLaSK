@@ -48,8 +48,9 @@ class GeometryTreeView(QTreeView):
     def expand_children(self, index):
         if not index.isValid(): return
 
-        for i in range(index.model().rowCount(index)):
-            self.expand_children(index.child(i, 0))
+        model = index.model()
+        for i in range(model.rowCount(index)):
+            self.expand_children(model.index(i, 0, parent=index))
 
         if not self.isExpanded(index):
             self.expand(index)
