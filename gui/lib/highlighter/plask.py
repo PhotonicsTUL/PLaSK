@@ -1,3 +1,4 @@
+from re import escape
 from copy import copy
 
 from .python import SYNTAX, PYTHON_DEFAULT_TOKENS
@@ -95,11 +96,11 @@ def get_syntax(defines=None, solvers=None, **kwargs):
     syntax['tokens'][PYTHON_DEFAULT_TOKENS] = copy(SYNTAX['tokens'][PYTHON_DEFAULT_TOKENS])
     defs = ['ARRAYID', 'PROCID', 'JOBID']
     if defines is not None:
-        defs += [e.name for e in defines.model.entries]
+        defs += [escape(e.name) for e in defines.model.entries]
         syntax['tokens'][PYTHON_DEFAULT_TOKENS].insert(0, ('define', defs, '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'))
     # current_syntax['tokens'][PYTHON_DEFAULT_TOKENS].insert(0, ('special', '__value__', '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'))
     if solvers is not None:
-        solvs = [e.name for e in solvers.model.entries if e.name]
+        solvs = [escape(e.name) for e in solvers.model.entries if e.name]
         if solvs:
             syntax['tokens'][PYTHON_DEFAULT_TOKENS].insert(0, ('solver', solvs, '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'))
     for key, val in kwargs.items():
