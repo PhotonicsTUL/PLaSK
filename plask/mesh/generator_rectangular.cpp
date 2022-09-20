@@ -448,7 +448,10 @@ template <int dim> void RectangularMeshRefinedGenerator<dim>::fromXML(XMLReader&
                 }
             } else if (auto every = reader.getAttribute<double>("every")) {
                 double objsize = object.lock()->getBoundingBox().size()[unsigned(direction)];
-                for (double pos = *every; pos < objsize; pos += *every) addRefinement(direction, object, path, pos);
+                size_t n = int(max(round(objsize / *every), 1.));
+                double step = objsize / n;
+                for (struct {size_t i; double pos;} loop = {1, step}; loop.i < n; ++loop.i, loop.pos += step)
+                    addRefinement(direction, object, path, loop.pos);
             } else if (auto pos = reader.getAttribute<double>("at")) {
                 addRefinement(direction, object, path, *pos);
             } else
