@@ -15,7 +15,7 @@ from .reader import GNAligner
 from .object import GNObject
 from .node import GNode
 from .constructor import construct_geometry_object
-from ...utils.validators import can_be_float, can_be_int, can_be_bool
+from ...utils.validators import can_be_float, can_be_int, can_be_bool, can_be_one_of
 from ...utils.xml import AttributeReader, OrderedTagReader, xml_to_attr, attr_to_xml
 from ...utils.compat import next
 
@@ -418,6 +418,7 @@ class GNAlignContainer(GNContainerBase):
 
     def __init__(self, parent=None, dim=None):
         super().__init__(parent=parent, dim=dim, children_dim=dim)
+        self.order = None
         self.aligners = [GNAligner(None, None) for _ in range(0, self.children_dim)]
 
     def aligners_dir(self):
@@ -425,10 +426,12 @@ class GNAlignContainer(GNContainerBase):
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super()._attributes_from_xml(attribute_reader, conf)
+        xml_to_attr(attribute_reader, self, 'order')
         self.aligners = conf.read_aligners(attribute_reader, self.children_dim)
 
     def _attributes_to_xml(self, element, conf):
         super()._attributes_to_xml(element, conf)
+        attr_to_xml(self, element, 'order')
         conf.write_aligners(element, self.children_dim, self.aligners)
 
     def item_attributes_from_xml(self, child, item_attr_reader, conf):
@@ -457,6 +460,8 @@ class GNAlignContainer(GNContainerBase):
 
     def create_info(self, res, names):
         super().create_info(res, names)
+        if not can_be_one_of(self.order, 'normal', 'reverse'):
+            self._append_error(res, "order (in <align>) must be 'normal' or 'reverse'".format(self.tag_name()))
         for i, a in enumerate(self.aligners):
             if not can_be_float(a.value): self._wrong_type(res, 'float', ('positions', i, 1), 'component of default items position')
 
@@ -468,8 +473,8 @@ class GNAlignContainer(GNContainerBase):
         return self._aligners_to_properties(child.in_parent_aligners)
 
     def get_controller(self, document, model):
-        from ...controller.geometry.container import GNContainerController
-        return GNContainerController(document, model, self)
+        from ...controller.geometry.container import GNAlignContainerController
+        return GNAlignContainerController(document, model, self)
 
     @staticmethod
     def from_xml_2d(element, conf):

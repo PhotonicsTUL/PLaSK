@@ -118,16 +118,32 @@ template <int dim>
 shared_ptr<GeometryObject> read_TranslationContainer(GeometryReader& reader) {
     shared_ptr< TranslationContainer<dim> > result(new TranslationContainer<dim>());
     GeometryReader::SetExpectedSuffix suffixSetter(reader, dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
+    const bool reverse = reader.source.enumAttribute<bool>("order")
+        .value("normal", false)
+        .value("reverse", true)
+        .get(false);
     auto default_aligner = align::fromXML(reader.source, reader.getAxisNames(), align::fromVector(Primitive<dim>::ZERO_VEC));
-    read_children(reader,
-        [&]() -> PathHints::Hint {
-            auto aligner = align::fromXML(reader.source, reader.getAxisNames(), default_aligner);
-            return result->add(reader.readExactlyOneChild<typename TranslationContainer<dim>::ChildType>(), aligner);
-        },
-        [&]() {
-            result->add(reader.readObject<typename TranslationContainer<dim>::ChildType>(), default_aligner);
-        }
-    );
+    if (reverse) {
+        read_children(reader,
+            [&]() -> PathHints::Hint {
+                auto aligner = align::fromXML(reader.source, reader.getAxisNames(), default_aligner);
+                return result->insert(0, reader.readExactlyOneChild<typename TranslationContainer<dim>::ChildType>(), aligner);
+            },
+            [&]() {
+                result->insert(0, reader.readObject<typename TranslationContainer<dim>::ChildType>(), default_aligner);
+            }
+        );
+    } else {
+        read_children(reader,
+            [&]() -> PathHints::Hint {
+                auto aligner = align::fromXML(reader.source, reader.getAxisNames(), default_aligner);
+                return result->add(reader.readExactlyOneChild<typename TranslationContainer<dim>::ChildType>(), aligner);
+            },
+            [&]() {
+                result->add(reader.readObject<typename TranslationContainer<dim>::ChildType>(), default_aligner);
+            }
+        );
+    }
     return result;
 }
 

@@ -12,6 +12,7 @@ Containers 2D
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
+   :attr order: Order of items in the container. If ``normal``, the items lower in the list override the ones previous ones. ``reverse`` means that each item is on top of all the later ones.
    :attr left: Default value for horizontal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
    :attr right: Default value for horizontal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
    :attr trancenter: Default value for horizontal alignment specification: position of the center of the bounding box of each element. (float [µm])
