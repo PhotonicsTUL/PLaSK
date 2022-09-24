@@ -1087,7 +1087,6 @@ def load_plugins():
                     tb.print_exc()
 
 
-
 class Session:
     def __init__(self):
         self.opened_files = []
@@ -1096,28 +1095,9 @@ class Session:
         self.opened_files = [window.document.filename for window in WINDOWS]
 
     def save(self, session_manager):
-        self.opened_files.extend(window.document.filename for window in WINDOWS)  # if some windows are still open
-        if self.opened_files:
-            CONFIG['session/saved_' + session_manager.sessionKey()] = self.opened_files
-            CONFIG.sync()
-            self.opened_files = []
-
-    @staticmethod
-    def restore():
-        key = 'session/saved_' + APPLICATION.sessionKey()
-        files = CONFIG[key]
-        del CONFIG[key]
-        ok = False
-        if files:
-            if type(files) is not list: files = [files]
-            for file in files:
-                try:
-                    WINDOWS.add(MainWindow(file))
-                except:
-                    pass
-                else:
-                    ok = True
-        return ok
+        # self.opened_files.extend(window.document.filename for window in WINDOWS)  # if some windows are still open
+        args = [APPLICATION.arguments()[0]] + self.opened_files
+        session_manager.setRestartCommand(args)
 
 
 def main():
@@ -1228,15 +1208,13 @@ def main():
                 pass
 
     SESSION = Session()
-    if APPLICATION.isSessionRestored():
-        if not SESSION.restore():
-            WINDOWS.add(MainWindow())
-    else:
-        if len(sys.argv) > 1:
-            filename = os.path.abspath(sys.argv[1])
+
+    files = [os.path.abspath(arg) for arg in sys.argv[1:]]
+    if files:
+        for filename in files:
             WINDOWS.add(MainWindow(filename))
-        else:
-            WINDOWS.add(MainWindow())
+    else:
+        WINDOWS.add(MainWindow())
 
     APPLICATION.commitDataRequest.connect(SESSION.commit)
     APPLICATION.saveStateRequest.connect(SESSION.save)
