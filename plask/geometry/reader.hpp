@@ -9,7 +9,6 @@
 #include "../mesh/boundary_conditions.hpp"
 #include "../manager.hpp"
 #include "space.hpp"
-#include "leaf.hpp"
 
 namespace plask {
 

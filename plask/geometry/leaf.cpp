@@ -1,6 +1,5 @@
 #include "leaf.hpp"
-#include "../manager.hpp"
-#include "reader.hpp"
+#include "cuboid.hpp"
 
 #define PLASK_BLOCK2D_NAME ("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D)
 #define PLASK_BLOCK3D_NAME ("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)
@@ -115,45 +114,18 @@ shared_ptr<GeometryObject> GeometryObjectLeaf<dim>::deepCopy(
 template struct PLASK_API GeometryObjectLeaf<2>;
 template struct PLASK_API GeometryObjectLeaf<3>;
 
-// Read alternative attributes
-inline static double readAlternativeAttrs(GeometryReader& reader, const std::string& attr1, const std::string& attr2) {
-    auto value1 = reader.source.getAttribute<double>(attr1);
-    auto value2 = reader.source.getAttribute<double>(attr2);
-    if (value1) {
-        if (value2) throw XMLConflictingAttributesException(reader.source, attr1, attr2);
-        if (*value1 < 0.) throw XMLBadAttrException(reader.source, attr1, boost::lexical_cast<std::string>(*value1));
-        return *value1;
-    } else {
-        if (!value2) {
-            if (reader.manager.draft)
-                return 0.0;
-            else
-                throw XMLNoAttrException(reader.source, format("{0}' or '{1}", attr1, attr2));
-        }
-        if (*value2 < 0.) throw XMLBadAttrException(reader.source, attr2, boost::lexical_cast<std::string>(*value2));
-        return *value2;
-    }
-}
-
-template <typename BlockType> inline static void setupBlock2D3D(GeometryReader& reader, BlockType& block) {
-    block.size.tran() = readAlternativeAttrs(reader, "d" + reader.getAxisTranName(), "width");
-    block.size.vert() = readAlternativeAttrs(reader, "d" + reader.getAxisVertName(), "height");
-    block.readMaterial(reader);
-    reader.source.requireTagEnd();
-}
-
 shared_ptr<GeometryObject> read_block2D(GeometryReader& reader) {
     shared_ptr<Block<2>> block(new Block<2>());
-    setupBlock2D3D(reader, *block);
+    details::setupBlock2D3D(reader, *block);
     return block;
 }
 
-shared_ptr<GeometryObject> read_block3D(GeometryReader& reader) {
-    shared_ptr<Block<3>> block(new Block<3>());
-    block->size.lon() = readAlternativeAttrs(reader, "d" + reader.getAxisLongName(), "length");
-    setupBlock2D3D(reader, *block);
-    return block;
-}
+// shared_ptr<GeometryObject> read_block3D(GeometryReader& reader) {
+//     shared_ptr<Block<3>> block(new Block<3>());
+//     block->size.lon() = details::readAlternativeAttrs(reader, "d" + reader.getAxisLongName(), "length");
+//     details::setupBlock2D3D(reader, *block);
+//     return block;
+// }
 
 template <> void Block<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     GeometryObjectLeaf<2>::writeXMLAttr(dest_xml_object, axes);
@@ -281,8 +253,7 @@ template struct PLASK_API Block<3>;
 
 static GeometryReader::RegisterObjectReader block2D_reader(PLASK_BLOCK2D_NAME, read_block2D);
 static GeometryReader::RegisterObjectReader rectangle_reader("rectangle", read_block2D);
-static GeometryReader::RegisterObjectReader block3D_reader(PLASK_BLOCK3D_NAME, read_block3D);
-static GeometryReader::RegisterObjectReader cuboid_reader("cuboid", read_block3D);
+static GeometryReader::RegisterObjectReader block3D_reader(PLASK_BLOCK3D_NAME, read_cuboid);
 
 namespace detail {
 

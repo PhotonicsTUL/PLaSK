@@ -5,8 +5,10 @@
 This file contains geometry objects leafs classes.
 */
 
-#include "../material/db.hpp"
 #include "object.hpp"
+#include "reader.hpp"
+#include "../manager.hpp"
+#include "../material/db.hpp"
 
 namespace plask {
 
@@ -278,7 +280,7 @@ template <int dim> struct PLASK_API Block : public GeometryObjectLeaf<dim> {
     std::string getTypeName() const override;
 
     /**
-     * Size and upper corner of block. Lower corner is zeroed vector.
+     * Size and upper corner of block. Lower corner is a zero vector.
      */
     DVec size;
 
@@ -322,7 +324,7 @@ template <int dim> struct PLASK_API Block : public GeometryObjectLeaf<dim> {
 
     bool contains(const DVec& p) const override;
 
-    bool intersects(const Box& area) const { return this->getBoundingBox().intersects(area); }
+    // bool intersects(const Box& area) const { return this->getBoundingBox().intersects(area); }
 
     shared_ptr<GeometryObject> shallowCopy() const override { return make_shared<Block>(*this); }
 
@@ -364,6 +366,37 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(Block<3>)
 PLASK_API shared_ptr<GeometryObject> changeToBlock(const SolidOrGradientMaterial& material,
                                                    const shared_ptr<const GeometryObject>& to_change,
                                                    Vec<3, double>& translation, bool draft = false);
+
+
+namespace details {
+
+    // Read alternative attributes
+    inline static double readAlternativeAttrs(GeometryReader& reader, const std::string& attr1, const std::string& attr2) {
+        auto value1 = reader.source.getAttribute<double>(attr1);
+        auto value2 = reader.source.getAttribute<double>(attr2);
+        if (value1) {
+            if (value2) throw XMLConflictingAttributesException(reader.source, attr1, attr2);
+            if (*value1 < 0.) throw XMLBadAttrException(reader.source, attr1, boost::lexical_cast<std::string>(*value1));
+            return *value1;
+        } else {
+            if (!value2) {
+                if (reader.manager.draft)
+                    return 0.0;
+                else
+                    throw XMLNoAttrException(reader.source, format("{0}' or '{1}", attr1, attr2));
+            }
+            if (*value2 < 0.) throw XMLBadAttrException(reader.source, attr2, boost::lexical_cast<std::string>(*value2));
+            return *value2;
+        }
+    }
+
+    template <typename BlockType> inline static void setupBlock2D3D(GeometryReader& reader, BlockType& block) {
+        block.size.tran() = readAlternativeAttrs(reader, "d" + reader.getAxisTranName(), "width");
+        block.size.vert() = readAlternativeAttrs(reader, "d" + reader.getAxisVertName(), "height");
+        block.readMaterial(reader);
+        reader.source.requireTagEnd();
+    }
+}
 
 typedef Block<2> Rectangle;
 typedef Block<3> Cuboid;

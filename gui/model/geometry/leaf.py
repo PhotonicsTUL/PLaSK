@@ -96,6 +96,7 @@ class GNBlock(GNLeaf):
     def __init__(self, parent=None, dim=None):
         super().__init__(parent=parent, dim=dim)
         self.size = [None for _ in range(0, dim)]
+        self.angle = None
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super()._attributes_from_xml(attribute_reader, conf)
@@ -103,11 +104,15 @@ class GNBlock(GNLeaf):
         for i, alt in enumerate(GNBlock.alt_names[3-self.dim:]):
             if self.size[i] is None:
                 self.size[i] = attribute_reader.get(alt)
+        if self.dim == 3:
+            self.angle = attribute_reader.get('angle')
 
     def _attributes_to_xml(self, element, conf):
         super()._attributes_to_xml(element, conf)
         for a in range(0, self.dim):
             if self.size[a] is not None: element.attrib['d'+conf.axis_name(self.dim, a)] = self.size[a]
+        if self.dim == 3 and self.angle is not None:
+            element.attrib['angle'] = self.angle
 
     def tag_name(self, full_name=True):
         return ('rectangle', 'cuboid')[self.dim-2]

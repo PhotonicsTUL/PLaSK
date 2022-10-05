@@ -319,6 +319,15 @@
       <simplify-gradients lam="980" linear="eps"/>
     </copy>
   </cartesian2d>
+  <cartesian3d name="cuboids" axes="x,y,z">
+    <stack xcenter="0" ycenter="0">
+      <align name="align" order="reverse" xcenter="0" ycenter="0" bottom="0">
+        <cuboid material="AlOx" dx="0.05" dy="0.5" dz="0.1"/>
+        <cuboid name="bar" material="GaAs" dx="0.2" dy="0.8" dz="0.1" angle="30"/>
+      </align>
+      <cuboid material="air" dx="2" dy="2" dz="0.1"/>
+    </stack>
+  </cartesian3d>
 </geometry>
 
 <grids>

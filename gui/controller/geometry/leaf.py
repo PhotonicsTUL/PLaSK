@@ -132,12 +132,16 @@ class GNBlockController(GNLeafController):
         self.size = self.construct_point_controllers(row_name='Size', field_names=field_names, change_cb=lambda point:
             weakself._set_node_by_setter_undoable(setter, list(point), weakself.node.size, 'change block size'),
         )
+        if self.node.dim == 3:
+            self.angle = self.construct_line_edit('Rotation angle:', unit=u'deg', node_property_name='angle')
         super().construct_form()
 
     def fill_form(self):
         super().fill_form()
         for i in range(0, self.node.dim):
             self.size[i].setText(none_to_empty(self.node.size[i]))
+        if self.node.dim == 3:
+            self.angle.setText(none_to_empty(self.node.angle))
 
 
 class GNTriangleController(GNLeafController):

@@ -411,8 +411,22 @@ def draw_bbox(env, geometry_object, bbox, transform, clipbox, plask_real_path):
 def draw_Block(env, geometry_object, transform, clipbox, plask_real_path):
     draw_bbox(env, geometry_object, geometry_object.bbox, transform, clipbox, plask_real_path)
 
+def draw_Cuboid(env, geometry_object, transform, clipbox, plask_real_path):
+    if (env.axes == (0, 1) or env.axes == (1, 0)) and geometry_object.angle is not None:
+        rotation = matplotlib.transforms.Affine2D()
+        rotation.rotate_deg(-geometry_object.angle if env.axes == (1, 0) else geometry_object.angle)
+        new_transform = rotation + transform
+        block = matplotlib.patches.Rectangle(
+            (0, 0),
+            geometry_object.dims[env.axes[0]], geometry_object.dims[env.axes[1]],
+            transform=new_transform)
+        env.append(block, clipbox, geometry_object, plask_real_path)
+    else:
+        draw_Block(env, geometry_object, transform, clipbox, plask_real_path)
+
 _geometry_drawers[plask.geometry.Block2D] = draw_Block
-_geometry_drawers[plask.geometry.Block3D] = draw_Block
+_geometry_drawers[plask.geometry.Block3D] = draw_Cuboid
+_geometry_drawers[plask.geometry._CuboidRotated] = draw_Cuboid
 
 
 def draw_Triangle(env, geometry_object, transform, clipbox, plask_real_path):

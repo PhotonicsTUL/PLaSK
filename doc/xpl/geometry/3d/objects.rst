@@ -24,6 +24,7 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
    :attr depth: Alias for ``d{X}``.
    :attr width: Alias for ``d{Y}``.
    :attr height: Alias for ``d{Z}``.
+   :attr angle: Rotation angle in the horizontal (longitudinal-vertical) plane [deg]. This rotates the cuboid horizontally, so the longitudinal and transverse dimensions are no longer along the axes, but correspond to the object sides.
    :attr steps-num: Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform.
    :attr steps-dist: Minimum step size if the object is non-uniform.
 
