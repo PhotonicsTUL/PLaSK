@@ -21,7 +21,6 @@ from ...qt.QtGui import *
 from ...model.info import Info
 from ...model.geometry.reader import axes_as_list
 from ...model.materials import HandleMaterialsModule
-
 from ...utils import get_manager
 from ...utils.config import CONFIG
 from ..source import SourceEditController
@@ -83,6 +82,7 @@ class GeometrySourceController(SourceEditController):
             self.timer.setSingleShot(True)
             self.timer.setInterval(2000)
             self.timer.timeout.connect(self.update_preview)
+            self.plotted_tree_element = None  # we do not use this, but it toolbar base class checks it
 
         def create_source_widget(self, parent):
             splitter = SourceWithPreviewWidget(self, parent)

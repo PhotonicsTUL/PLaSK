@@ -57,8 +57,7 @@ class PlotWidget(PlotWidgetBase):
         def select_plane(self, index):
             super().select_plane(index)
             plotted_tree_element = self.controller.plotted_tree_element
-            if plotted_tree_element is not None and \
-               getattr(plotted_tree_element, 'dim') == 3:
+            if plotted_tree_element is not None and getattr(plotted_tree_element, 'dim') == 3:
                 self.controller.plot_element(plotted_tree_element, set_limits=True)
 
     def __init__(self, controller=None, parent=None, picker=None):
