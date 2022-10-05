@@ -67,7 +67,8 @@ struct PLASK_SOLVER_API ExpansionBessel : public Expansion {
 
     double integratePoyntingVert(const cvector& E, const cvector& H) override;
 
-    double integrateField(WhichField field, size_t layer, const cvector& E, const cvector& H) override;
+    double integrateField(WhichField field, size_t layer, const cmatrix& TE, const cmatrix& TH,
+                          const std::function<std::pair<dcomplex,dcomplex>(size_t, size_t)>& vertical) override;
 
   private:
     inline std::pair<double,double> getTC(size_t layer, size_t ri) {

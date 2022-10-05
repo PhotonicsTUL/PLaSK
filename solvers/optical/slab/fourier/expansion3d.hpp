@@ -161,7 +161,8 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
                                   const shared_ptr<const typename LevelsAdapter::Level>& level,
                                   InterpolationMethod interp);
 
-    double integrateField(WhichField field, size_t l, const cvector& E, const cvector& H) override;
+    double integrateField(WhichField field, size_t layer, const cmatrix& TE, const cmatrix& TH,
+                          const std::function<std::pair<dcomplex,dcomplex>(size_t, size_t)>& vertical) override;
 
     double integratePoyntingVert(const cvector& E, const cvector& H) override;
 

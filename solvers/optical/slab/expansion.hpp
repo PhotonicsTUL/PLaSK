@@ -52,7 +52,8 @@ struct PLASK_SOLVER_API Expansion {
     virtual ~Expansion() {}
 
     TempMatrix getTempMatrix() {
-        return temporary.get(matrixSize());
+        size_t N = matrixSize();
+        return temporary.get(N, N);
     }
 
   private:
@@ -230,14 +231,15 @@ struct PLASK_SOLVER_API Expansion {
     }
 
     /**
-     * Compute ½ E·conj(E) or ½ H·conj(H)
+     * Compute ½ En·conj(Em) or ½ Hn·conj(Hm)
      * \param field field to integrate
      * \param layer layer number
-     * \param E electric field coefficients vector
-     * \param H magnetic field coefficients vector
-     * \return integrated ½ E·conj(E) or ½ H·conj(H)
+     * \param TE electric field coefficients matrix
+     * \param TH magnetic field coefficients matrix
+     * \param[out] result ½ E·conj(E) or ½ H·conj(H) matrix
      */
-    virtual double integrateField(WhichField field, size_t layer, const cvector& E, const cvector& H);
+    virtual double integrateField(WhichField field, size_t layer, const cmatrix& TE, const cmatrix& TH,
+                                  const std::function<std::pair<dcomplex,dcomplex>(size_t, size_t)>& vertical) = 0;
 
     /**
      * Compute vertical component of the Poynting vector for specified fields

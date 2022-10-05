@@ -348,7 +348,8 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
             vals_lock.reset(new double[nMl * nMt]);
             vals = vals_lock.get();
         } else {
-            vals_temp_matrix.reset(new TempMatrix(&temporary, matrixSize()));
+            size_t N = matrixSize();
+            vals_temp_matrix.reset(new TempMatrix(&temporary, N, N));
             vals = reinterpret_cast<double*>(vals_temp_matrix->data());
         }
     }
@@ -479,7 +480,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
 
     // Compute surface normals using larger cell sizes
     if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW) {
-        // First increase tollerance to avoid artifacts
+        // First increase tolerance to avoid artifacts
         double vmax = 0., vmin = std::numeric_limits<double>::max();
         double* v = vals;
         for (size_t i = 0, nM = nMl * nMt; i < nM; ++i, ++v) {
@@ -1301,12 +1302,13 @@ void ExpansionPW3D::getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmat
      }
 }
 
-double ExpansionPW3D::integrateField(WhichField field, size_t l, const cvector& E, const cvector& H)
+double ExpansionPW3D::integrateField(WhichField field, size_t layer, const cmatrix& TE, const cmatrix& TH,
+                                     const std::function<std::pair<dcomplex,dcomplex>(size_t, size_t)>& vertical)
 {
     Component syml = (which_field == FIELD_E)? symmetry_long : Component((3-symmetry_long) % 3);
     Component symt = (which_field == FIELD_E)? symmetry_tran : Component((3-symmetry_tran) % 3);
 
-    bool diagonal = diagonals[l];
+    bool diagonal = diagonals[layer];
 
     size_t nl = (syml == E_UNSPECIFIED)? Nl+1 : Nl,
            nt = (symt == E_UNSPECIFIED)? Nt+1 : Nt;
@@ -1317,71 +1319,114 @@ double ExpansionPW3D::integrateField(WhichField field, size_t l, const cvector& 
     double bl = 2*PI / (front-back) * (symmetric_long()? 0.5 : 1.0),
            bt = 2*PI / (right-left) * (symmetric_tran()? 0.5 : 1.0);
 
-    dcomplex vert;
-    double sum = 0.;
+    assert(TE.rows() == matrixSize());
+    assert(TH.rows() == matrixSize());
+
+    size_t M = TE.cols();
+    assert(TH.cols() == M);
+
+    size_t NN = Nl * Nt;
+    TempMatrix temp = getTempMatrix();
+    cmatrix Fz(NN, M, temp.data());
+
+    double result = 0.;
 
     if (which_field == FIELD_E) {
-        for (int it = symmetric_tran()? 0 : -ordt; it <= ordt; ++it) {
-            for (int il = symmetric_long()? 0 : -ordl; il <= ordl; ++il) {
-                vert = 0.;
-                for (int jt = -ordt; jt <= ordt; ++jt)
-                    for (int jl = -ordl; jl <= ordl; ++jl) {
-                        double fhx = ((jl < 0 && symmetry_long == E_LONG)? -1. : 1) *
-                                        ((jt < 0 && symmetry_tran == E_LONG)? -1. : 1);
-                        double fhy = ((jl < 0 && symmetry_long == E_TRAN)? -1. : 1) *
-                                        ((jt < 0 && symmetry_tran == E_TRAN)? -1. : 1);
-                        vert += ((diagonal || SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1)?
-                                 iepszz(l,il-jl,it-jt) : iepszz(l,il,jl,it,jt)) *
-                               (  (bl*double(jl)-kx) * fhy*H[iHy(jl,jt)]
-                                + (bt*double(jt)-ky) * fhx*H[iHx(jl,jt)]);
+        #pragma omp parallel for
+        for (openmp_size_t m = 0; m != M; m++) {
+            for (int it = symmetric_tran()? 0 : -ordt; it <= ordt; ++it) {
+                for (int il = symmetric_long()? 0 : -ordl; il <= ordl; ++il) {
+                    dcomplex vert = 0.;
+                    for (int jt = -ordt; jt <= ordt; ++jt) {
+                        for (int jl = -ordl; jl <= ordl; ++jl) {
+                            double fhx = ((jl < 0 && symmetry_long == E_LONG)? -1. : 1) *
+                                         ((jt < 0 && symmetry_tran == E_LONG)? -1. : 1);
+                            double fhy = ((jl < 0 && symmetry_long == E_TRAN)? -1. : 1) *
+                                         ((jt < 0 && symmetry_tran == E_TRAN)? -1. : 1);
+                            vert += ((SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1)?
+                                        iepszz(layer, il-jl, it-jt) :
+                                        diagonal? ((il == jl && it == jt)?
+                                            1. / coeffs[layer][0].c22 : 0.) :
+                                            iepszz(layer, il,jl, it,jt)
+                                    ) * ((bl*double(jl)-kx) * fhy*TH(iHy(jl,jt), m) + (bt*double(jt)-ky) * fhx*TH(iHx(jl,jt), m));
+                        }
                     }
-                vert /= k0;
-                if (symmetric_long() && il != 0) vert *= 2;
-                if (symmetric_tran() && it != 0) vert *= 2;
-                sum += real(vert * conj(vert));
+                    Fz(idx(il,it), m) = vert / k0;
+                }
             }
         }
     } else { // which_field == FIELD_H
-        for (int it = symmetric_tran()? 0 : -ordt; it <= ordt; ++it) {
-            for (int il = symmetric_long()? 0 : -ordl; il <= ordl; ++il) {
-                vert = 0.;
-                for (int jt = -ordt; jt <= ordt; ++jt)
-                    for (int jl = -ordl; jl <= ordl; ++jl) {
-                        double fex = ((jl < 0 && symmetry_long == E_TRAN)? -1. : 1) *
-                                        ((jt < 0 && symmetry_tran == E_TRAN)? -1. : 1);
-                        double fey = ((jl < 0 && symmetry_long == E_LONG)? -1. : 1) *
-                                        ((jt < 0 && symmetry_tran == E_LONG)? -1. : 1);
-                        vert += imuzz(l,il-jl,it-jt) *
-                               (- (bl*double(jl)-kx) * fey*E[iEy(jl,jt)]
-                                + (bt*double(jt)-ky) * fex*E[iEx(jl,jt)]);
+        #pragma omp parallel for
+        for (openmp_size_t m = 0; m != M; m++) {
+            for (int it = symmetric_tran()? 0 : -ordt; it <= ordt; ++it) {
+                for (int il = symmetric_long()? 0 : -ordl; il <= ordl; ++il) {
+                    dcomplex vert = 0.;
+                    for (int jt = -ordt; jt <= ordt; ++jt) {
+                        for (int jl = -ordl; jl <= ordl; ++jl) {
+                            double fex = ((jl < 0 && symmetry_long == E_TRAN)? -1. : 1) *
+                                         ((jt < 0 && symmetry_tran == E_TRAN)? -1. : 1);
+                            double fey = ((jl < 0 && symmetry_long == E_LONG)? -1. : 1) *
+                                         ((jt < 0 && symmetry_tran == E_LONG)? -1. : 1);
+                            vert += imuzz(layer, il-jl, it-jt) *
+                                    (- (bl*double(jl)-kx) * fey*TE(iEy(jl,jt), m) + (bt*double(jt)-ky) * fex*TE(iEx(jl,jt), m));
+                        }
                     }
-                vert /= k0;
-                if (symmetric_long() && il != 0) vert *= 2;
-                if (symmetric_tran() && it != 0) vert *= 2;
-                sum += real(vert * conj(vert));
+                    Fz(idx(il,it), m) = vert / k0;
+                }
             }
         }
     }
 
-    double area = (front-back) * (symmetric_long()? 2. : 1.) * (right-left) * (symmetric_tran()? 2. : 1.);
+    double area = 0.5 * (front-back) * (symmetric_long()? 2. : 1.) * (right-left) * (symmetric_tran()? 2. : 1.);
 
     if (field == FIELD_E) {
-        for (int t = -ordt; t <= ordt; ++t) {
-            for (int l = -ordl; l <= ordl; ++l) {
-                size_t ix = iEx(l, t), iy = iEy(l, t);
-                sum += real(E[ix] * conj(E[ix])) + real(E[iy] * conj(E[iy]));
+        #pragma omp parallel for
+        for (size_t m1 = 0; m1 < M; ++m1) {
+            for (size_t m2 = m1; m2 < M; ++m2) {
+                dcomplex sumxy = 0., sumz = 0.;
+                for (int t = -ordt; t <= ordt; ++t) {
+                    for (int l = -ordl; l <= ordl; ++l) {
+                        size_t ix = iEx(l,t), iy = iEy(l,t), i = idx(l,t);
+                        sumxy += TE(ix,m1) * conj(TE(ix,m2)) + TE(iy,m1) * conj(TE(iy,m2));
+                        sumz += Fz(i,m1) * conj(Fz(i,m2));
+                    }
+                }
+                auto vert = vertical(m1, m2);
+                double res = real(sumxy * vert.first + sumz * vert.second);
+                if (m2 != m1) {
+                    vert = vertical(m2, m1);
+                    res += real(conj(sumxy) * vert.first + conj(sumz) * vert.second);
+                }
+                #pragma omp atomic
+                result += res;
             }
         }
+
     } else {
-        for (int t = -ordt; t <= ordt; ++t) {
-            for (int l = -ordl; l <= ordl; ++l) {
-                size_t ix = iHx(l, t), iy = iHy(l, t);
-                sum += real(H[ix] * conj(H[ix])) + real(H[iy] * conj(H[iy]));
+        #pragma omp parallel for
+        for (size_t m1 = 0; m1 < M; ++m1) {
+            for (size_t m2 = m1; m2 < M; ++m2) {
+                dcomplex sumxy = 0., sumz = 0.;
+                for (int t = -ordt; t <= ordt; ++t) {
+                    for (int l = -ordl; l <= ordl; ++l) {
+                        size_t ix = iHx(l,t), iy = iHy(l,t), i = idx(l,t);
+                        sumxy += TH(ix,m1) * conj(TH(ix,m2)) + TH(iy,m1) * conj(TH(iy,m2));
+                        sumz += Fz(i,m1) * conj(Fz(i,m2));
+                    }
+                }
+                auto vert = vertical(m1, m2);
+                double res = real(sumxy * vert.second + sumz * vert.first);
+                if (m2 != m1) {
+                    vert = vertical(m2, m1);
+                    res += real(conj(sumxy) * vert.second + conj(sumz) * vert.first);
+                }
+                #pragma omp atomic
+                result += res;
             }
         }
     }
 
-    return 0.5 * area * sum;
+    return result * area;
 }
 
 

@@ -125,7 +125,7 @@ void ReflectionTransfer::findReflection(std::size_t start, std::size_t end, bool
     // If we do not use emitting, we have to set field at the edge to 0 and the apply PML
     if (!emitting) {
         gamma = diagonalizer->Gamma(solver->stack[start]);
-        // Aply PML
+        // Apply PML
         // F(0) + B(0) = 0 ==> P(0) = -I
         for (std::size_t i = 0; i < N; i++) {
             dcomplex g = gamma[i] * solver->vpml.factor;
@@ -564,6 +564,16 @@ cvector ReflectionTransfer::getFieldVectorH(double z, std::size_t n, Propagation
 }
 
 
+inline dcomplex _integrate(double z1, double z2, dcomplex g, dcomplex E) {
+    if (is_zero(E)) return 0.;
+    if (is_zero(g)) return E * (z2 - z1);
+    dcomplex res = -I * E / g * (exp(I * g * z2) - exp(I * g * z1));
+    if (isinf(res.real()) || isinf(res.imag()) || isnan(res)) {
+        dcomplex logE = log(E);
+        res = -I / g * (exp(logE + I * g * z2) - exp(logE + I * g * z1));
+    }
+    return res;
+}
 
 double ReflectionTransfer::integrateField(WhichField field, size_t n, double z1, double z2) {
     size_t layer = solver->stack[n];
@@ -572,37 +582,24 @@ double ReflectionTransfer::integrateField(WhichField field, size_t n, double z1,
     cmatrix TE = diagonalizer->TE(layer),
             TH = diagonalizer->TH(layer);
     cdiagonal gamma = diagonalizer->Gamma(layer);
+    assert(gamma.size() == N);
 
     adjust_z(n, z1, z2);
 
-    double result = 0.;
-    for (size_t i = 0; i != N; ++i) {
-        cvector E(TE.data() + N*i, N),
-                H(TH.data() + N*i, N);
-        double TT = diagonalizer->source()->integrateField(field, layer, E, H);
+    return diagonalizer->source()->integrateField(field, layer, TE, TH,
+        [n, z1, z2, gamma, this](size_t i, size_t j) {
+            return std::make_pair(
+                _integrate(z1, z2, -gamma[i] + conj(gamma[j]), F1[i] * conj(F1[j])) +
+                _integrate(z1, z2,  gamma[i] + conj(gamma[j]), B1[i] * conj(F1[j])) +
+                _integrate(z1, z2, -gamma[i] - conj(gamma[j]), F1[i] * conj(B1[j])) +
+                _integrate(z1, z2,  gamma[i] - conj(gamma[j]), B1[i] * conj(B1[j])),
 
-        double gi = 2. * gamma[i].imag(), gr = 2. * gamma[i].real();
-        double FF = real(F1[i]*conj(F1[i])),
-               BB = real(real(B1[i]*conj(B1[i])));
-        dcomplex FB = F1[i]*conj(B1[i]);
-        double VV;
-        if (is_zero(gi)) {
-            VV = (z2-z1) * (FF + BB);
-        } else {
-            VV = FF * (exp(gi*z2) - exp(gi*z1)) / gi +
-                 BB * (exp(-gi*z1) - exp(-gi*z2)) / gi;
-            if (isinf(VV) || isnan(VV)) {
-                double logFF = log(FF), logBB = log(BB);
-                VV = (exp(logFF + gi*z2) - exp(logFF + gi*z1)) / gi +
-                     (exp(logBB - gi*z1) - exp(logBB - gi*z2)) / gi;
-            }
-        }
-        dcomplex fFB = is_zero(gr)? z2-z1 : (exp(-I*gr*z1)-exp(-I*gr*z2)) / gr;
-        VV += ((field == FIELD_E)? 2.: -2.) * imag(FB * fFB);
-        result += TT * VV;
-    }
-
-    return result;
+                _integrate(z1, z2, -gamma[i] + conj(gamma[j]),  F1[i] * conj( F1[j])) +
+                _integrate(z1, z2,  gamma[i] + conj(gamma[j]), -B1[i] * conj( F1[j])) +
+                _integrate(z1, z2, -gamma[i] - conj(gamma[j]),  F1[i] * conj(-B1[j])) +
+                _integrate(z1, z2,  gamma[i] - conj(gamma[j]), -B1[i] * conj(-B1[j]))
+            );
+        });
 }
 
 }}} // namespace plask::optical::slab

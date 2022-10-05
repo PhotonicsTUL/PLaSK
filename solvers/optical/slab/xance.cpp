@@ -156,68 +156,68 @@ cvector XanceTransfer::getTransmissionVector(const cvector& incident, IncidentDi
 
 
 double XanceTransfer::integrateField(WhichField field, size_t n, double z1, double z2) {
-    size_t layer = solver->stack[n];
-    size_t N = diagonalizer->matrixSize();
+    // size_t layer = solver->stack[n];
+    // size_t N = diagonalizer->matrixSize();
 
-    cvector F0, Fd;
-    if (field == FIELD_E) {
-        F0 = fields[n].E0;
-        Fd = fields[n].Ed;
-    } else {
-        F0 = fields[n].H0;
-        Fd = fields[n].Hd;
-    }
+    // cvector F0, Fd;
+    // if (field == FIELD_E) {
+    //     F0 = fields[n].E0;
+    //     Fd = fields[n].Ed;
+    // } else {
+    //     F0 = fields[n].H0;
+    //     Fd = fields[n].Hd;
+    // }
 
-    cmatrix TE = diagonalizer->TE(layer),
-            TH = diagonalizer->TH(layer);
-    cdiagonal gamma = diagonalizer->Gamma(layer);
+    // cmatrix TE = diagonalizer->TE(layer),
+    //         TH = diagonalizer->TH(layer);
+    // cdiagonal gamma = diagonalizer->Gamma(layer);
 
-    PropagationDirection part = PROPAGATION_TOTAL;
-    get_d(n, z1, part);
-    double d = get_d(n, z2, part);
+    // PropagationDirection part = PROPAGATION_TOTAL;
+    // get_d(n, z1, part);
+    // double d = get_d(n, z2, part);
 
-    if (std::ptrdiff_t(n) >= solver->interface) std::swap(z1, z2);
+    // if (std::ptrdiff_t(n) >= solver->interface) std::swap(z1, z2);
 
-    double result = 0.;
-    for (size_t i = 0; i != N; ++i) {
-        cvector E(TE.data() + N*i, N),
-                H(TH.data() + N*i, N);
-        double TT = diagonalizer->source()->integrateField(field, layer, E, H);
+    // double result = 0.;
+    // for (size_t i = 0; i != N; ++i) {
+    //     cvector E(TE.data() + N*i, N),
+    //             H(TH.data() + N*i, N);
+    //     double TT = diagonalizer->source()->integrateField(field, layer, E, H);
 
-        double gr = 2. * gamma[i].real(), gi = 2. * gamma[i].imag();
-        double M = cosh(gi * d) - cos(gr * d);
-        if (isinf(M)) {
-            double VV = real(F0[i]*conj(F0[i])) + real(Fd[i]*conj(Fd[i])) - 2. * real(F0[i]*conj(Fd[i]));
-            result += TT * VV;
-        } else {
-            double cos00, cosdd;
-            dcomplex cos0d;
-            if (is_zero(gr)) {
-                cos00 = cosdd = z2-z1;
-                cos0d = cos(gamma[i] * d) * (z2-z1);
-            } else {
-                cos00 = (sin(gr * (d-z1)) - sin(gr * (d-z2))) / gr;
-                cosdd = (sin(gr * z2) - sin(gr * z1)) / gr;
-                cos0d = (sin(gamma[i] * d - gr * z1) - sin(gamma[i] * d - gr * z2)) / gr;
-            }
-            double cosh00, coshdd;
-            dcomplex cosh0d;
-            if (is_zero(gi)) {
-                cosh00 = coshdd = z2-z1;
-                cosh0d = cos(gamma[i] * d) * (z2-z1);
-            } else {
-                cosh00 = (sinh(gi * (d-z1)) - sinh(gi * (d-z2))) / gi;
-                coshdd = (sinh(gi * z2) - sinh(gi * z1)) / gi;
-                cosh0d = (sin(gamma[i] * d - gi * z1) - sin(gamma[i] * d - gi * z2)) / gi;
-            }
-            double VV =      real(F0[i]*conj(F0[i])) * (cosh00 - cos00) +
-                             real(Fd[i]*conj(Fd[i])) * (coshdd - cosdd) -
-                        2. * real(F0[i]*conj(Fd[i])  * (cosh0d - cos0d));
-            result += TT * VV / M;
-        }
-    }
+    //     double gr = 2. * gamma[i].real(), gi = 2. * gamma[i].imag();
+    //     double M = cosh(gi * d) - cos(gr * d);
+    //     if (isinf(M)) {
+    //         double VV = real(F0[i]*conj(F0[i])) + real(Fd[i]*conj(Fd[i])) - 2. * real(F0[i]*conj(Fd[i]));
+    //         result += TT * VV;
+    //     } else {
+    //         double cos00, cosdd;
+    //         dcomplex cos0d;
+    //         if (is_zero(gr)) {
+    //             cos00 = cosdd = z2-z1;
+    //             cos0d = cos(gamma[i] * d) * (z2-z1);
+    //         } else {
+    //             cos00 = (sin(gr * (d-z1)) - sin(gr * (d-z2))) / gr;
+    //             cosdd = (sin(gr * z2) - sin(gr * z1)) / gr;
+    //             cos0d = (sin(gamma[i] * d - gr * z1) - sin(gamma[i] * d - gr * z2)) / gr;
+    //         }
+    //         double cosh00, coshdd;
+    //         dcomplex cosh0d;
+    //         if (is_zero(gi)) {
+    //             cosh00 = coshdd = z2-z1;
+    //             cosh0d = cos(gamma[i] * d) * (z2-z1);
+    //         } else {
+    //             cosh00 = (sinh(gi * (d-z1)) - sinh(gi * (d-z2))) / gi;
+    //             coshdd = (sinh(gi * z2) - sinh(gi * z1)) / gi;
+    //             cosh0d = (sin(gamma[i] * d - gi * z1) - sin(gamma[i] * d - gi * z2)) / gi;
+    //         }
+    //         double VV =      real(F0[i]*conj(F0[i])) * (cosh00 - cos00) +
+    //                          real(Fd[i]*conj(Fd[i])) * (coshdd - cosdd) -
+    //                     2. * real(F0[i]*conj(Fd[i])  * (cosh0d - cos0d));
+    //         result += TT * VV / M;
+    //     }
+    // }
 
-    return result;
+    // return result;
 }
 
 }}} // namespace plask::optical::slab

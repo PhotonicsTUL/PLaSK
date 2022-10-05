@@ -97,7 +97,7 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
      * \param start start of the transfer
      * \param end end of the transfer
      * \param add if \c true then M matrix is added to the previous value
-     * \param mfac factor to multiply M matrix befere addition
+     * \param mfac factor to multiply M matrix before addition
      */
     void getAM(size_t start, size_t end, bool add, double mfac=1.);
 
@@ -111,6 +111,9 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
     void findReflection(std::size_t start, std::size_t end, bool emitting, int store=0);
 
     double integrateField(WhichField field, size_t n, double z1, double z2) override;
+
+  private:
+    // dcomplex _integrate(double z1, double z2, dcomplex g, dcomplex E);
 };
 
 
