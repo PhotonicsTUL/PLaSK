@@ -27,9 +27,9 @@ class GNObjectController(GNodeController):
 
     have_mesh_settings = True
 
-    #def __init__(self, document, model, node):
-    #    super().__init__(document, model, node)
-    #    self.in_parent_controller = self.node.get_controller_for_inparent()
+    # def __init__(self, document, model, node):
+    #     super().__init__(document, model, node)
+    #     self.in_parent_controller = self.node.get_controller_for_inparent()
 
     def construct_form(self, roles=True):
         self.construct_group('Basic Settings', 0)

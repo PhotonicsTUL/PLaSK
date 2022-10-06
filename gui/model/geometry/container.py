@@ -9,12 +9,14 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import weakref
 from lxml import etree
 
 from .reader import GNAligner
 from .object import GNObject
 from .node import GNode
 from .constructor import construct_geometry_object
+from ...utils import get_manager
 from ...utils.validators import can_be_float, can_be_int, can_be_bool, can_be_one_of
 from ...utils.xml import AttributeReader, OrderedTagReader, xml_to_attr, attr_to_xml
 from ...utils.compat import next
@@ -420,6 +422,7 @@ class GNAlignContainer(GNContainerBase):
         super().__init__(parent=parent, dim=dim, children_dim=dim)
         self.order = None
         self.aligners = [GNAligner(None, None) for _ in range(0, self.children_dim)]
+        self._document = None
 
     def aligners_dir(self):
         return range(0, self.children_dim)
@@ -473,6 +476,10 @@ class GNAlignContainer(GNContainerBase):
         return self._aligners_to_properties(child.in_parent_aligners)
 
     def get_controller(self, document, model):
+        if isinstance(document, weakref.ProxyType):
+            self._document = document
+        else:
+            self._document = weakref.proxy(document)
         from ...controller.geometry.container import GNAlignContainerController
         return GNAlignContainerController(document, model, self)
 
@@ -487,3 +494,37 @@ class GNAlignContainer(GNContainerBase):
         result = GNAlignContainer(dim=3)
         result.load_xml_element(element, conf)
         return result
+
+    @property
+    def _reverse(self):
+        if self.order is None: return False
+        if '{' not in self.order:
+            return self.order == 'reverse'
+        try:
+            manager = get_manager()
+            manager.load(self._document.get_contents(sections=('defines')))
+            try:
+                order = eval(f'f"{self.order}"', manager.defs)
+            except SyntaxError:
+                order = self.order.format(**manager.defs)
+            return order == 'reverse'
+        except Exception:
+            return False
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        state['_document'] = None
+        return state
+
+    def real_to_model_index(self, path_iterator):
+        index = super().real_to_model_index(path_iterator)
+        if self._reverse:
+            children_count = len(self.children)
+            index = (children_count - 1 - index) % children_count
+        return index
+
+    def model_to_real_index(self, index, model):
+        if self._reverse:
+            children_count = len(self.children)
+            index = (children_count - 1 - index) % children_count
+        return super().model_to_real_index(index, model)
