@@ -1316,7 +1316,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
         } else if (polarization == E_TRAN) {
             if (symmetric()) {
                 #pragma omp parallel for
-                for (openmp_size_t m = 0; m != M; m++) {
+                for (openmp_size_t m = 0; m < M; m++) {
                     for (int i = 0; i <= order; ++i) {
                         dcomplex vert = 0.;
                         for (int j = 0; j <= order; ++j)
@@ -1326,7 +1326,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
                 }
             } else {
                 #pragma omp parallel for
-                for (openmp_size_t m = 0; m != M; m++) {
+                for (openmp_size_t m = 0; m < M; m++) {
                     for (int i = -order; i <= order; ++i) {
                         dcomplex vert = 0.; // beta is equal to 0
                         size_t ieh = iEH(i);
@@ -1341,7 +1341,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
         } else {
             if (symmetric()) {
                 #pragma omp parallel for
-                for (openmp_size_t m = 0; m != M; m++) {
+                for (openmp_size_t m = 0; m < M; m++) {
                     for (int i = 0; i <= order; ++i) {
                         dcomplex vert = 0.;
                         for (int j = 0; j <= order; ++j)
@@ -1351,7 +1351,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
                 }
             } else {
                 #pragma omp parallel for
-                for (openmp_size_t m = 0; m != M; m++) {
+                for (openmp_size_t m = 0; m < M; m++) {
                     for (int i = -order; i <= order; ++i) {
                         dcomplex vert = 0.;
                         size_t ieh = iEH(i);
@@ -1368,7 +1368,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
         } else if (polarization == E_LONG) {  // polarization == H_TRAN
             if (symmetric()) {
                 #pragma omp parallel for
-                for (openmp_size_t m = 0; m != M; m++) {
+                for (openmp_size_t m = 0; m < M; m++) {
                     for (int i = 0; i <= order; ++i) {
                         dcomplex vert = 0.;
                         if (periodic)
@@ -1383,7 +1383,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
                 }
             } else {
                 #pragma omp parallel for
-                for (openmp_size_t m = 0; m != M; m++) {
+                for (openmp_size_t m = 0; m < M; m++) {
                     for (int i = -order; i <= order; ++i) {
                         dcomplex vert = 0.;
                         size_t ieh = iEH(i);
@@ -1403,7 +1403,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
         } else {
             if (symmetric()) {
                 #pragma omp parallel for
-                for (openmp_size_t m = 0; m != M; m++) {
+                for (openmp_size_t m = 0; m < M; m++) {
                     for (int i = 0; i <= order; ++i) {
                         dcomplex vert = 0.;
                         if (periodic)
@@ -1418,7 +1418,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
                 }
             } else {
                 #pragma omp parallel for
-                for (openmp_size_t m = 0; m != M; m++) {
+                for (openmp_size_t m = 0; m < M; m++) {
                     for (int i = -order; i <= order; ++i) {
                         dcomplex vert = 0.;
                         size_t ieh = iEH(i);
@@ -1442,8 +1442,8 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
         if (symmetric()) {
             if (separated()) {
                 #pragma omp parallel for
-                for (size_t m1 = 0; m1 < M; ++m1) {
-                    for (size_t m2 = m1; m2 < M; ++m2) {
+                for (openmp_size_t m1 = 0; m1 < M; ++m1) {
+                    for (openmp_size_t m2 = m1; m2 < M; ++m2) {
                         dcomplex sumxz = TE(0,m1) * conj(TE(0,m2)),
                                  sumy = verts(0,m1) * conj(verts(0,m2));
                         for(size_t i = 1; i != N; ++i) {
@@ -1459,8 +1459,8 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
                 }
             } else {
                 #pragma omp parallel for
-                for (size_t m1 = 0; m1 < M; ++m1) {
-                    for (size_t m2 = m1; m2 < M; ++m2) {
+                for (openmp_size_t m1 = 0; m1 < M; ++m1) {
+                    for (openmp_size_t m2 = m1; m2 < M; ++m2) {
                         size_t ix = iEx(0), iz = iEz(0);
                         dcomplex sumxz = TE(ix,m1) * conj(TE(ix,m2)) + TE(iz,m1) * conj(TE(iz,m2)),
                                  sumy = verts(0,m1) * conj(verts(0,m2));
@@ -1480,8 +1480,8 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
         } else {
             if (separated()) {
                 #pragma omp parallel for
-                for (size_t m1 = 0; m1 < M; ++m1) {
-                    for (size_t m2 = m1; m2 < M; ++m2) {
+                for (openmp_size_t m1 = 0; m1 < M; ++m1) {
+                    for (openmp_size_t m2 = m1; m2 < M; ++m2) {
                         dcomplex sumxz = 0., sumy = 0.;
                         for(size_t i = 0; i != N; ++i) {
                             sumxz += TE(i,m1) * conj(TE(i,m2));
@@ -1496,8 +1496,8 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
                 }
             } else {
                 #pragma omp parallel for
-                for (size_t m1 = 0; m1 < M; ++m1) {
-                    for (size_t m2 = m1; m2 < M; ++m2) {
+                for (openmp_size_t m1 = 0; m1 < M; ++m1) {
+                    for (openmp_size_t m2 = m1; m2 < M; ++m2) {
                         dcomplex sumxz = 0., sumy = 0.;
                         for(size_t i = 0; i != N; ++i) {
                             size_t ix = iEx(i), iz = iEz(i);
@@ -1517,8 +1517,8 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
         if (symmetric()) {
             if (separated()) {
                 #pragma omp parallel for
-                for (size_t m1 = 0; m1 < M; ++m1) {
-                    for (size_t m2 = m1; m2 < M; ++m2) {
+                for (openmp_size_t m1 = 0; m1 < M; ++m1) {
+                    for (openmp_size_t m2 = m1; m2 < M; ++m2) {
                         dcomplex sumxz = TH(0,m1) * conj(TH(0,m2)),
                                  sumy = verts(0,m1) * conj(verts(0,m2));
                         for(size_t i = 1; i != N; ++i) {
@@ -1534,8 +1534,8 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
                 }
             } else {
                 #pragma omp parallel for
-                for (size_t m1 = 0; m1 < M; ++m1) {
-                    for (size_t m2 = m1; m2 < M; ++m2) {
+                for (openmp_size_t m1 = 0; m1 < M; ++m1) {
+                    for (openmp_size_t m2 = m1; m2 < M; ++m2) {
                         size_t ix = iHx(0), iz = iHz(0);
                         dcomplex sumxz = TH(ix,m1) * conj(TH(ix,m2)) + TH(iz,m1) * conj(TH(iz,m2)),
                                  sumy = verts(0,m1) * conj(verts(0,m2));
@@ -1555,8 +1555,8 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
         } else {
             if (separated()) {
                 #pragma omp parallel for
-                for (size_t m1 = 0; m1 < M; ++m1) {
-                    for (size_t m2 = m1; m2 < M; ++m2) {
+                for (openmp_size_t m1 = 0; m1 < M; ++m1) {
+                    for (openmp_size_t m2 = m1; m2 < M; ++m2) {
                         dcomplex sumxz = 0., sumy = 0.;
                         for(size_t i = 0; i != N; ++i) {
                             sumxz += TH(i,m1) * conj(TH(i,m2));
@@ -1571,8 +1571,8 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
                 }
             } else {
                 #pragma omp parallel for
-                for (size_t m1 = 0; m1 < M; ++m1) {
-                    for (size_t m2 = m1; m2 < M; ++m2) {
+                for (openmp_size_t m1 = 0; m1 < M; ++m1) {
+                    for (openmp_size_t m2 = m1; m2 < M; ++m2) {
                         dcomplex sumxz = 0., sumy = 0.;
                         for(size_t i = 0; i != N; ++i) {
                             size_t ix = iHx(i), iz = iHz(i);

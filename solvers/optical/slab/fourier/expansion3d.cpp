@@ -1331,7 +1331,7 @@ double ExpansionPW3D::integrateField(WhichField field, size_t layer, const cmatr
 
     if (which_field == FIELD_E) {
         #pragma omp parallel for
-        for (openmp_size_t m = 0; m != M; m++) {
+        for (openmp_size_t m = 0; m < M; m++) {
             for (int it = symmetric_tran()? 0 : -ordt; it <= ordt; ++it) {
                 for (int il = symmetric_long()? 0 : -ordl; il <= ordl; ++il) {
                     dcomplex vert = 0.;
@@ -1355,7 +1355,7 @@ double ExpansionPW3D::integrateField(WhichField field, size_t layer, const cmatr
         }
     } else { // which_field == FIELD_H
         #pragma omp parallel for
-        for (openmp_size_t m = 0; m != M; m++) {
+        for (openmp_size_t m = 0; m < M; m++) {
             for (int it = symmetric_tran()? 0 : -ordt; it <= ordt; ++it) {
                 for (int il = symmetric_long()? 0 : -ordl; il <= ordl; ++il) {
                     dcomplex vert = 0.;
@@ -1379,8 +1379,8 @@ double ExpansionPW3D::integrateField(WhichField field, size_t layer, const cmatr
 
     if (field == FIELD_E) {
         #pragma omp parallel for
-        for (size_t m1 = 0; m1 < M; ++m1) {
-            for (size_t m2 = m1; m2 < M; ++m2) {
+        for (openmp_size_t m1 = 0; m1 < M; ++m1) {
+            for (openmp_size_t m2 = m1; m2 < M; ++m2) {
                 dcomplex sumxy = 0., sumz = 0.;
                 for (int t = -ordt; t <= ordt; ++t) {
                     for (int l = -ordl; l <= ordl; ++l) {
@@ -1401,8 +1401,8 @@ double ExpansionPW3D::integrateField(WhichField field, size_t layer, const cmatr
 
     } else {  // field == FIELD_H
         #pragma omp parallel for
-        for (size_t m1 = 0; m1 < M; ++m1) {
-            for (size_t m2 = m1; m2 < M; ++m2) {
+        for (openmp_size_t m1 = 0; m1 < M; ++m1) {
+            for (openmp_size_t m2 = m1; m2 < M; ++m2) {
                 dcomplex sumxy = 0., sumz = 0.;
                 for (int t = -ordt; t <= ordt; ++t) {
                     for (int l = -ordl; l <= ordl; ++l) {

@@ -99,7 +99,7 @@ struct TempMatrix {
         TempMatrix(const TempMatrix& src) = delete;
     #else
         TempMatrix(TempMatrixPool* pool, size_t rows, size_t cols): pool(pool), rows(rows), cols(cols) {
-            if (pool->tmpmx->rows() * pool->tmpmx->cols() < NN) {
+            if (pool->tmpmx->rows() * pool->tmpmx->cols() < rows * cols) {
                 write_debug("allocating temporary matrix");
                 pool->tmpmx->reset(rows, cols);
             }

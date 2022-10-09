@@ -472,6 +472,7 @@ double ExpansionBessel::integratePoyntingVert(const cvector& E, const cvector& H
 
 double ExpansionBessel::integrateField(WhichField field, size_t layer, const cmatrix& TE, const cmatrix& TH,
                                        const std::function<std::pair<dcomplex,dcomplex>(size_t, size_t)>& vertical) {
+    throw NotImplemented("Integrals for Bessel solver");
     // size_t N = SOLVER->size;
     // double resxy = 0.;
     // double resz = 0.;
@@ -506,6 +507,7 @@ double ExpansionBessel::integrateField(WhichField field, size_t layer, const cma
     //     }
     // }
     // return 2 * PI * (resxy + resz / real(k0 * conj(k0)));
+    return 0.;
 }
 
 }}}  // namespace plask::optical::slab
