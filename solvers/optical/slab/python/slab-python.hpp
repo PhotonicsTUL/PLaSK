@@ -715,6 +715,10 @@ struct Scattering {
         return solver->getScatteredFieldMagnitude(incident, side, dst_mesh, method);
     }
 
+    py::object getFieldVectorE(double z);
+
+    py::object getFieldVectorH(double z);
+
     double getIntegralEE(double z1, double z2) {
         return solver->getScatteredIntegralEE(incident, side, z1, z2);
     }
@@ -802,7 +806,24 @@ struct Scattering {
             .def_readonly("outLightMagnitude", reinterpret_cast<ProviderFor<LightMagnitude, typename SolverT::SpaceType> Scattering<SolverT>::*>
                                                 (&Scattering<SolverT>::outLightMagnitude),
                 format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", suffix, u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude").c_str() )
-
+            .def("get_raw_E", &Scattering<SolverT>::getFieldVectorE, (py::arg("level")),
+                 u8"Get Fourier expansion coefficients for the electric field.\n\n"
+                 u8"This is a low-level function returning expansion coefficients for electric\n"
+                 u8"field. Please refer to the detailed solver description for their\n"
+                 u8"interpretation.\n\n"
+                 u8"Args:\n"
+                 u8"    level (float): Vertical level at which the coefficients are computed.\n\n"
+                 u8":rtype: numpy.ndarray\n"
+                )
+            .def("get_raw_H", &Scattering<SolverT>::getFieldVectorH, (py::arg("level")),
+                 u8"Get Fourier expansion coefficients for the magnetic field.\n\n"
+                 u8"This is a low-level function returning expansion coefficients for magnetic\n"
+                 u8"field. Please refer to the detailed solver description for their\n"
+                 u8"interpretation.\n\n"
+                 u8"Args:\n"
+                 u8"    level (float): Vertical level at which the coefficients are computed.\n\n"
+                 u8":rtype: numpy.ndarray\n"
+                )
             .def("integrateEE", &Scattering<SolverT>::getIntegralEE, (py::arg("z1"), "z2"),
                  u8"Get average integral of the squared electric field:\n\n"
                  u8"\\\\[\\\\frac 1 2 \\\\int_{z_1}^{z_2} \\|E\\|^2.\\\\]\n\n"
@@ -815,7 +836,7 @@ struct Scattering {
                  u8"Warning:\n"
                  u8"    This method may return incorrect results for layers with gain,\n"
                  u8"    due to the strong non-Hemiticity!\n"
-            )
+                )
             .def("integrateHH", &Scattering<SolverT>::getIntegralHH, (py::arg("z1"), "z2"),
                  u8"Get average integral of the squared magnetic field:\n\n"
                  u8"\\\\[\\\\frac 1 2 \\\\int_{z_1}^{z_2} \\|H\\|^2.\\\\]\n\n"
@@ -828,7 +849,7 @@ struct Scattering {
                  u8"Warning:\n"
                  u8"    This method may return incorrect results for layers with gain,\n"
                  u8"    due to the strong non-Hemiticity!\n"
-              )
+                )
 
             .add_property("R", &Scattering<SolverT>::reflectivity, u8"Total reflection coefficient [-].")
             .add_property("T", &Scattering<SolverT>::transmittivity, u8"Total transmission coefficient [-].")

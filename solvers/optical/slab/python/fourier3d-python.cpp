@@ -447,6 +447,16 @@ static py::object FourierSolver3D_getFieldVectorH(FourierSolver3D& self, int num
 }
 
 
+template <>
+py::object Scattering<FourierSolver3D>::getFieldVectorE(double z) {
+    return arrayFromVec3D<NPY_CDOUBLE>(solver->getScatteredFieldVectorE(incident, side, z), solver->minor(), 3);
+}
+
+template <>
+py::object Scattering<FourierSolver3D>::getFieldVectorH(double z) {
+    return arrayFromVec3D<NPY_CDOUBLE>(solver->getScatteredFieldVectorH(incident, side, z), solver->minor(), 3);
+}
+
 
 static cvector FourierSolver3D_gaussian(FourierSolver3D& self, Transfer::IncidentDirection side, Expansion::Component polarization, py::object sigma, py::object center) {
     if (py::len(center) != 2)

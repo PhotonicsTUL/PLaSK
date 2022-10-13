@@ -336,15 +336,16 @@ static py::object FourierSolver2D_getFieldVectorH(FourierSolver2D& self, int num
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), self.separated(), 2);
 }
 
-// static py::object FourierSolver2D_getReflectedFieldVectorE(FourierSolver2D::Reflected& self, double z) {
-//     return arrayFromVec2D<NPY_CDOUBLE>(self.parent->getScatteredFieldVectorE(self.polarization, self.side, z),
-//     self.parent->separated(), 2);
-// }
-//
-// static py::object FourierSolver2D_getReflectedFieldVectorH(FourierSolver2D::Reflected& self, double z) {
-//     return arrayFromVec2D<NPY_CDOUBLE>(self.parent->getScatteredFieldVectorH(self.polarization, self.side, z),
-//     self.parent->separated(), 2);
-// }
+template <>
+py::object Scattering<FourierSolver2D>::getFieldVectorE(double z) {
+    return arrayFromVec2D<NPY_CDOUBLE>(solver->getScatteredFieldVectorE(incident, side, z), solver->separated(), 2);
+}
+
+template <>
+py::object Scattering<FourierSolver2D>::getFieldVectorH(double z) {
+    return arrayFromVec2D<NPY_CDOUBLE>(solver->getScatteredFieldVectorH(incident, side, z), solver->separated(), 2);
+}
+
 
 static py::object FourierSolver2D_incidentGaussian(FourierSolver2D& self,
                                                    Transfer::IncidentDirection side,

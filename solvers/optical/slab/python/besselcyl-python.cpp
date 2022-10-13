@@ -137,6 +137,18 @@ static py::object BesselSolverCyl_getFieldVectorH(BesselSolverCyl& self, int num
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), false, 2);
 }
 
+
+template <>
+py::object Scattering<BesselSolverCyl>::getFieldVectorE(double z) {
+    return arrayFromVec2D<NPY_CDOUBLE>(solver->getScatteredFieldVectorE(incident, side, z), false, 2);
+}
+
+template <>
+py::object Scattering<BesselSolverCyl>::getFieldVectorH(double z) {
+    return arrayFromVec2D<NPY_CDOUBLE>(solver->getScatteredFieldVectorH(incident, side, z), false, 2);
+}
+
+
 static py::object BesselSolverCyl_getKweights(BesselSolverCyl& self) {
     if (self.getDomain() == BesselSolverCyl::DOMAIN_INFINITE)
         return py::object(self.getKweights());

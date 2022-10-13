@@ -404,6 +404,32 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverWithMesh<Geomet
     }
 
     /**
+     * Compute electric field coefficients for given \a z for reflected light
+     * \param incident incident field vector
+     * \param side incidence side
+     * \param z position within the layer
+     * \return electric field coefficients
+     */
+    cvector getScatteredFieldVectorE(const cvector& incident, Transfer::IncidentDirection side, double z) {
+        if (!Solver::initCalculation()) setExpansionDefaults(false);
+        if (!transfer) initTransfer(expansion, true);
+        return transfer->getScatteredFieldVectorE(incident, side, z, PROPAGATION_TOTAL);
+    }
+
+    /**
+     * Compute magnetic field coefficients for given \a z for reflected light
+     * \param incident incident field vector
+     * \param side incidence side
+     * \param z position within the layer
+     * \return magnetic field coefficients
+     */
+    cvector getScatteredFieldVectorH(const cvector& incident, Transfer::IncidentDirection side, double z) {
+        if (!Solver::initCalculation()) setExpansionDefaults(false);
+        if (!transfer) initTransfer(expansion, true);
+        return transfer->getScatteredFieldVectorH(incident, side, z, PROPAGATION_TOTAL);
+    }
+
+    /**
      * Get ½ E·conj(E) integral between \a z1 and \a z2 for reflected light
      * \param incident incident field vector
      * \param side incidence side
