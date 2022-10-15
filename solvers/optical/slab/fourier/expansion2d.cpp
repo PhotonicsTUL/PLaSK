@@ -1015,7 +1015,7 @@ void ExpansionPW2D::prepareField()
     if (symmetric()) {
         field.reset(N);
         if (field_interpolation != INTERPOLATION_FOURIER) {
-            Component sym = (which_field == FIELD_E)? symmetry : Component(3-symmetry);
+            Component sym = (which_field == FIELD_E || !symmetry)? symmetry : Component(3-symmetry);
             int df = SOLVER->dct2()? 0 : 4;
             fft_x = FFT::Backward1D(3, N, FFT::Symmetry(sym+df));    // tran
             fft_yz = FFT::Backward1D(3, N, FFT::Symmetry(3-sym+df)); // long

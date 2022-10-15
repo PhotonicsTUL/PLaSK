@@ -988,8 +988,8 @@ void ExpansionPW3D::prepareField()
 {
     if (field_interpolation == INTERPOLATION_DEFAULT) field_interpolation = INTERPOLATION_FOURIER;
     if (symmetric_long() || symmetric_tran()) {
-        Component syml = (which_field == FIELD_E)? symmetry_long : Component(3-symmetry_long),
-                  symt = (which_field == FIELD_E)? symmetry_tran : Component(3-symmetry_tran);
+        Component syml = (which_field == FIELD_E || !symmetry_long)? symmetry_long : Component(3-symmetry_long),
+                  symt = (which_field == FIELD_E || !symmetry_tran)? symmetry_tran : Component(3-symmetry_tran);
         size_t nl = (syml == E_UNSPECIFIED)? Nl+1 : Nl;
         size_t nt = (symt == E_UNSPECIFIED)? Nt+1 : Nt;
         if (field_interpolation != INTERPOLATION_FOURIER) {
