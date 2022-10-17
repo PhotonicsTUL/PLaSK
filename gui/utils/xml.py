@@ -14,8 +14,8 @@ from lxml import etree
 
 from .config import CONFIG
 
-XMLparser = etree.XMLParser(remove_blank_text=True, strip_cdata=False,
-                            remove_comments=not CONFIG['experimental/preserve_comments'])
+XMLparser = etree.XMLParser(remove_blank_text=True, strip_cdata=False, remove_comments=not CONFIG['experimental/preserve_comments'])
+
 
 class Element:
 
@@ -46,6 +46,7 @@ class Element:
 
     def get_etree_element(self):
         return self._element
+
 
 def print_interior(element):
     """Print all subnodes of element (all except the element's opening and closing tags)"""
@@ -83,14 +84,15 @@ def xml_to_attr(src, dst_obj, *attr_names):
     :param *attr_names: names of attributes to transfer
     """
     if src is None:
-        for attr in attr_names: setattr(dst_obj, attr, None)
+        for attr in attr_names:
+            setattr(dst_obj, attr, None)
     else:
         with AttributeReader(src) as a:
-             for attr in attr_names:
-                 setattr(dst_obj, attr, a.get(attr, None))
+            for attr in attr_names:
+                setattr(dst_obj, attr, a.get(attr, None))
 
 
-def at_line_str(element, template=' at line {}'):
+def in_line_str(element, template=' in line {}'):
     return template.format(element.sourceline) if element.sourceline is not None else ''
 
 
@@ -120,7 +122,8 @@ def get_text_unindent(element):
     """
     text = get_text(element)
     lines = [line.rstrip() for line in text.splitlines()]
-    while lines and not lines[0]: lines = lines[1:]
+    while lines and not lines[0]:
+        lines = lines[1:]
     if lines and not lines[-1]: lines = lines[:-1]
     if lines:
         strip = min(len(l) - len(sl) for (l, sl) in ((line, line.lstrip()) for line in lines) if sl)
@@ -135,7 +138,8 @@ def make_indented_text(text, level):
     :return: read text or CDATA
     """
     lines = [line.rstrip() for line in text.splitlines()]
-    while lines and not lines[0]: lines = lines[1:]
+    while lines and not lines[0]:
+        lines = lines[1:]
     if lines and not lines[-1]: lines = lines[:-1]
     end = '\n' + '  ' * level
     sep = end + '  '
@@ -176,7 +180,7 @@ class AttributeReader:
     def require(self, key):
         res = self.get(key)
         if res is None:
-            raise KeyError('Attribute "{}" is expected in tag <{}>{}.'.format(key, self.element.tag, at_line_str(self.element)))
+            raise KeyError('Attribute "{}" is expected in tag <{}>{}.'.format(key, self.element.tag, in_line_str(self.element)))
         return res
 
     def __len__(self):
@@ -191,15 +195,19 @@ class AttributeReader:
         return key in self.element.attrib
 
     def mark_read(self, *keys):
-        for k in keys: self.read.add(k)
+        for k in keys:
+            self.read.add(k)
 
     def require_all_read(self):
         """Raise ValueError if not all attributes have been read from XML tag. Do nothing if self.is_sub_reader is True."""
         if self.is_sub_reader: return
         not_read = set(self.element.attrib.keys()) - self.read
         if not_read:
-            raise ValueError("XML tag <{}>{} has unexpected attributes: {}".format(
-                self.element.tag, at_line_str(self.element), ", ".join(not_read)))
+            raise ValueError(
+                "XML tag <{}>{} has unexpected attributes: {}".format(
+                    self.element.tag, in_line_str(self.element), ", ".join(not_read)
+                )
+            )
 
     @property
     def attrib(self):
@@ -257,9 +265,12 @@ class OrderedTagReader:
     def require_end(self):
         """Raise ValueError if self.parent_element still has unread children."""
         if self._has_next():
-            raise ValueError("XML tag <{}>{} has unexpected child <{}>{}.".format(
-                self.parent_element.tag, at_line_str(self.parent_element),
-                self._next_element().tag, at_line_str(self._next_element())))
+            raise ValueError(
+                "XML tag <{}>{} has unexpected child <{}>{}.".format(
+                    self.parent_element.tag, in_line_str(self.parent_element),
+                    self._next_element().tag, in_line_str(self._next_element())
+                )
+            )
 
     def recent_was_unexpected(self):
         """Raise ValueError about tag that has been read recently and move reader one tag back."""
@@ -295,7 +306,6 @@ class OrderedTagReader:
             text = self._next_element().text
             self._goto_next()
             yield text
-
 
     def get_comments(self):
         """
@@ -336,12 +346,18 @@ class OrderedTagReader:
         res = self.get(*expected_tag_names)
         if res is None:
             if len(expected_tag_names) == 0:
-                raise ValueError('Unexpected end of <{}> tag{}.'.format(
-                    self.parent_element.tag, at_line_str(self.parent_element, ' (which is opened at line {})')))
+                raise ValueError(
+                    'Unexpected end of <{}> tag{}.'.format(
+                        self.parent_element.tag, in_line_str(self.parent_element, ' (which begins in line {})')
+                    )
+                )
             else:
-                raise ValueError('<{}> tag{} does not have required {} child.'.format(
-                    self.parent_element.tag, at_line_str(self.parent_element),
-                    OrderedTagReader._expected_tag_to_str(*expected_tag_names)))
+                raise ValueError(
+                    '<{}> tag{} does not have required {} child.'.format(
+                        self.parent_element.tag, in_line_str(self.parent_element),
+                        OrderedTagReader._expected_tag_to_str(*expected_tag_names)
+                    )
+                )
         return res
 
     def iter(self, *expected_tag_names):
@@ -358,6 +374,7 @@ class OrderedTagReader:
     def __iter__(self):
         return self.iter()
 
+
 class UnorderedTagReader:
     """Helper class to read children of XML element, if the children can be in any order.
        Two or more children with the same name are not allowed.
@@ -373,14 +390,21 @@ class UnorderedTagReader:
         # super().__init__()
         self.parent_element = parent_element
         self.read = set()
-        tag_names = set()
+        tags = {}
         for child in parent_element:
             if child.tag is etree.Comment: continue
-            if child.tag in tag_names:
-                raise ValueError("Duplicated tags <{}>{} in <{}>{} are not allowed.".format(
-                    child.tag, at_line_str(self.child, ' (recurrence at line {})'),
-                    parent_element.tag, at_line_str(self.parent_element, ' (which is opened at line {})')))
-            tag_names.add(child.tag)
+            if child.tag in tags:
+                lines = ' and '.join(
+                    line for line in (in_line_str(tags[child.tag], '{}'), in_line_str(child, '{}')) if line
+                )
+                if lines:
+                    lines = " (in lines {})".format(lines)
+                raise ValueError(
+                    "Duplicated tag <{}>{} in <{}>{} is not allowed.".format(
+                        child.tag, lines, parent_element.tag, in_line_str(self.parent_element, ' (which begins in line {})')
+                    )
+                )
+            tags[child.tag] = child
 
     def _iter_comments(self, element=None, inside=False):
         """
@@ -435,22 +459,29 @@ class UnorderedTagReader:
         """
         res = self.get(child_name)
         if res is None:
-            raise KeyError('<{}> tag{} does not have required <{}> child.'.format(
-                    self.parent_element.tag, at_line_str(self.parent_element), child_name))
+            raise KeyError(
+                '<{}> tag{} does not have required <{}> child.'.format(
+                    self.parent_element.tag, in_line_str(self.parent_element), child_name
+                )
+            )
         return res
 
     def __len__(self):
         return len(self.parent_element)
 
     def mark_read(self, *children_names):
-        for k in children_names: self.read.add(k)
+        for k in children_names:
+            self.read.add(k)
 
     def require_all_read(self):
         """Raise ValueError if not all children have been read from XML tag."""
         not_read = set(e.tag for e in self.parent_element if e.tag is not etree.Comment) - self.read
         if not_read:
-            raise ValueError("XML tag <{}>{} has unexpected child(ren):\n {}".format(
-                self.parent_element.tag, at_line_str(self.parent_element), ", ".join(not_read)))
+            raise ValueError(
+                "XML tag <{}>{} has unexpected child(ren):\n {}".format(
+                    self.parent_element.tag, in_line_str(self.parent_element), ", ".join(not_read)
+                )
+            )
 
     def __enter__(self):
         return self
@@ -464,14 +495,16 @@ class UnorderedTagReader:
             self.require_all_read()
 
 
-
 def require_no_children(element):
     """Check if there are no children in element, raise error if there is any child."""
-    with OrderedTagReader(element) as _: pass
+    with OrderedTagReader(element) as _:
+        pass
+
 
 def require_no_attributes(element):
     """Check if there are no attributes in element, raise error if there is any attribute."""
-    with AttributeReader(element) as _: pass
+    with AttributeReader(element) as _:
+        pass
 
 
 def elements_equal(e1, e2):
@@ -479,4 +512,6 @@ def elements_equal(e1, e2):
         Check if two XML etree elements are equal.
         :return: True only if e1 and e2 are equal
     """
-    return e1.tag == e2.tag and e1.text == e2.text and e1.tail == e2.tail and e1.attrib == e2.attrib and len(e1) == len(e2) and all(elements_equal(c1, c2) for c1, c2 in zip(e1, e2))
+    return e1.tag == e2.tag and e1.text == e2.text and e1.tail == e2.tail and e1.attrib == e2.attrib and len(e1) == len(e2) and all(
+        elements_equal(c1, c2) for c1, c2 in zip(e1, e2)
+    )
