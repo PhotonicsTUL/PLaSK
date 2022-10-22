@@ -519,13 +519,6 @@ class PLASK_API Solver {
     /// @c true only if solver is initialized
     bool initialized;
 
-    #ifdef LICENSE_CHECK
-      private:
-        /// Indicates whether the license has been already checked for this solver
-        bool verified;
-      protected:
-    #endif
-
     /**
      * Initialize the solver.
      *
@@ -554,11 +547,7 @@ class PLASK_API Solver {
      * Construct uninitialized solver.
      * @param name Id of the instance of this solver
      */
-    Solver(const std::string& name=""): solver_name(name), initialized(false)
-    #ifdef LICENSE_CHECK
-        , verified(false)
-    #endif
-    {}
+    Solver(const std::string& name=""): solver_name(name), initialized(false) {}
 
     /// Virtual destructor (for subclassing). Do nothing.
     virtual ~Solver() {}

@@ -40,9 +40,6 @@
 #endif
 #endif
 
-// License check
-#cmakedefine LICENSE_CHECK
-
 // Export fmt symbols in libplask (affects only windows)
 // #cmakedefine PLASK_EXPORTS_FMT
 

@@ -2,7 +2,6 @@
 
 #include "plask/utils/system.hpp"
 #include <plask/config.hpp>
-#include "../license_sign/getmac.hpp"
 
 #if defined(MS_WINDOWS) || defined(__CYGWIN__)
 #  include <io.h>
@@ -133,18 +132,6 @@ static py::object initPlask(int argc, const system_char* argv[], bool banner)
     if (banner) {
         plask::writelog(plask::LOG_INFO, PLASK_BANNER);
         plask::writelog(plask::LOG_INFO, PLASK_COPYRIGHT);
-#       ifdef LICENSE_CHECK
-            std::string user = plask::license_verifier.getUser();
-            if (user != "") {
-                std::string  institution = plask::license_verifier.getInstitution(),
-                             expiration = plask::license_verifier.getExpiration();
-                if (!institution.empty())
-                    plask::writelog(plask::LOG_INFO, "Licensed to {} {}{}", user, institution,
-                                                     (expiration != "")? " (until "+expiration+")" : "");
-                else
-                    plask::writelog(plask::LOG_INFO, "Licensed to {}{}", user, (expiration != "")? " (until "+expiration+")" : "");
-            }
-#       endif
     }
 
     sys.attr("modules")["plask._plask"] = _plask;
@@ -279,20 +266,8 @@ int system_main(int argc, const system_char *argv[])
                 printf("Python %d.%d.%d\n", PY_MAJOR_VERSION, PY_MINOR_VERSION, PY_MICRO_VERSION);
             } else {
                 printf("PLaSK " PLASK_VERSION "\n");
-    #           ifdef LICENSE_CHECK
-                    std::string user = plask::license_verifier.getUser(),
-                                expiry = plask::license_verifier.getExpiration();
-                    if (user != "") printf("%s %s\n", user.c_str(), expiry.c_str());
-    #           endif
             }
             return 0;
-        } else if (arg == CSTR(-s)) {
-            for (auto& m: plask::getMacs()) {
-                std::cout << "Detected system ID: " << plask::macToString(m) << std::endl;
-                return 0;
-            }
-            std::cout << "Cound not detect system ID\n";
-            return 1;
         } else if (arg == CSTR(-h) || arg == CSTR(--help) || arg == CSTR(-?)) {
             printf(
                 // "usage: plask [option]... [def=val]... [-i | -c cmd | -m mod | file | -] [args]\n\n"

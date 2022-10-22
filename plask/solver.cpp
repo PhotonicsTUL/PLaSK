@@ -1,8 +1,6 @@
 #include "solver.hpp"
 #include "utils/string.hpp"
 
-#include "license/verify.hpp"
-
 namespace plask {
 
 void Solver::loadConfiguration(XMLReader& reader, Manager& /*manager*/) {
@@ -14,9 +12,6 @@ void Solver::parseStandardConfiguration(XMLReader& source, Manager& /*manager*/,
 }
 
 bool Solver::initCalculation() {
-    #ifdef LICENSE_CHECK
-        if (!verified) { license_verifier.verify(); verified = true; }
-    #endif
     if (!initialized) {
         writelog(LOG_INFO, "Initializing solver");
         onInitialize();
@@ -29,4 +24,3 @@ bool Solver::initCalculation() {
 
 
 }   // namespace plask
-

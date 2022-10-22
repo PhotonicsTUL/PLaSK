@@ -842,24 +842,6 @@ class MainWindow(QMainWindow):
             details = u"Version <b>" + VERSION + u"</b><br/>(GUI using {} framework)<br/>\n<br/>\n".format(QT_API)
         else:
             details = ""
-        user = LICENSE.get('user', '')
-        institution = LICENSE.get('institution', '')
-        if user or institution:
-            try: user = user.decode('utf8')
-            except AttributeError: pass
-            if institution:
-                try: institution = institution.decode('utf8')
-                except AttributeError: pass
-                institution = "<br/>\n" + institution.replace('<', '&lt;').replace('>', '&gt;')
-            details += u"Licensed to:<br/>\n{}{}".format(
-                user.replace('<', '&lt;').replace('>', '&gt;'), institution)
-            if 'expiration' in LICENSE:
-                date = LICENSE['expiration'].strftime('%x')
-                try: date = date.decode('utf8')
-                except AttributeError: pass
-                details += u"<br/>\nLicense active until " + date
-            details += '<br/>\n'
-        details += "Your system ID is {}".format(LICENSE['systemid'])
         note = '<br/>\n<br/>\n<span style="color: #888888;">Details have been copied to ' \
                'your clipboard.</span>'
 
@@ -875,57 +857,6 @@ class MainWindow(QMainWindow):
 
         msgbox.move(self.frameGeometry().topLeft() + self.rect().center() - msgbox.rect().center())
         qt_exec(msgbox)
-
-    def install_license(self):
-        filename = QFileDialog.getOpenFileName(self, "Open file", CURRENT_DIR,
-                                               "PLaSK license file (plask_license.xml)")
-        if type(filename) == tuple: filename = filename[0]
-        if not filename: return
-        from shutil import copy
-        dest = os.path.join(os.environ['USERPROFILE'], "plask_license.xml") if os.name == 'nt' else \
-               os.path.expanduser("~/.plask_license.xml")
-        if os.path.lexists(dest):
-            msgbox = QMessageBox()
-            msgbox.setWindowTitle("License Exists")
-            msgbox.setText("The license file '{}' already exists. Do you want to replace it?".format(dest))
-            msgbox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-            msgbox.setIcon(QMessageBox.Icon.Question)
-            answer = qt_exec(msgbox)
-            if answer == QMessageBox.StandardButton.No: return
-        try:
-            copy(filename, dest)
-        except Exception as err:
-            msgbox = QMessageBox()
-            msgbox.setWindowTitle("License Install Error")
-            msgbox.setText("The license file '{}' could not be installed.".format(filename))
-            msgbox.setInformativeText(str(err))
-            msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
-            msgbox.setIcon(QMessageBox.Icon.Critical)
-            qt_exec(msgbox)
-        else:
-            dom = etree.parse(filename)
-            root = dom.getroot()
-            xns = root.nsmap.get(None, '')
-            if xns: xns = '{' + xns + '}'
-            if root.tag != xns+'license': return
-            data = root.find(xns+'data')
-            name = data.find('name')
-            if name is not None: name = name.text
-            email = data.find('email')
-            if email is not None:
-                if name is None: LICENSE['user'] = email.text
-                else: LICENSE['user'] = (name + " <" + email.text + ">")
-            institution = data.find('institution')
-            if institution is not None:
-                LICENSE['institution'] = institution.text
-            elif 'institution' in LICENSE:
-                del LICENSE['institution']
-            expiry = data.find('expiry')
-            if expiry is not None:
-                LICENSE['expiration'] = _parse_expiry(expiry.text)
-            elif 'expiration' in LICENSE:
-                del LICENSE['expiration']
-            self.about()
 
     def toggle_fullscreen(self):
         state = self.windowState()
@@ -974,26 +905,9 @@ except (NameError, AttributeError):
         else:
             proc = subprocess.Popen([plask_exe, '-V'], startupinfo=si, stdout=subprocess.PIPE)
         info, err = proc.communicate()
-        info = info.decode('utf8').strip()
-        if '\n' in info:
-            VERSION, LICENSE = info.split("\n", 1)
-            _, VERSION = VERSION.split(' ', 1)
-            user, expiry = LICENSE.rsplit(' ', 1)
-            LICENSE = dict(user=user)
-            expiry = _parse_expiry(expiry)
-            if expiry is not None:
-                LICENSE['expiration'] = expiry
-        else:
-            VERSION, LICENSE = info, {}
+        VERSION = info.decode('utf8').strip()
     except:
-        VERSION, LICENSE = None, {}
-else:
-    try:
-        LICENSE = plask.license
-    except (AttributeError, NameError):
-        LICENSE = dict(user='', date='')
-if 'systemid' not in LICENSE or not LICENSE['systemid']:
-    LICENSE['systemid'] = "{:X}".format(getnode())[-12:]
+        VERSION = None
 
 
 def _handle_exception(exc_type, exc_value, exc_traceback):

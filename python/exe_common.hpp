@@ -20,7 +20,6 @@
 #include "plask/python_globals.hpp"
 #include "plask/python_manager.hpp"
 #include "plask/utils/string.hpp"
-#include "plask/license/verify.hpp"
 
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>

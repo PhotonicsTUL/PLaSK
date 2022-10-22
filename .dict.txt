@@ -1,5 +1,6 @@
 Args
 attr
+BLAS
 cdiagonal
 cmatrix
 coeffs
@@ -23,6 +24,7 @@ redmine
 rtype
 SOLVERCYL
 transmittivity
+unbuffered
 vpml
 wavevector
 wavevectors

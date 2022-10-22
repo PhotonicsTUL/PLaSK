@@ -112,8 +112,6 @@ else()
     cmake_dependent_option(USE_SPLASH "Show splash screen using Xlib." ON "BUILD_GUI" OFF)
 endif()
 
-option(LICENSE_CHECK "Perform license check" OFF)
-
 option(PRINT_STACKTRACE_ON_EXCEPTION "Print stack-trace on stderr when plask::Exception is thrown (works only in debug mode)." ON)
 
 option(PLASK_OPTIONAL_STD "Use std optional (supported by C++17) instead of boost one." OFF)
@@ -363,21 +361,6 @@ set(PLaSK_PYTHON_LIBRARIES libplask_python)
 # ---------- Default materials --------------------------------------------
 
 add_subdirectory(materials)
-
-# ---------- Program to sign license file ----------------------
-file(GLOB_RECURSE license_sign_src FOLLOW_SYMLINKS license_sign/*.cpp license_sign/*.hpp)
-add_executable(plask-license-sign ${license_sign_src})
-target_link_libraries(plask-license-sign libplask)
-
-# Copy example license file for easier development
-if(CMAKE_CONFIGURATION_TYPES)
-    foreach(CONF ${CMAKE_CONFIGURATION_TYPES})   # under multi-target env. (like MSVC) install licence for all configurations
-        configure_file(${CMAKE_SOURCE_DIR}/plask_license.xml ${CMAKE_BINARY_DIR}/${CONF}/plask_license.xml COPYONLY)
-    endforeach()
-else()
-    configure_file(${CMAKE_SOURCE_DIR}/plask_license.xml ${CMAKE_BINARY_DIR}/plask_license.xml COPYONLY)
-endif()
-
 
 # ---------- Python --------------------------------------------
 

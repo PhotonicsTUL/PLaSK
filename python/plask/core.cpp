@@ -10,16 +10,12 @@
 #include "python_util/raw_constructor.hpp"
 #include <frameobject.h> // for Python traceback
 #include "plask/utils/warnings.hpp"
-PLASK_NO_UNUSED_VARIABLE_WARNING_BEGIN
-#include <datetime.h>
-PLASK_NO_WARNING_END
 
 #include <plask/version.hpp>
 #include "plask/exceptions.hpp"
 #include "plask/mesh/interpolation.hpp"
 #include "plask/memory.hpp"
 #include "plask/solver.hpp"
-#include "plask/license/verify.hpp"
 
 using namespace plask::python;
 
@@ -698,23 +694,6 @@ BOOST_PYTHON_MODULE(_plask)
 
     scope.attr("prefix") = plask::prefixPath();
     scope.attr("lib_path") = plask::plaskLibPath();
-
-#ifdef LICENSE_CHECK
-    py::dict license;
-    license["user"] = plask::license_verifier.getUser();
-    license["institution"] = plask::license_verifier.getInstitution();
-    std::time_t et = plask::LicenseVerifier::extractDate(plask::license_verifier.getExpiration());
-    if (et != (std::time_t)(-1)) {
-        std::tm* expiry = std::localtime(&et);
-        if (expiry) {
-            PyDateTime_IMPORT;
-            PyObject* pydate = PyDate_FromDate(expiry->tm_year+1900, expiry->tm_mon+1, expiry->tm_mday);
-            if (pydate) PyDict_SetItemString(license.ptr(), "expiration", pydate);
-        }
-    }
-    license["systemid"] = plask::license_verifier.getSystemId();
-    scope.attr("license") = license;
-#endif
 
     // Properties
     register_standard_properties();
