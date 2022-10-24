@@ -289,11 +289,6 @@ class MainWindow(QMainWindow):
         help_action.setStatusTip('Open on-line help')
         help_action.triggered.connect(lambda: open_help(main_window=self))
 
-        install_license_action = QAction('Install License...', self)
-        CONFIG.set_shortcut(install_license_action, 'install_license')
-        install_license_action.setStatusTip('Install PLaSK license file into a proper location')
-        install_license_action.triggered.connect(self.install_license)
-
         exit_action = QAction(QIcon.fromTheme('application-exit'), 'E&xit', self)
         CONFIG.set_shortcut(exit_action, 'quit')
         exit_action.setStatusTip('Exit application')
@@ -333,7 +328,6 @@ class MainWindow(QMainWindow):
                 self.menu.addAction(op(self))
             else:
                 self.menu.addSeparator()
-        self.menu.addAction(install_license_action)
         self._pysparkle_place = self.menu.addSeparator()
         self.menu.addAction(fullscreen_action)
         self.menu.addAction(settings_action)
