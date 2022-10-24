@@ -1,0 +1,16 @@
+# BasedOnStyle: GNU
+AccessModifierOffset: -1
+AlignOperands: false
+AllowAllConstructorInitializersOnNextLine: true
+AlignTrailingComments: false
+BreakBeforeBraces: GNU
+ColumnLimit: 120
+ConstructorInitializerIndentWidth: 2
+ContinuationIndentWidth: 2
+DerivePointerAlignment: false
+IndentPPDirectives: None
+IndentWidth: 2
+PointerAlignment: Middle
+SpaceBeforeParens: Never
+SpaceBeforeSquareBrackets: false
+Standard: c++03

@@ -1,6 +1,3 @@
 [submodule "gui/external/pysparkle"]
 	path = gui/external/pysparkle
 	url = https://github.com/macdems/pysparkle.git
-[submodule "solvers/gain/wasiak/wzmocnienie"]
-	path = solvers/gain/wasiak/wzmocnienie
-	url = https://redmine.phys.p.lodz.pl/wzmocnienie.git
