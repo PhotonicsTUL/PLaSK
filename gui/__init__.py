@@ -833,9 +833,14 @@ class MainWindow(QMainWindow):
     def about(self):
 
         if VERSION is not None:
-            details = u"Version <b>" + VERSION + u"</b><br/>(GUI using {} framework)<br/>\n<br/>\n".format(QT_API)
+            details = "Version <b>{}</b><br/>(GUI using {} framework)<br/>\n<br/>\n"\
+                      "This program is distributed in the hope that it will be useful,<br/>\n"\
+                      "but WITHOUT ANY WARRANTY; without even the implied warranty<br/>\n"\
+                      "of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.".format(VERSION, QT_API)
         else:
-            details = ""
+            details = "This program is distributed in the hope that it will be useful,<br/>\n"\
+                      "but WITHOUT ANY WARRANTY; without even the implied warranty<br/>\n"\
+                      "of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
         note = '<br/>\n<br/>\n<span style="color: #888888;">Details have been copied to ' \
                'your clipboard.</span>'
 

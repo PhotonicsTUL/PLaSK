@@ -130,8 +130,9 @@ static py::object initPlask(int argc, const system_char* argv[], bool banner)
     py::object _plask = py::import("_plask");
 
     if (banner) {
-        plask::writelog(plask::LOG_INFO, PLASK_BANNER);
-        plask::writelog(plask::LOG_INFO, PLASK_COPYRIGHT);
+        plask::writelog(plask::LOG_INFO, PLASK_BANNER1);
+        plask::writelog(plask::LOG_INFO, PLASK_BANNER2);
+        plask::writelog(plask::LOG_INFO, PLASK_BANNER3);
     }
 
     sys.attr("modules")["plask._plask"] = _plask;
