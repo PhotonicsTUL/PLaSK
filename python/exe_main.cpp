@@ -29,22 +29,14 @@ static FileType filetype = FILE_ANY;
 // static PyThreadState* mainTS;   // state of the main thread
 
 namespace plask { namespace python {
-
     PLASK_PYTHON_API std::string getPythonExceptionMessage();
-
     PLASK_PYTHON_API void loadXpl(py::object self, py::object src, py::dict vars, py::object filter=py::object());
-
     PLASK_PYTHON_API void createPythonLogger();
-
     PLASK_PYTHON_API void setLoggingColor(std::string color);
-
-    extern PLASK_PYTHON_API AxisNames current_axes;
-
-    extern PLASK_PYTHON_API std::string xplFilename;
-
-    extern PLASK_PYTHON_API py::dict* pyXplGlobals;
-
-    extern PLASK_PYTHON_API PyObject* pyXmlError;
+    PLASK_PYTHON_API void setCurrentAxes(const AxisNames& axes);
+    PLASK_PYTHON_API void setXplFilename(const std::string& filename);
+    PLASK_PYTHON_API py::dict& getXplGlobals();
+    PLASK_PYTHON_API PyObject* getXmlErrorClass();
 }}
 
 //******************************************************************************
@@ -77,20 +69,6 @@ static py::object initPlask(int argc, const system_char* argv[], bool banner)
 {
     // Initialize the plask module
     if (PyImport_AppendInittab("_plask", &PLASK_MODULE) != 0) throw plask::CriticalException("No _plask module");
-
-    // Workaround Anaconda bug in Windows preventing finding proper Python home
-    #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-    if (!getenv("PYTHONHOME")) {
-        static const WCHAR key[] = L"Software\\Python\\PythonCore\\" BOOST_PP_STRINGIZE(PY_MAJOR_VERSION) L"." BOOST_PP_STRINGIZE(PY_MINOR_VERSION) L"\\InstallPath";
-        WCHAR reg_buf[MAX_PATH + 1];
-        DWORD buf_size = MAX_PATH + 1;
-        LSTATUS result = RegGetValueW(HKEY_CURRENT_USER, key, NULL, RRF_RT_REG_SZ, NULL, reg_buf, &buf_size);
-        if (result != ERROR_SUCCESS)
-            result = RegGetValueW(HKEY_LOCAL_MACHINE, key, NULL, RRF_RT_REG_SZ, NULL, reg_buf, &buf_size);
-        if (result == ERROR_SUCCESS)
-            Py_SetPythonHome(reg_buf);
-    }
-    #endif
 
     // Initialize Python
     Py_Initialize();
@@ -214,7 +192,7 @@ int handlePythonException(const char* scriptname=nullptr) {
     PyErr_NormalizeException(&type, &value, &traceback);
     py::handle<> value_h(value), type_h(type), traceback_h(py::allow_null(traceback));
 
-    if (type == plask::python::pyXmlError && filetype == FILE_XML && scriptname) {
+    if (type == plask::python::getXmlErrorClass() && filetype == FILE_XML && scriptname) {
         PyObject* value_str = PyObject_Str(value);
         std::string message = py::extract<std::string>(value_str);
         Py_DECREF(value_str);
@@ -252,7 +230,12 @@ void endPlask() {
 
 
 //******************************************************************************
-int system_main(int argc, const system_char *argv[])
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+    extern "C" int __declspec(dllexport) __stdcall
+#else
+    int
+#endif
+system_main(int argc, const system_char *argv[])
 {
     //setlocale(LC_ALL,""); std::locale::global(std::locale(""));    // set default locale from env (C is used when program starts), boost filesystem will do the same
 
@@ -311,7 +294,7 @@ int system_main(int argc, const system_char *argv[])
         unsigned console_count = 1;
 #   endif
 
-    // Parse commnad line
+    // Parse command line
     bool force_interactive = false;
     plask::optional<plask::LogLevel> loglevel;
     const system_char* command = nullptr;
@@ -458,7 +441,12 @@ int system_main(int argc, const system_char *argv[])
     bool banner = !std::getenv("PLASK_NOBANNER");
     if (banner) {
         banner = basename.size() < 6 || basename.substr(0, 6) != CSTR(python);
-        if (!banner) putenv(const_cast<char*>("PLASK_NOBANNER=1"));
+        if (!banner)
+#           if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+                _putenv(const_cast<char*>("PLASK_NOBANNER=1"));
+#           else
+                putenv(const_cast<char*>("PLASK_NOBANNER=1"));
+#           endif
     }
 
     // Initalize python and load the plask module
@@ -595,8 +583,9 @@ int system_main(int argc, const system_char *argv[])
                 }
             }
             (*globals)["__file__"] = filename;
-            (*plask::python::pyXplGlobals)["__file__"] = filename;
-            plask::python::xplFilename = system_to_utf8(filename);
+            py::dict& xplGLobals = plask::python::getXplGlobals();
+            xplGLobals["__file__"] = filename;
+            plask::python::setXplFilename(system_to_utf8(filename));
 
             if (filetype == FILE_XML) {
 
@@ -606,8 +595,7 @@ int system_main(int argc, const system_char *argv[])
                     if (keyval.first == "self")
                         throw plask::python::ValueError("Definition name 'self' is reserved");
                     try {
-                        locals[keyval.first] = (plask::python::py_eval(keyval.second,
-                                                                       *plask::python::pyXplGlobals, locals));
+                        locals[keyval.first] = (plask::python::py_eval(keyval.second, xplGLobals, locals));
                     } catch (py::error_already_set&) {
                         plask::writelog(plask::LOG_WARNING,
                                         "Cannot parse command-line definition '{}' (storing it as string): {}",
@@ -641,7 +629,7 @@ int system_main(int argc, const system_char *argv[])
                         break;
                     }
                 }
-                if (axes) plask::python::current_axes = *axes;
+                if (axes) plask::python::setCurrentAxes(*axes);
 
                 PyObject* result = NULL;
                 PyObject* code = system_Py_CompileString(manager->script.c_str(), filename.c_str(), Py_file_input);

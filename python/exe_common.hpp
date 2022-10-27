@@ -71,7 +71,7 @@ inline system_string path_to_system_string(const boost::filesystem::path& path) 
 }
 
 
-#define system_main wmain
+#define system_main plask_main
 #define CSTR(s) L ## #s
 
 #else	// ------------- non-Windows (we assume that system_string is std::string, and all strings are UTF-8) -------------

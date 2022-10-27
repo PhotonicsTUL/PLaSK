@@ -30,18 +30,6 @@ static py::object initPlask(int argc, const system_char* const argv[]) {
     // Initialize the plask module
     if (PyImport_AppendInittab("_plask", &PLASK_MODULE) != 0) throw plask::CriticalException("No _plask module");
 
-// Workaround Anaconda bug in Windows preventing finding proper Python home
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-    if (!getenv("PYTHONHOME")) {
-        static const WCHAR key[] = L"Software\\Python\\PythonCore\\" BOOST_PP_STRINGIZE(PY_MAJOR_VERSION) L"." BOOST_PP_STRINGIZE(PY_MINOR_VERSION) L"\\InstallPath";
-        WCHAR reg_buf[MAX_PATH + 1];
-        DWORD buf_size = MAX_PATH + 1;
-        LSTATUS result = RegGetValueW(HKEY_CURRENT_USER, key, NULL, RRF_RT_REG_SZ, NULL, reg_buf, &buf_size);
-        if (result != ERROR_SUCCESS) result = RegGetValueW(HKEY_LOCAL_MACHINE, key, NULL, RRF_RT_REG_SZ, NULL, reg_buf, &buf_size);
-        if (result == ERROR_SUCCESS) Py_SetPythonHome(reg_buf);
-    }
-#endif
-
     // Initialize Python
     Py_Initialize();
 
@@ -71,7 +59,7 @@ static py::object initPlask(int argc, const system_char* const argv[]) {
 
     sys.attr("path") = path;
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     sys.attr("executable") = plask::exePath() + "\\plask.exe";
 #else
     sys.attr("executable") = plask::exePath() + "/plask";
@@ -198,31 +186,13 @@ void showError(const std::string& msg, const std::string& cap) {
     MessageBox(NULL, msg.c_str(), ("PLaSK - " + cap).c_str(), MB_OK | MB_ICONERROR);
 }
 
-// MingW need this (should be in windows.h)
-// extern "C" __declspec(dllimport) LPWSTR * __stdcall CommandLineToArgvW(LPCWSTR lpCmdLine, int* pNumArgs);
-
-int WinMain(HINSTANCE hInst, HINSTANCE, LPSTR cmdline, int) {
+extern "C" int __declspec(dllexport) __stdcall plaskgui_main(HINSTANCE hInst, LPSTR cmdline) {
     splash = new Splash(hInst);
     splash->show();
 
-#    ifdef _MSC_VER
     int argc;  // doc: https://msdn.microsoft.com/pl-pl/library/windows/desktop/bb776391(v=vs.85).aspx
     system_char** argv = CommandLineToArgvW(GetCommandLineW(), &argc);
     std::unique_ptr<system_char*, decltype(&LocalFree)> callLocalFreeAtExit(argv, &LocalFree);
-#    else  // MingW:
-    std::string command_line(cmdline);
-    boost::tokenizer<boost::escaped_list_separator<char>> tokenizer(command_line,
-                                                                    boost::escaped_list_separator<char>('^', ' ', '"'));
-    std::deque<std::string> args(tokenizer.begin(), tokenizer.end());
-    args.push_front(plask::exePathAndName());
-    int argc = args.size();
-    std::vector<const char*> argv_vec(argc);
-    std::vector<const char*>::iterator dst = argv_vec.begin();
-    for (const auto& src : args) {
-        *(dst++) = src.c_str();
-    }
-    const char** argv = argv_vec.data();
-#    endif
 
 #else  // non-windows:
 

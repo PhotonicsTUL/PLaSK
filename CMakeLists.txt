@@ -253,33 +253,26 @@ endif(DETECT_FORTRAN_NAME_MANGLING)
 
 if(PRINT_STACKTRACE_ON_EXCEPTION)
     if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-        if(NOT MSVC)
-            add_definitions(-D_GLIBCXX_DEBUG)   # safe STL under linux, see https://gcc.gnu.org/onlinedocs/libstdc++/manual/debug_mode.html
-        endif(NOT MSVC)
         if(WIN32)
-            if(MSVC)
-                set(PRINT_STACKTRACE_LIBRARY "dbghelp")
-            else(MSVC)    #MinGW
-                add_subdirectory(extlib/PEparser)    # PE parser (for proper resolving some symbols in stack printing under windows mingw)
-                set(PRINT_STACKTRACE_LIBRARY "dbghelp" PEparser)
-            endif(MSVC)
-        else(WIN32)    # non-Windows:
+            add_definitions(-D_GLIBCXX_DEBUG)   # safe STL under linux, see https://gcc.gnu.org/onlinedocs/libstdc++/manual/debug_mode.html
+            set(PRINT_STACKTRACE_LIBRARY "dbghelp")
+        else()    # non-Windows:
             find_package(DW)
             if(DW_FOUND)
                 set(PRINT_STACKTRACE_LIBRARY ${DW_LIBRARIES})
                 include_directories(${DW_INCLUDE_DIRS})
                 set(BACKWARD_HAS_DW 1)
-            else(DW_FOUND)  # try find bfd library if dw is not found, see https://github.com/bombela/backward-cpp/blob/master/backward.cpp
+            else()  # try find bfd library if dw is not found, see https://github.com/bombela/backward-cpp/blob/master/backward.cpp
                 find_package(BFD)
                 if(BFD_FOUND)
                     message(WARNING "PLaSK will be linked with GPLed libbfd.")  # https://sourceware.org/ml/binutils/2002-01/msg00581.html
                     set(PRINT_STACKTRACE_LIBRARY ${BFD_LIBRARY})
                     set(BACKWARD_HAS_BFD 1)
-                else(BFD_FOUND)
+                else()
                     set(PRINT_STACKTRACE_LIBRARY "")
-                endif(BFD_FOUND)
-            endif(DW_FOUND)
-        endif(WIN32)
+                endif()
+            endif()
+        endif()
     endif()
 endif()
 
@@ -297,12 +290,6 @@ file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp solvers/providers/*.cpp)
 
 # Python sources
 file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp python/plask/*.hpp)
-
-if(WIN32 AND NOT MSVC AND USE_MANIFEST)
-    set(manifest "1 24 \"${CMAKE_SOURCE_DIR}/toolset/mingw/${USE_MANIFEST}.manifest\"\n")
-else()
-    set(manifest "")
-endif()
 
 # ---------- External libraries built by us -----------------------------------------
 
@@ -473,15 +460,13 @@ if(BUILD_PYTHON)
 
     endif()
 
-    if(WIN32 AND NOT MSVC)
-        file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/plask.rc "${manifest}")
-        add_executable(plask python/exe_main.cpp ${CMAKE_BINARY_DIR}/CMakeFiles/plask.rc)
-        # For some reason MinGW wants to create import library for executable,
-        # which overwrites libplask.dll.a. With this hack we name this useless
-        # stuff libplask.exe.dll.a
-        set_target_properties(plask PROPERTIES OUTPUT_NAME "plask.exe" SUFFIX "")
+    if(WIN32)
+        add_library(plask SHARED python/exe_main.cpp)
+        set_target_properties(plask PROPERTIES OUTPUT_NAME "plaskexe")
+        set(plask_binary plask plask_exe)
     else()
         add_executable(plask python/exe_main.cpp)
+        set(plask_binary plask)
     endif()
     target_link_libraries(plask ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask_python libplask)
     add_dependencies(plask python-scripts)
@@ -509,7 +494,7 @@ if(BUILD_PYTHON)
         endif()
         add_custom_command(OUTPUT ${plask_stubs_files}
                            COMMAND ${CMAKE_COMMAND} -E env PLASK_DEFAULT_MATERIALS= ${CMAKE_BINARY_DIR}/bin/plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_stubs_modules}
-                           DEPENDS plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${PLASK_MATERIALS}
+                           DEPENDS ${plask_binary} ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${PLASK_MATERIALS}
                            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/python
                           )
         install(FILES ${plask_stubs_files} DESTINATION lib/plask/python/plask COMPONENT gui)
@@ -521,6 +506,12 @@ if(BUILD_PYTHON)
         install(DIRECTORY python/plask/python_util DESTINATION include/plask COMPONENT dev)
     endif()
 
+    if(WIN32)
+        add_executable(plask_exe python/win_main.cpp)
+        set_target_properties(plask_exe PROPERTIES OUTPUT_NAME "plask")
+        install(TARGETS plask_exe RUNTIME DESTINATION bin COMPONENT core)
+    endif()
+
     # GUI
     if(BUILD_GUI)
         if(WIN32)
@@ -529,18 +520,7 @@ if(BUILD_PYTHON)
                                    COMMAND ${PYTHON_EXECUTABLE} ARGS -c "from PIL import Image; Image.open('${CMAKE_SOURCE_DIR}/gui/splash${bs}.png').save('${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash${bs}.bmp')"
                                    DEPENDS ${CMAKE_SOURCE_DIR}/gui/splash${bs}.png)
             endforeach()
-            file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/plaskgui.rc
-                "${manifest}"
-                "2 ICON \"${CMAKE_SOURCE_DIR}/utils/plask.ico\"\n"
-                "200 ICON \"${CMAKE_SOURCE_DIR}/utils/xpl.ico\"\n"
-                "201 BITMAP \"${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash620.bmp\"\n"
-                "202 BITMAP \"${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash868.bmp\"\n"
-                "203 BITMAP \"${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash1116.bmp\"\n")
-            add_executable(plaskgui WIN32 python/exe_gui.cpp
-                           ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/plaskgui.rc
-                           ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash620.bmp
-                           ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash868.bmp
-                           ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash1116.bmp)
+            add_library(plaskgui SHARED python/exe_gui.cpp)
         else()
             if(USE_SPLASH)
                 find_package(X11)
@@ -558,7 +538,7 @@ if(BUILD_PYTHON)
                                     DEPENDS ${CMAKE_SOURCE_DIR}/gui/splash${bs}.png)
                 endforeach()
                 add_executable(plaskgui
-                            python/exe_gui.cpp include/plask/splash620.h include/plask/splash868.h include/plask/splash1116.h)
+                               python/exe_gui.cpp include/plask/splash620.h include/plask/splash868.h include/plask/splash1116.h)
                 target_link_libraries(plaskgui ${X11_LIBRARIES})
             else()
                 add_executable(plaskgui python/exe_gui.cpp)
@@ -642,6 +622,23 @@ if(BUILD_PYTHON)
             file(REMOVE ${gui_pyc})
         endif()
 
+        if(WIN32)
+            file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/plaskgui.rc
+                "${manifest}"
+                "2 ICON \"${CMAKE_SOURCE_DIR}/utils/plask.ico\"\n"
+                "200 ICON \"${CMAKE_SOURCE_DIR}/utils/xpl.ico\"\n"
+                "201 BITMAP \"${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash620.bmp\"\n"
+                "202 BITMAP \"${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash868.bmp\"\n"
+                "203 BITMAP \"${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash1116.bmp\"\n")
+            add_executable(plaskgui_exe WIN32 python/win_gui.cpp
+                           ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/plaskgui.rc
+                           ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash620.bmp
+                           ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash868.bmp
+                           ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash1116.bmp)
+            set_target_properties(plaskgui_exe PROPERTIES OUTPUT_NAME "plaskgui")
+            install(TARGETS plaskgui_exe RUNTIME DESTINATION bin COMPONENT core)
+        endif()
+
     endif()
 
 endif(BUILD_PYTHON)
@@ -657,12 +654,12 @@ endif()
 
 macro(add_python_test test test_file)
     add_test(NAME python/${test}
-             COMMAND plask -m runtest ${test_file})  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
+             COMMAND ${CMAKE_BINARY_DIR}/bin/plask -m runtest ${test_file})  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
 endmacro()
 
 macro(add_gui_test test test_file)
     add_test(NAME gui/${test}
-             COMMAND plask -m runtest ${test_file} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/gui)  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
+             COMMAND ${CMAKE_BINARY_DIR}/bin/plask -m runtest ${test_file} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/gui)  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
 endmacro()
 
 
@@ -966,17 +963,22 @@ if(WIN32)
         !include \\\"LogicLib.nsh\\\"
         !include \\\"FileFunc.nsh\\\"")
     set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
-        Var /GLOBAL PYROOT
+        Var /GLOBAL PYROOTM
+        Var /GLOBAL PYROOTU
         Var /GLOBAL cmdLineParams
         SetRegView 64
         !insertmacro APP_ASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\" \\\"PLaSK structure data\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe,1\\\" \\\"Open in PLaSK GUI\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe \\\$\\\\\\\"%1\\\$\\\\\\\"\\\"
         WriteRegStr HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plask.exe\\\" \\\"\\\" \\\"$INSTDIR\\\\bin\\\\plask.exe\\\"
         WriteRegStr HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plaskgui.exe\\\" \\\"\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe\\\"
-        ReadRegStr $PYROOT HKLM \\\"SOFTWARE\\\\Python\\\\PythonCore\\\\${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}\\\\InstallPath\\\" \\\"\\\"
-        StrCmp $PYROOT \\\"\\\" plask_no_python
-        WriteRegStr HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plask.exe\\\" \\\"Path\\\" \\\"$PYROOT;$PYROOT\\\\Library\\\\usr\\\\bin;$PYROOT\\\\Library\\\\bin\\\"
-        WriteRegStr HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plaskgui.exe\\\" \\\"Path\\\" \\\"$PYROOT;$PYROOT\\\\Library\\\\usr\\\\bin;$PYROOT\\\\Library\\\\bin\\\"
-        FileOpen $9 \\\"$PYROOT\\\\Lib\\\\site-packages\\\\plask.pth\\\" w
+        ReadRegStr $PYROOTU HKCU \\\"SOFTWARE\\\\Python\\\\PythonCore\\\\${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}\\\\InstallPath\\\" \\\"\\\"
+        StrCmp $PYROOTU \\\"\\\" plask_global_python
+        FileOpen $9 \\\"$PYROOTU\\\\Lib\\\\site-packages\\\\plask.pth\\\" w
+        FileWrite $9 \\\"$INSTDIR\\\\lib\\\\plask\\\\python$\\\\r$\\\\n\\\"
+        FileClose $9
+        plask_global_python:
+        ReadRegStr $PYROOTM HKLM \\\"SOFTWARE\\\\Python\\\\PythonCore\\\\${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}\\\\InstallPath\\\" \\\"\\\"
+        StrCmp $PYROOTM \\\"\\\" plask_no_python
+        FileOpen $9 \\\"$PYROOTM\\\\Lib\\\\site-packages\\\\plask.pth\\\" w
         FileWrite $9 \\\"$INSTDIR\\\\lib\\\\plask\\\\python$\\\\r$\\\\n\\\"
         FileClose $9
         plask_no_python:
@@ -1003,6 +1005,8 @@ if(WIN32)
         SetRegView 64
         DeleteRegKey HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plask.exe\\\"
         DeleteRegKey HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plaskgui.exe\\\"
+        ReadRegStr $1 HKCU \\\"SOFTWARE\\\\Python\\\\PythonCore\\\\${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}\\\\InstallPath\\\" \\\"\\\"
+        Delete \\\"$1\\\\Lib\\\\site-packages\\\\plask.pth\\\"
         ReadRegStr $1 HKLM \\\"SOFTWARE\\\\Python\\\\PythonCore\\\\${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}\\\\InstallPath\\\" \\\"\\\"
         Delete \\\"$1\\\\Lib\\\\site-packages\\\\plask.pth\\\"
         !insertmacro APP_UNASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\"

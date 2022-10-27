@@ -31,10 +31,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PLASK_SOLVER_PATH})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PLASK_SOLVER_PATH})
 
 foreach(CONF ${CMAKE_CONFIGURATION_TYPES})   # used by MSVC
-    STRING(TOUPPER "${CONF}" CONF)
-    SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONF} ${PLASK_SOLVER_PATH})
-    SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONF} ${PLASK_SOLVER_PATH})
-    SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CONF} ${PLASK_SOLVER_PATH})    # <- needed??
+    string(TOUPPER "${CONF}" CONF)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONF} ${PLASK_SOLVER_PATH})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONF} ${PLASK_SOLVER_PATH})
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CONF} ${PLASK_SOLVER_PATH})    # <- needed??
 endforeach()
 
 set(SOLVER_INSTALL_PATH lib/plask/solvers/${SOLVER_PATH})
@@ -67,7 +67,7 @@ macro(add_solver_test test_name test_file)
     set(test solvers/${SOLVER_CATEGORY_NAME}/${SOLVER_NAME}/${test_name})
     if(("${ext}" STREQUAL ".py") OR ("${ext}" STREQUAL ".PY") OR ("${ext}" STREQUAL ".xpl") OR ("${ext}" STREQUAL ".XPL"))
         add_test(NAME ${test}
-                COMMAND plask -m runtest ${test_file})
+                COMMAND ${CMAKE_BINARY_DIR}/bin/plask -m runtest ${test_file})
     else()
         add_test(NAME ${test} COMMAND ${PLASK_SOLVER_PATH}/${test_file})
         if(WIN32)
@@ -155,10 +155,9 @@ macro(make_default)
         if(BUILD_GUI)
             string(REPLACE "/" "." SOLVER_MODULE ${SOLVER_DIR})
             set(SOLVER_STUB ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs/${SOLVER_DIR}.py)
-            #message("plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}")
             add_custom_command(OUTPUT ${SOLVER_STUB}
-                               COMMAND plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}
-                               DEPENDS ${SOLVER_PYTHON_MODULE} ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${PLASK_MATERIALS}
+                               COMMAND ${CMAKE_BINARY_DIR}/bin/plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}
+                               DEPENDS ${plask_binary} ${SOLVER_PYTHON_MODULE} ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${PLASK_MATERIALS}
                                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs
                               )
             install(FILES ${SOLVER_STUB} DESTINATION share/plask/stubs/${SOLVER_CATEGORY_NAME} COMPONENT gui)
@@ -202,8 +201,8 @@ macro(make_pure_python)
         string(REPLACE "/" "." SOLVER_MODULE ${SOLVER_DIR})
         set(SOLVER_STUB ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs/${SOLVER_DIR}.py)
         add_custom_command(OUTPUT ${SOLVER_STUB}
-                            COMMAND plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}
-                            DEPENDS ${SOLVER_PYTHON_MODULE} ${CMAKE_SOURCE_DIR}/toolset/makestub.py
+                            COMMAND ${CMAKE_BINARY_DIR}/bin/plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}
+                            DEPENDS ${plask_binary} ${SOLVER_PYTHON_MODULE} ${CMAKE_SOURCE_DIR}/toolset/makestub.py
                             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs
                             )
         install(FILES ${SOLVER_STUB} DESTINATION share/plask/stubs/${SOLVER_CATEGORY_NAME} COMPONENT gui)

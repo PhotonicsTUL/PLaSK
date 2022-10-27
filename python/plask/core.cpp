@@ -235,6 +235,17 @@ PLASK_PYTHON_API std::string xplFilename;
 /// Globals for XML material
 PLASK_PYTHON_API py::dict* pyXplGlobals;
 
+
+PLASK_PYTHON_API void setCurrentAxes(const AxisNames& axes) { current_axes = axes; }
+
+PLASK_PYTHON_API void setXplFilename(const std::string& filename) { xplFilename = filename; }
+
+PLASK_PYTHON_API py::dict& getXplGlobals() { return *pyXplGlobals; }
+
+PLASK_PYTHON_API PyObject* getXmlErrorClass() { return pyXmlError; }
+
+
+
 template <typename... Args>
 static void printMultiLineLog(plask::LogLevel level, const std::string& msg, Args&&... args) {
     typedef boost::tokenizer<boost::char_separator<char> > LineTokenizer;
