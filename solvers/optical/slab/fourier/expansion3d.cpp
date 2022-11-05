@@ -1329,8 +1329,6 @@ double ExpansionPW3D::integrateField(WhichField field, size_t layer, const cmatr
     TempMatrix temp = getTempMatrix();
     cmatrix Fz(NN, M, temp.data());
 
-    double result = 0.;
-
     if (which_field == FIELD_E) {
         #pragma omp parallel for
         for (openmp_size_t m = 0; m != M; m++) {
@@ -1377,7 +1375,7 @@ double ExpansionPW3D::integrateField(WhichField field, size_t layer, const cmatr
         }
     }
 
-    double area = 0.5 * (front-back) * (symmetric_long()? 2. : 1.) * (right-left) * (symmetric_tran()? 2. : 1.);
+    double result = 0.;
 
     if (field == FIELD_E) {
         #pragma omp parallel for
@@ -1402,7 +1400,7 @@ double ExpansionPW3D::integrateField(WhichField field, size_t layer, const cmatr
             }
         }
 
-    } else {
+    } else {  // field == FIELD_H
         #pragma omp parallel for
         for (size_t m1 = 0; m1 < M; ++m1) {
             for (size_t m2 = m1; m2 < M; ++m2) {
@@ -1426,7 +1424,8 @@ double ExpansionPW3D::integrateField(WhichField field, size_t layer, const cmatr
         }
     }
 
-    return result * area;
+    const double area = (front-back) * (symmetric_long()? 2. : 1.) * (right-left) * (symmetric_tran()? 2. : 1.);
+    return 0.5 * result * area;
 }
 
 

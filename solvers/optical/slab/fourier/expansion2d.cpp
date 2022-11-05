@@ -1295,7 +1295,7 @@ void ExpansionPW2D::getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmat
     }
 }
 
-double ExpansionPW2D::integrateField(WhichField field, size_t layer, const cmatrix& TE, const cmatrix& TH,
+double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& TE, const cmatrix& TH,
                                      const std::function<std::pair<dcomplex,dcomplex>(size_t, size_t)>& vertical)
 {
     const int order = int(SOLVER->getSize());
@@ -1310,248 +1310,312 @@ double ExpansionPW2D::integrateField(WhichField field, size_t layer, const cmatr
     TempMatrix temp = getTempMatrix();
     cmatrix verts(N, M, temp.data());
 
-    // if (which_field == FIELD_E) {
-    //     if (polarization == E_LONG) {
-    //         std::fill_n(verts.data(), verts.rows() * verts.cols(), 0.);
-    //     } else if (polarization == E_TRAN) {
-    //         if (symmetric()) {
-    //             #pragma omp parallel for
-    //             for (openmp_size_t m = 0; m != M; m++) {
-    //                 for (int i = 0; i <= order; ++i) {
-    //                     dcomplex vert = 0.;
-    //                     for (int j = 0; j <= order; ++j)
-    //                         vert += coeff_matrices[l].reyy(i,j) * b*double(j) * TH(j,m);
-    //                     verts(i,m) = vert / k0;
-    //                 }
-    //             }
-    //         } else {
-    //             #pragma omp parallel for
-    //             for (openmp_size_t m = 0; m != M; m++) {
-    //                 for (int i = -order; i <= order; ++i) {
-    //                     dcomplex vert = 0.; // beta is equal to 0
-    //                     size_t ieh = iEH(i);
-    //                     for (int j = -order; j <= order; ++j) {
-    //                         size_t jeh = iEH(j);
-    //                         vert += coeff_matrices[l].reyy(ieh,jeh) * (b*double(j)-ktran) * TH(jeh,m);
-    //                     }
-    //                     verts(ieh,m) = vert / k0;
-    //                 }
-    //             }
-    //         }
-    //     } else {
-    //         if (symmetric()) {
-    //             #pragma omp parallel for
-    //             for (openmp_size_t m = 0; m != M; m++) {
-    //                 for (int i = 0; i <= order; ++i) {
-    //                     dcomplex vert = 0.;
-    //                     for (int j = 0; j <= order; ++j)
-    //                         vert -= coeff_matrices[l].reyy(i,j) * (beta * TH(iHx(j),m) + b*double(j) * TH(iHz(j),m));
-    //                     verts(i,m) = vert / k0;
-    //                 }
-    //             }
-    //         } else {
-    //             #pragma omp parallel for
-    //             for (openmp_size_t m = 0; m != M; m++) {
-    //                 for (int i = -order; i <= order; ++i) {
-    //                     dcomplex vert = 0.;
-    //                     size_t ieh = iEH(i);
-    //                     for (int j = -order; j <= order; ++j)
-    //                         vert -= coeff_matrices[l].reyy(ieh,iEH(j)) * (beta * TH(iHx(j),m) + (b*double(j)-ktran) * TH(iHz(j),m));
-    //                     verts(ieh,m) = vert / k0;
-    //                 }
-    //             }
-    //         }
-    //     }
-    // } else { // which_field == FIELD_H
-    //     if (polarization != E_TRAN) {
-    //         std::fill_n(verts.data(), verts.rows() * verts.cols(), 0.);
-    //     } else if (polarization == E_LONG) {  // polarization == H_TRAN
-    //         if (symmetric()) {
-    //             #pragma omp parallel for
-    //             for (openmp_size_t m = 0; m != M; m++) {
-    //                 for (int i = 0; i <= order; ++i) {
-    //                     dcomplex vert = 0.;
-    //                     if (periodic)
-    //                         vert = - (b*double(i)-ktran) * TE(iEH(i),m);
-    //                     else {
-    //                         vert = 0.;
-    //                         for (int j = 0; j <= order; ++j)
-    //                             vert -= coeff_matrix_rmyy(i,j) * (b*double(j)-ktran) * TE(iEH(j),m);
-    //                     }
-    //                     verts(i,m) = vert / k0;
-    //                 }
-    //             }
-    //         } else {
-    //             #pragma omp parallel for
-    //             for (openmp_size_t m = 0; m != M; m++) {
-    //                 for (int i = -order; i <= order; ++i) {
-    //                     dcomplex vert = 0.;
-    //                     size_t ieh = iEH(i);
-    //                     if (periodic)
-    //                         vert = - (b*double(i)-ktran) * TE(ieh,m);
-    //                     else {
-    //                         vert = 0.;
-    //                         for (int j = -order; j <= order; ++j) {
-    //                             size_t jeh = iEH(j);
-    //                             vert -= coeff_matrix_rmyy(ieh,jeh) * (b*double(j)-ktran) * TE(jeh,m);
-    //                         }
-    //                     }
-    //                     verts(ieh,m) = vert / k0;
-    //                 }
-    //             }
-    //         }
-    //     } else {
-    //         if (symmetric()) {
-    //             #pragma omp parallel for
-    //             for (openmp_size_t m = 0; m != M; m++) {
-    //                 for (int i = 0; i <= order; ++i) {
-    //                     dcomplex vert = 0.;
-    //                     if (periodic)
-    //                         vert = (beta * TE(iEx(i),m) - (b*double(i)-ktran) * TE(iEz(i),m));
-    //                     else {
-    //                         vert = 0.;
-    //                         for (int j = 0; j <= order; ++j)
-    //                             vert += coeff_matrix_rmyy(i,j) * (beta * TE(iEx(j),m) - (b*double(j)-ktran) * TE(iEz(j),m));
-    //                     }
-    //                     verts(i,m) = vert / k0;
-    //                 }
-    //             }
-    //         } else {
-    //             #pragma omp parallel for
-    //             for (openmp_size_t m = 0; m != M; m++) {
-    //                 for (int i = -order; i <= order; ++i) {
-    //                     dcomplex vert = 0.;
-    //                     size_t ieh = iEH(i);
-    //                     if (periodic)
-    //                         vert = (beta * TE(iEx(i),m) - (b*double(i)-ktran) * TE(iEz(i),m));
-    //                     else {
-    //                         vert = 0.;
-    //                         for (int j = -order; j <= order; ++j)
-    //                             vert += coeff_matrix_rmyy(ieh,iEH(j)) * (beta * TE(iEx(j),m) - (b*double(j)-ktran) * TE(iEz(j),m));
-    //                     }
-    //                     verts(ieh,m) = vert / k0;
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
+    if (which_field == FIELD_E) {
+        if (polarization == E_LONG) {
+            std::fill_n(verts.data(), verts.rows() * verts.cols(), 0.);
+        } else if (polarization == E_TRAN) {
+            if (symmetric()) {
+                #pragma omp parallel for
+                for (openmp_size_t m = 0; m != M; m++) {
+                    for (int i = 0; i <= order; ++i) {
+                        dcomplex vert = 0.;
+                        for (int j = 0; j <= order; ++j)
+                            vert += coeff_matrices[l].reyy(i,j) * b*double(j) * TH(j,m);
+                        verts(i,m) = vert / k0;
+                    }
+                }
+            } else {
+                #pragma omp parallel for
+                for (openmp_size_t m = 0; m != M; m++) {
+                    for (int i = -order; i <= order; ++i) {
+                        dcomplex vert = 0.; // beta is equal to 0
+                        size_t ieh = iEH(i);
+                        for (int j = -order; j <= order; ++j) {
+                            size_t jeh = iEH(j);
+                            vert += coeff_matrices[l].reyy(ieh,jeh) * (b*double(j)-ktran) * TH(jeh,m);
+                        }
+                        verts(ieh,m) = vert / k0;
+                    }
+                }
+            }
+        } else {
+            if (symmetric()) {
+                #pragma omp parallel for
+                for (openmp_size_t m = 0; m != M; m++) {
+                    for (int i = 0; i <= order; ++i) {
+                        dcomplex vert = 0.;
+                        for (int j = 0; j <= order; ++j)
+                            vert -= coeff_matrices[l].reyy(i,j) * (beta * TH(iHx(j),m) + b*double(j) * TH(iHz(j),m));
+                        verts(i,m) = vert / k0;
+                    }
+                }
+            } else {
+                #pragma omp parallel for
+                for (openmp_size_t m = 0; m != M; m++) {
+                    for (int i = -order; i <= order; ++i) {
+                        dcomplex vert = 0.;
+                        size_t ieh = iEH(i);
+                        for (int j = -order; j <= order; ++j)
+                            vert -= coeff_matrices[l].reyy(ieh,iEH(j)) * (beta * TH(iHx(j),m) + (b*double(j)-ktran) * TH(iHz(j),m));
+                        verts(ieh,m) = vert / k0;
+                    }
+                }
+            }
+        }
+    } else { // which_field == FIELD_H
+        if (polarization == E_TRAN) {
+            std::fill_n(verts.data(), verts.rows() * verts.cols(), 0.);
+        } else if (polarization == E_LONG) {  // polarization == H_TRAN
+            if (symmetric()) {
+                #pragma omp parallel for
+                for (openmp_size_t m = 0; m != M; m++) {
+                    for (int i = 0; i <= order; ++i) {
+                        dcomplex vert = 0.;
+                        if (periodic)
+                            vert = - (b*double(i)-ktran) * TE(iEH(i),m);
+                        else {
+                            vert = 0.;
+                            for (int j = 0; j <= order; ++j)
+                                vert -= coeff_matrix_rmyy(i,j) * (b*double(j)-ktran) * TE(iEH(j),m);
+                        }
+                        verts(i,m) = vert / k0;
+                    }
+                }
+            } else {
+                #pragma omp parallel for
+                for (openmp_size_t m = 0; m != M; m++) {
+                    for (int i = -order; i <= order; ++i) {
+                        dcomplex vert = 0.;
+                        size_t ieh = iEH(i);
+                        if (periodic)
+                            vert = - (b*double(i)-ktran) * TE(ieh,m);
+                        else {
+                            vert = 0.;
+                            for (int j = -order; j <= order; ++j) {
+                                size_t jeh = iEH(j);
+                                vert -= coeff_matrix_rmyy(ieh,jeh) * (b*double(j)-ktran) * TE(jeh,m);
+                            }
+                        }
+                        verts(ieh,m) = vert / k0;
+                    }
+                }
+            }
+        } else {
+            if (symmetric()) {
+                #pragma omp parallel for
+                for (openmp_size_t m = 0; m != M; m++) {
+                    for (int i = 0; i <= order; ++i) {
+                        dcomplex vert = 0.;
+                        if (periodic)
+                            vert = (beta * TE(iEx(i),m) - (b*double(i)-ktran) * TE(iEz(i),m));
+                        else {
+                            vert = 0.;
+                            for (int j = 0; j <= order; ++j)
+                                vert += coeff_matrix_rmyy(i,j) * (beta * TE(iEx(j),m) - (b*double(j)-ktran) * TE(iEz(j),m));
+                        }
+                        verts(i,m) = vert / k0;
+                    }
+                }
+            } else {
+                #pragma omp parallel for
+                for (openmp_size_t m = 0; m != M; m++) {
+                    for (int i = -order; i <= order; ++i) {
+                        dcomplex vert = 0.;
+                        size_t ieh = iEH(i);
+                        if (periodic)
+                            vert = (beta * TE(iEx(i),m) - (b*double(i)-ktran) * TE(iEz(i),m));
+                        else {
+                            vert = 0.;
+                            for (int j = -order; j <= order; ++j)
+                                vert += coeff_matrix_rmyy(ieh,iEH(j)) * (beta * TE(iEx(j),m) - (b*double(j)-ktran) * TE(iEz(j),m));
+                        }
+                        verts(ieh,m) = vert / k0;
+                    }
+                }
+            }
+        }
+    }
 
-    // double L = (right-left) * (symmetric()? 2. : 1.);
-    // if (field == FIELD_E) {
-    //     if (symmetric()) {
-    //         if (separated()) {
-    //             for (size_t m1 = 0; m1 < M; ++m1) {
-    //                 for (size_t m2 = m1; m2 < M; ++m2) {
-    //                     dcomplex sum = TE(0,m1) * conj(TE(0,m2)) + verts(0,m1) * conj(verts(0,m2));
-    //                     for(size_t i = 1; i != N; ++i) {
-    //                         sum += 2. * (TE(i,m1) * conj(TE(i,m2)) + verts(i,m1) * conj(verts(i,m2)));
-    //                     }
-    //                     sum *= 0.5 * L;
-    //                     result(m2,m1) = conj(sum);
-    //                     result(m1,m2) = sum;  // in this order, so we have it correctly for m2 == m1
-    //                 }
-    //             }
-    //         } else {
-    //             for (size_t m1 = 0; m1 < M; ++m1) {
-    //                 for (size_t m2 = m1; m2 < M; ++m2) {
-    //                     size_t ix = iEx(0), iz = iEz(0);
-    //                     dcomplex sum = TE(ix,m1) * conj(TE(ix,m2)) + TE(iz,m1) * conj(TE(iz,m2)) + verts(0,m1) * conj(verts(0,m2));
-    //                     for(size_t i = 1; i != N; ++i) {
-    //                         ix = iEx(i); iz = iEz(i);
-    //                         sum += 2. * (TE(ix,m1) * conj(TE(ix,m2)) + TE(iz,m1) * conj(TE(iz,m2)) + verts(i,m1) * conj(verts(i,m2)));
-    //                     }
-    //                     sum *= 0.5 * L;
-    //                     result(m2,m1) = conj(sum);
-    //                     result(m1,m2) = sum;  // in this order, so we have it correctly for m2 == m1
-    //                 }
-    //             }
-    //         }
-    //     } else {
-    //         if (separated()) {
-    //             for (size_t m1 = 0; m1 < M; ++m1) {
-    //                 for (size_t m2 = m1; m2 < M; ++m2) {
-    //                     dcomplex sum = 0.;
-    //                     for(size_t i = 0; i != N; ++i) {
-    //                         sum += TE(i,m1) * conj(TE(i,m2)) + verts(i,m1) * conj(verts(i,m2));
-    //                     }
-    //                     sum *= 0.5 * L;
-    //                     result(m2,m1) = conj(sum);
-    //                     result(m1,m2) = sum;  // in this order, so we have it correctly for m2 == m1
-    //                 }
-    //             }
-    //         } else {
-    //             for (size_t m1 = 0; m1 < M; ++m1) {
-    //                 for (size_t m2 = m1; m2 < M; ++m2) {
-    //                     dcomplex sum = 0.;
-    //                     for(size_t i = 0; i != N; ++i) {
-    //                         size_t ix = iEx(i), iz = iEz(i);
-    //                         sum += TE(ix,m1) * conj(TE(ix,m2)) + TE(iz,m1) * conj(TE(iz,m2)) + verts(i,m1) * conj(verts(i,m2));
-    //                     }
-    //                     sum *= 0.5 * L;
-    //                     result(m2,m1) = conj(sum);
-    //                     result(m1,m2) = sum;  // in this order, so we have it correctly for m2 == m1
-    //                 }
-    //             }
-    //         }
-    //     }
-    // } else {
-    //     if (symmetric()) {
-    //         if (separated()) {
-    //             for (size_t m1 = 0; m1 < M; ++m1) {
-    //                 for (size_t m2 = m1; m2 < M; ++m2) {
-    //                     dcomplex sum = TH(0,m1) * conj(TH(0,m2)) + verts(0,m1) * conj(verts(0,m2));
-    //                     for(size_t i = 1; i != N; ++i) {
-    //                         sum += 2. * (TH(i,m1) * conj(TE(i,m2)) + verts(i,m1) * conj(verts(i,m2)));
-    //                     }
-    //                     sum *= 0.5 * L;
-    //                     result(m2,m1) = conj(sum);
-    //                     result(m1,m2) = sum;  // in this order, so we have it correctly for m2 == m1
-    //                 }
-    //             }
-    //         } else {
-    //             for (size_t m1 = 0; m1 < M; ++m1) {
-    //                 for (size_t m2 = m1; m2 < M; ++m2) {
-    //                     size_t ix = iHx(0), iz = iHz(0);
-    //                     dcomplex sum = TH(ix,m1) * conj(TH(ix,m2)) + TH(iz,m1) * conj(TH(iz,m2)) + verts(0,m1) * conj(verts(0,m2));
-    //                     for(size_t i = 1; i != N; ++i) {
-    //                         ix = iHx(i); iz = iHz(i);
-    //                         sum += 2. * (TH(ix,m1) * conj(TH(ix,m2)) + TE(iz,m1) * conj(TH(iz,m2)) + verts(i,m1) * conj(verts(i,m2)));
-    //                     }
-    //                     sum *= 0.5 * L;
-    //                     result(m2,m1) = conj(sum);
-    //                     result(m1,m2) = sum;  // in this order, so we have it correctly for m2 == m1
-    //                 }
-    //             }
-    //         }
-    //     } else {
-    //         if (separated()) {
-    //             for (size_t m1 = 0; m1 < M; ++m1) {
-    //                 for (size_t m2 = m1; m2 < M; ++m2) {
-    //                     dcomplex sum = 0.;
-    //                     for(size_t i = 0; i != N; ++i) {
-    //                         sum += TH(i,m1) * conj(TH(i,m2)) + verts(i,m1) * conj(verts(i,m2));
-    //                     }
-    //                     sum *= 0.5 * L;
-    //                     result(m2,m1) = conj(sum);
-    //                     result(m1,m2) = sum;  // in this order, so we have it correctly for m2 == m1
-    //                 }
-    //             }
-    //         } else {
-    //             for (size_t m1 = 0; m1 < M; ++m1) {
-    //                 for (size_t m2 = m1; m2 < M; ++m2) {
-    //                     dcomplex sum = 0.;
-    //                     for(size_t i = 0; i != N; ++i) {
-    //                         size_t ix = iHx(i), iz = iHz(i);
-    //                         sum += TH(ix,m1) * conj(TH(ix,m2)) + TH(iz,m1) * conj(TH(iz,m2)) + verts(i,m1) * conj(verts(i,m2));
-    //                     }
-    //                     sum *= 0.5 * L;
-    //                     result(m2,m1) = conj(sum);
-    //                     result(m1,m2) = sum;  // in this order, so we have it correctly for m2 == m1
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
+    double result = 0.;
+
+    if (field == FIELD_E) {
+        if (symmetric()) {
+            if (separated()) {
+                #pragma omp parallel for
+                for (size_t m1 = 0; m1 < M; ++m1) {
+                    for (size_t m2 = m1; m2 < M; ++m2) {
+                        dcomplex sumxz = TE(0,m1) * conj(TE(0,m2)),
+                                 sumy = verts(0,m1) * conj(verts(0,m2));
+                        for(size_t i = 1; i != N; ++i) {
+                            sumxz += 2. * TE(i,m1) * conj(TE(i,m2));
+                            sumy += 2. * verts(i,m1) * conj(verts(i,m2));
+                        }
+                        auto vert = vertical(m1, m2);
+                        double res = real(sumxz * vert.first + sumy * vert.second);
+                        if (m2 != m1) {
+                            vert = vertical(m2, m1);
+                            res += real(conj(sumxz) * vert.first + conj(sumy) * vert.second);
+                        }
+                        #pragma omp atomic
+                        result += res;
+                    }
+                }
+            } else {
+                #pragma omp parallel for
+                for (size_t m1 = 0; m1 < M; ++m1) {
+                    for (size_t m2 = m1; m2 < M; ++m2) {
+                        size_t ix = iEx(0), iz = iEz(0);
+                        dcomplex sumxz = TE(ix,m1) * conj(TE(ix,m2)) + TE(iz,m1) * conj(TE(iz,m2)),
+                                 sumy = verts(0,m1) * conj(verts(0,m2));
+                        for(size_t i = 1; i != N; ++i) {
+                            ix = iEx(i); iz = iEz(i);
+                            sumxz += 2. * (TE(ix,m1) * conj(TE(ix,m2)) + TE(iz,m1) * conj(TE(iz,m2)));
+                            sumy += 2. * verts(i,m1) * conj(verts(i,m2));
+                        }
+                        auto vert = vertical(m1, m2);
+                        double res = real(sumxz * vert.first + sumy * vert.second);
+                        if (m2 != m1) {
+                            vert = vertical(m2, m1);
+                            res += real(conj(sumxz) * vert.first + conj(sumy) * vert.second);
+                        }
+                        #pragma omp atomic
+                        result += res;
+                    }
+                }
+            }
+        } else {
+            if (separated()) {
+                #pragma omp parallel for
+                for (size_t m1 = 0; m1 < M; ++m1) {
+                    for (size_t m2 = m1; m2 < M; ++m2) {
+                        dcomplex sumxz = 0., sumy = 0.;
+                        for(size_t i = 0; i != N; ++i) {
+                            sumxz += TE(i,m1) * conj(TE(i,m2));
+                            sumy += verts(i,m1) * conj(verts(i,m2));
+                        }
+                        auto vert = vertical(m1, m2);
+                        double res = real(sumxz * vert.first + sumy * vert.second);
+                        if (m2 != m1) {
+                            vert = vertical(m2, m1);
+                            res += real(conj(sumxz) * vert.first + conj(sumy) * vert.second);
+                        }
+                        #pragma omp atomic
+                        result += res;
+                    }
+                }
+            } else {
+                #pragma omp parallel for
+                for (size_t m1 = 0; m1 < M; ++m1) {
+                    for (size_t m2 = m1; m2 < M; ++m2) {
+                        dcomplex sumxz = 0., sumy = 0.;
+                        for(size_t i = 0; i != N; ++i) {
+                            size_t ix = iEx(i), iz = iEz(i);
+                            sumxz += TE(ix,m1) * conj(TE(ix,m2)) + TE(iz,m1) * conj(TE(iz,m2));
+                            sumy += verts(i,m1) * conj(verts(i,m2));
+                        }
+                        auto vert = vertical(m1, m2);
+                        double res = real(sumxz * vert.first + sumy * vert.second);
+                        if (m2 != m1) {
+                            vert = vertical(m2, m1);
+                            res += real(conj(sumxz) * vert.first + conj(sumy) * vert.second);
+                        }
+                        #pragma omp atomic
+                        result += res;
+                    }
+                }
+            }
+        }
+    } else {  // field == FIELD_H
+        if (symmetric()) {
+            if (separated()) {
+                #pragma omp parallel for
+                for (size_t m1 = 0; m1 < M; ++m1) {
+                    for (size_t m2 = m1; m2 < M; ++m2) {
+                        dcomplex sumxz = TH(0,m1) * conj(TH(0,m2)),
+                                 sumy = verts(0,m1) * conj(verts(0,m2));
+                        for(size_t i = 1; i != N; ++i) {
+                            sumxz += 2. * TH(i,m1) * conj(TE(i,m2));
+                            sumy += 2. * verts(i,m1) * conj(verts(i,m2));
+                        }
+                        auto vert = vertical(m1, m2);
+                        double res = real(sumxz * vert.second + sumy * vert.first);
+                        if (m2 != m1) {
+                            vert = vertical(m2, m1);
+                            res += real(conj(sumxz) * vert.second + conj(sumy) * vert.first);
+                        }
+                        #pragma omp atomic
+                        result += res;
+                    }
+                }
+            } else {
+                #pragma omp parallel for
+                for (size_t m1 = 0; m1 < M; ++m1) {
+                    for (size_t m2 = m1; m2 < M; ++m2) {
+                        size_t ix = iHx(0), iz = iHz(0);
+                        dcomplex sumxz = TH(ix,m1) * conj(TH(ix,m2)) + TH(iz,m1) * conj(TH(iz,m2)),
+                                 sumy = verts(0,m1) * conj(verts(0,m2));
+                        for(size_t i = 1; i != N; ++i) {
+                            ix = iHx(i); iz = iHz(i);
+                            sumxz += 2. * (TH(ix,m1) * conj(TH(ix,m2)) + TE(iz,m1) * conj(TH(iz,m2)));
+                            sumy += 2. * verts(i,m1) * conj(verts(i,m2));
+                        }
+                        auto vert = vertical(m1, m2);
+                        double res = real(sumxz * vert.second + sumy * vert.first);
+                        if (m2 != m1) {
+                            vert = vertical(m2, m1);
+                            res += real(conj(sumxz) * vert.second + conj(sumy) * vert.first);
+                        }
+                        #pragma omp atomic
+                        result += res;
+                    }
+                }
+            }
+        } else {
+            if (separated()) {
+                #pragma omp parallel for
+                for (size_t m1 = 0; m1 < M; ++m1) {
+                    for (size_t m2 = m1; m2 < M; ++m2) {
+                        dcomplex sumxz = 0., sumy = 0.;
+                        for(size_t i = 0; i != N; ++i) {
+                            sumxz += TH(i,m1) * conj(TH(i,m2));
+                            sumy += verts(i,m1) * conj(verts(i,m2));
+                        }
+                        auto vert = vertical(m1, m2);
+                        double res = real(sumxz * vert.second + sumy * vert.first);
+                        if (m2 != m1) {
+                            vert = vertical(m2, m1);
+                            res += real(conj(sumxz) * vert.second + conj(sumy) * vert.first);
+                        }
+                        #pragma omp atomic
+                        result += res;
+                    }
+                }
+            } else {
+                #pragma omp parallel for
+                for (size_t m1 = 0; m1 < M; ++m1) {
+                    for (size_t m2 = m1; m2 < M; ++m2) {
+                        dcomplex sumxz = 0., sumy = 0.;
+                        for(size_t i = 0; i != N; ++i) {
+                            size_t ix = iHx(i), iz = iHz(i);
+                            sumxz += TH(ix,m1) * conj(TH(ix,m2)) + TH(iz,m1) * conj(TH(iz,m2));
+                            sumy += verts(i,m1) * conj(verts(i,m2));
+                        }
+                        auto vert = vertical(m1, m2);
+                        double res = real(sumxz * vert.second + sumy * vert.first);
+                        if (m2 != m1) {
+                            vert = vertical(m2, m1);
+                            res += real(conj(sumxz) * vert.second + conj(sumy) * vert.first);
+                        }
+                        #pragma omp atomic
+                        result += res;
+                    }
+                }
+            }
+        }
+    }
+
+    const double L = (right-left) * (symmetric()? 2. : 1.);
+    return 0.5 * result * L;
 }
 
 
