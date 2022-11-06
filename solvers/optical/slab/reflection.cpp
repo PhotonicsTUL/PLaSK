@@ -564,7 +564,7 @@ cvector ReflectionTransfer::getFieldVectorH(double z, std::size_t n, Propagation
 }
 
 
-inline dcomplex _integrate(double z1, double z2, dcomplex g, dcomplex E) {
+inline static dcomplex _int_refl(double z1, double z2, dcomplex g, dcomplex E) {
     if (is_zero(E)) return 0.;
     if (is_zero(g)) return E * (z2 - z1);
     dcomplex res = -I * E / g * (exp(I * g * z2) - exp(I * g * z1));
@@ -589,15 +589,15 @@ double ReflectionTransfer::integrateField(WhichField field, size_t n, double z1,
     return diagonalizer->source()->integrateField(field, layer, TE, TH,
         [n, z1, z2, gamma, this](size_t i, size_t j) {
             return std::make_pair(
-                _integrate(z1, z2, -gamma[i] + conj(gamma[j]), F1[i] * conj(F1[j])) +
-                _integrate(z1, z2,  gamma[i] + conj(gamma[j]), B1[i] * conj(F1[j])) +
-                _integrate(z1, z2, -gamma[i] - conj(gamma[j]), F1[i] * conj(B1[j])) +
-                _integrate(z1, z2,  gamma[i] - conj(gamma[j]), B1[i] * conj(B1[j])),
+                _int_refl(z1, z2, -gamma[i] + conj(gamma[j]), F1[i] * conj(F1[j])) +
+                _int_refl(z1, z2,  gamma[i] + conj(gamma[j]), B1[i] * conj(F1[j])) +
+                _int_refl(z1, z2, -gamma[i] - conj(gamma[j]), F1[i] * conj(B1[j])) +
+                _int_refl(z1, z2,  gamma[i] - conj(gamma[j]), B1[i] * conj(B1[j])),
 
-                _integrate(z1, z2, -gamma[i] + conj(gamma[j]),  F1[i] * conj( F1[j])) +
-                _integrate(z1, z2,  gamma[i] + conj(gamma[j]), -B1[i] * conj( F1[j])) +
-                _integrate(z1, z2, -gamma[i] - conj(gamma[j]),  F1[i] * conj(-B1[j])) +
-                _integrate(z1, z2,  gamma[i] - conj(gamma[j]), -B1[i] * conj(-B1[j]))
+                _int_refl(z1, z2, -gamma[i] + conj(gamma[j]),  F1[i] * conj( F1[j])) +
+                _int_refl(z1, z2,  gamma[i] + conj(gamma[j]), -B1[i] * conj( F1[j])) +
+                _int_refl(z1, z2, -gamma[i] - conj(gamma[j]),  F1[i] * conj(-B1[j])) +
+                _int_refl(z1, z2,  gamma[i] - conj(gamma[j]), -B1[i] * conj(-B1[j]))
             );
         });
 }

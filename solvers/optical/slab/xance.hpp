@@ -42,6 +42,22 @@ struct PLASK_SOLVER_API XanceTransfer: public Transfer {
         return d;
     }
 
+    /// Get layer thickness and adjust z1 and z2
+    double get_d(size_t n, double& z1, double& z2) {
+        double d = (n == 0 || std::size_t(n) == solver->vbounds->size())?
+            solver->vpml.dist :
+            solver->vbounds->at(n) - solver->vbounds->at(n-1);
+        if (std::ptrdiff_t(n) >= solver->interface) {
+            const double zl = z1;
+            z1 = d - z2; z2 = d - zl;
+        }
+        else if (n == 0) {
+            z1 += d;
+            z2 += d;
+        }
+        return d;
+    }
+
   public:
 
     cvector getTransmissionVector(const cvector& incident, IncidentDirection side) override;

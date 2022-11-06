@@ -1389,14 +1389,13 @@ double ExpansionPW3D::integrateField(WhichField field, size_t layer, const cmatr
                         sumz += Fz(i,m1) * conj(Fz(i,m2));
                     }
                 }
-                auto vert = vertical(m1, m2);
-                double res = real(sumxy * vert.first + sumz * vert.second);
-                if (m2 != m1) {
-                    vert = vertical(m2, m1);
-                    res += real(conj(sumxy) * vert.first + conj(sumz) * vert.second);
+                if (!(is_zero(sumxy) && is_zero(sumz))) {
+                    auto vert = vertical(m1, m2);
+                    double res = real(sumxy * vert.first + sumz * vert.second);
+                    if (m2 != m1) res *= 2;
+                    #pragma omp atomic
+                    result += res;
                 }
-                #pragma omp atomic
-                result += res;
             }
         }
 
@@ -1412,14 +1411,13 @@ double ExpansionPW3D::integrateField(WhichField field, size_t layer, const cmatr
                         sumz += Fz(i,m1) * conj(Fz(i,m2));
                     }
                 }
-                auto vert = vertical(m1, m2);
-                double res = real(sumxy * vert.second + sumz * vert.first);
-                if (m2 != m1) {
-                    vert = vertical(m2, m1);
-                    res += real(conj(sumxy) * vert.second + conj(sumz) * vert.first);
+                if (!(is_zero(sumxy) && is_zero(sumz))) {
+                    auto vert = vertical(m1, m2);
+                    double res = real(sumxy * vert.second + sumz * vert.first);
+                    if (m2 != m1) res *= 2;
+                    #pragma omp atomic
+                    result += res;
                 }
-                #pragma omp atomic
-                result += res;
             }
         }
     }

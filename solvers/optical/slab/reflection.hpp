@@ -61,7 +61,7 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
 
     void adjust_z(size_t n, double& z1, double& z2) {
         if (std::ptrdiff_t(n) >= solver->interface) {
-            double zl = z1;
+            const double zl = z1;
             z1 = - z2; z2 = - zl;
             if (n != 0 && n != solver->vbounds->size()) {
                 double d = solver->vbounds->at(n) - solver->vbounds->at(n-1);

@@ -155,69 +155,52 @@ cvector XanceTransfer::getTransmissionVector(const cvector& incident, IncidentDi
 }
 
 
+inline static dcomplex _int_xance(double z1, double z2, dcomplex a, dcomplex b = 0.) {
+    if (is_zero(a)) return 0.5 * (z2 - z1) * cosh(b);
+    const dcomplex a2 = 0.5 * a;
+    return cosh(a2 * (z1 + z2) + b) * sinh(a2 * (z2 - z1)) / a;
+}
+
 double XanceTransfer::integrateField(WhichField field, size_t n, double z1, double z2) {
-    // size_t layer = solver->stack[n];
-    // size_t N = diagonalizer->matrixSize();
+    size_t layer = solver->stack[n];
+    size_t N = diagonalizer->matrixSize();
 
-    // cvector F0, Fd;
-    // if (field == FIELD_E) {
-    //     F0 = fields[n].E0;
-    //     Fd = fields[n].Ed;
-    // } else {
-    //     F0 = fields[n].H0;
-    //     Fd = fields[n].Hd;
-    // }
+    const cvector& E0 = fields[n].E0;
+    const cvector& Ed = fields[n].Ed;
+    const cvector& H0 = fields[n].H0;
+    const cvector& Hd = fields[n].Hd;
 
-    // cmatrix TE = diagonalizer->TE(layer),
-    //         TH = diagonalizer->TH(layer);
-    // cdiagonal gamma = diagonalizer->Gamma(layer);
+    cmatrix TE = diagonalizer->TE(layer),
+            TH = diagonalizer->TH(layer);
+    cdiagonal gamma = diagonalizer->Gamma(layer);
 
-    // PropagationDirection part = PROPAGATION_TOTAL;
-    // get_d(n, z1, part);
-    // double d = get_d(n, z2, part);
+    double d = get_d(n, z1, z2);
 
-    // if (std::ptrdiff_t(n) >= solver->interface) std::swap(z1, z2);
-
-    // double result = 0.;
-    // for (size_t i = 0; i != N; ++i) {
-    //     cvector E(TE.data() + N*i, N),
-    //             H(TH.data() + N*i, N);
-    //     double TT = diagonalizer->source()->integrateField(field, layer, E, H);
-
-    //     double gr = 2. * gamma[i].real(), gi = 2. * gamma[i].imag();
-    //     double M = cosh(gi * d) - cos(gr * d);
-    //     if (isinf(M)) {
-    //         double VV = real(F0[i]*conj(F0[i])) + real(Fd[i]*conj(Fd[i])) - 2. * real(F0[i]*conj(Fd[i]));
-    //         result += TT * VV;
-    //     } else {
-    //         double cos00, cosdd;
-    //         dcomplex cos0d;
-    //         if (is_zero(gr)) {
-    //             cos00 = cosdd = z2-z1;
-    //             cos0d = cos(gamma[i] * d) * (z2-z1);
-    //         } else {
-    //             cos00 = (sin(gr * (d-z1)) - sin(gr * (d-z2))) / gr;
-    //             cosdd = (sin(gr * z2) - sin(gr * z1)) / gr;
-    //             cos0d = (sin(gamma[i] * d - gr * z1) - sin(gamma[i] * d - gr * z2)) / gr;
-    //         }
-    //         double cosh00, coshdd;
-    //         dcomplex cosh0d;
-    //         if (is_zero(gi)) {
-    //             cosh00 = coshdd = z2-z1;
-    //             cosh0d = cos(gamma[i] * d) * (z2-z1);
-    //         } else {
-    //             cosh00 = (sinh(gi * (d-z1)) - sinh(gi * (d-z2))) / gi;
-    //             coshdd = (sinh(gi * z2) - sinh(gi * z1)) / gi;
-    //             cosh0d = (sin(gamma[i] * d - gi * z1) - sin(gamma[i] * d - gi * z2)) / gi;
-    //         }
-    //         double VV =      real(F0[i]*conj(F0[i])) * (cosh00 - cos00) +
-    //                          real(Fd[i]*conj(Fd[i])) * (coshdd - cosdd) -
-    //                     2. * real(F0[i]*conj(Fd[i])  * (cosh0d - cos0d));
-    //         result += TT * VV / M;
-    //     }
-    // }
-
-    // return result;
+    return diagonalizer->source()->integrateField(field, layer, TE, TH,
+        [z1, z2, d, gamma, E0, Ed, H0, Hd](size_t i, size_t j) -> std::pair<dcomplex,dcomplex> {
+            const dcomplex igm = I * (gamma[i] - conj(gamma[j])), igp = I * (gamma[i] + conj(gamma[j]));
+            const dcomplex igid = I * gamma[i] * d, igjd = I * conj(gamma[j]) * d;
+            dcomplex E = 0.;
+            dcomplex H = 0.;
+            if (!((is_zero(E0[i]) || is_zero(E0[j])) && (is_zero(H0[i]) || is_zero(H0[j])))) {
+                dcomplex val = _int_xance(z1, z2, -igm, igm*d) - _int_xance(z1, z2, -igp, igp*d);
+                E += E0[i] * conj(E0[j]) * val; H += H0[i] * conj(H0[j]) * val;
+            }
+            if (!((is_zero(E0[i]) || is_zero(Ed[j])) && (is_zero(H0[i]) || is_zero(Hd[j])))) {
+                dcomplex val = _int_xance(z1, z2, -igp, igid) - _int_xance(z1, z2, -igm, igid);
+                E += E0[i] * conj(Ed[j]) * val; H += H0[i] * conj(Hd[j]) * val;
+            }
+            if (!((is_zero(Ed[i]) || is_zero(E0[j])) && (is_zero(Hd[i]) || is_zero(H0[j])))) {
+                dcomplex val = _int_xance(z1, z2, igp, -igjd) - _int_xance(z1, z2, igm, igjd);
+                E += Ed[i] * conj(E0[j]) * val; H += Hd[i] * conj(H0[j]) * val;
+            }
+            if (!((is_zero(Ed[i]) || is_zero(Ed[j])) && (is_zero(Hd[i]) || is_zero(Hd[j])))) {
+                dcomplex val = _int_xance(z1, z2, igm) - _int_xance(z1, z2, igp);
+                E += Ed[i] * conj(Ed[j]) * val; H += Hd[i] * conj(Hd[j]) * val;
+            }
+            dcomplex f = 1. / (sinh(igid) * sinh(-igjd));
+            return std::make_pair(f * E, f * H);
+        });
 }
 
 }}} // namespace plask::optical::slab

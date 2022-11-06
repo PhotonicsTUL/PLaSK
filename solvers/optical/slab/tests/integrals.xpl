@@ -150,13 +150,13 @@ class Integrals2DTest(unittest.TestCase):
         # En = self.comp.outLightE(self.imesh).array
         # EEn = 0.5/phys.eta0 * sum(real(En * conj(En))) * (self.ibox.top - self.ibox.bottom) / (ny * nz)
         EEa = 0.5/phys.eta0 * self.comp.integrateEE(self.ibox.bottom, self.ibox.top) / self.ibox.right
-        self.assertAlmostEqual(EEn, EEa, 3)
+        self.assertAlmostEqual(EEa / EEn, 1., 3)
 
     def test_integrals_H(self):
         Hn = self.comp.outLightH(self.imesh).array
         HHn = 0.5*phys.eta0 * sum(real(Hn * conj(Hn))) * (self.ibox.top - self.ibox.bottom) / (ny * nz)
         HHa = 0.5*phys.eta0 * self.comp.integrateHH(self.ibox.bottom, self.ibox.top) / self.ibox.right
-        self.assertAlmostEqual(HHn, HHa, 2)
+        self.assertAlmostEqual(HHa / HHn, 1., 3)
 
     def test_absorption_numeric(self):
         EEn = sum(self.comp.outLightMagnitude(self.amesh)) * (self.abox.top - self.abox.bottom) / (ny * nz)
@@ -164,7 +164,7 @@ class Integrals2DTest(unittest.TestCase):
         nclad = material.get('clad').Nr(lam).real
         A = 1. - self.comp.R - self.comp.T
         An = 2e3 * pi / lam * abs(eps.imag) * EEn / nclad
-        self.assertAlmostEqual(A, An, 3)
+        self.assertAlmostEqual(An / A, 1., 3)
 
     def test_absorption_analytic(self):
         EEa = 0.5/phys.eta0 * self.comp.integrateEE(self.abox.bottom, self.abox.top) / self.abox.right
@@ -172,7 +172,7 @@ class Integrals2DTest(unittest.TestCase):
         nclad = material.get('clad').Nr(lam).real
         A = 1. - self.comp.R - self.comp.T
         Aa = 2e3 * pi / lam * abs(eps.imag) * EEa / nclad
-        self.assertAlmostEqual(A, Aa, 4)
+        self.assertAlmostEqual(Aa / A, 1., 4)
 
 
 def load_tests(loader, standard_tests, pattern):

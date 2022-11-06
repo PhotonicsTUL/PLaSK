@@ -1452,10 +1452,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
                         }
                         auto vert = vertical(m1, m2);
                         double res = real(sumxz * vert.first + sumy * vert.second);
-                        if (m2 != m1) {
-                            vert = vertical(m2, m1);
-                            res += real(conj(sumxz) * vert.first + conj(sumy) * vert.second);
-                        }
+                        if (m2 != m1) res *= 2;
                         #pragma omp atomic
                         result += res;
                     }
@@ -1474,10 +1471,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
                         }
                         auto vert = vertical(m1, m2);
                         double res = real(sumxz * vert.first + sumy * vert.second);
-                        if (m2 != m1) {
-                            vert = vertical(m2, m1);
-                            res += real(conj(sumxz) * vert.first + conj(sumy) * vert.second);
-                        }
+                        if (m2 != m1) res *= 2;
                         #pragma omp atomic
                         result += res;
                     }
@@ -1495,10 +1489,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
                         }
                         auto vert = vertical(m1, m2);
                         double res = real(sumxz * vert.first + sumy * vert.second);
-                        if (m2 != m1) {
-                            vert = vertical(m2, m1);
-                            res += real(conj(sumxz) * vert.first + conj(sumy) * vert.second);
-                        }
+                        if (m2 != m1) res *= 2;
                         #pragma omp atomic
                         result += res;
                     }
@@ -1515,10 +1506,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
                         }
                         auto vert = vertical(m1, m2);
                         double res = real(sumxz * vert.first + sumy * vert.second);
-                        if (m2 != m1) {
-                            vert = vertical(m2, m1);
-                            res += real(conj(sumxz) * vert.first + conj(sumy) * vert.second);
-                        }
+                        if (m2 != m1) res *= 2;
                         #pragma omp atomic
                         result += res;
                     }
@@ -1539,10 +1527,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
                         }
                         auto vert = vertical(m1, m2);
                         double res = real(sumxz * vert.second + sumy * vert.first);
-                        if (m2 != m1) {
-                            vert = vertical(m2, m1);
-                            res += real(conj(sumxz) * vert.second + conj(sumy) * vert.first);
-                        }
+                        if (m2 != m1) res *= 2;
                         #pragma omp atomic
                         result += res;
                     }
@@ -1561,10 +1546,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
                         }
                         auto vert = vertical(m1, m2);
                         double res = real(sumxz * vert.second + sumy * vert.first);
-                        if (m2 != m1) {
-                            vert = vertical(m2, m1);
-                            res += real(conj(sumxz) * vert.second + conj(sumy) * vert.first);
-                        }
+                        if (m2 != m1) res *= 2;
                         #pragma omp atomic
                         result += res;
                     }
@@ -1582,10 +1564,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
                         }
                         auto vert = vertical(m1, m2);
                         double res = real(sumxz * vert.second + sumy * vert.first);
-                        if (m2 != m1) {
-                            vert = vertical(m2, m1);
-                            res += real(conj(sumxz) * vert.second + conj(sumy) * vert.first);
-                        }
+                        if (m2 != m1) res *= 2;
                         #pragma omp atomic
                         result += res;
                     }
@@ -1602,10 +1581,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
                         }
                         auto vert = vertical(m1, m2);
                         double res = real(sumxz * vert.second + sumy * vert.first);
-                        if (m2 != m1) {
-                            vert = vertical(m2, m1);
-                            res += real(conj(sumxz) * vert.second + conj(sumy) * vert.first);
-                        }
+                        if (m2 != m1) res *= 2;
                         #pragma omp atomic
                         result += res;
                     }
