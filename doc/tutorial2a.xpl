@@ -82,7 +82,7 @@ fig, ax = plt.subplots(subplot_kw=dict(projection='polar'))
 contourf(P, R, F)
 # grid(False)
 plot(p, [8.] * len(p), color='w')
-tight_layout(0.1)
+tight_layout(pad=0.1)
 window_title("Magnitude")
 
 Fr = efm.outLightE(mode_number, mesh.Rectangular2D(r, [4.83]))

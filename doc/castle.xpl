@@ -42,7 +42,7 @@
 <script><![CDATA[
 plot_geometry(GEO.castle, fill=True, margin=0.02)
 gca().set_aspect('equal')
-tight_layout(0.1)
+tight_layout(pad=0.1)
 show()
 ]]></script>
 

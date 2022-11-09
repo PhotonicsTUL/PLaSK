@@ -50,7 +50,7 @@ class EffectiveIndex(unittest.TestCase):
 
     def testRefractiveIndex(self):
         self.solver.set_simple_mesh()
-        msh = self.solver.mesh.get_midpoints()
+        msh = self.solver.mesh.elements.mesh
         geo = self.solver.geometry
         refr = [geo.get_material(point).Nr(1000., 300.) for point in msh]
         self.assertEqual([nr[0] for nr in self.solver.outRefractiveIndex(msh)], refr)

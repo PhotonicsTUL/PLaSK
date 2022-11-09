@@ -88,18 +88,15 @@ class FieldWidget(QWidget):
 
         def mouse_move(self, event):
             if not event.inaxes or not self._active:
-                if self._lastCursor != cursors.POINTER:
-                    self.set_cursor(cursors.POINTER)
-                    self._lastCursor = cursors.POINTER
+                if getattr(self, self._last_cursor_attr) != cursors.POINTER:
+                    self._set_cursor(cursors.POINTER)
             else:
                 if self._active == 'ZOOM':
-                    if self._lastCursor != cursors.SELECT_REGION:
-                        self.set_cursor(cursors.SELECT_REGION)
-                        self._lastCursor = cursors.SELECT_REGION
+                    if getattr(self, self._last_cursor_attr) != cursors.SELECT_REGION:
+                        self._set_cursor(cursors.SELECT_REGION)
                 elif (self._active == 'PAN' and
-                      self._lastCursor != cursors.MOVE):
-                    self.set_cursor(cursors.MOVE)
-                    self._lastCursor = cursors.MOVE
+                      getattr(self, self._last_cursor_attr) != cursors.MOVE):
+                    self._set_cursor(cursors.MOVE)
 
             if event.xdata is not None and event.ydata is not None:
                 try: parent = self.parent()

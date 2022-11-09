@@ -95,19 +95,19 @@ vmsh = mesh.Rectangular3D([0.], yy, zz)
 
 
 # Depending on the ‘threshold’ parameter (True of False) we can either look for the threshold (where
-# imaginary part of the wavelength is always 0), or just the wavelenght (with some imaginary part, 
+# imaginary part of the wavelength is always 0), or just the wavelenght (with some imaginary part,
 # denoting optical losses).
 
 if not threshold:  # ‘threshold’ is False, so we want just an eigenmode...
-    
-    # For an eigenmode, the returned value of ‘FOURIER.get_determinant’ method must be 0 (both real and 
+
+    # For an eigenmode, the returned value of ‘FOURIER.get_determinant’ method must be 0 (both real and
     # imaginary part). ‘FOURIER.find_mode’ uses Broyden or Muller method (depening on the configuration
     # in ‘Solvers’ tab) to find such root, altering its argument — wavelenght (lam) in this case.
     # Once it finds the eigenmode it stores its parameters in the ‘FOURIER.modes’ list and returns the index
     # of the found mode in this array.
     m = FOURIER.find_mode(lam=start)
     lam = FOURIER.modes[m].lam  # We retrieve the complex wavelength of the eignemode
-    
+
     # Now we construct the line with interesting results (see http://thepythonguru.com/python-string-formatting/)
     line = "{L:3.1f} {d:2.1f} {etched}   {N}   {lam.real:.6f} {lam.imag:6.3f}".format(lam=lam, **DEF)
     # We print the line to screen and append it to a file.
@@ -121,7 +121,7 @@ else: # Looking for the threshold...
     # imaginary part sufficiently close to 0, but it would be a waste of time. Hence, we will ignore
     # PLaSK internal root finding loop, and do it manually (actually we use external Python function
     # from SciPy package for this purpose).
-    
+
     # First we need to create R²->R² function that takes the wavelenght (real) and the gain and return
     # Real and complex parts of the determinant.
     def fun(arg):
@@ -135,13 +135,13 @@ else: # Looking for the threshold...
     # We ask SciPy to find the root for us
     # (see http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.fsolve.html)
     result = fsolve(fun, [start, gain], xtol=1e-5)
-    
+
     # Now, we know that we have found the mode, but the solver does not. So we need to explicitly tell it.
     # The correct profile of the gain is already set from the last call to ‘fun’ done by the ‘fsolve’ function.
     # So we need to tell the solver the eigenmode wavelength. It will check if the determinant is sufficiently
     # close to zero and add the mode parameters to the ‘FOURIER.modes’ array.
     FOURIER.set_mode(lam=result[0])
-    
+
     # Now print and save the results similarly as before.
     line = "{L:3.1f} {d:2.1f} {etched}   {N}   {0:.6f} {1:6.3f}".format(*result, **DEF)
     print(line)
@@ -157,7 +157,7 @@ fig = figure()  # Open new figure
 plot_field(field, plane='xy')  # Plot the field 2D cross-section
 plot_geometry(GEO.main, color='w', plane='xy', mirror=True)  # Plot the geometry outline
 gca().set_aspect('equal')  # Make sure both axes have the same scale
-tight_layout(0.1)  # Reduce the margins of the plot
+tight_layout(pad=0.1)  # Reduce the margins of the plot
 fig.canvas.set_window_title("Field")  # Set window title
 
 
@@ -168,7 +168,7 @@ field = FOURIER.outLightMagnitude(vmsh)
 fig = figure()
 plot_field(field, plane='yz')
 # plot_geometry(GEO.main, color='w', plane='yz', mirror=True)
-tight_layout(0.1)
+tight_layout(pad=0.1)
 fig.canvas.set_window_title("Vertical Field")
 
 show()

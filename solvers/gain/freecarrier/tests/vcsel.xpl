@@ -418,7 +418,7 @@ def plot_thermoelectric(save=True, suffix=''):
     work.plot_temperature(cmap='inferno', geometry_color=(0.75, 0.75, 0.75, 0.1))
     xlim(0., 0.55*mesa)
     ylim(GEO.main.bbox.bottom, GEO.main.bbox.top)
-    tight_layout(0.2)
+    tight_layout(pad=0.2)
     save_figure(suffix+'temp2d')
 
     if not presentation:
@@ -427,7 +427,7 @@ def plot_thermoelectric(save=True, suffix=''):
     else:
         figure()
 
-    jtemp = THERMAL.outTemperature(mesh.Rectangular2D(THERMAL.mesh.get_midpoints().axis0, [zqw]), 'spline')
+    jtemp = THERMAL.outTemperature(mesh.Rectangular2D(THERMAL.mesh.elements.mesh.axis0, [zqw]), 'spline')
     T = max(jtemp)
     plot_profile(jtemp, color=color_cycle[3], label='PLaSK')
     plot_rs(GEO.thermal)
@@ -438,7 +438,7 @@ def plot_thermoelectric(save=True, suffix=''):
     xlim(0., 0.55*mesa)
 
     if presentation:
-        tight_layout(0.2)
+        tight_layout(pad=0.2)
         save_figure(suffix+'temp')
         figure()
     else:
@@ -453,7 +453,7 @@ def plot_thermoelectric(save=True, suffix=''):
     xlim(0., 0.55*mesa)
 
     if presentation:
-        tight_layout(0.2)
+        tight_layout(pad=0.2)
         save_figure(suffix+'curr')
         figure()
     else:
@@ -470,14 +470,14 @@ def plot_thermoelectric(save=True, suffix=''):
     xlim(0., 0.55*mesa)
 
     if presentation:
-        tight_layout(0.2)
+        tight_layout(pad=0.2)
         save_figure(suffix+'conc')
     else:
         suptitle(u"$U = {U:.3f}$V  $J = {J:.2f}$mA  $T_{{\\mathrm{{max}}}} = {T:.1f}$K".format(**globals()), fontsize=16)
 
         gcf().canvas.set_window_title("Thermoelectric")
         subplots_adjust(top=0.89)
-        tight_layout(0.2)
+        tight_layout(pad=0.2)
         save_figure()
 
 
@@ -495,7 +495,7 @@ def plot_gain(sub=None, suffix=''):
     plot_rs(GEO.main)
     ylabel("Gain Profile [1/cm]")
     xlim(0., 0.55*mesa)
-    tight_layout(0.2)
+    tight_layout(pad=0.2)
     subplots_adjust(top=0.89)
     save_figure(suffix+'gain')
 
@@ -526,12 +526,12 @@ def plot_optical(suffix=''):
     ylabel("Det [a.u.]")
     yscale('log')
     if presentation:
-        tight_layout(0.2)
+        tight_layout(pad=0.2)
         save_figure(suffix+'det')
         gcf().canvas.set_window_title("Determinant")
     else:
         title("Determinant")
-        tight_layout(0.2)
+        tight_layout(pad=0.2)
 
     try:
         opt = OPTICAL.outLightMagnitude(mesh.Rectangular2D(mesh.Regular(-0.3125*aprtc, 0.3125*aprtc, 1001), mesh.Regular(0., 14., 1401)))
@@ -553,7 +553,7 @@ def plot_optical(suffix=''):
         plot_geometry(GEO.optical, color='0.5', alpha=0.2, mirror=True)
 
         if presentation:
-            tight_layout(0.2)
+            tight_layout(pad=0.2)
             save_figure(suffix+'opt')
             gcf().canvas.set_window_title("Optical Field")
             figure()
@@ -570,7 +570,7 @@ def plot_optical(suffix=''):
         xlim(0., hm[-1])
 
         if presentation:
-            tight_layout(0.2)
+            tight_layout(pad=0.2)
             save_figure(suffix+'optr')
             gcf().canvas.set_window_title("Lateral")
             figure()
@@ -590,7 +590,7 @@ def plot_optical(suffix=''):
 
         if presentation:
             ylabel("Refractive Index")
-            tight_layout(0.2)
+            tight_layout(pad=0.2)
             save_figure(suffix+'optz')
             gcf().canvas.set_window_title("Vertical")
         else:
@@ -600,7 +600,7 @@ def plot_optical(suffix=''):
         suptitle(u"LP$_{{{m},{n}}}$".format(**DEF), fontsize=16)
 
         gcf().canvas.set_window_title("Optical")
-        tight_layout(0.)
+        tight_layout(pad=0.)
         subplots_adjust(top=0.89)
         save_figure()
 
@@ -632,7 +632,7 @@ try:
             yscale('log')
             title("Determinant")
             gcf().canvas.set_window_title("Optical")
-            tight_layout(0.1)
+            tight_layout(pad=0.1)
             lam_th = NAN
             loss_th = NAN
         else:
@@ -724,7 +724,7 @@ try:
         plot(times, currents, color=color_cycle[4])
         xlim(0, T_DYNAMIC.time)
         ylabel("Total Current [mA]")
-        tight_layout(0.2)
+        tight_layout(pad=0.2)
         gcf().canvas.set_window_title("Temperature/Current Evolution ({:.1f})".format(heat_t/(heat_t+cool_t)))
         save_figure("u{:.2f}v-h{:.2f}-time-temp".format(U, heat_t/(heat_t+cool_t)))
 
@@ -768,7 +768,7 @@ try:
             yscale('log')
             title("Determinant")
             gcf().canvas.set_window_title("Optical")
-            tight_layout(0.1)
+            tight_layout(pad=0.1)
             save_figure('lp{}x-det'.format(DEF['m']))
         else:
             lam = OPTICAL.outWavelength()
@@ -793,7 +793,7 @@ try:
             GAIN.inTemperature = gT
             plot_gain_spectrum(True)
         axvline(1310., color='0.7' if presentation else 'k', lw=1)
-        tight_layout(0.2)
+        tight_layout(pad=0.2)
         save_figure()
 
     elif task == 'EB':
@@ -816,7 +816,7 @@ try:
             for l in levels['lh']:
                 axhline(vo+l, color=lh_color, ls='--')
         gcf().canvas.set_window_title("Band edges")
-        tight_layout(0.2)
+        tight_layout(pad=0.2)
         save_figure()
 
     elif task == 'T0':
@@ -864,13 +864,13 @@ try:
         work.run(save=save_h5 and '{}.h5'.format(desc))
         J = abs(ELECTRICAL.get_total_current())
         print_log(LOG_INFO, "Total current: {:.3g} mA".format(J))
-        jtemp = THERMAL.outTemperature(mesh.Rectangular2D(THERMAL.mesh.get_midpoints().axis0, [zqw]), 'spline')
+        jtemp = THERMAL.outTemperature(mesh.Rectangular2D(THERMAL.mesh.elements.mesh.axis0, [zqw]), 'spline')
         T = max(jtemp)
         print_log(LOG_INFO, "Junction temperature: {:.2g} K".format(T))
 
         DIFFUSION.compute_threshold()
         optstart = approximate_mode(m,n)
-        
+
         def func(volt):
             """Function to search zero of"""
             ELECTRICAL.voltage_boundary[0].value = volt
@@ -881,7 +881,7 @@ try:
             plask.print_log('result', "ThresholdSearch: V = {:.4f} V, loss = {:g} / cm"
                             .format(volt, val))
             return val
-        
+
         brentq(func, 1.0, U)
         U = ELECTRICAL.voltage_boundary[0].value
         Jth = abs(ELECTRICAL.get_total_current())
@@ -906,7 +906,7 @@ try:
             output.write('{oxide_loc:.2f} {aprt:.1f}  {solvers}   {J:6.3f}  {DEF[m]:02d} {n:02d}  {U:6.3f} {Jth:6.3f}  {lam_th:6.2f} {loss_th:7.3f}  {T:5.1f}  {P:.4g}\n'.format(**locals()))
         plot_optical(suffix=suffix)
         print_log('result', 'lambda = {lam_th:6.2f}nm  loss = {loss_th:g}/cm\n'.format(**locals()))
-        
+
 
     elif task == 'L1':
         work = algorithm.ThermoElectric(THERMAL, ELECTRICAL)
@@ -917,7 +917,7 @@ try:
 
         OPTICAL.find_mode(lam, m=m)
 
-        gmsh = OPTICAL.mesh.get_midpoints().axis0
+        gmsh = OPTICAL.mesh.elements.mesh.axis0
         GAIN.mesh = gmsh
 
         def func(arg):
@@ -956,7 +956,7 @@ try:
         if adt:
             print_log('info', "Computing power with temperature adjustement")
             Tprev = 0.
-            T = max(THERMAL.outTemperature(mesh.Rectangular2D(THERMAL.mesh.get_midpoints().axis0, [zqw]), 'spline'))
+            T = max(THERMAL.outTemperature(mesh.Rectangular2D(THERMAL.mesh.elements.mesh.axis0, [zqw]), 'spline'))
             THERMAL.inHeat = ELECTRICAL.outHeat + OPTICAL.outHeat
             while abs(T - Tprev) > 0.01:
                 Pprev = P
@@ -967,7 +967,7 @@ try:
                 OPTICAL.modes[0].power = P
                 work.run(save=False)
                 Tprev = T
-                T = max(THERMAL.outTemperature(mesh.Rectangular2D(THERMAL.mesh.get_midpoints().axis0, [zqw]), 'spline'))
+                T = max(THERMAL.outTemperature(mesh.Rectangular2D(THERMAL.mesh.elements.mesh.axis0, [zqw]), 'spline'))
                 print_log('result', "LI: P = {:.4g} mW  T = {:.2f} K   (previously: P = {:.4g} mW  T = {:.2f} K)".format(P, T, Pprev, Tprev))
             OPTICAL.find_mode(lam, m=m)
             OPTICAL.modes[0].power = P
@@ -1039,7 +1039,7 @@ try:
 
         DIFFUSION.compute_threshold()
 
-        gmsh = OPTICAL.mesh.get_midpoints().axis0
+        gmsh = OPTICAL.mesh.element.mesh.axis0
         GAIN.mesh = gmsh
 
         for m,n in modes:
@@ -1082,7 +1082,7 @@ try:
         rname = 'li.out'
         output = open(rname, 'a')
 
-        gmsh = OPTICAL.mesh.get_midpoints().axis0
+        gmsh = OPTICAL.mesh.elements.mesh.axis0
         GAIN.mesh = gmsh
 
         work = algorithm.ThermoElectric(THERMAL, ELECTRICAL)

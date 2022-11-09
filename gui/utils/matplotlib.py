@@ -92,6 +92,8 @@ class PlotWidgetBase(QWidget):
             self._create_toolbar()
             NavigationToolbar2.__init__(self, canvas)
 
+            self._last_cursor_attr = '_last_cursor' if hasattr(self, '_last_cursor') else '_lastCursor'
+
             self.controller = weakref.proxy(controller)
             if 'select_plane' in self._actions:
                 self.disable_planes(('long','tran','vert'))
@@ -168,21 +170,21 @@ class PlotWidgetBase(QWidget):
             except AttributeError:
                 return self._active if self._active is not None else 'NONE'
 
-        def set_cursor(self, cursor):
-            super().set_cursor(cursor)
-            self._lastCursor = cursor
+        def _set_cursor(self, cursor):
+            self.canvas.set_cursor(cursor)
+            setattr(self, self._last_cursor_attr, cursor)
 
         def mouse_move(self, event):
             if not event.inaxes or not self._current_mode or self._current_mode == 'NONE':
-                if self._lastCursor != cursors.POINTER:
-                    self.set_cursor(cursors.POINTER)
+                if getattr(self, self._last_cursor_attr) != cursors.POINTER:
+                    self._set_cursor(cursors.POINTER)
             else:
                 if self._current_mode == 'ZOOM':
-                    if self._lastCursor != cursors.SELECT_REGION:
-                        self.set_cursor(cursors.SELECT_REGION)
+                    if getattr(self, self._last_cursor_attr) != cursors.SELECT_REGION:
+                        self._set_cursor(cursors.SELECT_REGION)
                 elif (self._current_mode == 'PAN' and
-                      self._lastCursor != cursors.MOVE):
-                    self.set_cursor(cursors.MOVE)
+                      getattr(self, self._last_cursor_attr) != cursors.MOVE):
+                    self._set_cursor(cursors.MOVE)
 
             if event.xdata is not None and event.ydata is not None:
                 s = u'{2[0]} = {0:.4f} µm  {2[1]} = {1:.4f} µm'.format(float(event.xdata), float(event.ydata), self._axes)
@@ -323,7 +325,7 @@ class PlotWidgetBase(QWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self.figure.set_tight_layout(0)
+        self.figure.set_tight_layout(False)
 
     def plot_updater(self, set_limits, plane='12'):
         xlim, ylim = self.axes.get_xlim(), self.axes.set_ylim()

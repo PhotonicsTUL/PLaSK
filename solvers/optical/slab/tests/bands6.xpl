@@ -137,7 +137,7 @@ if __name__ == "__main__":
 
     ylabel("$\\omega/c$")
 
-    tight_layout(0.1)
+    tight_layout(pad=0.1)
     gcf().canvas.set_window_title('Photonic Bands')
     savefig('bands6.png')
 

@@ -319,11 +319,11 @@ else:
     plot_edges('CB')
     xlim(CE[0], CE[-1])
     legend(loc='best')
-    tight_layout(0.1)
+    tight_layout(pad=0.1)
     axhline(0., color='k')
     yscale('symlog')
     #plt.get_current_fig_manager().window.showMaximized()
-    tight_layout(0.5)
+    tight_layout(pad=0.5)
     gcf().canvas.set_window_title("Electrons")
 
     figure()
@@ -341,7 +341,7 @@ else:
     axhline(0., color='k')
     yscale('symlog')
     #plt.get_current_fig_manager().window.showMaximized()
-    tight_layout(0.5)
+    tight_layout(pad=0.5)
     gcf().canvas.set_window_title("Heavy Holes")
 
     figure()
@@ -359,7 +359,7 @@ else:
     axhline(0., color='k')
     yscale('symlog')
     #plt.get_current_fig_manager().window.showMaximized()
-    tight_layout(0.5)
+    tight_layout(pad=0.5)
     gcf().canvas.set_window_title("Light Holes")
 
 
@@ -399,7 +399,7 @@ def plot_bands(levels=None, co=0., vo=0., title="Levels", el_color=colors[0], hh
         print("LH: {}".format(', '.join(str(x) for x in vo+array(levels['lh']))))
     gcf().canvas.set_window_title(title)
     #plt.get_current_fig_manager().window.showMaximized()
-    tight_layout(0.5)
+    tight_layout(pad=0.5)
 
 figure()
 plot_bands(levels1, co=cbo, vo=vbo, title=u"Levels: Michał")
@@ -415,11 +415,11 @@ xlabel(u'Carriers concentation [1/cm³]')
 xscale('log')
 xlim(1e16, 1e20)
 # ylim(*yl)
-tight_layout(0.2)    
+tight_layout(pad=0.2)
 
 figure()
 plot_bands(levels3, co=coff, vo=voff, title=u"Levels: Michał 2")
-tight_layout(0.2)    
+tight_layout(pad=0.2)
 
 
 levels2 = GAIN2.get_energy_levels()[0]
@@ -448,18 +448,18 @@ axvline(1e19*gN, color='0.75')
 xlabel(u'Carriers concentation [1/cm³]')
 xscale('log')
 xlim(1e16, 1e20)
-tight_layout(0.2)    
+tight_layout(pad=0.2)
 
 plot_gain_spectrum(GAIN1, True, u"Michał")
 plot_gain_spectrum(GAIN2, False, u"Maciek")
 plot_gain_spectrum(GAIN3, False, u"Michał2")
 legend(loc='best')
 
-tight_layout(0.2)    
+tight_layout(pad=0.2)
 
 msh = mesh.Rectangular2D([0.], [zqw])
 print(GAIN2.outGain(msh, 400.)[0])
-    
+
 show()
 ]]></script>
 

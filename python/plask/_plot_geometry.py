@@ -969,7 +969,7 @@ def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=
             if geometry.dims == 3:
                 geometry_mesh = plask.mesh.Rectangular3D.SimpleGenerator()(geometry)
                 v = ({0, 1, 2} - set(ax)).pop()
-                vmesh = getattr(geometry_mesh, "axis{:1d}".format(v)).get_midpoints()
+                vmesh = getattr(geometry_mesh, "axis{:1d}".format(v)).midpoints
                 try:
                     nair = len(vmesh) * [plask.material.get('air')]
                 except ValueError:

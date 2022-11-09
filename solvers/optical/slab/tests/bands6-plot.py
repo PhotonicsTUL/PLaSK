@@ -22,5 +22,5 @@ grid(axis='x')
 
 ylabel("$\\omega/c$")
 
-tight_layout(0.1)
+tight_layout(pad=0.1)
 show()

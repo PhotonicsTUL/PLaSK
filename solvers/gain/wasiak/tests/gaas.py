@@ -124,7 +124,7 @@ class TestStructureGain(unittest.TestCase):
         xlabel("$z$ [nm]")
         ylabel("Band Edges [eV]")
         window_title("Band Edges")
-        tight_layout(0.5)
+        tight_layout(pad=0.5)
 
     def assertSequenceAlmostEqual(self, first, second, places=None, delta=None):
         self.assertEqual(len(first), len(second))

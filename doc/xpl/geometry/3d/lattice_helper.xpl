@@ -21,7 +21,7 @@
 rc.figure.figsize = 6.0, 4.5
 plot_geometry(GEO.lattice, margin=0.02, plane="yx")
 gca().set_aspect('equal')
-tight_layout(0.8)
+tight_layout(pad=0.8)
 show()
 ]]></script>
 

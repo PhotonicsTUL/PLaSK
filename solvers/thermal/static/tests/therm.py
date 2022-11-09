@@ -35,7 +35,7 @@ class Layer_Test(unittest.TestCase):
 
     def testConductivity(self):
         msh = mesh.Rectangular2D([1.], [0.7, 1.7])
-        for p in self.solver.mesh.get_midpoints():
+        for p in self.solver.mesh.elements.mesh:
             print(self.solver.geometry.get_material(p))
         conds = self.solver.outThermalConductivity(msh)
         self.assertAlmostEqual(conds[0][0], 2.000000, 6)

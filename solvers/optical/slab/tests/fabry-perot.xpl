@@ -93,27 +93,27 @@
 # lam = FOURIER3D.modes[m].lam
 # FOURIER3D.modes[m].power = 1000.
 # print(lam)
-# 
+#
 # vmsh = mesh.Rectangular3D([0.], [0.], mesh.Regular(-2., 10., 6001))
 # top = mesh.Rectangular3D([0.], [0.], [GEO.vcsel3d.bbox.upper.z])
-# 
+#
 # field = FOURIER3D.outLightMagnitude(vmsh)
 # fig = figure()
 # plot_profile(field)
 # yscale('log')
-# tight_layout(0.1)
+# tight_layout(pad=0.1)
 # fig.canvas.set_window_title("Vertical Field")
-# 
+#
 # E = FOURIER3D.outElectricField(top).array[0,0,0,:2]
 # H = FOURIER3D.outMagneticField(top).array[0,0,0,1::-1]
 # P = FOURIER3D.outLightMagnitude(top)[0]
-# 
+#
 # S = 0.5 * (E[0] * conj(H[0]) - E[1] * conj(H[1])).real
-# 
+#
 # Z0 = 376.73031346177
-# 
+#
 # R = E/H / Z0
-# 
+#
 # print(R[logical_not(isnan(R))])
 # print(S * 1e-12*X*Y)
 # print(P * 1e-12*X*Y)
@@ -132,7 +132,7 @@ field = FOURIER2D.outLightMagnitude(vmsh)
 fig = figure()
 plot_profile(field)
 yscale('log')
-tight_layout(0.1)
+tight_layout(pad=0.1)
 fig.canvas.set_window_title("Vertical Field")
 
 E = FOURIER2D.outElectricField(top).array[0,0,:2]

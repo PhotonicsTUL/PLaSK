@@ -91,7 +91,7 @@ class EffectiveFrequency(unittest.TestCase):
 
     def testRefractiveIndex(self):
         self.solver.set_simple_mesh()
-        msh = self.solver.mesh.get_midpoints()
+        msh = self.solver.mesh.elements.mesh
         geo = self.solver.geometry
         refr = [geo.get_material(point).Nr(980., 300.) for point in msh]
         self.assertEqual(
