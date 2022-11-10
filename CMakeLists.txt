@@ -885,10 +885,10 @@ else()
         set(BASH_COMPLETION_COMPLETIONSDIR "/etc/bash_completion.d")
         message(STATUS "Using fallback bash completion dir ${BASH_COMPLETION_COMPLETIONSDIR}")
     endif()
-    install(FILES utils/bash/plask DESTINATION ${BASH_COMPLETION_COMPLETIONSDIR} COMPONENT core)
+    install(FILES utils/bash/plask DESTINATION ${BASH_COMPLETION_COMPLETIONSDIR} COMPONENT completions)
 
     set(ZSH_COMPLETIONS_PATH /usr/share/zsh/vendor-completions CACHE PATH "Location of ZSH completions file")
-    install(FILES utils/zsh/_plask DESTINATION ${ZSH_COMPLETIONS_PATH} COMPONENT core)
+    install(FILES utils/zsh/_plask DESTINATION ${ZSH_COMPLETIONS_PATH} COMPONENT completions)
 
 endif()
 
