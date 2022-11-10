@@ -51,17 +51,21 @@ class VCSEL(unittest.TestCase):
                   <block dr="5." dz="0.07955" material="AlGaAs"/>
                   <block dr="5." dz="0.06949" material="GaAs"/>
                 </stack>
-                <block name="x1" dr="5." dz="0.06371" material="AlGaAs"/>
-                <shelf name="oxide-layer">
-                  <block dr="4." dz="0.01593" material="AlAs"/><block dr="1." dz="0.01593" material="AlOx"/>
-                </shelf>
-                <block name="x" dr="5." dz="0.00000" material="AlGaAs"/>
-                <block dr="5." dz="0.13649" material="GaAs"/>
-                <shelf name="QW">
-                  <block name="active" role="gain" dr="4." dz="0.00500" material="InGaAs"/><block dr="1." dz="0.00500" material="InGaAs"/>
-                </shelf>
-                <zero/>
-                <block dr="5." dz="0.13649" material="GaAs"/>
+                <item zero="0">
+                  <stack name="middle">
+                    <block name="x1" dr="5." dz="0.06371" material="AlGaAs"/>
+                    <shelf name="oxide-layer">
+                      <block dr="4." dz="0.01593" material="AlAs"/><block dr="1." dz="0.01593" material="AlOx"/>
+                    </shelf>
+                    <block name="x" dr="5." dz="0.00000" material="AlGaAs"/>
+                    <block dr="5." dz="0.13649" material="GaAs"/>
+                    <shelf name="QW">
+                      <block name="active" role="gain" dr="4." dz="0.00500" material="InGaAs"/><block dr="1." dz="0.00500" material="InGaAs"/>
+                    </shelf>
+                    <zero/>
+                    <block dr="5." dz="0.13649" material="GaAs"/>
+                  </stack>
+                </item>
                 <stack name="bottom-dbr" repeat="29">
                   <block dr="5." dz="0.07955" material="AlGaAs"/>
                   <block dr="5." dz="0.06949" material="GaAs"/>
@@ -126,6 +130,36 @@ class VCSEL(unittest.TestCase):
         P = 0.5 * real(E[:,1]*conj(H[:,0]) - E[:,0]*conj(H[:,1]))
         self.assertAlmostEqual(2e3*pi * sum(1e-6*rr * P) * dr / self.solver.modes[m].power, 1.0, 2)
 
+    def _integrals_test(self, domain, prec, right=None, nr=101):
+        self.solver.domain = domain
+        bbox = self.solver.geometry.get_object_bboxes(self.manager.geo.middle)[0]
+        if right is None:
+            right = bbox.right
+        msh = mesh.Rectangular2D(mesh.Regular(0., right, nr), mesh.Regular(bbox.bottom, bbox.top, 501))
+        m = self.solver.find_mode(979.0)
+        dr = msh.axis0[1] - msh.axis0[0]
+        dz = msh.axis1[1] - msh.axis1[0]
+        integral_mesh = msh.elements.mesh
+        rr, _ = meshgrid(integral_mesh.axis0, integral_mesh.axis1, indexing='ij')
+
+        E = self.solver.outLightE(integral_mesh).array
+        E2 = sum(real(E*conj(E)), -1)
+        EE0 = 0.5 * 2*pi * sum((rr * E2).ravel()) * dr * dz
+        EE1 = self.solver.integrateEE(bbox.bottom, bbox.top)
+        self.assertAlmostEqual(EE0 / EE1, 1., prec)
+
+        H = self.solver.outLightH(integral_mesh).array
+        H2 = sum(real(H*conj(H)), -1)
+        HH0 = 0.5 * 2*pi * sum((rr * H2).ravel()) * dr * dz
+        HH1 = self.solver.integrateHH(bbox.bottom, bbox.top)
+        self.assertAlmostEqual(HH0 / HH1, 1., prec)
+
+    def testIntegralsFinite(self):
+        self._integrals_test('finite', 3)
+
+    def testIntegralsInfinite(self):
+        self._integrals_test('infinite', 3, 20., 301)
+
     def plot_determinant(self):
         lams = linspace(979., 982., 201)
         dets = self.solver.get_determinant(lam=lams, m=1)
@@ -144,20 +178,20 @@ class VCSEL(unittest.TestCase):
         figure()
         plot_geometry(self.solver.geometry, color='k', alpha=0.15)
         plot_field(field, scale, comp='r', cmap='bwr')
-        gcf().canvas.set_window_title("Er")
+        window_title("Er")
         colorbar(use_gridspec=True)
         tight_layout(pad=0.1)
         figure()
         plot_geometry(self.solver.geometry, color='k', alpha=0.15)
         plot_field(field, scale, comp='p', cmap='bwr')
         colorbar(use_gridspec=True)
-        gcf().canvas.set_window_title("Ep")
+        window_title("Ep")
         tight_layout(pad=0.1)
         figure()
         plot_geometry(self.solver.geometry, color='k', alpha=0.15)
         plot_field(field, scale, comp='z', cmap='bwr')
         colorbar(use_gridspec=True)
-        gcf().canvas.set_window_title("Ez")
+        window_title("Ez")
         tight_layout(pad=0.1)
 
         figure()
@@ -165,7 +199,7 @@ class VCSEL(unittest.TestCase):
         light = self.solver.outLightMagnitude(msh)
         plot_field(light)
         colorbar(use_gridspec=True)
-        gcf().canvas.set_window_title("Mag")
+        window_title("Mag")
         tight_layout(pad=0.1)
 
         z = self.solver.geometry.get_object_bboxes(self.manager.geo.QW)[0].center.z
@@ -175,35 +209,12 @@ class VCSEL(unittest.TestCase):
         zmsh = mesh.Rectangular2D([r], linspace(box.bottom, box.top, 10001))
         figure()
         plot_profile(self.solver.outLightMagnitude(rmsh))
-        gcf().canvas.set_window_title(u"Horizontal (z = {:.1f} µm".format(z))
+        window_title(u"Horizontal (z = {:.1f} µm".format(z))
         tight_layout(pad=0.1)
         figure()
         plot_profile(self.solver.outLightMagnitude(zmsh), swap_axes=True)
-        gcf().canvas.set_window_title(u"Vertical (r = {:.1f} µm".format(r))
+        window_title(u"Vertical (r = {:.1f} µm".format(r))
         tight_layout(pad=0.1)
-
-        # Test integration of the fields
-
-        dr = msh.axis0[1] - msh.axis0[0]
-        dz = msh.axis1[1] - msh.axis1[0]
-        integral_mesh = msh.elements.mesh
-        rr, _ = meshgrid(integral_mesh.axis0, integral_mesh.axis1, indexing='ij')
-
-        try:
-            E = self.solver.outLightE(integral_mesh).array
-            E2 = sum(real(E*conj(E)), -1)
-            EE0 = 0.5 * 2*pi * sum((rr * E2).ravel()) * dr * dz
-            EE1 = self.solver.integrateEE(box.bottom, box.top)
-            print_log('result', "E:", EE0 / EE1)
-
-            H = self.solver.outLightH(integral_mesh).array
-            H2 = sum(real(H*conj(H)), -1)
-            HH0 = 0.5 * 2*pi * sum((rr * H2).ravel()) * dr * dz
-            HH1 = self.solver.integrateHH(box.bottom, box.top)
-            print_log('result', "H:", HH0 / HH1)
-
-        except NotImplemented:
-            pass
 
 
 if __name__ == "__main__":

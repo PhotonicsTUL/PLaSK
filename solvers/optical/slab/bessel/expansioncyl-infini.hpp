@@ -35,7 +35,7 @@ struct PLASK_SOLVER_API ExpansionBesselInfini: public ExpansionBessel {
         return rbounds[rbounds.size() - 1] / (kpts[i] * kdelts[i]);
     }
 
-    cvector getHz(const cvector& Bz) override { return Bz; }
+    cmatrix getHzMatrix(const cmatrix& Bz, cmatrix& Hz) override { return Bz; }
 };
 
 }}} // # namespace plask::optical::slab

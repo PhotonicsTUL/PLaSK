@@ -43,19 +43,23 @@
         <rectangle name="dbr-algaas" material="AlGaAs" dr="{mesa}" dz="0.07963"/>
       </stack>
       <again ref="dbr-gaas"/>
-      <rectangle name="x1" material="AlGaAs" dr="{mesa}" dz="{0.06371-x}"/>
-      <shelf name="oxide-layer">
-        <rectangle material="AlAs" dr="{aprt/2}" dz="0.01593"/>
-        <rectangle name="alox" material="AlOx" dr="{mesa-aprt/2}" dz="0.01593"/>
-      </shelf>
-      <rectangle name="x" material="AlGaAs" dr="{mesa}" dz="{x}"/>
-      <rectangle name="cavity" material="GaAs" dr="{mesa}" dz="0.13649"/>
-      <shelf name="QW">
-        <rectangle name="active" role="gain" material="InGaAs" dr="{aprt/2}" dz="0.00500"/>
-        <rectangle name="inactive" material="InGaAs" dr="{mesa-aprt/2}" dz="0.00500"/>
-      </shelf>
-      <zero/>
-      <again ref="cavity"/>
+      <item zero="0">
+        <stack name="middle">
+          <rectangle name="x1" material="AlGaAs" dr="{mesa}" dz="{0.06371-x}"/>
+          <shelf name="oxide-layer">
+            <rectangle material="AlAs" dr="{aprt/2}" dz="0.01593"/>
+            <rectangle name="alox" material="AlOx" dr="{mesa-aprt/2}" dz="0.01593"/>
+          </shelf>
+          <rectangle name="x" material="AlGaAs" dr="{mesa}" dz="{x}"/>
+          <rectangle name="cavity" material="GaAs" dr="{mesa}" dz="0.13649"/>
+          <shelf name="QW">
+            <rectangle name="active" role="gain" material="InGaAs" dr="{aprt/2}" dz="0.00500"/>
+            <rectangle name="inactive" material="InGaAs" dr="{mesa-aprt/2}" dz="0.00500"/>
+          </shelf>
+          <zero/>
+          <again ref="cavity"/>
+        </stack>
+      </item>
       <stack name="bottom-dbr" repeat="29">
         <again ref="dbr-algaas"/>
         <again ref="dbr-gaas"/>
@@ -68,13 +72,13 @@
 <solvers>
   <optical name="efm" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="vcsel"/>
-    <mode emission="top" lam0="980." vat="0" vlam="981."/>
+    <mode lam0="980." emission="top" vlam="981." vat="0"/>
   </optical>
   <optical name="bessel" solver="BesselCyl" lib="slab">
     <geometry ref="vcsel"/>
-    <expansion domain="{domain}" k-method="laguerre" k-scale="0.5" k-max="4" lam0="980." size="{N0 if N0 is not None else 20}"/>
+    <expansion lam0="980." domain="{domain}" size="{N0 if N0 is not None else 20}" k-method="laguerre" k-max="4" k-scale="0.5"/>
     <interface object="QW"/>
-    <pml dist="30." factor="{pml}" size="2."/>
+    <pml factor="{pml}" dist="30." size="2."/>
   </optical>
 </solvers>
 

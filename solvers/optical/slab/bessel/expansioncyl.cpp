@@ -472,42 +472,87 @@ double ExpansionBessel::integratePoyntingVert(const cvector& E, const cvector& H
 
 double ExpansionBessel::integrateField(WhichField field, size_t layer, const cmatrix& TE, const cmatrix& TH,
                                        const std::function<std::pair<dcomplex,dcomplex>(size_t, size_t)>& vertical) {
-    throw NotImplemented("Integrals for Bessel solver");
-    // size_t N = SOLVER->size;
-    // double resxy = 0.;
-    // double resz = 0.;
-    // double R = rbounds[rbounds.size() - 1];
-    // if (which_field == FIELD_E) {
-    //     cvector Ez(N), Dz(N);
-    //     for (size_t j = 0; j != N; ++j) {
-    //         size_t js = idxs(j), jp = idxp(j);
-    //         Dz[j] = H[js] + H[jp];
-    //     }
-    //     mult_matrix_by_vector(layers_integrals[layer].V_k, Dz, Ez);
-    //     for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
-    //         double eta = fieldFactor(i);
-    //         size_t is = idxs(i);
-    //         size_t ip = idxp(i);
-    //         resxy += real(E[is] * conj(E[is]) + E[ip] * conj(E[ip])) * eta;
-    //         resz += real(Ez[i] * conj(Ez[i])) * eta;
-    //     }
-    // } else {
-    //     cvector Bz(N);
-    //     for (size_t j = 0; j != N; ++j) {
-    //         size_t js = idxs(j), jp = idxp(j);
-    //         Bz[j] = E[js] + E[jp];
-    //     }
-    //     cvector Hz = getHz(Bz);
-    //     for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
-    //         double eta = fieldFactor(i);
-    //         size_t is = idxs(i);
-    //         size_t ip = idxp(i);
-    //         resxy += real(H[is] * conj(H[is]) + H[ip] * conj(H[ip])) * eta;
-    //         resz += real(Hz[i] * conj(Hz[i])) * eta;
-    //     }
-    // }
-    // return 2 * PI * (resxy + resz / real(k0 * conj(k0)));
-    return 0.;
+    assert(TE.rows() == matrixSize());
+    assert(TH.rows() == matrixSize());
+
+    size_t M = TE.cols();
+    assert(TH.cols() == M);
+
+    size_t N = SOLVER->size;
+
+    TempMatrix temp = getTempMatrix();
+    cmatrix Fz(N, M, temp.data()), DBz(N, M, temp.data() + N*M);
+
+    double R = rbounds[rbounds.size() - 1];
+    double fz = 0.5 / real(k0 * conj(k0));
+
+    if (which_field == FIELD_E) {
+        #pragma omp parallel for
+        for (openmp_size_t m = 0; m < M; m++) {
+            cvector Ez(N), Dz(N);
+            for (size_t j = 0; j != N; ++j) {
+                size_t js = idxs(j), jp = idxp(j);
+                DBz(j,m) = TH(js,m) + TH(jp,m);
+            }
+        }
+        mult_matrix_by_matrix(layers_integrals[layer].V_k, DBz, Fz);
+    } else {
+        #pragma omp parallel for
+        for (openmp_size_t m = 0; m < M; m++) {
+            for (size_t j = 0; j != N; ++j) {
+                size_t js = idxs(j), jp = idxp(j);
+                DBz(j,m) = TE(js,m) + TE(jp,m);
+            }
+        }
+        Fz = getHzMatrix(DBz, Fz);
+    }
+
+    double result = 0.;
+
+    if (which_field == FIELD_E) {
+        #pragma omp parallel for
+        for (openmp_size_t m1 = 0; m1 < M; ++m1) {
+            for (openmp_size_t m2 = m1; m2 < M; ++m2) {
+                dcomplex resxy = 0., resz = 0.;
+                for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
+                    double eta = fieldFactor(i);
+                    size_t is = idxs(i);
+                    size_t ip = idxp(i);
+                    resxy += (TE(is,m1) * conj(TE(is,m2)) + TE(ip,m1) * conj(TE(ip,m2))) * eta;
+                    resz += Fz(i,m1) * conj(Fz(i,m2)) * eta;
+                }
+                if (!(is_zero(resxy) && is_zero(resz))) {
+                    auto vert = vertical(m1, m2);
+                    double res = real(resxy * vert.first + fz * resz * vert.second);
+                    if (m2 != m1) res *= 2;
+                    #pragma omp atomic
+                    result += res;
+                }
+            }
+        }
+    } else {
+        #pragma omp parallel for
+        for (openmp_size_t m1 = 0; m1 < M; ++m1) {
+            for (openmp_size_t m2 = m1; m2 < M; ++m2) {
+                dcomplex resxy = 0., resz = 0.;
+                for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
+                    double eta = fieldFactor(i);
+                    size_t is = idxs(i);
+                    size_t ip = idxp(i);
+                    resxy += (TH(is,m1) * conj(TH(is,m2)) + TH(ip,m1) * conj(TH(ip,m2))) * eta;
+                    resz += Fz(i,m1) * conj(Fz(i,m2)) * eta;
+                }
+                if (!(is_zero(resxy) && is_zero(resz))) {
+                    auto vert = vertical(m1, m2);
+                    double res = real(resxy * vert.second + fz * resz * vert.first);
+                    if (m2 != m1) res *= 2;
+                    #pragma omp atomic
+                    result += res;
+                }
+            }
+        }
+    }
+    return 2 * PI * result;
 }
 
 }}}  // namespace plask::optical::slab

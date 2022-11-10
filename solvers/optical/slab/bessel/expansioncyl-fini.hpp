@@ -33,9 +33,8 @@ struct PLASK_SOLVER_API ExpansionBesselFini : public ExpansionBessel {
 
     double fieldFactor(size_t i) override;
 
-    cvector getHz(const cvector& Bz) override {
-        cvector Hz(Bz.size());
-        mult_matrix_by_vector(mu_integrals.V_k, Bz, Hz);
+    cmatrix getHzMatrix(const cmatrix& Bz, cmatrix& Hz) override {
+        mult_matrix_by_matrix(mu_integrals.V_k, Bz, Hz);
         return Hz;
     }
 

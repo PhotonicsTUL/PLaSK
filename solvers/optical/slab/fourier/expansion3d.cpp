@@ -1381,17 +1381,17 @@ double ExpansionPW3D::integrateField(WhichField field, size_t layer, const cmatr
         #pragma omp parallel for
         for (openmp_size_t m1 = 0; m1 < M; ++m1) {
             for (openmp_size_t m2 = m1; m2 < M; ++m2) {
-                dcomplex sumxy = 0., sumz = 0.;
+                dcomplex resxy = 0., resz = 0.;
                 for (int t = -ordt; t <= ordt; ++t) {
                     for (int l = -ordl; l <= ordl; ++l) {
                         size_t ix = iEx(l,t), iy = iEy(l,t), i = idx(l,t);
-                        sumxy += TE(ix,m1) * conj(TE(ix,m2)) + TE(iy,m1) * conj(TE(iy,m2));
-                        sumz += Fz(i,m1) * conj(Fz(i,m2));
+                        resxy += TE(ix,m1) * conj(TE(ix,m2)) + TE(iy,m1) * conj(TE(iy,m2));
+                        resz += Fz(i,m1) * conj(Fz(i,m2));
                     }
                 }
-                if (!(is_zero(sumxy) && is_zero(sumz))) {
+                if (!(is_zero(resxy) && is_zero(resz))) {
                     auto vert = vertical(m1, m2);
-                    double res = real(sumxy * vert.first + sumz * vert.second);
+                    double res = real(resxy * vert.first + resz * vert.second);
                     if (m2 != m1) res *= 2;
                     #pragma omp atomic
                     result += res;
@@ -1403,17 +1403,17 @@ double ExpansionPW3D::integrateField(WhichField field, size_t layer, const cmatr
         #pragma omp parallel for
         for (openmp_size_t m1 = 0; m1 < M; ++m1) {
             for (openmp_size_t m2 = m1; m2 < M; ++m2) {
-                dcomplex sumxy = 0., sumz = 0.;
+                dcomplex resxy = 0., resz = 0.;
                 for (int t = -ordt; t <= ordt; ++t) {
                     for (int l = -ordl; l <= ordl; ++l) {
                         size_t ix = iHx(l,t), iy = iHy(l,t), i = idx(l,t);
-                        sumxy += TH(ix,m1) * conj(TH(ix,m2)) + TH(iy,m1) * conj(TH(iy,m2));
-                        sumz += Fz(i,m1) * conj(Fz(i,m2));
+                        resxy += TH(ix,m1) * conj(TH(ix,m2)) + TH(iy,m1) * conj(TH(iy,m2));
+                        resz += Fz(i,m1) * conj(Fz(i,m2));
                     }
                 }
-                if (!(is_zero(sumxy) && is_zero(sumz))) {
+                if (!(is_zero(resxy) && is_zero(resz))) {
                     auto vert = vertical(m1, m2);
-                    double res = real(sumxy * vert.second + sumz * vert.first);
+                    double res = real(resxy * vert.second + resz * vert.first);
                     if (m2 != m1) res *= 2;
                     #pragma omp atomic
                     result += res;

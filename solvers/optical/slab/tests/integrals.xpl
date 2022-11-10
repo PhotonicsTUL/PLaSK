@@ -97,13 +97,13 @@ class Integrals3DTest(unittest.TestCase):
         # En = self.comp.outLightE(self.imesh).array
         # EEn = 0.5/phys.eta0 * sum(real(En * conj(En))) * (self.ibox.top - self.ibox.bottom) / (nx * ny * nz)
         EEa = 0.25/phys.eta0 * self.comp.integrateEE(self.ibox.bottom, self.ibox.top) / (self.ibox.front * self.ibox.right)
-        self.assertAlmostEqual(EEn, EEa, 3)
+        self.assertAlmostEqual(EEa / EEn, 1., 3)
 
     def test_integrals_H(self):
         Hn = self.comp.outLightH(self.imesh).array
         HHn = 0.5*phys.eta0 * sum(real(Hn * conj(Hn))) * (self.ibox.top - self.ibox.bottom) / (nx * ny * nz)
         HHa = 0.25*phys.eta0 * self.comp.integrateHH(self.ibox.bottom, self.ibox.top) / (self.ibox.front * self.ibox.right)
-        self.assertAlmostEqual(HHn, HHa, 2)
+        self.assertAlmostEqual(HHa / HHn, 1., 3)
 
     def test_absorption_numeric(self):
         EEn = sum(self.comp.outLightMagnitude(self.amesh)) * (self.abox.top - self.abox.bottom) / (nx * ny * nz)

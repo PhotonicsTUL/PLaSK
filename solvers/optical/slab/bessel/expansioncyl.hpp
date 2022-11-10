@@ -144,7 +144,7 @@ struct PLASK_SOLVER_API ExpansionBessel : public Expansion {
 
     virtual double fieldFactor(size_t i) = 0;
 
-    virtual cvector getHz(const cvector& Bz) = 0;
+    virtual cmatrix getHzMatrix(const cmatrix& Bz, cmatrix& Hz) = 0;
 
   public:
 
