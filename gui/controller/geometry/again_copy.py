@@ -110,30 +110,30 @@ class GNCSimplifyGradientsController(GNodeController):
         super().construct_form()
         self.lam = self.construct_line_edit('Wavelength [nm]:', node_property_name='lam')
         self.lam.setToolTip(
-            '&tl;simplify-gradients <b>lam</b>=""/&gt;<br/>'
+            '&lt;simplify-gradients <b>lam</b>=""/&gt;<br/>'
             'Wavelength for which simplified gradient is determined. Required.'
         )
         self.linear = self.construct_combo_box('Linear parameter:', ('nr', 'eps'), node_property_name='linear')
         self.linear.setToolTip(
-            '&tl;simplify-gradients lam="" <b>linear</b>=""/&gt;<br/>'
+            '&lt;simplify-gradients lam="" <b>linear</b>=""/&gt;<br/>'
             'Specifies which parameter is linear: refractive index (<i>nr</i>) or permittivity (<i>eps</i>).'
         )
         self.linear.lineEdit().setPlaceholderText('nr')
         self.temp = self.construct_line_edit('Temperature [K]:', node_property_name='temp')
         self.temp.setToolTip(
-            '&tl;simplify-gradients lam="" <b>temp</b>=""/&gt;<br/>'
+            '&lt;simplify-gradients lam="" <b>temp</b>=""/&gt;<br/>'
             'Temperature at which the refractive indices are retrieved.'
         )
         self.temp.setPlaceholderText('300')
         self.dtemp = self.construct_line_edit('Temperature step [K]:', node_property_name='dtemp')
         self.dtemp.setToolTip(
-            '&tl;simplify-gradients lam="" <b>dtemp</b>=""/&gt;<br/>'
+            '&lt;simplify-gradients lam="" <b>dtemp</b>=""/&gt;<br/>'
             'Temperature step for approximating temperature dependence of the simplified refractive indices.'
         )
         self.dtemp.setPlaceholderText('100')
         self.only_role = self.construct_line_edit('Only for role:', node_property_name='only_role')
         self.only_role.setToolTip(
-            '&tl;simplify-gradients lam="" <b>only-role</b>=""/&gt;<br/>'
+            '&lt;simplify-gradients lam="" <b>only-role</b>=""/&gt;<br/>'
             'Only gradients with this role are simplified. If empty, all gradients are simplified.'
         )
 
