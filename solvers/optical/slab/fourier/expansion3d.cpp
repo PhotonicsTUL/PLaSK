@@ -136,7 +136,7 @@ void ExpansionPW3D::init()
                             symmetric_long()? dct_symmetry : FFT::SYMMETRY_NONE,
                             symmetric_tran()? dct_symmetry : FFT::SYMMETRY_NONE);
 
-    if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW) {
+    if (SOLVER->expansion_rule == FourierSolver3D::RULE_COMBINED) {
         cos2FFT = FFT::Forward2D(2, nNl, nNt,
                                  symmetric_long()? dct_symmetry : FFT::SYMMETRY_NONE,
                                  symmetric_tran()? dct_symmetry : FFT::SYMMETRY_NONE);
@@ -322,7 +322,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
     std::fill_n(reinterpret_cast<char*>(coeffs.data()), nN * sizeof(Coeff), 0);
 
     // Normal cos² ans cos·sin for proper expansion rule
-    if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW) {
+    if (SOLVER->expansion_rule == FourierSolver3D::RULE_COMBINED) {
         gradients[layer].reset(nN, Gradient(NAN, 0.));
     }
     size_t normnans = nN;
@@ -334,7 +334,8 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
     double pb = back + SOLVER->pml_long.size, pf = front - SOLVER->pml_long.size;
     double pl = left + SOLVER->pml_tran.size, pr = right - SOLVER->pml_tran.size;
 
-    bool anisotropic = !(symmetric_long() || symmetric_tran()), nondiagonal = false;
+    bool anisotropic = SOLVER->expansion_rule != FourierSolver3D::RULE_INVERSE && !(symmetric_long() || symmetric_tran()),
+         nondiagonal = false;
 
     // We store data for computing gradients
     // TODO: it is possible to progressively store only neighbour cells and thus reduce the memory usage,
@@ -343,7 +344,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
     std::unique_ptr<TempMatrix> vals_temp_matrix;
     double* vals;
     size_t nMl = refl * nNl, nMt = reft * nNt;
-    if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW) {
+    if (SOLVER->expansion_rule == FourierSolver3D::RULE_COMBINED) {
         if (nMl * nMt > 2 * matrixSize() * matrixSize()) {
             vals_lock.reset(new double[nMl * nMt]);
             vals = vals_lock.get();
@@ -433,7 +434,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
                         cell[j].c22 *= s;
                     }
 
-                    if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW)
+                    if (SOLVER->expansion_rule == FourierSolver3D::RULE_COMBINED)
                         vals[nMl * t + l] = abs(real(cell[j].c00)) + abs(real(cell[j].c11));
                     else
                         norm += (real(cell[j].c00) + real(cell[j].c11)) * vec(long_mesh->at(l) - long0, tran_mesh->at(t) - tran0);
@@ -450,10 +451,10 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
                 }
             }
             eps *= nfact;
-            if (SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1 && eps.c22 != 0.) eps.c22 = 1./eps.c22;
+            if (SOLVER->expansion_rule == FourierSolver3D::RULE_OLD && eps.c22 != 0.) eps.c22 = 1./eps.c22;
 
             double a = abs(norm);
-            if (a >= normlim && SOLVER->expansion_rule != FourierSolver3D::RULE_NEW) {
+            if (a >= normlim && SOLVER->expansion_rule != FourierSolver3D::RULE_COMBINED) {
                 norm /= a;
 
                 // Compute avg(eps**(-1))
@@ -479,7 +480,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
     }
 
     // Compute surface normals using larger cell sizes
-    if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW) {
+    if (SOLVER->expansion_rule == FourierSolver3D::RULE_COMBINED) {
         // First increase tolerance to avoid artifacts
         double vmax = 0., vmin = std::numeric_limits<double>::max();
         double* v = vals;
@@ -570,8 +571,16 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
         SOLVER->writelog(LOG_DETAIL, "Layer {0} is uniform", layer);
         std::fill_n(reinterpret_cast<dcomplex*>(coeffs.data() + 1), 6 * (coeffs.size() - 1), 0.);
     } else {
-         // Perform FFT
-        if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW) {
+        // Perform FFT
+        if (SOLVER->expansion_rule == FourierSolver3D::RULE_INVERSE) {
+            matFFT.execute(reinterpret_cast<dcomplex*>(coeffs.data()), 1);
+            matFFT.execute(reinterpret_cast<dcomplex*>(coeffs.data()) + 2, 1);
+            if (anisotropic) {
+                matFFT.execute(reinterpret_cast<dcomplex*>(coeffs.data()) + 4, 1);
+            } else {
+                for (size_t i = 0; i != nN; ++i) coeffs[i].ic11 = coeffs[i].ic00;
+            }
+        } else if (SOLVER->expansion_rule == FourierSolver3D::RULE_COMBINED) {
             if (anisotropic) {
                 matFFT.execute(reinterpret_cast<dcomplex*>(coeffs.data()), 5);
             } else {
@@ -604,7 +613,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
             }
         }
 
-        if (SOLVER->expansion_rule != FourierSolver3D::RULE_OLD1) {
+        if (SOLVER->expansion_rule != FourierSolver3D::RULE_OLD) {
             TempMatrix tempMatrix = getTempMatrix();
             cmatrix work1(NN, NN, tempMatrix.data());
             cmatrix work2(NN, NN, tempMatrix.data() + NN*NN);
@@ -622,7 +631,21 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
             make_unit_matrix(coeffs_ezz[layer]);
             invmult(work1, coeffs_ezz[layer]);
 
-            if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW) {
+            if (SOLVER->expansion_rule == FourierSolver3D::RULE_INVERSE) {
+                makeToeplitzMatrix(work1, ordl, ordt, layer, 2, symx, symy);
+                coeffs_dexx[layer].reset(NN, NN);
+                make_unit_matrix(coeffs_dexx[layer]);
+                invmult(work1, coeffs_dexx[layer]);
+                if (anisotropic) {
+                    makeToeplitzMatrix(work1, ordl, ordt, layer, 4, -symx, -symy);
+                    coeffs_deyy[layer].reset(NN, NN);
+                    make_unit_matrix(coeffs_deyy[layer]);
+                    invmult(work1, coeffs_deyy[layer]);
+                } else {
+                    coeffs_deyy[layer] = coeffs_dexx[layer];
+                }
+
+            } else if (SOLVER->expansion_rule == FourierSolver3D::RULE_COMBINED) {
                 // Fill gaps in cos² and cos·sin matrices
                 if (nN == normnans)
                     throw ComputationError(SOLVER->getId(), "Cannot compute normals - consider changing expansion size");
@@ -759,10 +782,19 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay,
                 const double phast = kt * (dest_mesh->at(i).c1-left) / Lt;
                 for (int kl = -nl; kl <= nl; ++kl) {
                     size_t l = (kl >= 0)? kl : (symmetric_long())? -kl : kl + nNl;
-                    eps += Tensor3<dcomplex>(coeffs[lay][nNl*t+l]) * exp(2*PI * I * (kl*(dest_mesh->at(i).c0-back) / Ll + phast));
+                    const double phasl = kl * (dest_mesh->at(i).c0-back) / Ll;
+                    if (SOLVER->expansion_rule != FourierSolver3D::RULE_INVERSE)
+                        eps += Tensor3<dcomplex>(coeffs[lay][nNl*t+l]) * exp(2*PI * I * (phasl + phast));
+                    else
+                        eps += coeffs[lay][nNl*t+l].toInverseTensor() * exp(2*PI * I * (phasl + phast));
                 }
             }
-            if (SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1) eps.c22 = 1. / eps.c22;
+            if (SOLVER->expansion_rule == FourierSolver3D::RULE_OLD) {
+                eps.c22 = 1. / eps.c22;
+            } else if (SOLVER->expansion_rule == FourierSolver3D::RULE_INVERSE) {
+                eps.c00 = 1. / eps.c00;
+                eps.c11 = 1. / eps.c11;
+            }
             eps.sqrt_inplace();
             return eps;
         });
@@ -771,9 +803,10 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay,
         DataVector<Tensor3<dcomplex>> params(nl * nt);
         for (size_t t = 0; t != nNt; ++t) {
             size_t op = nl * t, oc = nNl * t;
-            for (size_t l = 0; l != nNl; ++l) {
-                params[op+l] = coeffs[lay][oc+l];
-            }
+            if (SOLVER->expansion_rule != FourierSolver3D::RULE_INVERSE)
+                for (size_t l = 0; l != nNl; ++l) params[op+l] = coeffs[lay][oc+l];
+            else
+                for (size_t l = 0; l != nNl; ++l) params[op+l] = coeffs[lay][oc+l].toInverseTensor();
         }
         auto dct_symmetry = SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1;
         FFT::Backward2D(4, nNl, nNt,
@@ -806,7 +839,12 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay,
             for (size_t l = 0, last = nl*(nt-1); l != nl; ++l) params[last+l] = params[l];
         }
         for (Tensor3<dcomplex>& eps: params) {
-            if (SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1) eps.c22 = 1. / eps.c22;
+            if (SOLVER->expansion_rule == FourierSolver3D::RULE_OLD) {
+                eps.c22 = 1. / eps.c22;
+            } else if (SOLVER->expansion_rule == FourierSolver3D::RULE_INVERSE) {
+                eps.c00 = 1. / eps.c00;
+                eps.c11 = 1. / eps.c11;
+            }
             eps.sqrt_inplace();
         }
         auto src_mesh = plask::make_shared<RectangularMesh<3>>(lcmesh, tcmesh,
@@ -851,7 +889,7 @@ void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH)
     assert((symx ? ordl+1 : 2*ordl+1) == Nl);
     assert((symy ? ordt+1 : 2*ordt+1) == Nt);
 
-    if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW && !coeffs_dexx[lay].empty() && !diagonal) {
+    if (SOLVER->expansion_rule == FourierSolver3D::RULE_COMBINED && !coeffs_dexx[lay].empty() && !diagonal) {
 
         TempMatrix tempMatrix = getTempMatrix();
         cmatrix workxx(N, N, tempMatrix.data());
@@ -911,15 +949,68 @@ void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH)
                         RE(ihx,jey) += fy * (- gx * px * imu + k0 * epsyy(lay, ijx, ijy));
                         if (toeplitz) {
                             size_t j = idx(jx, jy);
-                            dcomplex ieps = coeffs_ezz[lay](i,j) * ik0;
-                            RH(iex,jhy) += fx * (- gx * px * ieps);
-                            RH(iey,jhy) += fx * (- gy * px * ieps);
-                            RH(iex,jhx) += fy * (- gx * py * ieps);
-                            RH(iey,jhx) += fy * (- gy * py * ieps);
+                            dcomplex iepszz = coeffs_ezz[lay](i,j) * ik0;
+                            RH(iex,jhy) += fx * (- gx * px * iepszz);
+                            RH(iey,jhy) += fx * (- gy * px * iepszz);
+                            RH(iex,jhx) += fy * (- gx * py * iepszz);
+                            RH(iey,jhx) += fy * (- gy * py * iepszz);
                             RE(ihy,jex) += fx * ( k0 * workxx(i,j) );
                             RE(ihx,jex) += fx * ( k0 * conj(workyx(i,j)));  // Should this conjugate be here?
                             RE(ihy,jey) += fy * ( k0 * workxy(i,j));
                             RE(ihx,jey) += fy * ( k0 * (coeffs_deyy[lay](i,j) - workyy(i,j)));    // ([[1]]-[[c²]]) [[Δε]]
+                        }
+                    }
+                }
+
+                // Ugly hack to avoid singularity
+                if (RE(iex, iex) == 0.) RE(iex, iex) = 1e-32;
+                if (RE(iey, iey) == 0.) RE(iey, iey) = 1e-32;
+                if (RH(ihx, ihx) == 0.) RH(ihx, ihx) = 1e-32;
+                if (RH(ihy, ihy) == 0.) RH(ihy, ihy) = 1e-32;
+            }
+        }
+
+    } else if (SOLVER->expansion_rule == FourierSolver3D::RULE_INVERSE && !coeffs_dexx[lay].empty() && !diagonal) {
+
+        zero_matrix(RE);
+        zero_matrix(RH);
+
+        for (int iy = (symy ? 0 : -ordt); iy <= ordt; ++iy) {
+            dcomplex gy = iy * Gy - ktran;
+            for (int ix = (symx ? 0 : -ordl); ix <= ordl; ++ix) {
+                dcomplex gx = ix * Gx - klong;
+                size_t iex = iEx(ix, iy), iey = iEy(ix, iy);
+                size_t ihx = iHx(ix, iy), ihy = iHy(ix, iy);
+                size_t i = idx(ix, iy);
+
+                for (int jy = -ordt; jy <= ordt; ++jy) {
+                    dcomplex py = jy * Gy - ktran;
+                    int ijy = iy - jy; if (symy && ijy < 0) ijy = - ijy;
+                    for (int jx = -ordl; jx <= ordl; ++jx) {
+                        bool toeplitz = true;
+                        dcomplex px = jx * Gx - klong;
+                        int ijx = ix - jx; if (symx && ijx < 0) ijx = - ijx;
+                        size_t jex = iEx(jx, jy), jey = iEy(jx, jy);
+                        size_t jhx = iHx(jx, jy), jhy = iHy(jx, jy);
+                        double fx = 1., fy = 1.;
+                        if (symx && jx < 0) { fx *= symx; fy *= -symx; toeplitz = false; }
+                        if (symy && jy < 0) { fx *= symy; fy *= -symy; toeplitz = false; }
+                        RH(iex,jhy) += fx * k0 * muyy(lay, ijx, ijy);
+                        RH(iey,jhx) += fy * k0 * muxx(lay, ijx, ijy);
+                        dcomplex imu = imuzz(lay, ijx, ijy) * ik0;
+                        RE(ihy,jex) += fx * (- gy * py * imu);
+                        RE(ihx,jex) += fx * (  gx * py * imu + k0 * epsyx(lay, ijx, ijy));
+                        RE(ihy,jey) += fy * (  gy * px * imu + k0 * epsxy(lay, ijx, ijy));
+                        RE(ihx,jey) += fy * (- gx * px * imu);
+                        if (toeplitz) {
+                            size_t j = idx(jx, jy);
+                            dcomplex iepszz = coeffs_ezz[lay](i,j) * ik0;
+                            RH(iex,jhy) += fx * (- gx * px * iepszz);
+                            RH(iey,jhy) += fx * (- gy * px * iepszz);
+                            RH(iex,jhx) += fy * (- gx * py * iepszz);
+                            RH(iey,jhx) += fy * (- gy * py * iepszz);
+                            RE(ihy,jex) += fx * ( k0 * coeffs_dexx[lay](i,j));
+                            RE(ihx,jey) += fy * ( k0 * coeffs_deyy[lay](i,j));
                         }
                     }
                 }
@@ -955,7 +1046,7 @@ void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH)
                         double fx = 1., fy = 1.;
                         if (symx && jx < 0) { fx *= symx; fy *= -symx; }
                         if (symy && jy < 0) { fx *= symy; fy *= -symy; }
-                        dcomplex ieps = ((SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1)? iepszz(lay, ijx, ijy) :
+                        dcomplex ieps = ((SOLVER->expansion_rule == FourierSolver3D::RULE_OLD)? iepszz(lay, ijx, ijy) :
                                          diagonal? ((ix == jx && iy == jy)? 1. / coeffs[lay][0].c22 : 0.) :
                                          iepszz(lay, ix, jx, iy, jy)
                                         ) * ik0;
@@ -1059,7 +1150,7 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
         for (int it = symmetric_tran()? 0 : -ordt; it <= ordt; ++it) {
             for (int il = symmetric_long()? 0 : -ordl; il <= ordl; ++il) {
                 // How expensive is checking conditions in each loop?
-                // Fuck it, the code is much more clear this way.
+                // Fuck it! The code is much more clear this way.
                 size_t iex = nl * (((it<0)?Nt+it:it) - dxt) + ((il<0)?Nl+il:il) - dxl;
                 size_t iey = nl * (((it<0)?Nt+it:it) - dyt) + ((il<0)?Nl+il:il) - dyl;
                 size_t iez = nl * (((it<0)?Nt+it:it) - dxt) + ((il<0)?Nl+il:il) - dyl;
@@ -1075,7 +1166,7 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
                                          ((jt < 0 && symmetry_tran == E_LONG)? -1. : 1);
                             double fhy = ((jl < 0 && symmetry_long == E_TRAN)? -1. : 1) *
                                          ((jt < 0 && symmetry_tran == E_TRAN)? -1. : 1);
-                            field[iez].vert() += ((SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1)? iepszz(l,il-jl,it-jt) :
+                            field[iez].vert() += ((SOLVER->expansion_rule == FourierSolver3D::RULE_OLD)? iepszz(l,il-jl,it-jt) :
                                                   diagonal? ((il == jl && it == jt)? 1. / coeffs[l][0].c22 : 0.) :
                                                   iepszz(l,il,jl,it,jt)) *
                                 (  (bl*double(jl)-kx) * fhy*H[iHy(jl,jt)]
@@ -1341,7 +1432,7 @@ double ExpansionPW3D::integrateField(WhichField field, size_t layer, const cmatr
                                          ((jt < 0 && symmetry_tran == E_LONG)? -1. : 1);
                             double fhy = ((jl < 0 && symmetry_long == E_TRAN)? -1. : 1) *
                                          ((jt < 0 && symmetry_tran == E_TRAN)? -1. : 1);
-                            vert += ((SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1)?
+                            vert += ((SOLVER->expansion_rule == FourierSolver3D::RULE_OLD)?
                                         iepszz(layer, il-jl, it-jt) :
                                         diagonal? ((il == jl && it == jt)?
                                             1. / coeffs[layer][0].c22 : 0.) :
@@ -1437,7 +1528,7 @@ LazyData<double> ExpansionPW3D::getGradients(GradientFunctions::EnumType what,
     assert(dynamic_pointer_cast<const MeshD<3>>(level->mesh()));
     auto dest_mesh = static_pointer_cast<const MeshD<3>>(level->mesh());
 
-    if (diagonals[lay] || SOLVER->expansion_rule != FourierSolver3D::RULE_NEW)
+    if (diagonals[lay] || SOLVER->expansion_rule != FourierSolver3D::RULE_COMBINED)
         return LazyData<double>(dest_mesh->size(), [](size_t i) { return 0.0; });
 
     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {

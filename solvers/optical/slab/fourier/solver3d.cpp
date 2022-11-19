@@ -9,7 +9,7 @@ FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<SolverOver
     klong(0.), ktran(0.),
     symmetry_long(Expansion::E_UNSPECIFIED), symmetry_tran(Expansion::E_UNSPECIFIED),
     dct(2),
-    expansion_rule(RULE_OLD2),
+    expansion_rule(RULE_DIRECT),
     expansion(this),
     refine_long(16), refine_tran(16),
     grad_smooth(1e-3),
@@ -92,13 +92,10 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             temp_dist = reader.getAttribute<double>("temp-dist", temp_dist);
             temp_layer = reader.getAttribute<double>("temp-layer", temp_layer);
             expansion_rule = reader.enumAttribute<ExpansionRule>("rule")
-                                .value("multi-inverse", RULE_NEW)
-                                .value("multi", RULE_NEW)
-                                .value("inverse", RULE_OLD2)
-                                .value("direct", RULE_OLD1)
-                                // some obsolete names
-                                .value("semi", RULE_OLD2)
-                                .value("old", RULE_OLD1)
+                                .value("direct", RULE_DIRECT)
+                                .value("inverse", RULE_INVERSE)
+                                .value("combined", RULE_COMBINED)
+                                .value("old", RULE_OLD)
                              .get(expansion_rule);
             grad_smooth = reader.getAttribute<double>("grad-smooth", grad_smooth);
             reader.requireTagEnd();

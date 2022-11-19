@@ -32,9 +32,10 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
     /// Expansion rule
     enum ExpansionRule {
-        RULE_NEW = 0,
-        RULE_OLD2 = 1,
-        RULE_OLD1 = 2
+        RULE_OLD,
+        RULE_DIRECT,
+        RULE_INVERSE,
+        RULE_COMBINED
     };
 
     struct Mode {

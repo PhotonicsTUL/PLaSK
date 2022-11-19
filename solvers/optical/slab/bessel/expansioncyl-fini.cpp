@@ -82,12 +82,12 @@ void ExpansionBesselFini::init2() {
         }
 
         switch (SOLVER->rule) {
-          case BesselSolverCyl::RULE_INVERSE_1:
-          case BesselSolverCyl::RULE_INVERSE_2:
+          case BesselSolverCyl::RULE_COMBINED_1:
+          case BesselSolverCyl::RULE_COMBINED_2:
             integrateParams(mu_integrals, mu_data.get(), mu_data.get(), mu_data.get(), 1., 1., 1.); break;
-          case BesselSolverCyl::RULE_INVERSE_0:
-            integrateParams(mu_integrals, mu_data.get(), imu_data.get(), mu_data.get(), 1., 1., 1.); break;
           case BesselSolverCyl::RULE_DIRECT:
+            integrateParams(mu_integrals, mu_data.get(), imu_data.get(), mu_data.get(), 1., 1., 1.); break;
+          case BesselSolverCyl::RULE_OLD:
             integrateParams(mu_integrals, mu_data.get(), imu_data.get(), imu_data.get(), 1., 1., 1.); break;
         }
 
@@ -222,9 +222,9 @@ void ExpansionBesselFini::integrateParams(Integrals& integrals,
     if (N < 2) {
         _tmp.reset(aligned_malloc<double>(4*N));
         factors = _tmp.get();
-    } else if (SOLVER->rule == BesselSolverCyl::RULE_INVERSE_1) {
+    } else if (SOLVER->rule == BesselSolverCyl::RULE_COMBINED_1) {
         factors = reinterpret_cast<double*>(integrals.V_k.data());
-    } else if (SOLVER->rule == BesselSolverCyl::RULE_INVERSE_2) {
+    } else if (SOLVER->rule == BesselSolverCyl::RULE_COMBINED_2) {
         _tmp.reset(aligned_malloc<double>(3*N + 4*N*N));
         JmJp.reset(N, N, integrals.V_k.data());
         JpJm.reset(N, N, reinterpret_cast<dcomplex*>(_tmp.get() + 3*N));
@@ -239,7 +239,7 @@ void ExpansionBesselFini::integrateParams(Integrals& integrals,
     double* Jm = factors + N;
     double* Jp = factors + 2*N;
 
-    if (SOLVER->rule == BesselSolverCyl::RULE_DIRECT) {
+    if (SOLVER->rule == BesselSolverCyl::RULE_OLD) {
 
         double* J  = factors + 3*N;
 
@@ -276,7 +276,7 @@ void ExpansionBesselFini::integrateParams(Integrals& integrals,
 
     } else {
 
-        if (SOLVER->rule == BesselSolverCyl::RULE_INVERSE_0) {
+        if (SOLVER->rule == BesselSolverCyl::RULE_DIRECT) {
 
             zero_matrix(integrals.Tss);
             zero_matrix(integrals.Tsp);
@@ -304,7 +304,7 @@ void ExpansionBesselFini::integrateParams(Integrals& integrals,
 
         } else {
 
-            if (SOLVER->rule == BesselSolverCyl::RULE_INVERSE_1) {
+            if (SOLVER->rule == BesselSolverCyl::RULE_COMBINED_1) {
 
                 cmatrix workess(N, N, temp.data()), workepp(N, N, temp.data()+N*N),
                         worksp(N, N, temp.data()+2*N*N), workps(N, N, temp.data()+3*N*N);
@@ -353,7 +353,7 @@ void ExpansionBesselFini::integrateParams(Integrals& integrals,
                     Jm = factors + N; Jp = factors + 2*N;
                 }
 
-            } else { // if (SOLVER->rule == BesselSolverCyl::RULE_INVERSE_2)
+            } else { // if (SOLVER->rule == BesselSolverCyl::RULE_COMBINED_2)
 
                 cmatrix work(temp);
 

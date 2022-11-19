@@ -238,8 +238,8 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam) {
         Tensor3<dcomplex> eps0 = getEps(layer, mesh->tran()->size() - 1, rbounds[rbounds.size() - 1] + 0.001, matz, lam, glam);
         eps0.sqr_inplace();
         epsp0 = eps0.c00;
-        if (SOLVER->rule != BesselSolverCyl::RULE_DIRECT) {
-            epsr0 = (SOLVER->rule != BesselSolverCyl::RULE_INVERSE_0) ? 1. / eps0.c11 : eps0.c11;
+        if (SOLVER->rule != BesselSolverCyl::RULE_OLD) {
+            epsr0 = (SOLVER->rule != BesselSolverCyl::RULE_DIRECT) ? 1. / eps0.c11 : eps0.c11;
             epsz0 = eps0.c22;
         } else {
             epsr0 = eps0.c11;
@@ -249,7 +249,7 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam) {
         if (abs(epsr0.imag()) < SMALL) epsr0.imag(0.);
         if (abs(epsz0.imag()) < SMALL) epsz0.imag(0.);
         writelog(LOG_DEBUG, "Reference refractive index for layer {} is {} / {}", layer, str(sqrt(epsp0)),
-                 str(sqrt((SOLVER->rule != BesselSolverCyl::RULE_DIRECT) ? epsz0 : (1. / epsz0))));
+                 str(sqrt((SOLVER->rule != BesselSolverCyl::RULE_OLD) ? epsz0 : (1. / epsz0))));
     }
 
     aligned_unique_ptr<dcomplex> epsp_data(aligned_malloc<dcomplex>(nr));
@@ -273,8 +273,8 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam) {
             eps.c22 *= f;
         }
         dcomplex epsp = eps.c00, epsr, epsz;
-        if (SOLVER->rule != BesselSolverCyl::RULE_DIRECT) {
-            epsr = (SOLVER->rule != BesselSolverCyl::RULE_INVERSE_0) ? 1. / eps.c11 : eps.c11;
+        if (SOLVER->rule != BesselSolverCyl::RULE_OLD) {
+            epsr = (SOLVER->rule != BesselSolverCyl::RULE_DIRECT) ? 1. / eps.c11 : eps.c11;
             epsz = eps.c22;
         } else {
             epsr = eps.c11;
@@ -313,7 +313,7 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam) {
         double ib = 1. / rbounds[rbounds.size() - 1];
         for (size_t i = 0; i < N; ++i) {
             double k = kpts[i] * ib;
-            if (SOLVER->rule != BesselSolverCyl::RULE_DIRECT)
+            if (SOLVER->rule != BesselSolverCyl::RULE_OLD)
                 integrals.V_k(i, i) = k / epsz0;
             else
                 integrals.V_k(i, i) = k * epsz0;

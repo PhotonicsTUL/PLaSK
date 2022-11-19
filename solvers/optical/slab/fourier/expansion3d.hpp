@@ -76,6 +76,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
             return !(is_zero(other.c22-c22) && is_zero(other.c00-c00) && is_zero(other.c11-c11) && is_zero(other.c01-c01));
         }
         operator Tensor3<dcomplex>() const { return Tensor3<dcomplex>(c00, c11, c22, c01); }
+        Tensor3<dcomplex> toInverseTensor() const { return Tensor3<dcomplex>(ic00, ic11, c22, c01); }
     };
 
     /// Cached permittivity expansion coefficients

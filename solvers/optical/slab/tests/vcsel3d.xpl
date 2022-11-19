@@ -102,17 +102,17 @@ class VCSEL:
         FOURIER3D.symmetry = 'Ex', 'Ex'
 
 
-class InverseRule(VCSEL, unittest.TestCase):
+class DirectRule(VCSEL, unittest.TestCase):
 
     def testComputations(self):    # 979.686-0.0210j
-        FOURIER3D.rule = 'inverse'
+        FOURIER3D.rule = 'direct'
         m = FOURIER3D.find_mode(lam=979.75)
         self.assertEqual(m, 0)
         self.assertEqual(len(FOURIER3D.modes), 1)
         self.assertAlmostEqual(FOURIER3D.modes[m].lam, 979.678-0.0208j, 3)
 
     def testIntegrals(self):
-        FOURIER3D.rule = 'inverse'
+        FOURIER3D.rule = 'direct'
         FOURIER3D.invalidate()
         FOURIER3D.find_mode(lam=979.75)
 
@@ -135,10 +135,20 @@ class InverseRule(VCSEL, unittest.TestCase):
         self.assertAlmostEqual(HHa / HHn, 1., 3)
 
 
-class MultiInverseRule(VCSEL, unittest.TestCase):
+class InverseRule(VCSEL, unittest.TestCase):
+
+    def testComputations(self):    # 979.686-0.0210j
+        FOURIER3D.rule = 'inverse'
+        m = FOURIER3D.find_mode(lam=979.75)
+        self.assertEqual(m, 0)
+        self.assertEqual(len(FOURIER3D.modes), 1)
+        self.assertAlmostEqual(FOURIER3D.modes[m].lam, 979.671-0.0209j, 3)
+
+
+class CombinedInverseRule(VCSEL, unittest.TestCase):
 
     def testComputations(self):
-        FOURIER3D.rule = 'multi-inverse'
+        FOURIER3D.rule = 'combined'
         m = FOURIER3D.find_mode(lam=979.75)
         self.assertEqual(m, 0)
         self.assertEqual(len(FOURIER3D.modes), 1)

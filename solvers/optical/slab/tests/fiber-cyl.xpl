@@ -5,7 +5,7 @@
   <define name="num" value="3"/>
   <define name="size" value="4*ARRAYID if  ARRAYID is not None else 72"/>
   <define name="domain" value="'infinite'"/>
-  <define name="rule" value="'inverse'"/>
+  <define name="rule" value="'direct'"/>
   <define name="kspacing" value="'nonuniform'"/>
   <define name="kscale" value="0.7"/>
   <define name="kmax" value="4"/>

@@ -9,7 +9,7 @@ BesselSolverCyl::BesselSolverCyl(const std::string& name)
       domain(DOMAIN_INFINITE),
       m(1),
       size(12),
-      rule(RULE_INVERSE_0),
+      rule(RULE_DIRECT),
       kscale(1.),
       kmax(5.),
       kmethod(WAVEVECTORS_NONUNIFORM),
@@ -78,10 +78,10 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager) {
             }
             if (reader.hasAttribute("rule")) {
                 rule = reader.enumAttribute<Rule>("rule")
-                           .value("inverse", RULE_INVERSE_0)
-                           .value("inverse1", RULE_INVERSE_1)
-                           .value("inverse2", RULE_INVERSE_2)
                            .value("direct", RULE_DIRECT)
+                           .value("combined1", RULE_COMBINED_1)
+                           .value("combined2", RULE_COMBINED_2)
+                           .value("old", RULE_OLD)
                            .require();
             }
             reader.requireTagEnd();

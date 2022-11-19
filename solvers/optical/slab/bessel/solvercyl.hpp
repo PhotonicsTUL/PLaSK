@@ -34,18 +34,18 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     };
 
     enum Rule {
-        RULE_INVERSE_0,
-        RULE_INVERSE_1,
-        RULE_INVERSE_2,
-        RULE_DIRECT
+        RULE_DIRECT,
+        RULE_COMBINED_1,
+        RULE_COMBINED_2,
+        RULE_OLD
     };
 
     const char* ruleName() {
         switch (rule) {
-            case RULE_INVERSE_0: return "inverse";
-            case RULE_INVERSE_1: return "inverse (mod 1)";
-            case RULE_INVERSE_2: return "inverse (mod 2)";
-            case RULE_DIRECT: return "direct";
+            case RULE_DIRECT: return "inverse";
+            case RULE_COMBINED_1: return "inverse (mod 1)";
+            case RULE_COMBINED_2: return "inverse (mod 2)";
+            case RULE_OLD: return "direct";
         }
         return "unknown";
     }

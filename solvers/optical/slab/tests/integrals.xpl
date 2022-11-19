@@ -56,7 +56,7 @@
 <solvers>
   <optical name="FOURIER3D" solver="Fourier3D" lib="slab">
     <geometry ref="struct3d"/>
-    <expansion size-long="{Nl-1}" size-tran="{Nt-1}" rule="semi"/>
+    <expansion size-long="{Nl-1}" size-tran="{Nt-1}" rule="direct"/>
     <mode lam="{lam}"/>
   </optical>
   <optical name="FOURIER2D" solver="Fourier2D" lib="slab">

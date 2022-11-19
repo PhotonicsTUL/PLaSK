@@ -169,10 +169,10 @@ void export_BesselSolverCyl()
     ;
 
     py_enum<typename BesselSolverCyl::Rule>()
-        .value("INVERSE", BesselSolverCyl::RULE_INVERSE_0)
-        .value("INVERSE1", BesselSolverCyl::RULE_INVERSE_1)
-        .value("INVERSE2", BesselSolverCyl::RULE_INVERSE_2)
         .value("DIRECT", BesselSolverCyl::RULE_DIRECT)
+        .value("COMBINED1", BesselSolverCyl::RULE_COMBINED_1)
+        .value("COMBINED2", BesselSolverCyl::RULE_COMBINED_2)
+        .value("OLD", BesselSolverCyl::RULE_OLD)
     ;
 
     py_enum<typename BesselSolverCyl::InfiniteWavevectors>()
@@ -192,8 +192,8 @@ void export_BesselSolverCyl()
     PROVIDER(outLoss, "");
     RW_PROPERTY(domain, getDomain, setDomain, u8"Computational domain ('finite' or 'infinite').");
     RW_PROPERTY(rule, getRule, setRule,
-        u8"Expansion rule for coefficients matrix. Can be 'direct', 'semi-inverse'\n"
-        u8"or 'inverse'. Inverse rule is proven to provide the best convergence and\n"
+        u8"Expansion rule for coefficients matrix. Can be 'direct', 'combined1', 'combined2'\n"
+        u8"or 'old'. Inverse rule is proven to provide the best convergence and\n"
         u8"should be used in almost every case.\n");
     RW_PROPERTY(size, getSize, setSize, u8"Orthogonal expansion size.");
     RW_PROPERTY(kmethod, getKmethod, setKmethod,

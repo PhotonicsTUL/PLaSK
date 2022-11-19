@@ -453,16 +453,12 @@
       choices:
         - direct
         - inverse
-        - multi-inverse
-      other:
-        - multi
-        - inverse2
+        - combined
         - old
-        - semi
-      default: inverse
+      default: direct
       help: >
-        Permittivity inversion rule. The new rule is supposed to provide the best convergence. 'old' and 'semi' are available
-        for consistency with old results.
+        Permittivity inversion rule. The new rule is supposed to provide the best convergence.
+        'old' is available for consistency with old results.
     - attr: grad-smooth
       label: Gradient smooth
       type: float
@@ -720,10 +716,11 @@
       label: Matrix rule
       type: choice
       choices:
-        - inverse
-        - semi-inverse
         - direct
-      default: inverse
+        - combined1
+        - combined2
+        - old
+      default: direct
       help: >
         Expansion rule for coefficients matrix. Can be direct or inverse. Inverse rule is proven to provide better
         convergence and should be used in almost every case.

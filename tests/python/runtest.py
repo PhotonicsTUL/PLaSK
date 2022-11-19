@@ -54,18 +54,34 @@ class PlaskTestResult(unittest.TextTestResult):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print("Usage: ", sys.executable, "-m runtest test_file.(py|xpl) [tests...]", file=sys.stderr)
+        print("Usage: ", sys.executable, "-m [define=value...] runtest test_file.(py|xpl) [tests...]", file=sys.stderr)
         sys.exit(127)
 
-    sys.path.insert(0, os.path.dirname(sys.argv[1]))
+    arg = 1
 
-    __name__, ext = os.path.splitext(os.path.basename(sys.argv[1]))
+    defines = {}
+
+    while '=' in sys.argv[arg]:
+        key, val = sys.argv[arg].split('=', 1)
+        try:
+            defines[key] = eval(val)
+        except ValueError:
+            defines[key] = val
+        arg += 1
+
+    sys.path.insert(0, os.path.dirname(sys.argv[arg]))
+
+    __name__, ext = os.path.splitext(os.path.basename(sys.argv[arg]))
 
     if ext == '.py':
 
-        exec(compile(open(sys.argv[1], encoding='utf8').read(), sys.argv[1], 'exec'), globals(), locals())
+        if defines:
+            print("Command-line defines can only be specified when running XPL file", file=sys.stderr)
+            sys.exit(126)
 
-        tests = sys.argv[2:]
+        exec(compile(open(sys.argv[arg], encoding='utf8').read(), sys.argv[arg], 'exec'), globals(), locals())
+
+        tests = sys.argv[arg+1:]
         if not tests:
             for m in dict(globals()).values():
                 try:
@@ -79,16 +95,16 @@ if __name__ == '__main__':
     elif ext == '.xpl':
 
         __manager__ = plask.Manager()
-        __manager__.load(sys.argv[1])
+        __manager__.load(sys.argv[arg], defines)
         __globals = globals().copy()
         __manager__.export(__globals)
         __globals.update(__manager__.defs)
         __locals = dict()
         script = "#coding: utf8\n" + "\n"*(__manager__._scriptline-1) + __manager__.script
 
-        exec(compile(script, sys.argv[1], 'exec'), __globals, __locals)
+        exec(compile(script, sys.argv[arg], 'exec'), __globals, __locals)
 
-        tests = sys.argv[2:]
+        tests = sys.argv[arg+1:]
         if not tests:
             for m in __locals.values():
                 try:
@@ -100,7 +116,7 @@ if __name__ == '__main__':
             tests = [__locals[m] for m in tests]
 
     else:
-        print("Unrecognized file", sys.argv[1], file=sys.stderr)
+        print("Unrecognized file", sys.argv[arg], file=sys.stderr)
         sys.exit(127)
 
     errors = 0

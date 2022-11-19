@@ -488,12 +488,10 @@ static shared_ptr<Scattering<FourierSolver3D>> FourierSolver3D_scatteringGaussia
 void export_FourierSolver3D()
 {
     py_enum<FourierSolver3D::ExpansionRule>()
-        .value("MULTI_INVERSE", FourierSolver3D::RULE_NEW)
-        .value("INVERSE", FourierSolver3D::RULE_OLD2)
-        .value("OLD", FourierSolver3D::RULE_OLD1)
-        .value("MULTI", FourierSolver3D::RULE_NEW)
-        .value("INVERSE2", FourierSolver3D::RULE_NEW)
-        .value("SEMI", FourierSolver3D::RULE_OLD2)
+        .value("DIRECT", FourierSolver3D::RULE_DIRECT)
+        .value("COMBINED", FourierSolver3D::RULE_COMBINED)
+        .value("INVERSE", FourierSolver3D::RULE_INVERSE)
+        .value("OLD", FourierSolver3D::RULE_OLD)
     ;
 
     registerProvider<ProviderFor<GradientFunctions,Geometry3D>>();
@@ -536,8 +534,9 @@ void export_FourierSolver3D()
     solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT, "Type of discrete cosine transform for symmetric expansion.");
     solver.add_property("rule", &__Class__::getRule, &__Class__::setRule,
                         "Permittivity inversion rule.\n\n"
-                        "The new rule is supposed to provide the best convergence. 'old' and 'semi'\n"
-                        "are available for consistency with old results.\n");
+                        "Can be 'direct', 'inverse', 'combined', or 'old'. The new 'combined' rule is\n"
+                        "supposed to provide the best convergence. 'old' is available for consistency\n"
+                        "with old results.\n");
     solver.add_property("grad_smooth", &__Class__::getGradSmooth, &__Class__::setGradSmooth,
                         "Smoothing parameter for material boundaries gradients (needed for the new expansion rule).");
     solver.add_provider("outGradients", &__Class__::outGradients, "Gradients are important if the new factorization rule is used.");
