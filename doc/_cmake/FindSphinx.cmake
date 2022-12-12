@@ -129,7 +129,7 @@ if (Sphinx-build_EXECUTABLE)
   set (Sphinx_PYTHON_EXECUTABLE "${PYTHON_EXECUTABLE}")
   set (Sphinx_PYTHON_OPTIONS)
   file (STRINGS "${Sphinx-build_EXECUTABLE}" FIRST_LINE LIMIT_COUNT 1)
-  if (FIRST_LINE MATCHES "^#!(.*/python.*)") # does not match "#!/usr/bin/env python" !
+  if (FIRST_LINE MATCHES "^#!(.*/python.*)") # does not match "#!/usr/bin/env python3" !
     string (REGEX REPLACE "^ +| +$" "" Sphinx_PYTHON_EXECUTABLE "${CMAKE_MATCH_1}")
     if (Sphinx_PYTHON_EXECUTABLE MATCHES "([^ ]+) (.*)")
       set (Sphinx_PYTHON_EXECUTABLE "${CMAKE_MATCH_1}")

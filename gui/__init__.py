@@ -1,16 +1,16 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-# Copyright (C) 2014 Photonics Group, Lodz University of Technology
+#!/usr/bin/env python3
+# This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
+# Copyright (c) 2022 Lodz University of Technology
 #
-# This program is free software; you can redistribute it and/or modify it
-# under the terms of GNU General Public License as published by the
-# Free Software Foundation; either version 2 of the license, or (at your
-# opinion) any later version.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+
 import sys
 import os
 import re
@@ -833,14 +833,12 @@ class MainWindow(QMainWindow):
     def about(self):
 
         if VERSION is not None:
-            details = "Version <b>{}</b><br/>(GUI using {} framework)<br/>\n<br/>\n"\
-                      "This program is distributed in the hope that it will be useful,<br/>\n"\
-                      "but WITHOUT ANY WARRANTY; without even the implied warranty<br/>\n"\
-                      "of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.".format(VERSION, QT_API)
+            details = "Version <b>{}</b><br/>(GUI using {} framework)<br/>\n<br/>\n".format(VERSION, QT_API)
         else:
-            details = "This program is distributed in the hope that it will be useful,<br/>\n"\
-                      "but WITHOUT ANY WARRANTY; without even the implied warranty<br/>\n"\
-                      "of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE."
+            details = ""
+        details += "This program is distributed under GPL3 License and in the hope<br>\n"\
+                   "that it will be useful, but WITHOUT ANY WARRANTY; without even<br/>\n"\
+                   "the implied warranty of MERCHANTABILITY or FITNESS FOR ANY PURPOSE."
         note = '<br/>\n<br/>\n<span style="color: #888888;">Details have been copied to ' \
                'your clipboard.</span>'
 

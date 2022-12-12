@@ -77,8 +77,6 @@
 </solvers>
 
 <script><![CDATA[
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import unittest
 
 from numpy import *

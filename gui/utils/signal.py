@@ -1,14 +1,15 @@
-# Copyright (C) 2014 Photonics Group, Lodz University of Technology
-#
-# This program is free software; you can redistribute it and/or modify it
-# under the terms of GNU General Public License as published by the
-# Free Software Foundation; either version 2 of the license, or (at your
-# opinion) any later version.
+# This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
+# Copyright (c) 2022 Lodz University of Technology
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+
 
 """ A signal/slot implementation + __iadd__ and __isub__ (by Piotr Beling)
 
@@ -51,7 +52,7 @@ class Signal:
 
         else:
             self._functions.add(slot)
-            
+
     def __iadd__(self, slot):
         self.connect(slot)
         return self

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # PLaSK documentation build configuration file, created by
 # sphinx-quickstart on Tue Oct  8 15:58:59 2013.
 #

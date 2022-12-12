@@ -97,6 +97,7 @@ On Windows you can find the "PLaSK Console" in the Start Menu which will start t
 Program ``plask`` may be run with several command-line parameters tha--if present--must be specified before the script name. The most useful parameters are:
 
 .. option:: -h, --help
+
       print help message and exit.
 
 .. option:: -l loglevel
@@ -104,9 +105,11 @@ Program ``plask`` may be run with several command-line parameters tha--if presen
       specify the logging level used during this program run. Log levels set up in the XPL file or Python script are ignored. Possible values are: ``error``, ``error_detail``, ``warning``, ``important``, ``info``, ``result``, ``data``, ``detail``, or ``debug``. Mind that it is generally a bad idea to set the logging level to anything less than warning.
 
 .. option:: -p
+
       treat provided file as Python script regardless of its extension (this option cannot be used together with -x)
 
-.. option:: -p
+.. option:: -x
+
       treat provided file as XPL regardless of its extension (this option cannot be used together with -p)
 
 .. option:: -c command
@@ -118,6 +121,7 @@ Program ``plask`` may be run with several command-line parameters tha--if presen
       always enter the interactive console, even if there is a script name specified. All the parameters are redirected to the console.
 
 .. option:: -u
+
       use unbuffered binary stdout and stderr
 
 .. option:: -V

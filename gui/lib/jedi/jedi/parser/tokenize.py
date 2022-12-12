@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 This tokenizer has been copied from the ``tokenize.py`` standard library
 tokenizer. The reason was simple: The standard library tokenizer fails
