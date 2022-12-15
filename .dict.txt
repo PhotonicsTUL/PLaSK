@@ -19,6 +19,7 @@ mydata
 mygroup
 orthonormality
 phas
+photodetectors
 plask
 PLaSK
 pmls
