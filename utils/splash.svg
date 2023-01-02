@@ -6,7 +6,7 @@
    height="300"
    id="svg1306"
    sodipodi:version="0.32"
-   inkscape:version="1.1 (c4e8f9ed74, 2021-05-24)"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
    sodipodi:docname="splash.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    version="1.1"
@@ -489,9 +489,9 @@
      borderopacity="0.25490196"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.8085937"
-     inkscape:cx="527.48166"
-     inkscape:cy="208.17279"
+     inkscape:zoom="1.2788689"
+     inkscape:cx="225.98095"
+     inkscape:cy="275.24323"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:grid-bbox="true"
@@ -509,7 +509,8 @@
      inkscape:snap-bbox="true"
      inkscape:snap-page="true"
      showguides="true"
-     inkscape:guide-bbox="true">
+     inkscape:guide-bbox="true"
+     inkscape:deskcolor="#00244c">
     <inkscape:grid
        type="xygrid"
        id="grid3045"
@@ -733,7 +734,7 @@
       </g>
     </g>
     <rect
-       style="opacity:1;fill:#000a0f;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+       style="opacity:0.7;fill:#000a0f;fill-opacity:1;stroke:none;stroke-width:2;stroke-linecap:square;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
        id="rect1265"
        width="298.61771"
        height="22.116631"
@@ -748,7 +749,7 @@
          sodipodi:role="line"
          id="tspan951"
          x="326.15753"
-         y="60.386059">©2014-2022 Lodz University of Technology</tspan></text>
+         y="60.386059">©2014-2023 Lodz University of Technology</tspan></text>
     <text
        id="text967"
        y="226.94521"

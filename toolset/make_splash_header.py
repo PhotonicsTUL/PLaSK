@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -21,7 +21,10 @@ CHUNK = 32
 
 def make_c_image(imname, destdir=None):
     image = np.array(PIL.Image.open(imname))
-    image[:,:,3] = 0
+    if image.shape[2] == 3:
+        image = np.concatenate((image, np.full((image.shape[0], image.shape[1], 1), 0, dtype=np.uint8)), axis=2)
+    else:
+        image[:,:,3] = 0
     image = image[:,:,(2,1,0,3)]
     height, width, _ = image.shape
     data = image.ravel()

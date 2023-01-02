@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
-# Copyright (c) 2022 Lodz University of Technology
+# Copyright (c) 2023 Lodz University of Technology
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -813,7 +813,7 @@ class MainWindow(QMainWindow):
             horizontal.setAlignment(icon_label, Qt.AlignmentFlag.AlignTop)
 
             label = QLabel(u"<b>PLaSK — Photonic Laser Simulation Kit</b><br/>\n"
-                           u"© 2014-2022 Lodz University of Technology, Photonics Group<br/><br/>" + text)
+                           u"© 2014-2023 Lodz University of Technology, Photonics Group<br/><br/>" + text)
             label.setTextFormat(Qt.TextFormat.RichText)
             label.setWordWrap(True)
             horizontal.addWidget(label)
@@ -838,9 +838,9 @@ class MainWindow(QMainWindow):
             details = "Version <b>{}</b><br/>(GUI using {} framework)<br/>\n<br/>\n".format(VERSION, QT_API)
         else:
             details = ""
-        details += "This program is distributed under GPL3 License and in the hope<br>\n"\
-                   "that it will be useful, but WITHOUT ANY WARRANTY; without even<br/>\n"\
-                   "the implied warranty of MERCHANTABILITY or FITNESS FOR ANY PURPOSE."
+        details += "This program is distributed under GPL3 License and in hope that<br>\n"\
+                   "it will be useful, but WITHOUT ANY WARRANTY; without even the<br/>\n"\
+                   "implied warranty of MERCHANTABILITY or FITNESS FOR ANY PURPOSE."
         note = '<br/>\n<br/>\n<span style="color: #888888;">Details have been copied to ' \
                'your clipboard.</span>'
 

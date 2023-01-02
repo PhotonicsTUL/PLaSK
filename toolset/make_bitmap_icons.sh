@@ -38,7 +38,7 @@ else
         for f in $@; do
             f="${f%.*}"
             for s in 16 24 32; do
-                inkscape -e ${iconsdir}/$d/${s}x${s}/${f}.png ${iconsdir}/$d/scalable/${f}.svg -C -w ${s} -h ${s}
+                rsvg-convert -w ${s} -h ${s} -o ${iconsdir}/$d/${s}x${s}/${f}.png ${iconsdir}/$d/scalable/${f}.svg
                 git add ${iconsdir}/$d/${s}x${s}/${f}.png
             done
         done
