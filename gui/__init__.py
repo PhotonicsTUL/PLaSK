@@ -549,6 +549,8 @@ class MainWindow(QMainWindow):
         try:
             self.document.save_to_file(str(filename))
         except Exception as err:
+            if _DEBUG:
+                traceback.print_exc()
             msgbox = QMessageBox()
             msgbox.setWindowTitle("Save Error")
             msgbox.setText("The file '{}' could not be saved to disk.".format(filename))
@@ -879,12 +881,6 @@ class GotoDialog(QDialog):
         buttons.rejected.connect(self.reject)
         vbox.addWidget(buttons)
         self.setLayout(vbox)
-
-
-def _parse_expiry(expiry):
-    match = re.match('(\d+).(\d+).(\d+)', expiry)
-    if match is not None:
-        return datetime.date(*reversed([int(g) for g in match.groups()]))
 
 
 try:

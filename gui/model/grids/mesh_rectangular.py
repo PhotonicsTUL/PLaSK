@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -90,7 +90,10 @@ class RectangularMesh1D(Grid):
         with OrderedTagReader(element) as r:
             el = r.get('axis')
             self.axis.set_from_xml(el)
-            self.axis.comments = el.comments
+            if el is not None:
+                self.axis.comments = el.comments
+            else:
+                self.axis.comments = []
             self.endcomments = r.get_comments()
 
     def get_controller(self, document):
