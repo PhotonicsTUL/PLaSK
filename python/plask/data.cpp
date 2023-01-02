@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -944,6 +944,8 @@ PLASK_PYTHON_API PythonDataVector<T, dim> dataInterpolate(const PythonDataVector
         } else
             throw TypeError(u8"'geometry' argument must be geometry.Geometry instance");
     }
+
+    if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
 
     return dataInterpolateImpl<T, dim>(self, dst_mesh, method, flags);
 }
