@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -11,6 +11,7 @@
 # GNU General Public License for more details.
 
 import weakref
+from lxml import etree
 
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
@@ -60,13 +61,25 @@ class Controller:
         editor still is active - for instance when user saves edited document to file)."""
         pass
 
+    def can_save(self):
+        """Called before document is saved to file."""
+        return True
+
+    def get_contents(self):
+        section_string = ''
+        element = self.model.make_file_xml_element()
+        if len(element) or element.text:
+            section_string = etree.tostring(element, encoding='unicode', pretty_print=True)
+        return section_string
+
     def on_edit_enter(self):
         """Called when editor is entered and will be visible."""
         pass
 
     def on_edit_exit(self):
         """Called when editor is left and will be not visible. Typically and by default it calls save_data_in_model."""
-        return self.try_save_data_in_model()
+        self.save_data_in_model()
+        return True
 
     def update_line_numbers(self, current_line_in_file):
         """If the script has a source editor, update its line numbers offset"""
@@ -78,31 +91,8 @@ class Controller:
         else:
             self.source_widget.editor.repaint()
 
-    def try_save_data_in_model(self, cat=None):
-        try:
-            self.save_data_in_model()
-        except Exception as exc:
-            from .. import _DEBUG
-            if _DEBUG:
-                import traceback as tb
-                tb.print_stack()
-                tb.print_exc()
-                # sys.stderr.write('Traceback (most recent call last):\n')
-                # sys.stderr.write(''.join(tb.format_list(tb.extract_stack()[:-1])))
-                # sys.stderr.write('{}: {}\n'.format(exc.__class__.__name__, exc))
-            return QMessageBox().critical(
-                None, "Error saving data from editor",
-                "An error occured while trying to save data from editor:\n"
-                "(caused either by wrong values entered or a by a program error)\n\n"
-                "{}: {}\n\n"
-                "Do you want to discard your changes in this {}editor and move on?"
-                .format(exc.__class__.__name__, str(exc), '' if cat is None else (cat+' ')),
-                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No) == QMessageBox.StandardButton.Yes
-        else:
-            return True
-
     def get_widget(self):
-        raise NotImplementedError("Method 'get_widget' must be overriden in a subclass!")
+        raise NotImplementedError("Method 'get_widget' must be overridden in a subclass!")
 
     def fire_changed(self, *args, **kwargs):
         if self._notify_changes:

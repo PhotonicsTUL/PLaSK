@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -10,11 +10,11 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-
 import shutil
 import re
 
 from .qt.QtWidgets import *
+from .controller.source import SourceEditController
 from .controller.script import ScriptController, LOG_LEVELS
 from .utils.config import CONFIG
 
@@ -28,19 +28,15 @@ class _Dummy:
     pass
 
 
-class PyDocument:
+class TextDocument:
 
-    SECTION_NAMES = ["script"]
-    NAME = "Python script"
-    EXT = "py"
-
-    def __init__(self, window, filename=None):
+    def __init__(self, window, filename=None, controller_class=None):
         self.window = window
-        self.script = ScriptController(self)
+        self.script = controller_class(self)
         self.script.model.changed.connect(self.on_model_change)
         self.script.model.line_in_file = 0
         self.script.model.undo_stack.cleanChanged.connect(self.set_changed)
-        self.controllers = (self.script,)
+        self.controllers = (self.script, )
         self.materials = _Dummy()
         self.materials.model = None
         self.defines = None
@@ -86,22 +82,26 @@ class PyDocument:
             try:
                 text.encode(coding)
             except UnicodeEncodeError:
-                QMessageBox.critical(None, "Error while saving file",
-                                           "The file could not be saved with the specified encoding '{}'.\n\n"
-                                           "Please set the proper encoding and try again.".format(coding))
+                QMessageBox.critical(
+                    None, "Error while saving file", "The file could not be saved with the specified encoding '{}'.\n\n"
+                    "Please set the proper encoding and try again.".format(coding)
+                )
                 return
             self.coding = coding
         else:
             self.coding = 'utf-8'
         if CONFIG['main_window/make_backup']:
             try:
-                shutil.copyfile(filename, filename+'.bak')
+                shutil.copyfile(filename, filename + '.bak')
             except (IOError, OSError):
                 pass
         try:
             open(filename, 'w', encoding=self.coding).write(text)
         except TypeError:
-            open(filename, 'w', ).write(text.encode(self.coding))
+            open(
+                filename,
+                'w',
+            ).write(text.encode(self.coding))
         self.filename = filename
         self.set_changed(False)
 
@@ -122,3 +122,23 @@ class PyDocument:
         if isinstance(loglevel, int):
             loglevel = LOG_LEVELS[loglevel]
         self.loglevel = loglevel
+
+
+class PyDocument(TextDocument):
+
+    SECTION_NAMES = ["script"]
+    NAME = "Python script"
+    EXT = "py"
+
+    def __init__(self, window, filename=None):
+        super().__init__(window, filename, ScriptController)
+
+
+class XmlDocument(TextDocument):
+
+    SECTION_NAMES = ["source"]
+    NAME = "XPL source"
+    EXT = "xpl"
+
+    def __init__(self, window, filename=None):
+        super().__init__(window, filename, SourceEditController)

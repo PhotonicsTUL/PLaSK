@@ -58,10 +58,11 @@ if not CONFIG.get('workarounds/system_jedi'):
     sys.path.insert(1, os.path.join(__path__[0], 'lib', 'jedi'))
 
 from .xpldocument import XPLDocument
-from .pydocument import PyDocument
+from .textdocument import TextDocument, PyDocument, XmlDocument
 from .model.info import InfoListModel, Info
 from .launch import launch_plask
 from .controller.materials.plot import show_material_plot
+from .controller.multi import GUIAndSourceController
 
 from .utils.config import ConfigProxy, dark_style
 from .utils.settings import SettingsDialog
@@ -146,7 +147,7 @@ class MainMenuAction(QAction):
 class MainWindow(QMainWindow):
 
     SECTION_TITLES = dict(defines=" &Defines ", materials=" &Materials ", geometry=" &Geometry ", grids=" M&eshing ",
-                          solvers=" &Solvers ", connects=" &Connects ", script=" Sc&ript ")
+                          solvers=" &Solvers ", connects=" &Connects ", script=" Sc&ript ", source=" Source ")
 
     # icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
     SECTION_ICONS = {
@@ -157,6 +158,7 @@ class MainWindow(QMainWindow):
         'solvers': 'utilities-system-monitor',
         'connects': 'preferences-desktop-accessibility',
         'script': 'accessories-text-editor',
+        'source': 'accessories-text-editor',
     }
 
     SECTION_TIPS = {
@@ -166,7 +168,10 @@ class MainWindow(QMainWindow):
         'grids': "Edit computational meshes or set-up automatic mesh generators  (Alt+E)",
         'solvers': "Create and configure computational solvers  (Alt+S)",
         'connects': "Define connections between computational solvers  (Alt+C)",
-        'script': "Edit control script for your computations (Alt+R)"}
+        'script': "Edit control script for your computations (Alt+R)",
+        'source': "XPL source code — this view has been opened because your file is not a correct XML "
+                  "and cannot be loaded in the GUI editor",
+    }
 
     shown = QtSignal()
     closing = QtSignal(QCloseEvent)
@@ -466,18 +471,27 @@ class MainWindow(QMainWindow):
         update_recent_files(os.path.abspath(filename))
         document = PyDocument(self) if filename.endswith('.py') else XPLDocument(self)
         try:
-            document.load_from_file(filename)
+            try:
+                document.load_from_file(filename)
+            except etree.LxmlError as e:
+                if _DEBUG:
+                    traceback.print_exc()
+                document = XmlDocument(self)
+                document.load_from_file(filename)
+                QMessageBox.warning(self, "XML parse error",
+                                        "Error while parsing file '{}':\n{}\n\n"
+                                        "Opening in text mode!".format(filename, str(e)))
         except Exception as e:
             if _DEBUG: raise e
-            QMessageBox.critical(self, 'File load error',
-                                       'Error while loading file "{}":\n{}'.format(filename, str(e)))
+            QMessageBox.critical(self, "File load error",
+                                       "Error while loading file '{}':\n{}".format(filename, str(e)))
             return False
-        else:
-            self.document = document
-            self.setup_model(tab)
-            self.set_changed(False)
-            os.chdir(os.path.dirname(os.path.abspath(filename)))
-            return True
+
+        self.document = document
+        self.setup_model(tab)
+        self.set_changed(False)
+        os.chdir(os.path.dirname(os.path.abspath(filename)))
+        return True
 
     def setup_model(self, tab=None):
         self.tabs.clear()
@@ -486,7 +500,7 @@ class MainWindow(QMainWindow):
             self.tabs.setTabToolTip(self.tabs.count()-1, self.SECTION_TIPS[m])
             # self.tabs.setTabIcon(self.tabs.count()-1, QIcon.fromTheme(SECTION_ICONS[m]))
         self.current_tab_index = -1
-        if isinstance(self.document, PyDocument):
+        if isinstance(self.document, TextDocument):
             self.tab_change(0)
         else:
             if tab is None: tab = 2
@@ -576,7 +590,8 @@ class MainWindow(QMainWindow):
             return self.save_as()
 
     def save_as(self):
-        """Ask for filename and save to chosen file. Return true only when file has been saved."""
+        """Ask for filename and save to c
+                msgbox.setDefaultButton(QMessageBox.StandardButton.Yes);hosen file. Return true only when file has been saved."""
         if not self.before_save():
             return False
         flt = "{} (*.{})".format(self.document.NAME, self.document.EXT)
@@ -599,15 +614,12 @@ class MainWindow(QMainWindow):
         if self.current_tab_index != -1:
             try:
                 self.document.controller_by_index(self.current_tab_index).save_data_in_model()
-            except Exception as e:
-                msgbox = QMessageBox()
-                msgbox.setText("Edited content of the current section is invalid.")
-                msgbox.setDetailedText(str(e))
-                msgbox.setInformativeText("Do you want to save anyway (with the old content of the current section)?")
-                msgbox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-                msgbox.setIcon(QMessageBox.Icon.Warning)
-                #msgbox.setDefaultButton(QMessageBox.StandardButton.Yes);
-                return qt_exec(msgbox) == QMessageBox.StandardButton.Yes
+            except etree.LxmlError:
+                pass  # error is set in the controller
+
+        for contrl in self.document.controllers:
+            if not contrl.can_save():
+                return False
 
         errors = self.document.get_info(Info.ERROR)
         if errors:

@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -96,12 +96,19 @@ class XPLDocument:
         #self.window.set_changed(self.is_clean())
         pass
 
+    @staticmethod
+    def _undo_stack_is_clean(controller):
+        try:
+            return controller.model.undo_stack.isClean()
+        except RuntimeError:
+            return True
+
     def is_clean(self):
         """
             Change if document is in the clean state (the same state as in file).
             :return bool: True only if document is in the clean state
         """
-        return all(c.model.undo_stack.isClean() for c in self.controllers) and not self.other_changes
+        return all(self._undo_stack_is_clean(c) for c in self.controllers) and not self.other_changes
 
     def is_changed(self):
         return not self.is_clean()
@@ -156,9 +163,8 @@ class XPLDocument:
                     data += "<!--{}-->\n".format(cmt)
                 data += "\n"
             if update_lines: c.update_line_numbers(current_line_in_file)
-            element = c.model.make_file_xml_element()
-            if len(element) or element.text:
-                section_string = etree.tostring(element, encoding='unicode', pretty_print=True)
+            section_string = c.get_contents()
+            if section_string:
                 lines_count = section_string.count('\n') + 1
                 current_line_in_file += lines_count
                 if sections is None or c.model.name in sections:

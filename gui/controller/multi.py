@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -10,10 +10,13 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+from lxml import etree
 
 from ..qt.QtWidgets import *
+from ..qt import qt_exec
 
 from ..utils.widgets import fire_edit_end
+from ..utils.qsignals import BlockQtSignals
 from . import Controller
 from .source import SourceEditController
 from .geometry.source import GeometrySourceController
@@ -84,36 +87,72 @@ class MultiEditorController(Controller):
 
 class GUIAndSourceController(MultiEditorController):
 
-    def __init__(self, controller):
-        source = SourceEditController(controller.document, controller.model)
-        MultiEditorController.__init__(self, controller, source)
+    def __init__(self, controller, source=None):
+        if source is None:
+            source = SourceEditController(controller.document, controller.model)
         self.gui = controller
         self.source = source
+        super().__init__(controller, source)
 
     def change_editor(self):
         fire_edit_end()
-        if not self.set_current_index(int(self.document.window.showsource_action.isChecked())):
-            self.document.window.set_show_source_state(bool(self.get_current_index()))
+        if self.document.window.showsource_action.isChecked():
+            self.gui.on_edit_exit()
+            self.editorWidget.setCurrentIndex(1)
+            self.source.on_edit_enter()
+        else:
+            if self.source.on_edit_exit():
+                self.editorWidget.setCurrentIndex(0)
+                self.gui.on_edit_enter()
+            else:
+                with BlockQtSignals(self.document.window.showsource_action):
+                    self.document.window.showsource_action.setChecked(True)
+                msgbox = QMessageBox()
+                msgbox.setText("Edited content of this section is invalid. Cannot switch to GUI mode.")
+                msgbox.setDetailedText(str(self.source.error))
+                msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
+                msgbox.setIcon(QMessageBox.Icon.Warning)
+                msgbox.exec()
 
     def on_edit_enter(self):
+        if self.source.error is not None:
+            self.document.window.set_show_source_state(True)
         self.document.window.showsource_action.triggered.connect(self.change_editor)
         self.editorWidget.setCurrentIndex(int(self.document.window.get_show_source_state(do_enabled=True)))
         super().on_edit_enter()
 
     def on_edit_exit(self):
         result = super().on_edit_exit()
-        self.document.window.showsource_action.triggered.disconnect(self.change_editor)
+        try: self.document.window.showsource_action.triggered.disconnect(self.change_editor)
+        except: pass
         self.document.window.set_show_source_state(None)
-        return result
+        return True
 
     def get_source_widget(self):
         return self.controllers[1].get_source_widget()
 
+    def get_contents(self):
+        if self.source.error is None:
+            return super().get_contents()
+        else:
+            return self.source.error_data
+
+    def can_save(self):
+        if not self.source.error:
+            return True
+        else:
+            name = self.document.SECTION_NAMES[self.document.controllers.index(self)]
+            msgbox = QMessageBox()
+            msgbox.setText("Edited content of {} section is invalid.".format(name))
+            msgbox.setDetailedText(str(self.source.error))
+            msgbox.setInformativeText("Do you want to save anyway?")
+            msgbox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            msgbox.setIcon(QMessageBox.Icon.Warning)
+            msgbox.setDefaultButton(QMessageBox.StandardButton.Yes)
+            return qt_exec(msgbox) == QMessageBox.StandardButton.Yes
 
 class GeometryGUIAndSourceController(GUIAndSourceController):
 
     def __init__(self, controller):
         source = GeometrySourceController(controller.document, controller.model)
-        MultiEditorController.__init__(self, controller, source)
-        self.gui = controller
-        self.source = source
+        super().__init__(controller, source)

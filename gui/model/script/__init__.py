@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -9,7 +9,6 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
 
 from lxml import etree
 
@@ -36,11 +35,11 @@ class _UndoStack(QObject):
             self.model.editor.document().setModified(False)
 
 
-class ScriptModel(SectionModel):
+class SourceModel(SectionModel):
 
-    def __init__(self, info_cb=None):
-        SectionModel.__init__(self, 'script', info_cb, undo_stack=_UndoStack(self))
-        self._code = ''
+    def __init__(self, name='source', info_cb=None):
+        super().__init__(name, info_cb, undo_stack=_UndoStack(self))
+        self._source = ''
         self.editor = None
 
     def load_xml_element(self, element, undoable=True):
@@ -52,26 +51,37 @@ class ScriptModel(SectionModel):
         else:
             self.set_text('')
 
-    # XML element that represents whole section
-    def make_xml_element(self):
-        res = etree.Element(self.name)
-        if self._code and self._code != '\n':
-            code = '\n' + self._code
-            if code[-1] != '\n':
-                code += '\n'
-            res.text = etree.CDATA(code)
-        return res
-
     def get_text(self):
-        return self._code
+        return self._source
 
     def set_text(self, text):
-        self._code = text.expandtabs()
+        self._source = text.expandtabs()
         self.fire_changed()
 
     def create_info(self):
         if self.editor is None: return []
         line_in_file = 0 if self.line_in_file is None else self.line_in_file
         cursor = self.editor.textCursor()
-        return [Info('{}:{}   '.format(cursor.blockNumber()+line_in_file+1, cursor.columnNumber()+1),
-                     align=Qt.AlignmentFlag.AlignRight)]
+        return [
+            Info(
+                '{}:{}   '.format(cursor.blockNumber() + line_in_file + 1,
+                                  cursor.columnNumber() + 1),
+                align=Qt.AlignmentFlag.AlignRight
+            )
+        ]
+
+
+class ScriptModel(SourceModel):
+
+    def __init__(self, info_cb=None):
+        super().__init__('script', info_cb)
+
+    # XML element that represents whole section
+    def make_xml_element(self):
+        res = etree.Element(self.name)
+        if self._source and self._source != '\n':
+            code = '\n' + self._source
+            if code[-1] != '\n':
+                code += '\n'
+            res.text = etree.CDATA(code)
+        return res
