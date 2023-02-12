@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -226,35 +226,17 @@ double FourierSolver2D::getWavelength(size_t n) {
 }
 
 
-size_t FourierSolver2D::initIncidence(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam)
-{
-    bool changed = Solver::initCalculation() || setExpansionDefaults(isnan(lam));
-    if (!isnan(lam)) {
-        dcomplex k0 = 2e3*M_PI / lam;
-        if (!is_zero(k0 - expansion.getK0())) {
-            expansion.setK0(k0);
-            changed = true;
-        }
-    }
-
+size_t FourierSolver2D::initIncidence(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam) {
+    if (!isinf(geometry->getExtrusion()->getLength()))
+        throw Exception("{}: Reflectivity computation for 2D geometries possible only if the extrusion length is infinite",
+                        getId());
     if (polarization == Expansion::E_UNSPECIFIED)
         throw BadInput(getId(), "Unspecified incident polarization for reflectivity computation");
     if (expansion.symmetric() && expansion.symmetry != polarization)
         throw BadInput(getId(), "Current solver symmetry is inconsistent with the specified incident polarization");
     if (expansion.separated() && expansion.polarization != polarization)
         throw BadInput(getId(), "Current solver polarization is inconsistent with the specified incident polarization");
-
-    size_t layer = stack[(side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1];
-    if (!transfer) {
-        initTransfer(expansion, true);
-        changed = true;
-    }
-    if (changed) {
-        transfer->initDiagonalization();
-        transfer->diagonalizer->diagonalizeLayer(layer);
-    } else if (!transfer->diagonalizer->isDiagonalized(layer))
-        transfer->diagonalizer->diagonalizeLayer(layer);
-    return layer;
+    return SlabSolver<SolverWithMesh<Geometry2DCartesian,MeshAxis>>::initIncidence(side, lam);
 }
 
 cvector FourierSolver2D::incidentVector(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam)
@@ -264,10 +246,12 @@ cvector FourierSolver2D::incidentVector(Transfer::IncidentDirection side, Expans
     size_t idx;
     if (expansion.separated()) idx = expansion.iEH(0);
     else idx = (polarization == Expansion::E_TRAN)? expansion.iEx(0) : expansion.iEz(0);
-    cvector incident(expansion.matrixSize(), 0.);
-    incident[idx] = (polarization == Expansion::E_TRAN)? 1. : -1.;
+    cvector physical(expansion.matrixSize(), 0.);
+    physical[idx] = (polarization == Expansion::E_TRAN)? 1. : -1.;
 
-    return transfer->diagonalizer->invTE(layer) * incident;
+    cvector incident = transfer->diagonalizer->invTE(layer) * physical;
+    scaleIncidentVector(incident, layer);
+    return incident;
 }
 
 
@@ -279,16 +263,18 @@ cvector FourierSolver2D::incidentGaussian(Transfer::IncidentDirection side, Expa
     dcomplex d = I * b * (center - expansion.left);
     double c2 = - 0.5 * sigma*sigma * b*b;
 
-    cvector incident(expansion.matrixSize(), 0.);
+    cvector physical(expansion.matrixSize(), 0.);
     for (int i = -int(size); i <= int(size); ++i) {
         size_t idx;
         if (expansion.separated()) idx = expansion.iEH(i);
         else idx = (polarization == Expansion::E_TRAN)? expansion.iEx(i) : expansion.iEz(i);
         dcomplex val = exp(c2 * double(i*i) - d*double(i));
-        incident[idx] = (polarization == Expansion::E_TRAN)? val : -val;
+        physical[idx] = (polarization == Expansion::E_TRAN)? val : -val;
     }
 
-    return transfer->diagonalizer->invTE(layer) * incident;
+    cvector incident = transfer->diagonalizer->invTE(layer) * physical;
+    scaleIncidentVector(incident, layer);
+    return incident;
 }
 
 

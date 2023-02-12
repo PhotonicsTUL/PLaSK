@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -141,6 +141,9 @@ struct PLASK_SOLVER_API SlabBase {
     /// Minimum layer thickness for the purpose of temperature-based layers division
     double temp_layer;
 
+    /// Scale the incident field vector
+    void scaleIncidentVector(cvector& incident, size_t layer, double size_factor);
+
   public:
     SlabBase()
         : emission(EMISSION_UNSPECIFIED),
@@ -236,13 +239,6 @@ struct PLASK_SOLVER_API SlabBase {
 
     /// Get solver expansion
     virtual Expansion& getExpansion() = 0;
-
-    /**
-     * Get incident field vector for given polarization.
-     * \param idx number of the mode to set to 1
-     * \return incident field vector
-     */
-    cvector incidentVector(size_t idx);
 
     /**
      * Get amplitudes of incident diffraction orders

@@ -69,58 +69,6 @@
 <script><![CDATA[
 import unittest
 
-class Integrals3DTest(unittest.TestCase):
-
-    def __init__(self, name, syml=True, symt=True, pol='Et'):
-        super().__init__(name)
-        self.symmetry = pol if syml else None, pol if symt else None
-        self.pol = pol
-        self.abox = GEO.struct3d.get_object_bboxes(GEO.absorber3d)[0]
-        self.ibox = GEO.struct3d.get_object_bboxes(GEO.grating3d)[0]
-        self.amesh = mesh.Rectangular3D(
-            mesh.Regular(-self.abox.front, self.abox.front, nx+1),
-            mesh.Regular(-self.abox.right, self.abox.right, ny+1),
-            mesh.Regular(self.abox.bottom, self.abox.top, nz+1)
-        ).elements.mesh
-        self.imesh = mesh.Rectangular3D(
-            mesh.Regular(-self.ibox.front, self.ibox.front, nx+1),
-            mesh.Regular(-self.ibox.right, self.ibox.right, ny+1),
-            mesh.Regular(self.ibox.bottom, self.ibox.top, nz+1)
-        ).elements.mesh
-
-    def setUp(self):
-        FOURIER3D.symmetry = self.symmetry
-        self.comp = FOURIER3D.scattering(side, self.pol)
-
-    def test_integrals_E(self):
-        EEn = sum(self.comp.outLightMagnitude(self.imesh)) * (self.ibox.top - self.ibox.bottom) / (nx * ny * nz)
-        # En = self.comp.outLightE(self.imesh).array
-        # EEn = 0.5/phys.eta0 * sum(real(En * conj(En))) * (self.ibox.top - self.ibox.bottom) / (nx * ny * nz)
-        EEa = 0.25/phys.eta0 * self.comp.integrateEE(self.ibox.bottom, self.ibox.top) / (self.ibox.front * self.ibox.right)
-        self.assertAlmostEqual(EEa / EEn, 1., 3)
-
-    def test_integrals_H(self):
-        Hn = self.comp.outLightH(self.imesh).array
-        HHn = 0.5*phys.eta0 * sum(real(Hn * conj(Hn))) * (self.ibox.top - self.ibox.bottom) / (nx * ny * nz)
-        HHa = 0.25*phys.eta0 * self.comp.integrateHH(self.ibox.bottom, self.ibox.top) / (self.ibox.front * self.ibox.right)
-        self.assertAlmostEqual(HHa / HHn, 1., 3)
-
-    def test_absorption_numeric(self):
-        EEn = sum(self.comp.outLightMagnitude(self.amesh)) * (self.abox.top - self.abox.bottom) / (nx * ny * nz)
-        eps = material.get('absorber').Nr(lam)**2
-        nclad = material.get('clad').Nr(lam).real
-        A = 1. - self.comp.R - self.comp.T
-        An = 2e3 * pi / lam * abs(eps.imag) * EEn / nclad
-        self.assertAlmostEqual(A, An, 3)
-
-    def test_absorption_analytic(self):
-        EEa = 0.25/phys.eta0 * self.comp.integrateEE(self.abox.bottom, self.abox.top) / (self.abox.front * self.abox.right)
-        eps = material.get('absorber').Nr(lam)**2
-        nclad = material.get('clad').Nr(lam).real
-        A = 1. - self.comp.R - self.comp.T
-        Aa = 2e3 * pi / lam * abs(eps.imag) * EEa / nclad
-        self.assertAlmostEqual(A, Aa, 4)
-
 
 class Integrals2DTest(unittest.TestCase):
 
@@ -143,36 +91,89 @@ class Integrals2DTest(unittest.TestCase):
     def setUp(self):
         FOURIER2D.symmetry = self.symmetry
         FOURIER2D.polarization = self.polarization
-        self.comp = FOURIER2D.scattering(side, self.pol)
+        FOURIER3D.klong, FOURIER3D.ktran = 0.1, 0.2
+        self.scatter = FOURIER2D.scattering(side, self.pol)
 
     def test_integrals_E(self):
-        EEn = sum(self.comp.outLightMagnitude(self.imesh)) * (self.ibox.top - self.ibox.bottom) / (ny * nz)
-        # En = self.comp.outLightE(self.imesh).array
+        EEn = sum(self.scatter.outLightMagnitude(self.imesh)) * (self.ibox.top - self.ibox.bottom) / (ny * nz)
+        # En = self.scatter.outLightE(self.imesh).array
         # EEn = 0.5/phys.eta0 * sum(real(En * conj(En))) * (self.ibox.top - self.ibox.bottom) / (ny * nz)
-        EEa = 0.5/phys.eta0 * self.comp.integrateEE(self.ibox.bottom, self.ibox.top) / self.ibox.right
+        EEa = 0.5/phys.eta0 * self.scatter.integrateEE(self.ibox.bottom, self.ibox.top) / self.ibox.right
         self.assertAlmostEqual(EEa / EEn, 1., 3)
 
     def test_integrals_H(self):
-        Hn = self.comp.outLightH(self.imesh).array
+        Hn = self.scatter.outLightH(self.imesh).array
         HHn = 0.5*phys.eta0 * sum(real(Hn * conj(Hn))) * (self.ibox.top - self.ibox.bottom) / (ny * nz)
-        HHa = 0.5*phys.eta0 * self.comp.integrateHH(self.ibox.bottom, self.ibox.top) / self.ibox.right
+        HHa = 0.5*phys.eta0 * self.scatter.integrateHH(self.ibox.bottom, self.ibox.top) / self.ibox.right
         self.assertAlmostEqual(HHa / HHn, 1., 3)
 
     def test_absorption_numeric(self):
-        EEn = sum(self.comp.outLightMagnitude(self.amesh)) * (self.abox.top - self.abox.bottom) / (ny * nz)
+        V = 2. * self.abox.right * (self.abox.top - self.abox.bottom)
+        EEn = sum(self.scatter.outLightMagnitude(self.amesh)) / (ny * nz) * V
         eps = material.get('absorber').Nr(lam)**2
-        nclad = material.get('clad').Nr(lam).real
-        A = 1. - self.comp.R - self.comp.T
-        An = 2e3 * pi / lam * abs(eps.imag) * EEn / nclad
+        A = 1. - self.scatter.R - self.scatter.T
+        An = 2e3 * pi / lam * abs(eps.imag) * EEn
         self.assertAlmostEqual(An / A, 1., 3)
 
     def test_absorption_analytic(self):
-        EEa = 0.5/phys.eta0 * self.comp.integrateEE(self.abox.bottom, self.abox.top) / self.abox.right
+        EEa = self.scatter.integrateEE(self.abox.bottom, self.abox.top) / phys.eta0
         eps = material.get('absorber').Nr(lam)**2
-        nclad = material.get('clad').Nr(lam).real
-        A = 1. - self.comp.R - self.comp.T
-        Aa = 2e3 * pi / lam * abs(eps.imag) * EEa / nclad
+        A = 1. - self.scatter.R - self.scatter.T
+        Aa = 2e3 * pi / lam * abs(eps.imag) * EEa
         self.assertAlmostEqual(Aa / A, 1., 4)
+
+
+class Integrals3DTest(unittest.TestCase):
+
+    def __init__(self, name, syml=True, symt=True, pol='Et'):
+        super().__init__(name)
+        self.symmetry = pol if syml else None, pol if symt else None
+        self.pol = pol
+        self.abox = GEO.struct3d.get_object_bboxes(GEO.absorber3d)[0]
+        self.ibox = GEO.struct3d.get_object_bboxes(GEO.grating3d)[0]
+        self.amesh = mesh.Rectangular3D(
+            mesh.Regular(-self.abox.front, self.abox.front, nx+1),
+            mesh.Regular(-self.abox.right, self.abox.right, ny+1),
+            mesh.Regular(self.abox.bottom, self.abox.top, nz+1)
+        ).elements.mesh
+        self.imesh = mesh.Rectangular3D(
+            mesh.Regular(-self.ibox.front, self.ibox.front, nx+1),
+            mesh.Regular(-self.ibox.right, self.ibox.right, ny+1),
+            mesh.Regular(self.ibox.bottom, self.ibox.top, nz+1)
+        ).elements.mesh
+
+    def setUp(self):
+        FOURIER3D.symmetry = self.symmetry
+        FOURIER3D.klong, FOURIER3D.ktran = 0.1, 0.2
+        self.scatter = FOURIER3D.scattering(side, self.pol)
+
+    def test_integrals_E(self):
+        EEn = sum(self.scatter.outLightMagnitude(self.imesh)) * (self.ibox.top - self.ibox.bottom) / (nx * ny * nz)
+        # En = self.scatter.outLightE(self.imesh).array
+        # EEn = 0.5/phys.eta0 * sum(real(En * conj(En))) * (self.ibox.top - self.ibox.bottom) / (nx * ny * nz)
+        EEa = 0.25/phys.eta0 * self.scatter.integrateEE(self.ibox.bottom, self.ibox.top) / (self.ibox.front * self.ibox.right)
+        self.assertAlmostEqual(EEa / EEn, 1., 3)
+
+    def test_integrals_H(self):
+        Hn = self.scatter.outLightH(self.imesh).array
+        HHn = 0.5*phys.eta0 * sum(real(Hn * conj(Hn))) * (self.ibox.top - self.ibox.bottom) / (nx * ny * nz)
+        HHa = 0.25*phys.eta0 * self.scatter.integrateHH(self.ibox.bottom, self.ibox.top) / (self.ibox.front * self.ibox.right)
+        self.assertAlmostEqual(HHa / HHn, 1., 3)
+
+    def test_absorption_numeric(self):
+        V = 4. * self.abox.front * self.abox.right * (self.abox.top - self.abox.bottom)
+        EEn = sum(self.scatter.outLightMagnitude(self.amesh)) / (nx * ny * nz) * V
+        eps = material.get('absorber').Nr(lam)**2
+        A = 1. - self.scatter.R - self.scatter.T
+        An = 2e3 * pi / lam * abs(eps.imag) * EEn
+        self.assertAlmostEqual(A, An, 3)
+
+    def test_absorption_analytic(self):
+        EEa = self.scatter.integrateEE(self.abox.bottom, self.abox.top) / phys.eta0
+        eps = material.get('absorber').Nr(lam)**2
+        A = 1. - self.scatter.R - self.scatter.T
+        Aa = 2e3 * pi / lam * abs(eps.imag) * EEa
+        self.assertAlmostEqual(A, Aa, 4)
 
 
 def load_tests(loader, standard_tests, pattern):

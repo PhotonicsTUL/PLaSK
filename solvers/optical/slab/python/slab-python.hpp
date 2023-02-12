@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -749,7 +749,7 @@ struct Scattering {
      * \param incident incident vector
      */
     Scattering(SolverT* solver, Transfer::IncidentDirection side, const cvector& incident):
-        solver(solver), incident(incident), side(side),
+        solver(solver), incident(solver->incidentVector(side, incident, NAN)), side(side),
         outLightE(this, &Scattering::getLightE),
         outLightH(this, &Scattering::getLightH),
         outLightMagnitude(this, &Scattering::getLightMagnitude) {
@@ -766,7 +766,7 @@ struct Scattering {
      * \param polarization polarization of the perpendicularly incident light
      */
     Scattering(SolverT* solver, Transfer::IncidentDirection side, Expansion::Component polarization):
-        solver(solver), incident(solver->incidentVector(side, polarization)), side(side),
+        solver(solver), incident(solver->incidentVector(side, polarization, NAN)), side(side),
         outLightE(this, &Scattering::getLightE),
         outLightH(this, &Scattering::getLightH),
         outLightMagnitude(this, &Scattering::getLightMagnitude) {
@@ -779,7 +779,7 @@ struct Scattering {
      * \param idx incident eigenmode index
      */
     Scattering(SolverT* solver, Transfer::IncidentDirection side, size_t idx):
-        solver(solver), incident(solver->SlabBase::incidentVector(idx)), side(side),
+        solver(solver), incident(solver->incidentVector(side, idx, NAN)), side(side),
         outLightE(this, &Scattering::getLightE),
         outLightH(this, &Scattering::getLightH),
         outLightMagnitude(this, &Scattering::getLightMagnitude) {
@@ -963,7 +963,7 @@ py::object Solver_computeReflectivity_index(SolverT* self,
         self->setExpansionDefaults(false);
     return UFUNC<double>([=](double lam)->double {
         double k0 = 2e3*PI/lam;
-        cvector incident = self->SlabBase::incidentVector(index);
+        cvector incident = self->incidentVector(side, index, lam);
         self->getExpansion().setK0(k0);
         return 100. * self->getReflection(incident, side);
     }, wavelength, solver_compute_reflectivity_name<SolverT>(), "lam");
@@ -980,7 +980,7 @@ py::object Solver_computeTransmittivity_index(SolverT* self,
         self->setExpansionDefaults(false);
     return UFUNC<double>([=](double lam)->double {
         double k0 = 2e3*PI/lam;
-        cvector incident = self->SlabBase::incidentVector(index);
+        cvector incident = self->incidentVector(side, index, lam);
         self->getExpansion().setK0(k0);
         return 100. * self->getTransmission(incident, side);
     }, wavelength, solver_compute_transmittivity_name<SolverT>(), "lam");
@@ -1006,7 +1006,7 @@ py::object Solver_computeReflectivity_array(SolverT* self,
     return UFUNC<double>([self, incident, side](double lam)->double {
         double k0 = 2e3*PI/lam;
         self->getExpansion().setK0(k0);
-        return 100. * self->getReflection(incident, side);
+        return 100. * self->getReflection(self->incidentVector(side, incident, lam), side);
     }, wavelength, solver_compute_reflectivity_name<SolverT>(), "lam");
 }
 
@@ -1030,7 +1030,7 @@ py::object Solver_computeTransmittivity_array(SolverT* self,
     return UFUNC<double>([self, incident, side](double lam)->double {
         double k0 = 2e3*PI/lam;
         self->getExpansion().setK0(k0);
-        return 100. * self->getTransmission(incident, side);
+        return 100. * self->getTransmission(self->incidentVector(side, incident, lam), side);
     }, wavelength, solver_compute_transmittivity_name<SolverT>(), "lam");
 }
 

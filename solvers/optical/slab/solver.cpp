@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -568,14 +568,75 @@ void SlabBase::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
 #endif
 
 
-cvector SlabBase::incidentVector(size_t idx) {
-    initCalculation();
-    if (!transfer) initTransfer(getExpansion(), true);
-    if (idx >= transfer->diagonalizer->matrixSize()) throw BadInput(getId(), "Wrong incident eignenmode index");
+template <typename BaseT>
+size_t SlabSolver<BaseT>::initIncidence(Transfer::IncidentDirection side, dcomplex lam) {
+    Expansion& expansion = getExpansion();
+    bool changed = Solver::initCalculation() || setExpansionDefaults(isnan(lam));
+    if (!isnan(lam)) {
+        dcomplex k0 = 2e3*M_PI / lam;
+        if (!is_zero(k0 - expansion.getK0())) {
+            expansion.setK0(k0);
+            changed = true;
+        }
+    }
+    size_t layer = stack[(side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1];
+    if (!transfer) {
+        initTransfer(expansion, true);
+        changed = true;
+    }
+    if (changed) {
+        transfer->initDiagonalization();
+        transfer->diagonalizer->diagonalizeLayer(layer);
+    } else if (!transfer->diagonalizer->isDiagonalized(layer))
+        transfer->diagonalizer->diagonalizeLayer(layer);
+    return layer;
+}
 
+template <typename BaseT>
+cvector SlabSolver<BaseT>::incidentVector(Transfer::IncidentDirection side, size_t idx, dcomplex lam) {
+    size_t layer = initIncidence(side, lam);
+    if (idx >= transfer->diagonalizer->matrixSize()) throw BadInput(getId(), "Wrong incident eignenmode index");
     cvector incident(transfer->diagonalizer->matrixSize(), 0.);
     incident[idx] = 1.;
+
+    scaleIncidentVector(incident, layer);
     return incident;
+}
+
+template <typename BaseT>
+cvector SlabSolver<BaseT>::incidentVector(Transfer::IncidentDirection side, const cvector& incident, dcomplex lam) {
+    size_t layer = initIncidence(side, lam);
+    if (incident.size() != transfer->diagonalizer->matrixSize()) throw BadInput(getId(), "Wrong incident vector size");
+    cvector result = incident.claim();
+    scaleIncidentVector(result, layer);
+    return result;
+}
+
+void SlabBase::scaleIncidentVector(cvector& incident, size_t layer, double size_factor) {
+    double norm2 = 0.;
+    size_t N = transfer->diagonalizer->matrixSize();
+    for (size_t i = 0; i != N; ++i) {
+        double P = real(incident[i] * conj(incident[i]));
+        if (P != 0.) norm2 += P * getExpansion().getModeFlux(i, transfer->diagonalizer->TE(layer), transfer->diagonalizer->TH(layer));
+    }
+
+    double norm = size_factor / sqrt(abs(norm2));
+    for (size_t i = 0; i != N; ++i) incident[i] *= norm;
+}
+
+template <>
+void SlabSolver<SolverWithMesh<Geometry2DCartesian, MeshAxis>>::scaleIncidentVector(cvector& incident, size_t layer) {
+    SlabBase::scaleIncidentVector(incident, layer, 1e-3); // sqrt(µm -> m)
+}
+
+template <>
+void SlabSolver<SolverWithMesh<Geometry2DCylindrical, MeshAxis>>::scaleIncidentVector(cvector& incident, size_t layer) {
+    throw NotImplemented(getId(), "CylindicalSolver::incidentVector");
+}
+
+template <>
+void SlabSolver<SolverOver<Geometry3D>>::scaleIncidentVector(cvector& incident, size_t layer) {
+    SlabBase::scaleIncidentVector(incident, layer, 1e-6); // sqrt(µm² -> m²)
 }
 
 

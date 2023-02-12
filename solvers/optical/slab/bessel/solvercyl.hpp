@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -28,6 +28,8 @@ namespace plask { namespace optical { namespace slab {
  * Reflection transformation solver in Cartesian 2D geometry.
  */
 struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geometry2DCylindrical,MeshAxis>> {
+
+    typedef SlabSolver<SolverWithMesh<Geometry2DCylindrical,MeshAxis>> BaseType;
 
     friend struct ExpansionBessel;
     friend struct ExpansionBesselFini;

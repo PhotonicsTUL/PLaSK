@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -1267,14 +1267,13 @@ double ExpansionPW2D::integratePoyntingVert(const cvector& E, const cvector& H)
     }
 
     double L = SOLVER->geometry->getExtrusion()->getLength();
-    if (!isinf(L))
-        P *= L * 1e-6;
+    if (!isinf(L)) P *= L * 1e-6; // µm -> m
 
-    return P * (symmetric()? 2 * right : right - left) * 1e-6; // µm² -> m²
+    return P * (symmetric()? 2 * right : right - left) * 1e-6; // µm -> m
 }
 
 
-void ExpansionPW2D::getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmatrix& RE, const cdiagonal& gamma)
+void ExpansionPW2D::getDiagonalEigenvectors(cmatrix& Te, cmatrix& Te1, const cmatrix& RE, const cdiagonal& gamma)
 {
     size_t nr = Te.rows(), nc = Te.cols();
     std::fill_n(Te.data(), nr*nc, 0.);

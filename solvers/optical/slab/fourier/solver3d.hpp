@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -30,6 +30,8 @@ namespace plask { namespace optical { namespace slab {
  * Reflection transformation solver in Cartesian 3D geometry.
  */
 struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D>> {
+
+    typedef SlabSolver<SolverOver<Geometry3D>> BaseType;
 
     friend struct ExpansionPW3D;
 
@@ -125,6 +127,8 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
     /// Expansion rule
     ExpansionRule expansion_rule;
+
+    size_t initIncidence(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam);
 
   public:
 
@@ -324,6 +328,8 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
      */
     cvector incidentVector(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam=NAN);
 
+    using BaseType::incidentVector;
+
     /**
      * Compute incident vector with Gaussian profile
      * \param side incidence side
@@ -333,14 +339,8 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
      * \param lam wavelength
      * \return incident field vector
      */
-    cvector incidentGaussian(Transfer::IncidentDirection side, Expansion::Component polarization, double sigma_long, double sigma_tran,
-                             double center_long=0., double center_tran=0., dcomplex lam=NAN);
-
-  private:
-
-    size_t initIncidence(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam);
-
-  public:
+    cvector incidentGaussian(Transfer::IncidentDirection side, Expansion::Component polarization,
+                             double sigma_long, double sigma_tran, double center_long=0., double center_tran=0., dcomplex lam=NAN);
 
     /**
      * Get electric field at the given mesh for reflected light.
