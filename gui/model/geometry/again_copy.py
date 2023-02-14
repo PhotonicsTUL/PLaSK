@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -323,8 +323,12 @@ class GNCopy(GNObject):
     def accept_as_child(self, node):
         return isinstance(node, GNCopyChild)
 
+    @staticmethod
+    def _get_val(val):
+        return lambda i1, i2: val()
+
     def add_child_options(self):
-        return [{key: lambda i1, i2: val() for key, val in GNCopy.CHANGERS.items()}]
+        return [{key: self._get_val(val) for key, val in GNCopy.CHANGERS.items()}]
 
     def get_controller(self, document, model):
         from ...controller.geometry.again_copy import GNCopyController
