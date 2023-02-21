@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -123,7 +123,7 @@ class PythonEvalMaterial: public MaterialWithBase
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
         return cls == theother.cls &&
                bool(base) == bool(theother.base) && (!base || base->str() == theother.base->str()) &&
-               self.attr("__dict__") == theother.self.attr("__dict__");
+               params == theother.params && self.attr("__dict__") == theother.self.attr("__dict__");
     }
 
     std::string name() const override { return cls->materialName; }

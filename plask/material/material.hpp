@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -122,9 +122,9 @@ struct PLASK_API Material {
      * @param material_name full material name or name without dopant (only part before ':')
      * @return @c true only if @p material_name is name of simple material (does not have composition).
      */
-    static bool isSimpleMaterialName(const std::string &material_name) { 
+    static bool isSimpleMaterialName(const std::string &material_name) {
         auto brace = material_name.find('(');
-        return brace == std::string::npos || brace == 0; 
+        return brace == std::string::npos || brace == 0;
     }
 
     /**
@@ -164,6 +164,11 @@ struct PLASK_API Material {
          */
         explicit Parameters(const std::string& full_name, bool allow_dopant_without_amount = false)
             { parse(full_name, allow_dopant_without_amount); }
+
+        bool operator==(const Parameters& other) const {
+            return name == other.name && label == other.label && composition == other.composition &&
+                   dopant == other.dopant && doping == other.doping;
+        }
 
         /**
          * Check if material is simple, i.e. has empty composition.
