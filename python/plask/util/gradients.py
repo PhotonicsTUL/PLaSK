@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -70,7 +70,7 @@ def simplify(item, lam, T=300., linear='nr', dT=100.):
                     of refractive index
 
     Returns:
-        ~plask.geometry.GeometryObject: an object repacing the original leaf
+        ~plask.geometry.GeometryObject: an object replacing the original leaf
     """
     if isinstance(item, _geometry.Rectangle):
         Block = _geometry.Rectangle

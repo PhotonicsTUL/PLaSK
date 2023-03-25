@@ -136,7 +136,7 @@ __cache = {}
 
 
 def simplify_gradient_nr(d, n0, n1, lam, linear='nr', ninit=None):
-    """Compute thiknesses and refactive indices of two layers simplifying a gradient layer.
+    """Compute thicknesses and refractive indices of two layers simplifying a gradient layer.
 
     Args:
         d (float): layer thickness

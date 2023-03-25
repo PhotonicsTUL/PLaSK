@@ -13,7 +13,7 @@ Concentration (carriers, electrons, holes)   1/cm\ :sup:`3`
 Electric potential                           V
 Electric current density                     kA/cm\ :sup:`2`
 Band energy                                  eV
-Heat flux                                    W/m\ :sup:`2` (in 2D space), W/m\ :sup:`3` (in 3D space)
+Heat flux                                    W/m\ :sup:`2` (in 2D Cartesian space), W/m\ :sup:`3` (in 3D and cylindrical space)
 Light intensity                              W/m\ :sup:`2`
 Material gain                                1/cm
 \- over carriers concentration derivative    cm\ :sup:`2`
