@@ -473,7 +473,7 @@ class MainWindow(QMainWindow):
         try:
             try:
                 document.load_from_file(filename)
-            except etree.LxmlError as e:
+            except (etree.LxmlError, ValueError) as e:
                 if _DEBUG:
                     traceback.print_exc()
                 document = XmlDocument(self)
@@ -614,7 +614,7 @@ class MainWindow(QMainWindow):
         if self.current_tab_index != -1:
             try:
                 self.document.controller_by_index(self.current_tab_index).save_data_in_model()
-            except etree.LxmlError:
+            except (etree.LxmlError, ValueError):
                 pass  # error is set in the controller
 
         for contrl in self.document.controllers:
@@ -706,7 +706,7 @@ class MainWindow(QMainWindow):
     def set_changed(self, changed):
         """Set changed flags in the document window"""
         try:
-            if self.document.filename:
+            if self.document and self.document.filename:
                 self.setWindowTitle(u"{}[*] - PLaSK".format(self.document.filename))
             else:
                 self.setWindowTitle("[*] PLaSK")
