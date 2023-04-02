@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -32,6 +32,8 @@ namespace boost { namespace python {
 // Important contains
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+
+#include <frameobject.h>
 
 #if (defined(_WIN32) || defined(__WIN32__) || defined(WIN32)) && defined(hypot)
 #   undef hypot
@@ -94,6 +96,11 @@ struct StopIteration: public Exception {
 struct IOError: public Exception {
     template <typename... T>
     IOError(const std::string& msg, const T&... args) : Exception(msg, args...) {}
+};
+
+struct RecursionError: public Exception {
+    template <typename... T>
+    RecursionError(const std::string& msg, const T&... args) : Exception(msg, args...) {}
 };
 
 PLASK_PYTHON_API std::string getPythonExceptionMessage();
@@ -371,6 +378,39 @@ struct Overriden
         return false;
     }
 
+    bool overriden_no_recursion(char const* name) const {
+        py::converter::registration const& r = py::converter::registered<T>::converters;
+        PyTypeObject* class_object = r.get_class_object();
+        if (self) {
+            py::handle<> mh(PyObject_GetAttrString(self, const_cast<char*>(name)));
+            if (mh && PyMethod_Check(mh.get())) {
+                PyMethodObject* mo = (PyMethodObject*)mh.get();
+                PyObject* borrowed_f = nullptr;
+                if(mo->im_self == self && class_object->tp_dict != 0)
+                    borrowed_f = PyDict_GetItemString(class_object->tp_dict, const_cast<char*>(name));
+                if (borrowed_f != mo->im_func) {
+                    PyFrameObject* frame = PyEval_GetFrame();
+                    if (frame == nullptr) return true;
+                    bool result = true;
+                    PyCodeObject* f_code =
+                        #if PY_VERSION_HEX >= 0x030900B1
+                            PyFrame_GetCode(frame);
+                        #else
+                            frame->f_code;
+                        #endif
+                    PyCodeObject* method_code = (PyCodeObject*)((PyFunctionObject*)mo->im_func)->func_code;
+                    if (f_code == method_code && frame->f_localsplus[0] == self)
+                        result = false;
+                    #if PY_VERSION_HEX >= 0x030900B1
+                        Py_XDECREF(f_code);
+                    #endif
+                    return result;
+                }
+            }
+        }
+        return false;
+    }
+
     template <typename R, typename... Args>
     inline R call_python(const char* name, Args... args) const {
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
@@ -424,8 +464,6 @@ void removeIndent(std::string& text, unsigned xmlline, const char* tag = nullptr
  * \return compiled PyCodeObject
  */
 PyCodeObject* compilePythonFromXml(XMLReader& reader, bool exec = true, bool draft = false);
-
-
 
 }} // namespace plask::python
 

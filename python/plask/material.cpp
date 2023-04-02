@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -118,7 +118,7 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     inline R call(const char* name, F f, const plask::optional<R>& cached, Args&&... args) const {
         if (cached) return *cached;
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-        if (overriden(name)) {
+        if (overriden_no_recursion(name)) {
             return call_method<R>(name, std::forward<Args>(args)...);
         }
         return ((*base).*f)(std::forward<Args>(args)...);
@@ -128,7 +128,7 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     inline R call_override(const char* name, const plask::optional<R>& cached, Args&&... args) const {
         if (cached) return *cached;
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-        if (overriden(name)) {
+        if (overriden_no_recursion(name)) {
             return call_method<R>(name, std::forward<Args>(args)...);
         }
         throw MaterialMethodNotImplemented(this->name(), name);
@@ -1020,6 +1020,9 @@ void setMaterialDatabase(const MaterialsDB& src) {
 }
 
 
+void register_PythonEvalMaterial_super();
+
+
 void initMaterials() {
 
     py::object materials_module { py::handle<>(py::borrowed(PyImport_AddModule("plask._material"))) };
@@ -1536,6 +1539,8 @@ void initMaterials() {
     REGISTER_CACHED_VALUE_GETTER(y1);
     REGISTER_CACHED_VALUE_GETTER(y2);
     REGISTER_CACHED_VALUE_GETTER(y3);
+
+    register_PythonEvalMaterial_super();
 }
 
 }} // namespace plask::python

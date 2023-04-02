@@ -254,11 +254,13 @@ class Material(unittest.TestCase):
             <materials>
               <material name="bas" base="semiconductor">
                 <thermk>45.</thermk>
+                <cond>100.</cond>
               </material>
               <material name="xmat" base="bas">
                 <A>2. * self.B()</A>
                 <B>10.</B>
                 <thermk>2. * array(self.base.thermk())</thermk>
+                <cond>2. * array(super().cond())</cond>
               </material>
             </materials>
           </plask>
@@ -266,15 +268,22 @@ class Material(unittest.TestCase):
         xmat = material.get('xmat')
         self.assertEqual(xmat.A(), 20.)
         self.assertEqual(xmat.thermk(), (90., 90.))
+        self.assertEqual(xmat.cond(), (200., 200.))
 
         @material.simple('bas')
         class Mat(material.Material):
             def thermk(self, T=300., h=infty):
                 val = 3. * self.base.thermk(T, h)[0]
                 return (val, val)
-        mat = material.get('Mat')
-        self.assertEqual(Mat().thermk(), (135., 135.))
-        self.assertEqual(mat.thermk(), (135., 135.))
+            def cond(self, T=300.):
+                val = 3. * super().cond(T)[0]
+                return (val, val)
+        mat1 = Mat()
+        mat2 = material.get('Mat')
+        self.assertEqual(mat1.thermk(), (135., 135.))
+        self.assertEqual(mat2.thermk(), (135., 135.))
+        self.assertEqual(mat1.cond(), (300., 300.))
+        self.assertEqual(mat2.cond(), (300., 300.))
 
 
     def testXmlAlloy(self):

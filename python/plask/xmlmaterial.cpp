@@ -65,6 +65,22 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
     bool isAlloy() const override { return alloy; }
 };
 
+struct MaterialSuper {
+    const shared_ptr<Material>& base;
+    MaterialSuper(const shared_ptr<Material>& base) : base(base) {}
+    shared_ptr<Material> __call__0() { return base; }
+    shared_ptr<Material> __call__2(const PyObject*, const PyObject*) { return base; }
+};
+
+void register_PythonEvalMaterial_super() {
+    py::class_<MaterialSuper>("super", py::no_init)
+        .def("__call__", &MaterialSuper::__call__0)
+        .def("__call__", &MaterialSuper::__call__2)
+    ;
+    py::delattr(py::scope(), "super");
+}
+
+
 class PythonEvalMaterial: public MaterialWithBase
 {
     shared_ptr<PythonEvalMaterialConstructor> cls;
@@ -86,7 +102,9 @@ class PythonEvalMaterial: public MaterialWithBase
     }
 
     template <typename RETURN>
-    inline RETURN call(PyCodeObject *fun, const py::dict& locals, const char* funname) const {
+    inline RETURN call(PyCodeObject *fun, py::dict& locals, const char* funname) const {
+        locals["self"] = self;
+        locals["super"] = MaterialSuper(base);
         try {
             return py::extract<RETURN>(py::handle<>(py_eval(fun, locals)).get());
         } catch (py::error_already_set&) {
@@ -153,28 +171,28 @@ class PythonEvalMaterial: public MaterialWithBase
         if (cls->cache.fun) return *cls->cache.fun;\
         if (cls->fun == NULL) return base->fun(); \
         OmpLockGuard<OmpNestLock> lock(python_omp_lock); \
-        py::dict locals; locals["self"] = self; \
+        py::dict locals; \
         return call<rtype>(cls->fun, locals, BOOST_PP_STRINGIZE(fun));
 
 #   define PYTHON_EVAL_CALL_1(rtype, fun, arg1) \
         if (cls->cache.fun) return *cls->cache.fun;\
         if (cls->fun == NULL) return base->fun(arg1); \
         OmpLockGuard<OmpNestLock> lock(python_omp_lock); \
-        py::dict locals; locals["self"] = self; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; \
+        py::dict locals; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; \
         return call<rtype>(cls->fun, locals, BOOST_PP_STRINGIZE(fun));
 
 #   define PYTHON_EVAL_CALL_2(rtype, fun, arg1, arg2) \
         if (cls->cache.fun) return *cls->cache.fun;\
         if (cls->fun == NULL) return base->fun(arg1, arg2); \
         OmpLockGuard<OmpNestLock> lock(python_omp_lock); \
-        py::dict locals; locals["self"] = self; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
+        py::dict locals; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
         return call<rtype>(cls->fun, locals, BOOST_PP_STRINGIZE(fun));
 
 #   define PYTHON_EVAL_CALL_3(rtype, fun, arg1, arg2, arg3) \
         if (cls->cache.fun) return *cls->cache.fun; \
         if (cls->fun == NULL) return base->fun(arg1, arg2, arg3); \
         OmpLockGuard<OmpNestLock> lock(python_omp_lock); \
-        py::dict locals; locals["self"] = self; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
+        py::dict locals; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
         locals[BOOST_PP_STRINGIZE(arg3)] = arg3; \
         return call<rtype>(cls->fun, locals, BOOST_PP_STRINGIZE(fun));
 
@@ -182,7 +200,7 @@ class PythonEvalMaterial: public MaterialWithBase
         if (cls->cache.fun) return *cls->cache.fun;\
         if (cls->fun == NULL) return base->fun(arg1, arg2, arg3, arg4); \
         OmpLockGuard<OmpNestLock> lock(python_omp_lock); \
-        py::dict locals; locals["self"] = self; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
+        py::dict locals; locals[BOOST_PP_STRINGIZE(arg1)] = arg1; locals[BOOST_PP_STRINGIZE(arg2)] = arg2; \
         locals[BOOST_PP_STRINGIZE(arg3)] = arg3; locals[BOOST_PP_STRINGIZE(arg4)] = arg4; \
         return call<rtype>(cls->fun, locals, BOOST_PP_STRINGIZE(fun));
 
@@ -191,7 +209,7 @@ class PythonEvalMaterial: public MaterialWithBase
         if (cls->cache.Eg) return *cls->cache.Eg;
         if (cls->Eg != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            py::dict locals; locals["self"] = self; locals["T"] = T; locals["e"] = e; locals["point"] = point;
+            py::dict locals; locals["T"] = T; locals["e"] = e; locals["point"] = point;
             return call<double>(cls->Eg, locals, "Eg");
         }
         if ((cls->VB != NULL || cls->cache.VB) && (cls->CB != NULL || cls->cache.CB))
@@ -202,7 +220,7 @@ class PythonEvalMaterial: public MaterialWithBase
         if (cls->cache.CB) return *cls->cache.CB;
         if (cls->CB != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            py::dict locals; locals["self"] = self; locals["T"] = T; locals["e"] = e; locals["point"] = point;
+            py::dict locals; locals["T"] = T; locals["e"] = e; locals["point"] = point;
             return call<double>(cls->CB, locals, "CB");
         }
         if (cls->VB != NULL || cls->cache.VB || cls->Eg != NULL || cls->cache.Eg)
@@ -213,7 +231,7 @@ class PythonEvalMaterial: public MaterialWithBase
         if (cls->cache.VB) return *cls->cache.VB;
         if (cls->VB != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            py::dict locals; locals["self"] = self; locals["T"] = T; locals["e"] = e; locals["point"] = point; locals["hole"] = hole;
+            py::dict locals; locals["T"] = T; locals["e"] = e; locals["point"] = point; locals["hole"] = hole;
             return call<double>(cls->VB, locals, "VB");
         }
         if (cls->CB != NULL || cls->cache.CB)
@@ -250,7 +268,7 @@ class PythonEvalMaterial: public MaterialWithBase
         if (cls->cache.D) { return *cls->cache.D; }
         if (cls->D != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            py::dict locals; locals["self"] = self; locals["T"] = T;
+            py::dict locals; locals["T"] = T;
             return call<double>(cls->D, locals, "D");
         }
         // D = µ kB T / e
@@ -266,21 +284,21 @@ class PythonEvalMaterial: public MaterialWithBase
         if (cls->cache.nr) return *cls->cache.nr;
         if (cls->nr == NULL) return base->nr(lam, T, n);
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-        py::dict locals; locals["self"] = self; locals["lam"] = locals["wl"] = lam; locals["T"] = T; locals["n"] = n;
+        py::dict locals; locals["lam"] = locals["wl"] = lam; locals["T"] = T; locals["n"] = n;
         return call<double>(cls->nr, locals, "nr");
     }
     double absp(double lam, double T) const override {
         if (cls->cache.absp) return *cls->cache.absp;
         if (cls->absp == NULL) return base->absp(lam, T);
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-        py::dict locals; locals["self"] = self; locals["lam"] = locals["wl"] = lam; locals["T"] = T;
+        py::dict locals; locals["lam"] = locals["wl"] = lam; locals["T"] = T;
         return call<double>(cls->absp, locals, "absp");
     }
     dcomplex Nr(double lam, double T, double n = .0) const override {
         if (cls->cache.Nr) return *cls->cache.Nr;
         if (cls->Nr != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            py::dict locals; locals["self"] = self; locals["lam"] = locals["wl"] = lam; locals["T"] = T; locals["n"] = n;
+            py::dict locals; locals["lam"] = locals["wl"] = lam; locals["T"] = T; locals["n"] = n;
             return call<dcomplex>(cls->Nr, locals, "Nr");
         }
         if (cls->nr != NULL || cls->absp != NULL || cls->cache.nr || cls->cache.absp)
@@ -291,7 +309,7 @@ class PythonEvalMaterial: public MaterialWithBase
         if (cls->cache.NR) return *cls->cache.NR;
         if (cls->NR != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            py::dict locals; locals["self"] = self; locals["lam"] = locals["wl"] = lam; locals["T"] = T; locals["n"] = n;
+            py::dict locals; locals["lam"] = locals["wl"] = lam; locals["T"] = T; locals["n"] = n;
             return call<Tensor3<dcomplex>>(cls->NR, locals, "NR");
         }
         if (cls->cache.Nr) {
@@ -300,7 +318,7 @@ class PythonEvalMaterial: public MaterialWithBase
         }
         if (cls->Nr != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            py::dict locals; locals["self"] = self; locals["lam"] = locals["wl"] = lam; locals["T"] = T; locals["n"] = n;
+            py::dict locals; locals["lam"] = locals["wl"] = lam; locals["T"] = T; locals["n"] = n;
             dcomplex nc = call<dcomplex>(cls->Nr, locals, "Nr");
             return Tensor3<dcomplex>(nc, nc, nc, 0.);
         }

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -687,6 +687,11 @@ BOOST_PYTHON_MODULE(_plask)
     register_exception<plask::python::AttributeError>(PyExc_AttributeError);
     register_exception<plask::python::StopIteration>(PyExc_StopIteration);
     register_exception<plask::python::IOError>(PyExc_IOError);
+    #if PY_VERSION_HEX >= 0x03050000
+        register_exception<plask::python::RecursionError>(PyExc_RecursionError);
+    #else
+        register_exception<plask::python::RecursionError>(PyExc_RuntimeError);
+    #endif
 
     pyXmlError = PyErr_NewExceptionWithDoc((char*)"plask.XMLError", (char*)u8"Error in XML file.", NULL, NULL);
     register_exception<plask::XMLException>(pyXmlError);
