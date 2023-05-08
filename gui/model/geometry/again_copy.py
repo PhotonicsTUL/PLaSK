@@ -21,6 +21,9 @@ from ...utils.xml import attr_to_xml, xml_to_attr
 
 
 class GNAgain(GNode):
+
+    name = None
+
     def __init__(self, parent=None, ref=None):
         super().__init__(parent)
         self.ref = ref
@@ -53,7 +56,17 @@ class GNAgain(GNode):
 
     def create_info(self, res, names):
         super().create_info(res, names)
-        if not self.ref: self._require(res, 'ref', 'referenced object ("ref")')
+        if not self.ref:
+            self._require(res, 'ref', 'referenced object ("ref")')
+        # elif self.parent is not None:
+        #     child = self.find_by_name(self.ref)
+        #     if child is not None and self.parent.dim != child.dim:
+        #         self._append_error(
+        #             res,
+        #             'Referenced object "{}" has different dimension ({}) than its parent ({})'
+        #                 .format(self.ref, child.dim, self.parent.dim),
+        #             property='ref'
+        #         )
 
     #def model_to_real_index(self, index):  #TODO ??
 
@@ -62,10 +75,6 @@ class GNAgain(GNode):
         result = GNAgain()
         result.load_xml_element(element, conf)
         return result
-
-    @property
-    def name(self):
-        return self.ref
 
 
 # ---------- copy tag and its children: --------------

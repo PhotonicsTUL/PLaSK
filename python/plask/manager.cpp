@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -321,8 +321,9 @@ void PythonManager::loadConnects(XMLReader& reader)
                 else
                     receiver = solverin[py::make_tuple(geometrics[obj], pathHints[pth], points)];
             } catch (py::error_already_set&) {
+                std::string msg = getPythonExceptionMessage();
                 PyErr_Clear();
-                throw XMLException(reader, getPythonExceptionMessage());
+                throw XMLException(reader, msg);
             } catch(std::exception& err) {
                 throw XMLException(reader, err.what());
             }

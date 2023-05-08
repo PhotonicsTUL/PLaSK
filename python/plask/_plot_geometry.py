@@ -999,6 +999,8 @@ def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=
                     xym[i][j] = -e
                     em = emesh[1-i]
 
+                    if not em: continue
+
                     def _add_extend(g0, g1):
                         if cyl and i == 0:
                             if j == 0:
