@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -318,6 +318,7 @@ class GeometryController(Controller):
         QMetaObject.invokeMethod(self.tree, 'update_current_index', Qt.ConnectionType.QueuedConnection)
 
     def plot_element(self, tree_element, set_limits):
+        self.model.clear_info_messages()
         try:
             if self.manager is None:
                 manager = get_manager()
@@ -341,7 +342,7 @@ class GeometryController(Controller):
                     self.geometry_view.toolbar._views.clear()
             self.geometry_view.update_plot(plotted_object, set_limits=set_limits, plane=self.checked_plane)
         except Exception as e:
-            self.model.info_message("Could not update geometry view: {}".format(str(e)), Info.WARNING)
+            self.model.add_info_message("Could not update geometry view: {}".format(str(e)), Info.ERROR)
             # self.status_bar.setText(str(e))
             # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ff8888;")
             from ... import _DEBUG
@@ -349,7 +350,7 @@ class GeometryController(Controller):
                 import traceback
                 traceback.print_exc()
                 sys.stderr.flush()
-            return False
+            res = False
         else:
             self.plotted_tree_element = tree_element
             self.plotted_object = plotted_object
@@ -357,11 +358,12 @@ class GeometryController(Controller):
                 self.geometry_view.toolbar.enable_planes(tree_element.get_axes_conf())
             else:
                 self.geometry_view.toolbar.disable_planes(tree_element.get_axes_conf())
-            self.model.info_message()
-            # self.status_bar.setText('')
-            # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
             self.show_selection()
-            return True
+            res = True
+        for err in manager.errors:
+            self.model.add_info_message(err, Info.WARNING)
+        self.model.refresh_info()
+        return res
 
     def plot(self, tree_element=None):
         if tree_element is None:
@@ -388,17 +390,15 @@ class GeometryController(Controller):
 
     def on_model_change(self, *args, **kwargs):
         if self.plotted_tree_element is not None:
+            self.model.clear_info_messages()
             if self.plot_auto_refresh:
                 self.plot_refresh()
             else:
-                self.model.info_message("Geometry changed: click here to refresh the plot", Info.INFO,
-                                        action='plot_refresh')
-                # self.status_bar.setText("Geometry changed: refresh the plot")
-                # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ffff88;")
-        else:
-            self.model.info_message()
-            # self.status_bar.setText('')
-            # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
+                self.model.add_info_message("Geometry changed: click here to refresh the plot", Info.INFO,
+                                             action='plot_refresh')
+                self.model.refresh_info()
+
+
 
     def _construct_toolbar(self):
         weakself = weakref.proxy(self)
@@ -685,14 +685,15 @@ class GeometryController(Controller):
         return self.main_splitter
 
     def select_info(self, info):
-        try: action = info.action
-        except AttributeError: pass
-        else: return getattr(self, action)()
-        try:
-            new_nodes = info.nodes
-        except AttributeError:
-            return
-        if not new_nodes: return # empty??
+        if hasattr(info, 'action'):
+           return getattr(self, info.action)()
+
+        if hasattr(info, 'line'):
+            self.document.window.goto_line(info.line)
+
+        new_nodes = info.nodes if hasattr(info, 'nodes') else None
+        if not new_nodes:
+            return # empty??
 
         if len(new_nodes) == 1:
             self.tree.setCurrentIndex(self.model.index_for_node(new_nodes[0]))

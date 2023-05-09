@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -427,7 +427,7 @@ shared_ptr<OrderedAxis> RectangularMeshSmoothGenerator<dim>::processAxis(
     return axis;
 }
 
-template <int dim> void RectangularMeshRefinedGenerator<dim>::fromXML(XMLReader& reader, const Manager& manager) {
+template <int dim> void RectangularMeshRefinedGenerator<dim>::fromXML(XMLReader& reader, Manager& manager) {
     if (reader.getNodeName() == "warnings") {
         warn_missing = reader.getAttribute<bool>("missing", true);
         warn_multiple = reader.getAttribute<bool>("multiple", true);
@@ -480,7 +480,7 @@ template struct PLASK_API RectangularMeshRefinedGenerator<2>;
 template struct PLASK_API RectangularMeshRefinedGenerator<3>;
 
 template <typename GeneratorT>
-static shared_ptr<MeshGenerator> readTrivialGenerator(XMLReader& reader, const Manager&) {
+static shared_ptr<MeshGenerator> readTrivialGenerator(XMLReader& reader, Manager&) {
     bool split = false;
     while (reader.requireTagOrEnd()) {
         if (reader.getNodeName() == "boundaries") {
@@ -501,7 +501,7 @@ static RegisterMeshGeneratorReader rectangular3d_simplegenerator_reader(
     "rectangular3d.simple",
     readTrivialGenerator<RectangularMesh3DSimpleGenerator>);
 
-static shared_ptr<MeshGenerator> readRegularGenerator1(XMLReader& reader, const Manager&) {
+static shared_ptr<MeshGenerator> readRegularGenerator1(XMLReader& reader, Manager&) {
     double spacing = INFINITY;
     bool split = false;
     while (reader.requireTagOrEnd()) {
@@ -517,7 +517,7 @@ static shared_ptr<MeshGenerator> readRegularGenerator1(XMLReader& reader, const 
     return plask::make_shared<OrderedMesh1DRegularGenerator>(spacing, split);
 }
 
-static shared_ptr<MeshGenerator> readRegularGenerator2(XMLReader& reader, const Manager&) {
+static shared_ptr<MeshGenerator> readRegularGenerator2(XMLReader& reader, Manager&) {
     double spacing0 = INFINITY, spacing1 = INFINITY;
     bool split = false;
     while (reader.requireTagOrEnd()) {
@@ -540,7 +540,7 @@ static shared_ptr<MeshGenerator> readRegularGenerator2(XMLReader& reader, const 
     return plask::make_shared<RectangularMesh2DRegularGenerator>(spacing0, spacing1, split);
 }
 
-static shared_ptr<MeshGenerator> readRegularGenerator3(XMLReader& reader, const Manager&) {
+static shared_ptr<MeshGenerator> readRegularGenerator3(XMLReader& reader, Manager&) {
     double spacing0 = INFINITY, spacing1 = INFINITY, spacing2 = INFINITY;
     bool split = false;
     while (reader.requireTagOrEnd()) {
@@ -571,7 +571,7 @@ static RegisterMeshGeneratorReader rectangular2d_regulargenerator_reader("rectan
 static RegisterMeshGeneratorReader rectangular3d_regulargenerator_reader("rectangular3d.regular",
                                                                          readRegularGenerator3);
 
-template <int dim> shared_ptr<MeshGenerator> readRectangularDivideGenerator(XMLReader& reader, const Manager& manager) {
+template <int dim> shared_ptr<MeshGenerator> readRectangularDivideGenerator(XMLReader& reader, Manager& manager) {
     auto result = plask::make_shared<RectangularMeshDivideGenerator<dim>>();
 
     std::set<std::string> read;
@@ -634,7 +634,7 @@ static RegisterMeshGeneratorReader rectangular2d_dividinggenerator_reader("recta
 static RegisterMeshGeneratorReader rectangular3d_dividinggenerator_reader("rectangular3d.divide",
                                                                           readRectangularDivideGenerator<3>);
 
-template <int dim> shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLReader& reader, const Manager& manager) {
+template <int dim> shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLReader& reader, Manager& manager) {
     auto result = plask::make_shared<RectangularMeshSmoothGenerator<dim>>();
 
     std::set<std::string> read;

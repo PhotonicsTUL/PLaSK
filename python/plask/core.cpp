@@ -341,7 +341,8 @@ PLASK_PYTHON_API int printPythonException(PyObject* otype, PyObject* value, PyOb
                         printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}: {1}", error_name, message);
                     }
                 } else
-                    printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0} line {1}, function '{2}': {3}: {4}", filename, lineno, funcname, error_name, message);
+                    printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0} line {1}, function '{2}': {3}: {4}",
+                                      filename, lineno, funcname, error_name, message);
             }
             traceback = traceback->tb_next;
         }

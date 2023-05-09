@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -201,9 +201,9 @@ class PLASK_API GeometryReader {
     shared_ptr<Material> requireMaterial() const {
         try {
             return getMaterial(source.requireAttribute(XML_MATERIAL_ATTR));
-        } catch (XMLNoAttrException&) {
-            if (!manager.draft) throw;
-            else return plask::make_shared<DummyMaterial>("");
+        } catch (const XMLNoAttrException& err) {
+            manager.throwErrorIfNotDraft(err);
+            return plask::make_shared<DummyMaterial>("");
         }
     }
 
@@ -238,10 +238,9 @@ class PLASK_API GeometryReader {
      *
      * Befor call source reader should point to parent object tag (typically transform object)
      * and after call it will be point to end of parent object tag.
-     * @param required indicate if child is required
      * @return child object which was read and create or to which reference was read, or an empty pointer if there is no child and required is true
      */
-    shared_ptr<GeometryObject> readExactlyOneChild(bool required = true);
+    shared_ptr<GeometryObject> readExactlyOneChild();
 
     /**
      * Call readObject() and try dynamic cast it to @a RequiredObjectType.
@@ -257,12 +256,11 @@ class PLASK_API GeometryReader {
 
     /**
      * Call readExactlyOneChild() and try dynamic cast it to @a RequiredObjectType.
-     * @param required indicate if child is required
      * @return object (casted to RequiredObjectType) which was return by readExactlyOneChild(), or an empty pointer if there is no child and required is true
      * @tparam RequiredObjectType required type of object
      */
     template <typename RequiredObjectType>
-    shared_ptr<RequiredObjectType> readExactlyOneChild(bool required = true);
+    shared_ptr<RequiredObjectType> readExactlyOneChild();
 
     /**
      * Try reading calculation space. Throw exception if can't.
@@ -287,9 +285,9 @@ class PLASK_API GeometryReader {
     shared_ptr<GeometryObject> requireObjectFromAttribute(const std::string& attr) const {
         try {
             return requireObjectWithName(source.requireAttribute(attr));
-        } catch (XMLNoAttrException&) {
-            if (!manager.draft) throw;
-            else return shared_ptr<GeometryObject>();
+        } catch (const XMLNoAttrException& err) {
+            manager.throwErrorIfNotDraft(err);
+            return shared_ptr<GeometryObject>();
         }
     }
 
@@ -346,7 +344,7 @@ class PLASK_API GeometryReader {
 template <typename RequiredObjectType>
 inline shared_ptr<RequiredObjectType> GeometryReader::readObject() {
     shared_ptr<RequiredObjectType> result = dynamic_pointer_cast<RequiredObjectType>(readObject());
-    if (!result && !manager.draft) throw UnexpectedGeometryObjectTypeException();
+    if (!result) manager.throwErrorIfNotDraft(UnexpectedGeometryObjectTypeException());
     return result;
 }
 
@@ -358,26 +356,29 @@ inline shared_ptr<GeometryObject> GeometryReader::readObject<GeometryObject>() {
 
 // specialization for most types
 template <typename RequiredObjectType>
-inline shared_ptr<RequiredObjectType> GeometryReader::readExactlyOneChild(bool required) {
+inline shared_ptr<RequiredObjectType> GeometryReader::readExactlyOneChild() {
     shared_ptr<GeometryObject> before_cast;
     bool require_end = true;
-    if (source.requireNext((required && !manager.draft)
+    if (source.requireNext((!manager.draft)
                                ? XMLReader::NODE_ELEMENT
                                : (XMLReader::NODE_ELEMENT | XMLReader::NODE_ELEMENT_END)) == XMLReader::NODE_ELEMENT)
         before_cast = readObject();
     else
         require_end = false;
-    if (!before_cast && (!required || manager.draft)) return shared_ptr<RequiredObjectType>();
+    if (!before_cast && manager.draft) {
+        manager.pushError(XMLUnexpectedElementException(source, "new tag"));
+        return shared_ptr<RequiredObjectType>();
+    }
     shared_ptr<RequiredObjectType> result = dynamic_pointer_cast<RequiredObjectType>(before_cast);
-    if (!result && !manager.draft) throw UnexpectedGeometryObjectTypeException();
+    if (!result) manager.throwErrorIfNotDraft(UnexpectedGeometryObjectTypeException());
     if (require_end) source.requireTagEnd();
     return result;
 }
 
 // specialization for GeometryObject which doesn't required dynamic_cast
 template <>
-inline shared_ptr<GeometryObject> GeometryReader::readExactlyOneChild<GeometryObject>(bool required) {
-    return readExactlyOneChild(required);
+inline shared_ptr<GeometryObject> GeometryReader::readExactlyOneChild<GeometryObject>() {
+    return readExactlyOneChild();
 }
 
 /*template <typename FunctorType, typename RequiredObjectType>

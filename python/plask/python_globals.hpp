@@ -46,6 +46,7 @@ namespace boost { namespace python {
 #include <plask/geometry/space.hpp>
 #include <plask/log/log.hpp>
 #include <plask/parallel.hpp>
+#include <plask/manager.hpp>
 
 #include "python_enum.hpp"
 
@@ -459,11 +460,11 @@ void removeIndent(std::string& text, unsigned xmlline, const char* tag = nullptr
 /**
  * Read Python code from reader (either for eval or exec).
  * \param reader XML reader
+ * \param manager XPL manager
  * \param exec if \c false the code is compiled only for eval
- * \param draft if \c true the errors are ignored
  * \return compiled PyCodeObject
  */
-PyCodeObject* compilePythonFromXml(XMLReader& reader, bool exec = true, bool draft = false);
+PyCodeObject* compilePythonFromXml(XMLReader& reader, Manager& manager, bool exec = true);
 
 }} // namespace plask::python
 

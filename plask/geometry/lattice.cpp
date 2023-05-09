@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -250,7 +250,7 @@ shared_ptr<GeometryObject> read_arrange2d(GeometryReader& reader) {
     vec.vert() = reader.source.getAttribute("d" + reader.getAxisVertName(), 0.);
     unsigned repeat = reader.source.requireAttribute<unsigned>("count");
     bool warn = reader.source.getAttribute("warning", true);
-    auto child = reader.readExactlyOneChild<typename ArrangeContainer<2>::ChildType>(!reader.manager.draft);
+    auto child = reader.readExactlyOneChild<typename ArrangeContainer<2>::ChildType>();
     return plask::make_shared<ArrangeContainer<2>>(child, vec, repeat, warn);
 }
 
@@ -262,7 +262,7 @@ shared_ptr<GeometryObject> read_arrange3d(GeometryReader& reader) {
     vec.vert() = reader.source.getAttribute("d" + reader.getAxisVertName(), 0.);
     unsigned repeat = reader.source.requireAttribute<unsigned>("count");
     bool warn = reader.source.getAttribute("warning", true);
-    auto child = reader.readExactlyOneChild<typename ArrangeContainer<3>::ChildType>(!reader.manager.draft);
+    auto child = reader.readExactlyOneChild<typename ArrangeContainer<3>::ChildType>();
     return plask::make_shared<ArrangeContainer<3>>(child, vec, repeat, warn);
 }
 
@@ -526,7 +526,7 @@ shared_ptr<GeometryObject> read_lattice(GeometryReader& reader) {
             result->segments.back().back()[cords_in_current_point++] = boost::lexical_cast<int>(t);
         }
     }
-    result->setChild(reader.readExactlyOneChild<typename Lattice::ChildType>(!reader.manager.draft));
+    result->setChild(reader.readExactlyOneChild<typename Lattice::ChildType>());
     result->refillContainer();
     return result;
 }

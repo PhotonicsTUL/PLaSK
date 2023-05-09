@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -97,10 +97,11 @@ XMLReader::NodeType XMLReader::ensureNodeTypeIs(int required_types, const char *
         std::string msg;
         if (required_types & NODE_ELEMENT) {
             if (new_tag_name) {
-                msg += "begining of tag ";
+                msg += "<";
                 msg += new_tag_name;
+                msg += ">";
             } else
-                msg += "begining of a new tag";
+                msg += "new tag";
         }
         if (required_types & NODE_ELEMENT_END) {
             if (!msg.empty()) msg += " or ";
@@ -236,7 +237,7 @@ void XMLReader::removeAlienNamespaceAttr() {
         throwUnexpectedElementException("element");
     auto iter = states.front().attributes.begin();
     while (iter != states.front().attributes.end()) {
-        if (iter->first.find(' ') != std::string::npos) //not in default NS?
+        if (iter->first.find(' ') != std::string::npos) // not in default NS?
             states.front().attributes.erase(iter++);
         else
             ++iter;

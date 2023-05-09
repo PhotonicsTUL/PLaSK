@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -13,7 +13,6 @@
  */
 #include <plask/plask.hpp>
 #include "../python_globals.hpp"
-
 
 #define PLASK_GEOMETRY_PYTHON_TAG "python"
 #define RETURN_VARIABLE "__object__"
@@ -36,8 +35,7 @@ namespace detail {
 }
 
 shared_ptr<GeometryObject> read_python(GeometryReader& reader) {
-    size_t linenp = reader.source.getLineNr();
-    PyCodeObject* code = compilePythonFromXml(reader.source, true, reader.manager.draft);
+    PyCodeObject* code = compilePythonFromXml(reader.source, reader.manager, true);
     if (!code) return shared_ptr<GeometryObject>();  // this can happen only in draft mode
 
     detail::SetPythonAxes setPythonAxes(reader);
@@ -46,6 +44,36 @@ shared_ptr<GeometryObject> read_python(GeometryReader& reader) {
     PyObject* result = PyEval_EvalCode((PyObject*)code, pyXplGlobals->ptr(), locals.ptr());
     if (!result) {
         if (reader.manager.draft) {
+            PyObject *value, *type;
+            PyTracebackObject *traceback;
+            PyErr_Fetch(&type, &value, (PyObject**)(&traceback));
+            PyErr_NormalizeException(&type, &value, (PyObject**)(&traceback));
+            py::handle<> value_h(value), type_h(type), traceback_h(py::allow_null((PyObject*)traceback));
+            std::string message;
+            PyObject* value_str = PyObject_Str(value);
+            if (value_str) {
+                message = py::extract<std::string>(value_str);
+                Py_DECREF(value_str);
+            }
+            PyObject* type_name = PyObject_GetAttrString(type, "__name__");
+            if (type_name) {
+                PyObject* type_str = PyObject_Str(type_name);
+                if (type_str) {
+                    message = py::extract<std::string>(type_str)() + ": " + message;
+                    Py_DECREF(type_str);
+                }
+                Py_DECREF(type_name);
+            }
+            int line = -1;
+            if (traceback) {
+                PyObject* original_filename = traceback->tb_frame->f_code->co_filename;
+                while (traceback != NULL) {
+                    if (traceback->tb_frame->f_code->co_filename == original_filename)
+                        line = traceback->tb_lineno;
+                    traceback = traceback->tb_next;
+                };
+            }
+            reader.manager.pushError(message, line);
             PyErr_Clear();
             return shared_ptr<GeometryObject>();
         } else
@@ -58,8 +86,8 @@ shared_ptr<GeometryObject> read_python(GeometryReader& reader) {
             result = PyDict_GetItemString(locals.ptr(), RETURN_VARIABLE);
             Py_INCREF(result);
         } else {
-            if (reader.manager.draft) return shared_ptr<GeometryObject>();
-            else throw XMLException(reader.source, "No geometry item defined");
+            reader.manager.throwErrorIfNotDraft(XMLException(reader.source, "No geometry item defined"));
+            return shared_ptr<GeometryObject>();
         }
     }
     py::handle<> hres(result);

@@ -58,15 +58,6 @@ class GNAgain(GNode):
         super().create_info(res, names)
         if not self.ref:
             self._require(res, 'ref', 'referenced object ("ref")')
-        # elif self.parent is not None:
-        #     child = self.find_by_name(self.ref)
-        #     if child is not None and self.parent.dim != child.dim:
-        #         self._append_error(
-        #             res,
-        #             'Referenced object "{}" has different dimension ({}) than its parent ({})'
-        #                 .format(self.ref, child.dim, self.parent.dim),
-        #             property='ref'
-        #         )
 
     #def model_to_real_index(self, index):  #TODO ??
 

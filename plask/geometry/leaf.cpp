@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -51,8 +51,14 @@ template <int dim> GeometryReader& GeometryObjectLeaf<dim>::readMaterial(Geometr
                                                  GeometryReader::XML_MATERIAL_TOP_ATTR,
                                                  GeometryReader::XML_MATERIAL_BOTTOM_ATTR));
             this->setMaterialTopBottomCompositionFast(src.getMixedCompositionFactory(*top_attr, *bottom_attr, shape));
-        } else
+        } else {
+            if (!top_attr || !bottom_attr)
+                src.manager.pushError(XMLException(src.source,
+                                                format("If '{0}' or '{1}' attribute is given, the other one is also required",
+                                                GeometryReader::XML_MATERIAL_TOP_ATTR,
+                                                GeometryReader::XML_MATERIAL_BOTTOM_ATTR)));
             this->setMaterialDraftTopBottomCompositionFast(src.getMixedCompositionFactory(*top_attr, *bottom_attr, shape));
+        }
     }
     return src;
 }

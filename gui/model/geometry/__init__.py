@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -11,6 +11,7 @@
 # GNU General Public License for more details.
 
 import html
+import re
 from copy import deepcopy
 from lxml import etree
 
@@ -263,7 +264,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
         #TableModelEditMethods.__init__(self)
         self.fake_root = GNFakeRoot(self)
         self.axes = None    #TODO ? use axes of FakeRoot
-        self._message = None
+        self._messages = []
         self.dirty = False
         self.show_props = True
         self.endcomments = []
@@ -647,21 +648,24 @@ class GeometryModel(SectionModel, QAbstractItemModel):
             if len(nodes) > 1:
                 res.append(Info('{} objects have the same name "{}".'.format(len(nodes), name),
                                 Info.ERROR, nodes=nodes, property='name'))
-        if self._message is not None:
-            if self._message['level'] >= Info.WARNING:
-                res.insert(0, Info(**self._message))
+        pos = 0
+        for msg in self._messages:
+            if msg['level'] >= Info.WARNING:
+                res.insert(pos, Info(**msg))
+                pos += 1
             else:
-                res.append(Info(**self._message))
+                res.append(Info(**msg))
         return res
 
-    def info_message(self, msg=None, level=Info.INFO, **kwargs):
-        if msg is None:
-            self._message = None
+    def add_info_message(self, msg=None, level=Info.INFO, **kwargs):
+        if isinstance(msg, tuple):
+            info = dict(text=msg[0], level=level, line=msg[1])
         else:
-            self._message = dict(text=msg, level=level)
-            self._message.update(kwargs)
-        self.refresh_info()
-        self.fire_info_changed()
+            info = dict(text=msg, level=level)
+        info.update(kwargs)
+        self._messages.append(info)
 
+    def clear_info_messages(self):
+        self._messages = []
 
 from .geometry import GNCartesian, GNCylindrical

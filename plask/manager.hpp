@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -24,6 +24,7 @@ This file contains:
 #include <string>
 #include <map>
 #include <set>
+#include <deque>
 #include <boost/filesystem.hpp>
 
 #include "utils/xml/reader.hpp"
@@ -199,6 +200,48 @@ private:
     /// Flag indicating if unknown materials are allowed
     bool draft;
 
+    /// Errors which occurred during loading (only in draft mode)
+    std::deque<std::pair<int,std::string>> errors;
+
+    /**
+     * Save non-critical error
+     * \param mesg error message
+     * \param line line in XML file where error occurred
+     */
+    void pushError(const std::string& mesg, int line=-1) {
+        errors.push_back(std::make_pair(line, mesg));
+    }
+
+    /**
+     * Save non-critical error
+     * \param error error
+     * \param line line in XML file where error occurred
+     */
+    void pushError(const std::runtime_error& error, int line=-1) {
+        pushError(error.what(), line);
+    }
+
+    /**
+     * Save non-critical error
+     * \param error error
+     * \param line line in XML file where error occurred
+     */
+    void pushError(const XMLException& error, int line=-1) {
+        if (line == -1) line = error.line;
+        pushError(error.what(), line);
+    }
+
+    /**
+     * Throw error if not in draft mode.
+     * \param error error to throw
+     * \param line line in XML file where error occurred
+     */
+    template <typename ErrorType>
+    void throwErrorIfNotDraft(ErrorType error, int line=-1) {
+        if (!draft) throw error;
+        else pushError(error, line);
+    }
+
     /**
      * Get current axis name.
      * @param axis_index axis index
@@ -316,7 +359,7 @@ private:
      * @return object with given name
      * @throw NoSuchGeometryObject if there is no object with given name
      */
-    shared_ptr<GeometryObject> requireGeometryObject(const std::string& name) const;
+    shared_ptr<GeometryObject> requireGeometryObject(const std::string& name);
 
     /**
      * Call requireElement(name) and try dynamic cast it to @a RequiredObjectType.
@@ -327,7 +370,7 @@ private:
      * @throw NoSuchGeometryObject if there is no object with given name
      */
     template <typename RequiredObjectType>
-    shared_ptr<RequiredObjectType> requireGeometryObject(const std::string& name) const;
+    shared_ptr<RequiredObjectType> requireGeometryObject(const std::string& name);
 
     /**
      * Get geometry trunk with given @p name.
@@ -581,15 +624,15 @@ inline shared_ptr<GeometryObject> Manager::getGeometryObject<GeometryObject>(con
 
 // Specialization for most types
 template <typename RequiredObjectType>
-inline shared_ptr<RequiredObjectType> Manager::requireGeometryObject(const std::string& name) const {
+inline shared_ptr<RequiredObjectType> Manager::requireGeometryObject(const std::string& name) {
     shared_ptr<RequiredObjectType> result = dynamic_pointer_cast<RequiredObjectType>(requireGeometryObject(name));
-    if (!result && !draft) throw UnexpectedGeometryObjectTypeException();
+    if (!result) throwErrorIfNotDraft(UnexpectedGeometryObjectTypeException());
     return result;
 }
 
 // Specialization for GeometryObject which doesn't require dynamic_cast
 template <>
-inline shared_ptr<GeometryObject> Manager::requireGeometryObject<GeometryObject>(const std::string& name) const {
+inline shared_ptr<GeometryObject> Manager::requireGeometryObject<GeometryObject>(const std::string& name) {
     return requireGeometryObject(name);
 }
 
@@ -649,7 +692,7 @@ Boundary Manager::readBoundary(XMLReader& reader) {
                            : parseBoundary<Boundary>(reader, *this);
     } else
         reader.throwUnexpectedElementException("place, union, intersection, or difference tag");
-    if (boundary.isNull() && !draft) throw XMLException(reader, "Can't parse boundary place from XML.");
+    if (boundary.isNull()) throwErrorIfNotDraft(XMLException(reader, "Can't parse boundary place from XML."));
     if (placename) {
         std::replace(placename->begin(), placename->end(), '-', '_');
         this->storeBoundary(*placename, boundary);
@@ -666,12 +709,12 @@ inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryCondition
         ConditionT value;
         try {
             value = parseBoundaryValue<ConditionT>(reader);
-        } catch (...) {
-            if (!draft) throw;
+        } catch (std::runtime_error err) {
+            throwErrorIfNotDraft(err);
         }
         if (place) {
             boundary = parseBoundary<Boundary>(*place, *this);
-            if (boundary.isNull() && !draft) throw XMLException(reader, format("Can't parse boundary place from string \"{0}\".", *place));
+            if (boundary.isNull()) throwErrorIfNotDraft(XMLException(reader, format("Can't parse boundary place from string \"{0}\".", *place)));
         } else {
             place = reader.getAttribute("placeref");
             if (place)

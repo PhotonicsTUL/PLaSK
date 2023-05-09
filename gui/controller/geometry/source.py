@@ -160,6 +160,8 @@ class GeometrySourceController(SourceEditController):
 
     def plot_current_element(self, set_limits=False):
         if not self.geometry_view.isVisible(): return
+        res = True
+        self.model.clear_info_messages()
         try:
             QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
             QApplication.processEvents()
@@ -188,26 +190,28 @@ class GeometrySourceController(SourceEditController):
                 self.geometry_view.update_plot(self.plotted_object, set_limits=set_limits, plane=self.checked_plane)
                 self.last_index = index
             except plask.XMLError as e:
-                self.model.info_message("Could not update geometry preview: {}".format(str(e)), Info.WARNING, line=e.line)
+                self.model.add_info_message("Could not update geometry preview: {}".format(str(e)), Info.ERROR, line=e.line)
                 from ... import _DEBUG
                 if _DEBUG:
                     import traceback
                     traceback.print_exc()
                     sys.stderr.flush()
-                return False
+                res = False
             except Exception as e:
-                self.model.info_message("Could not update geometry preview: {}".format(str(e)), Info.WARNING)
+                self.model.add_info_message("Could not update geometry preview: {}".format(str(e)), Info.ERROR)
                 from ... import _DEBUG
                 if _DEBUG:
                     import traceback
                     traceback.print_exc()
                     sys.stderr.flush()
-                return False
-            else:
-                self.model.info_message()
+                res = False
+            for msg in manager.errors:
+                self.model.add_info_message(msg, Info.WARNING)
         finally:
+            self.model.refresh_info()
             QApplication.restoreOverrideCursor()
             QApplication.processEvents()
+        return res
 
     def update_preview(self):
         if self.geometry_view.isVisible() and self.plot_auto_refresh:

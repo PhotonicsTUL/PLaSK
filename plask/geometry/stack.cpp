@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -899,12 +899,21 @@ static shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) 
             result->push_back(reader.readObject<ShelfContainer2D::ChildType>());
         });
     if (total_size_gap) {
-        if (required_total_size < result->getHeight())
-            throw Exception("Required total width of shelf is lower than sum of children and gaps widths.");
-        total_size_gap->setSize(required_total_size - result->getHeight());
+        if (required_total_size < result->getHeight()) {
+            reader.manager.throwErrorIfNotDraft(
+                XMLException(reader.source, "Required total width of shelf is lower than sum of children widths"));
+            total_size_gap->setSize(0);
+        } else
+            total_size_gap->setSize(required_total_size - result->getHeight());
     }
     height_reader.setBaseHeight(result, false);
-    if (requireEqHeights && !reader.manager.draft) result->ensureFlat();
+    if (requireEqHeights) {
+        try {
+            result->ensureFlat();
+        } catch (const Exception& e) {
+            reader.manager.throwErrorIfNotDraft(XMLException(reader.source, e.what()));
+        }
+    }
     return result;
 }
 

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -259,7 +259,7 @@ struct PLASK_API RectangularMeshRefinedGenerator: public MeshGeneratorD<dim> {
 
     virtual const char* name() = 0;
 
-    void fromXML(XMLReader&, const Manager&);
+    void fromXML(XMLReader&, Manager&);
 
     std::pair<double, double> getMinMax(const shared_ptr<OrderedAxis>& axis);
 
@@ -464,7 +464,7 @@ struct PLASK_API RectangularMeshDivideGenerator: public RectangularMeshRefinedGe
     const char* name() override { return "DivideGenerator"; }
 
     template <int fd>
-    friend shared_ptr<MeshGenerator> readRectangularDivideGenerator(XMLReader&, const Manager&);
+    friend shared_ptr<MeshGenerator> readRectangularDivideGenerator(XMLReader&, Manager&);
 
     /**
      * Create new generator
@@ -552,7 +552,7 @@ struct PLASK_API RectangularMeshSmoothGenerator: public RectangularMeshRefinedGe
     const char* name() override { return "SmoothGenerator"; }
 
     template <int fd>
-    friend shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLReader&, const Manager&);
+    friend shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLReader&, Manager&);
 
     /// Create new generator
     RectangularMeshSmoothGenerator();

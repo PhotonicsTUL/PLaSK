@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -101,9 +101,9 @@ shared_ptr<GeometryObject> Manager::getGeometryObject(const std::string &name) c
     return result_it != geometrics.end() ? result_it->second.lock() : shared_ptr<GeometryObject>();*/
 }
 
-shared_ptr<GeometryObject> Manager::requireGeometryObject(const std::string &name) const {
+shared_ptr<GeometryObject> Manager::requireGeometryObject(const std::string &name) {
     shared_ptr<GeometryObject> result = getGeometryObject(name);
-    if (!result) throw NoSuchGeometryObject(name);
+    if (!result) throwErrorIfNotDraft(NoSuchGeometryObject(name));
     return result;
 }
 
@@ -160,7 +160,7 @@ void Manager::loadMaterialLib(XMLReader& reader) {
     try {
         if (name != "") MaterialsDB::loadToDefault(name);
     } catch (Exception& err) {
-        if(!draft) throw XMLException(reader, err.what());
+        throwErrorIfNotDraft(XMLException(reader, err.what()));
     }
     reader.requireTagEnd();
 }
@@ -312,9 +312,10 @@ void Manager::load(XMLReader& reader,
                    const LoadFunCallbackT& load_from,
                    const std::function<bool(const std::string& section_name)>& section_filter)
 {
+    errors.clear();
     try {
         reader.requireTag(TAG_NAME_ROOT);
-        reader.removeAlienNamespaceAttr();  // possible schema decl. will be removed
+        reader.removeAlienNamespaceAttr();  // remove possible schema declaration
         auto logattr = reader.getAttribute("loglevel");
         if (logattr && !forcedLoglevel) {
             try {

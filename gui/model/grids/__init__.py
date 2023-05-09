@@ -174,7 +174,7 @@ class GridsModel(TableModel):
 
     def __init__(self, parent=None, info_cb=None, *args):
         super().__init__('grids', parent, info_cb, *args)
-        self._message = None
+        self._messages = []
         self.endcomments = []
 
     def load_xml_element(self, element, undoable=True):
@@ -240,18 +240,22 @@ class GridsModel(TableModel):
             if len(indexes) > 1:
                 res.append(Info('Duplicated grid name "{}" [rows: {}]'.format(name, ', '.join(map(str, indexes))),
                                 Info.ERROR, cols=[0], rows=indexes))
-        if self._message is not None:
-            if self._message['level'] >= Info.WARNING:
-                res.insert(0, Info(**self._message))
+        pos = 0
+        for msg in self._messages:
+            if msg['level'] >= Info.WARNING:
+                res.insert(pos, Info(**msg))
+                pos += 1
             else:
-                res.append(Info(**self._message))
+                res.append(Info(**msg))
         return res
 
-    def info_message(self, msg=None, level=Info.INFO, **kwargs):
-        if msg is None:
-            self._message = None
+    def add_info_message(self, msg=None, level=Info.INFO, **kwargs):
+        if isinstance(msg, tuple):
+            info = dict(text=msg[0], level=level, line=msg[1])
         else:
-            self._message = dict(text=msg, level=level)
-            self._message.update(kwargs)
-        self.refresh_info()
-        self.fire_info_changed()
+            info = dict(text=msg, level=level)
+        info.update(kwargs)
+        self._messages.append(info)
+
+    def clear_info_messages(self):
+        self._messages = []

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -255,7 +255,7 @@ template <typename GeometryType> shared_ptr<GeometryObject> read_flip_like(Geome
         reader, GeometryType::DIM == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     auto flipDir = reader.getAxisNames().get<GeometryType::DIM>(reader.source.requireAttribute("axis"));
     return plask::make_shared<GeometryType>(
-        flipDir, reader.readExactlyOneChild<typename GeometryType::ChildType>(!reader.manager.draft));
+        flipDir, reader.readExactlyOneChild<typename GeometryType::ChildType>());
 }
 
 static GeometryReader::RegisterObjectReader flip2D_reader(PLASK_FLIP2D_NAME, read_flip_like<Flip<2>>);

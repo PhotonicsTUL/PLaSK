@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -452,7 +452,7 @@ struct Manager;
  * Each mesh can create one global instance of this class to its reader.
  */
 struct PLASK_API RegisterMeshGeneratorReader {
-    typedef std::function<shared_ptr<MeshGenerator>(XMLReader&, const Manager&)> ReadingFunction;
+    typedef std::function<shared_ptr<MeshGenerator>(XMLReader&, Manager&)> ReadingFunction;
     RegisterMeshGeneratorReader(const std::string& tag_name, ReadingFunction fun);
     static std::map<std::string, ReadingFunction>& getReaders();
     static ReadingFunction getReader(const std::string& name);

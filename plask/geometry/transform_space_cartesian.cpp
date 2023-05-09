@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -127,7 +127,7 @@ shared_ptr<GeometryObject> read_cartesianExtend(GeometryReader& reader) {
     double length = reader.source.requireAttribute<double>("length");
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     return plask::make_shared<Extrusion>(
-        reader.readExactlyOneChild<typename Extrusion::ChildType>(!reader.manager.draft), length);
+        reader.readExactlyOneChild<typename Extrusion::ChildType>(), length);
 }
 
 static GeometryReader::RegisterObjectReader cartesianExtend2D_reader(PLASK_EXTRUSION_NAME, read_cartesianExtend);

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -165,7 +165,7 @@ shared_ptr<GeometryObject> read_revolution(GeometryReader& reader) {
     auto rev_max_steps = reader.source.getAttribute<unsigned>("rev-steps-num");
     auto rev_min_step_size = reader.source.getAttribute<double>("rev-steps-dist");
     auto revolution = plask::make_shared<Revolution>(
-        reader.readExactlyOneChild<typename Revolution::ChildType>(!reader.manager.draft), auto_clip);
+        reader.readExactlyOneChild<typename Revolution::ChildType>(), auto_clip);
     if (rev_max_steps) revolution->rev_max_steps = *rev_max_steps;
     if (rev_min_step_size) revolution->rev_min_step_size = *rev_min_step_size;
     return revolution;

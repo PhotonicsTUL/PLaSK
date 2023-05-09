@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -65,7 +65,7 @@ void removeIndent(std::string& text, unsigned xmlline, const char* tag) {
 }
 
 
-PyCodeObject* compilePythonFromXml(XMLReader& reader, bool exec, bool draft) {
+PyCodeObject* compilePythonFromXml(XMLReader& reader, Manager& manager, bool exec) {
     size_t lineno  = reader.getLineNr();
     const std::string tag = reader.getNodeName();
     const std::string name = xplFilename.empty()? format("<{}>", tag) : format("{} in <{}>, XML", xplFilename, tag);
@@ -100,10 +100,6 @@ PyCodeObject* compilePythonFromXml(XMLReader& reader, bool exec, bool draft) {
         result = Py_CompileString((std::string(lineno-1, '\n') + text).c_str(), name.c_str(), Py_file_input);
     }
     if (result == nullptr) {
-        if (draft) {
-            PyErr_Clear();
-            return nullptr;
-        }
         PyObject *ptype, *pvalue, *ptraceback;
         PyErr_Fetch(&ptype, &pvalue, &ptraceback);
         Py_XDECREF(ptraceback);
@@ -121,7 +117,9 @@ PyCodeObject* compilePythonFromXml(XMLReader& reader, bool exec, bool draft) {
         }
         Py_XDECREF(pvalue);
         PyErr_Clear();
-        throw XMLException(format("XML line {} in <{}>", errline, tag), format("{}{}", type, value), errline);
+        manager.throwErrorIfNotDraft(
+            XMLException(format("XML line {} in <{}>", errline, tag), format("{}{}", type, value), errline));
+        return nullptr;
     }
     return reinterpret_cast<PyCodeObject*>(result);
 }

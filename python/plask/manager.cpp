@@ -407,20 +407,17 @@ void PythonManager::loadMaterialModule(XMLReader& reader) {
             }
         }
     } catch (py::error_already_set&) {
-        if (draft) {
-            PyErr_Clear();
-        } else {
-            PyObject *value, *type, *traceback;
-            PyErr_Fetch(&type, &value, &traceback);
-            PyErr_NormalizeException(&type, &value, &traceback);
-            py::handle<> value_h(value), type_h(type), traceback_h(py::allow_null(traceback));
-            if (traceback != NULL) PyException_SetTraceback(value, traceback);
-            throw XMLExceptionWithCause(value, reader, file.empty()?
-                format("Cannot import materials module '{}'", name) :
-                format("Cannot import materials module '{}' (from '{}')", name, file));
-        }
+        PyObject *value, *type, *traceback;
+        PyErr_Fetch(&type, &value, &traceback);
+        PyErr_NormalizeException(&type, &value, &traceback);
+        py::handle<> value_h(value), type_h(type), traceback_h(py::allow_null(traceback));
+        if (traceback != NULL) PyException_SetTraceback(value, traceback);
+        PyErr_Clear();
+        throwErrorIfNotDraft(XMLExceptionWithCause(value, reader, file.empty()?
+            format("Cannot import materials module '{}'", name) :
+            format("Cannot import materials module '{}' (from '{}')", name, file)));
     } catch (std::runtime_error& err) {
-        if(!draft) throw XMLException(reader, err.what());
+        throwErrorIfNotDraft(XMLException(reader, err.what()));
     }
     reader.requireTagEnd();
 }
@@ -584,7 +581,15 @@ namespace detail {
 
 } // namespace detail
 
-
+static py::list Manager_errors(const Manager& self) {
+    py::list result;
+    for (auto err: self.errors) {
+        std::string msg = err.second;
+        py::object line = (err.first != -1)? py::object(err.first) : py::object();
+        result.append(py::make_tuple(msg, line));
+    }
+    return result;
+}
 
 template <typename T>
 static void register_manager_dict(const std::string name) {
@@ -659,6 +664,7 @@ void register_manager() {
                        u8"one cannot be found in the database. Also some objects do not need to have all\n"
                        u8"the atttributes set, which are then filled with some reasonable defaults."
                        u8"Otherwise an exception is raised.")
+        .add_property("errors", &Manager_errors, u8"List of errors that occurred during loading in draft mode.")
         .def_readonly("_scriptline", &Manager::scriptline, "First line of the script.")
         .add_property("_roots", py::make_function(ManagerRoots::init, py::with_custodian_and_ward_postcall<0,1>()),
                       u8"Root geometries.")

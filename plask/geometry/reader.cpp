@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -26,16 +26,12 @@ constexpr const char* const GeometryReader::XML_MATERIAL_GRADING_ATTR;
 shared_ptr<Material> GeometryReader::getMaterial(const std::string& material_full_name) const {
     try {
         return materialsDB->get(material_full_name);
-    } catch (NoSuchMaterial&) {
-        if (manager.draft)
-            return plask::make_shared<DummyMaterial>(material_full_name);
-        else
-            throw;
-    } catch (MaterialParseException&) {
-        if (manager.draft)
-            return plask::make_shared<DummyMaterial>(material_full_name);
-        else
-            throw;
+    } catch (const NoSuchMaterial& err) {
+        manager.throwErrorIfNotDraft(err);
+        return plask::make_shared<DummyMaterial>(material_full_name);
+    } catch (const MaterialParseException& err) {
+        manager.throwErrorIfNotDraft(err);
+        return plask::make_shared<DummyMaterial>(material_full_name);
     }
 }
 
@@ -44,16 +40,12 @@ shared_ptr<MaterialsDB::MixedCompositionFactory> GeometryReader::getMixedComposi
                                                                                             double shape) const {
     try {
         return materialsDB->getFactory(material1_full_name, material2_full_name, shape);
-    } catch (NoSuchMaterial&) {
-        if (manager.draft)
-            return plask::make_shared<MaterialsDB::DummyMixedCompositionFactory>(material1_full_name, material2_full_name);
-        else
-            throw;
-    } catch (MaterialParseException&) {
-        if (manager.draft)
-            return plask::make_shared<MaterialsDB::DummyMixedCompositionFactory>(material1_full_name, material2_full_name);
-        else
-            throw;
+    } catch (const NoSuchMaterial& err) {
+        manager.throwErrorIfNotDraft(err);
+        return plask::make_shared<MaterialsDB::DummyMixedCompositionFactory>(material1_full_name, material2_full_name);
+    } catch (const MaterialParseException& err) {
+        manager.throwErrorIfNotDraft(err);
+        return plask::make_shared<MaterialsDB::DummyMixedCompositionFactory>(material1_full_name, material2_full_name);
     }
 }
 
@@ -62,27 +54,30 @@ SolidOrGradientMaterial GeometryReader::requireSolidOrGradientMaterial() const {
     auto bottom_attr = source.getAttribute(GeometryReader::XML_MATERIAL_BOTTOM_ATTR);
     if (!top_attr && !bottom_attr) {
         if (source.hasAttribute(GeometryReader::XML_MATERIAL_GRADING_ATTR))
-            source.throwException(format("'{}' attribute allowed only for layers with graded material",
-                                            GeometryReader::XML_MATERIAL_GRADING_ATTR));
+            source.throwException(
+                format("'{}' attribute allowed only for layers with graded material", GeometryReader::XML_MATERIAL_GRADING_ATTR));
         try {
             return getMaterial(source.requireAttribute(XML_MATERIAL_ATTR));
-        } catch (XMLNoAttrException&) {
-            if (!manager.draft) throw;
-            else return plask::make_shared<DummyMaterial>("");
+        } catch (const XMLNoAttrException err) {
+            manager.throwErrorIfNotDraft(err);
+            return plask::make_shared<DummyMaterial>("");
         }
     } else {
         double shape = source.getAttribute<double>(GeometryReader::XML_MATERIAL_GRADING_ATTR, 1.);
         if (!manager.draft) {
             if (!top_attr || !bottom_attr)
                 source.throwException(format("If '{0}' or '{1}' attribute is given, the other one is also required",
-                                                GeometryReader::XML_MATERIAL_TOP_ATTR,
-                                                GeometryReader::XML_MATERIAL_BOTTOM_ATTR));
+                                             GeometryReader::XML_MATERIAL_TOP_ATTR, GeometryReader::XML_MATERIAL_BOTTOM_ATTR));
             return getMixedCompositionFactory(*top_attr, *bottom_attr, shape);
-        } else
+        } else {
+            if (!top_attr || !bottom_attr)
+                manager.pushError(
+                    XMLException(source, format("If '{0}' or '{1}' attribute is given, the other one is also required",
+                                                GeometryReader::XML_MATERIAL_TOP_ATTR, GeometryReader::XML_MATERIAL_BOTTOM_ATTR)));
             return (*getMixedCompositionFactory(*top_attr, *bottom_attr, shape))(0.5);
+        }
     }
 }
-
 
 std::map<std::string, GeometryReader::object_read_f*>& GeometryReader::objectReaders() {
     static std::map<std::string, GeometryReader::object_read_f*> result;
@@ -181,8 +176,8 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
                                 SetExpectedSuffix suffixSetter(*this, op_from->getDimensionsCount());
                                 to = readObject();
                                 source.requireTagEnd();
-                            } else if (!manager.draft) {
-                                source.throwUnexpectedElementException("begining of a new tag");
+                            } else {
+                                manager.throwErrorIfNotDraft(XMLUnexpectedElementException(source, "new tag"));
                             }
                         }
                         if (to)
@@ -257,13 +252,14 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
     return new_object;
 }
 
-shared_ptr<GeometryObject> GeometryReader::readExactlyOneChild(bool required) {
+shared_ptr<GeometryObject> GeometryReader::readExactlyOneChild() {
     shared_ptr<GeometryObject> result;
-    if (source.requireNext((required && !manager.draft)
-                               ? XMLReader::NODE_ELEMENT
-                               : (XMLReader::NODE_ELEMENT | XMLReader::NODE_ELEMENT_END)) == XMLReader::NODE_ELEMENT) {
+    if (source.requireNext((!manager.draft) ? XMLReader::NODE_ELEMENT : (XMLReader::NODE_ELEMENT | XMLReader::NODE_ELEMENT_END)) ==
+        XMLReader::NODE_ELEMENT) {
         result = readObject();
         source.requireTagEnd();
+    } else {
+        manager.pushError(XMLUnexpectedElementException(source, "new tag"));
     }
     return result;
 }
@@ -294,11 +290,11 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
         } else {
             shared_ptr<GeometryObject> child;
             bool require_end = true;
-            if (source.requireNext(manager.draft
-                                    ? (XMLReader::NODE_ELEMENT | XMLReader::NODE_ELEMENT_END)
-                                    : XMLReader::NODE_ELEMENT) == XMLReader::NODE_ELEMENT) {
+            if (source.requireNext(manager.draft ? (XMLReader::NODE_ELEMENT | XMLReader::NODE_ELEMENT_END)
+                                                 : XMLReader::NODE_ELEMENT) == XMLReader::NODE_ELEMENT) {
                 child = readObject();
             } else {
+                manager.pushError(XMLUnexpectedElementException(source, "new tag"));
                 require_end = false;
             }
             auto child_as_extrusion = dynamic_pointer_cast<Extrusion>(child);
@@ -306,7 +302,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
                 cartesian2d->setExtrusion(child_as_extrusion);
             } else {
                 auto child_as_2d = dynamic_pointer_cast<GeometryObjectD<2>>(child);
-                if (!child_as_2d && !manager.draft) throw UnexpectedGeometryObjectTypeException();
+                if (!child_as_2d) manager.throwErrorIfNotDraft(UnexpectedGeometryObjectTypeException());
                 cartesian2d->setExtrusion(plask::make_shared<Extrusion>(child_as_2d, INFINITY));
             }
             if (require_end) source.requireTagEnd();
@@ -319,11 +315,11 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
                          getAxisNames(), *materialsDB, manager.draft);
         shared_ptr<GeometryObject> child;
         bool require_end = true;
-        if (source.requireNext(manager.draft
-                                ? (XMLReader::NODE_ELEMENT | XMLReader::NODE_ELEMENT_END)
-                                : XMLReader::NODE_ELEMENT) == XMLReader::NODE_ELEMENT) {
+        if (source.requireNext(manager.draft ? (XMLReader::NODE_ELEMENT | XMLReader::NODE_ELEMENT_END) : XMLReader::NODE_ELEMENT) ==
+            XMLReader::NODE_ELEMENT) {
             child = readObject();
         } else {
+            manager.pushError(XMLUnexpectedElementException(source, "new tag"));
             require_end = false;
         }
         auto child_as_revolution = dynamic_pointer_cast<Revolution>(child);
@@ -331,7 +327,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
             static_pointer_cast<Geometry2DCylindrical>(result)->setRevolution(child_as_revolution);
         } else {
             auto child_as_2d = dynamic_pointer_cast<GeometryObjectD<2>>(child);
-            if (!child_as_2d && !manager.draft) throw UnexpectedGeometryObjectTypeException();
+            if (!child_as_2d) manager.throwErrorIfNotDraft(UnexpectedGeometryObjectTypeException());
             static_pointer_cast<Geometry2DCylindrical>(result)->setRevolution(plask::make_shared<Revolution>(child_as_2d));
         }
         if (require_end) source.requireTagEnd();
@@ -356,20 +352,16 @@ shared_ptr<GeometryObject> GeometryReader::requireObjectWithName(const std::stri
     if (isAutoName(name)) {
         auto it = autoNamedObjects.find(name);
         if (it == autoNamedObjects.end()) {
-            if (!manager.draft)
-                throw NoSuchGeometryObject(name);
-            else
-                return shared_ptr<GeometryObject>();
+            manager.throwErrorIfNotDraft(NoSuchGeometryObject(name));
+            return shared_ptr<GeometryObject>();
         }
         return it->second;
     } else {
         try {
             return manager.requireGeometryObject(name);
-        } catch (NoSuchGeometryObject&) {
-            if (!manager.draft)
-                throw;
-            else
-                return shared_ptr<GeometryObject>();
+        } catch (const NoSuchGeometryObject& err) {
+            manager.throwErrorIfNotDraft(err);
+            return shared_ptr<GeometryObject>();
         }
     }
 }

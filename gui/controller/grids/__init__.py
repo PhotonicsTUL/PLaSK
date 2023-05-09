@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -235,13 +235,9 @@ class GridsController(Controller):
         self.plotted_geometry = None
         self.generate_mesh_action.setEnabled(False)
         if self._current_controller is not None:
-            self.model.info_message("Mesh changed: click here to update the plot", Info.INFO, action='plot')
-            # self.status_bar.setText("Press Alt+P to update the plot")
-            # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ffff88;")
-        else:
-            self.model.info_message()
-            # self.status_bar.setText('')
-            # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
+            self.model.clear_info_messages()
+            self.model.add_info_message("Mesh changed: click here to update the plot", Info.INFO, action='plot')
+            self.model.refresh_info()
 
     def on_model_change(self, *args, **kwargs):
         self.save_data_in_model()
@@ -253,6 +249,7 @@ class GridsController(Controller):
                 self.show_update_required()
 
     def plot_mesh(self, model, set_limits, ignore_no_geometry=False):
+        self.model.clear_info_messages()
         self.mesh_preview.clear()
         if plask is None: return
         if model is not None:
@@ -298,15 +295,12 @@ class GridsController(Controller):
             self.mesh_preview.update_plot(mesh, self.plotted_geometry, set_limits=set_limits,
                                           plane=self.checked_plane)
         except Exception as e:
-            self.model.info_message("Could not update mesh preview: {}".format(str(e)), Info.WARNING)
-            # self.status_bar.setText(str(e))
-            # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ff8888;")
-            # self.status_bar.setAutoFillBackground(True)
+            self.model.add_info_message("Could not update mesh preview:: {}".format(str(e)), Info.ERROR)
             from ... import _DEBUG
             if _DEBUG:
                 import traceback
                 traceback.print_exc()
-            return False
+            res = False
         else:
             self.plotted_model = model
             self.plotted_mesh = mesh
@@ -315,9 +309,11 @@ class GridsController(Controller):
             # else:
             #     self.preview.toolbar.disable_planes(tree_element.get_axes_conf())
             self.model.info_message()
-            # self.status_bar.setText('')
-            # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
-            return True
+            res = True
+        for err in manager.errors:
+            self.model.add_info_message(err, Info.WARNING)
+        self.model.refresh_info()
+        return res
 
     def plot(self):
         if self._current_controller is not None:

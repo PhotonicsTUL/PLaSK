@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -147,6 +147,8 @@ template <int dim> shared_ptr<GeometryObject> read_Intersection(GeometryReader& 
             intersection->envelope = reader.readObject<typename Intersection<dim>::ChildType>();
             reader.source.requireTagEnd();
         }
+    } else {
+        reader.manager.pushError("Intersection object is empty", reader.source.getLineNr());
     }
     return intersection;
 }

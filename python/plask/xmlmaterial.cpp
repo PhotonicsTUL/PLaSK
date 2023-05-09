@@ -370,7 +370,7 @@ void PythonManager::loadMaterial(XMLReader& reader) {
 
 #       define COMPILE_PYTHON_MATERIAL_FUNCTION_(funcname, func) \
         else if (reader.getNodeName() == funcname) { \
-            constructor->func = compilePythonFromXml(reader); \
+            constructor->func = compilePythonFromXml(reader, *this); \
             try { \
                 py::dict locals; \
                 constructor->cache.func.reset( \
@@ -464,8 +464,8 @@ void PythonManager::loadMaterial(XMLReader& reader) {
     } catch (py::error_already_set&) {
         if (draft) PyErr_Clear();
         else throw;
-    } catch (...) {
-        if (!draft) throw;
+    } catch (const std::runtime_error& err) {
+        throwErrorIfNotDraft(XMLException(reader, err.what()));
     }
 }
 

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -139,7 +139,7 @@ void Clip<dim>::addClippedSegment(std::set<typename GeometryObjectD<dim>::LineSe
                     q0[i] = q1[i] = clipBox.upper[i];
                     if (q0 != q1) segments.insert(typename GeometryObjectD<dim>::LineSegment(q0, q1));
                 }
-            } else {    
+            } else {
                 DVec q0l = (q0[i] <= clipBox.lower[i]) ? q0 : p0 + dp * clamp(tl[i], t0, t1),
                      q1l = (q1[i] <= clipBox.lower[i]) ? q1 : p0 + dp * clamp(tl[i], t0, t1);
                 q0l[i] = q1l[i] = clipBox.lower[i];
@@ -180,7 +180,7 @@ template <typename ClipType> inline static void setupClip2D3D(GeometryReader& re
     clip.clipBox.right() = reader.source.getAttribute<double>("right", std::numeric_limits<double>::infinity());
     clip.clipBox.top() = reader.source.getAttribute<double>("top", std::numeric_limits<double>::infinity());
     clip.clipBox.bottom() = reader.source.getAttribute<double>("bottom", -std::numeric_limits<double>::infinity());
-    clip.setChild(reader.readExactlyOneChild<typename ClipType::ChildType>(!reader.manager.draft));
+    clip.setChild(reader.readExactlyOneChild<typename ClipType::ChildType>());
 }
 
 shared_ptr<GeometryObject> read_Clip2D(GeometryReader& reader) {
