@@ -112,6 +112,7 @@ constexpr double SQRT2 = M_SQRT2;
 #endif
 constexpr double SQRT1_2 = M_SQRT1_2;
 
+#define _MATH_DEFINES_DEFINED   // to shut up MSVC warnings
 
 constexpr double PI_DOUBLED = 6.28318530717958647692;
 
