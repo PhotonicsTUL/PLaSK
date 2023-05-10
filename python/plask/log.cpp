@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -230,14 +230,44 @@ void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
         if (lib_path.empty()) lib_path = plaskLibPath();
 
         PyFrameObject* top_frame = frame;
-        while(top_frame->f_back) top_frame = top_frame->f_back;
-        std::string filename = py::extract<std::string>(top_frame->f_code->co_filename);
-
+        #if PY_VERSION_HEX >= 0x030900B1
+            Py_INCREF(top_frame);
+            while(true) {
+                PyFrameObject* f_back = PyFrame_GetBack(top_frame);
+                if (!f_back) break;
+                Py_DECREF(top_frame);
+                top_frame = f_back;
+            }
+            PyCodeObject* f_code = PyFrame_GetCode(top_frame);
+            py::handle<> h_code((PyObject*)f_code);
+            Py_DECREF(top_frame);
+        #else
+            while(top_frame->f_back) top_frame = top_frame->f_back;
+            PyCodeObject* f_code = top_frame->f_code;
+        #endif
+        std::string filename = py::extract<std::string>(f_code->co_filename);
         if (filename.compare(0, lib_path.length(), lib_path) == 0) frame = nullptr;
 
+        #if PY_VERSION_HEX >= 0x030900B1
+            Py_XINCREF(frame);
+        #endif
         while (frame) {
-            if (filename != py::extract<std::string>(frame->f_code->co_filename)()) {
-                frame = frame->f_back;
+            f_code =
+                #if PY_VERSION_HEX >= 0x030900B1
+                    PyFrame_GetCode(frame);
+                    h_code = py::handle<>((PyObject*)f_code);
+                #else
+                    frame->f_code;
+                #endif
+            if (filename != py::extract<std::string>(f_code->co_filename)()) {
+                #if PY_VERSION_HEX >= 0x030900B1
+                    PyFrameObject* f_back = PyFrame_GetBack(frame);
+                    if (!f_back) break;
+                    Py_DECREF(frame);
+                    frame = f_back;
+                #else
+                    frame = frame->f_back;
+                #endif
                 continue;
             }
 #           if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
@@ -249,6 +279,9 @@ void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
             pyinfo = format("{1}:{0} : ", PyFrame_GetLineNumber(frame), filename);
             break;
         }
+        #if PY_VERSION_HEX >= 0x030900B1
+            Py_XDECREF(frame);
+        #endif
     }
 
     if (color == COLOR_ANSI) {

@@ -66,10 +66,28 @@ shared_ptr<GeometryObject> read_python(GeometryReader& reader) {
             }
             int line = -1;
             if (traceback) {
-                PyObject* original_filename = traceback->tb_frame->f_code->co_filename;
+                PyCodeObject* f_code =
+                    #if PY_VERSION_HEX >= 0x030900B1
+                        PyFrame_GetCode(traceback->tb_frame);
+                    #else
+                        traceback->tb_frame->f_code;
+                    #endif
+                PyObject* original_filename = f_code->co_filename;
+                #if PY_VERSION_HEX >= 0x030900B1
+                    Py_XDECREF(f_code);
+                #endif
                 while (traceback != NULL) {
-                    if (traceback->tb_frame->f_code->co_filename == original_filename)
+                    f_code =
+                        #if PY_VERSION_HEX >= 0x030900B1
+                            PyFrame_GetCode(traceback->tb_frame);
+                        #else
+                            traceback->tb_frame->f_code;
+                        #endif
+                    if (f_code->co_filename == original_filename)
                         line = traceback->tb_lineno;
+                    #if PY_VERSION_HEX >= 0x030900B1
+                        Py_XDECREF(f_code);
+                    #endif
                     traceback = traceback->tb_next;
                 };
             }

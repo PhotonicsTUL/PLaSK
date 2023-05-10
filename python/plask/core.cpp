@@ -322,8 +322,17 @@ PLASK_PYTHON_API int printPythonException(PyObject* otype, PyObject* value, PyOb
         PyTracebackObject* traceback = original_traceback;
         while (traceback) {
             int lineno = traceback->tb_lineno + scriptline;
-            std::string filename = py::extract<std::string>(traceback->tb_frame->f_code->co_filename);
-            std::string funcname = py::extract<std::string>(traceback->tb_frame->f_code->co_name);
+            PyCodeObject* f_code =
+                #if PY_VERSION_HEX >= 0x030900B1
+                    PyFrame_GetCode(traceback->tb_frame);
+                #else
+                    traceback->tb_frame->f_code;
+                #endif
+            std::string filename = py::extract<std::string>(f_code->co_filename);
+            std::string funcname = py::extract<std::string>(f_code->co_name);
+            #if PY_VERSION_HEX >= 0x030900B1
+                Py_XDECREF(f_code);
+            #endif
             if (funcname == "<module>" && (traceback == original_traceback || (top_frame && traceback == original_traceback->tb_next)))
                 funcname = top_frame? top_frame : "<script>";
             if (traceback->tb_next)

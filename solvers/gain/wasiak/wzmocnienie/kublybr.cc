@@ -1,5 +1,9 @@
 #include "kublybr.h"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #ifdef RPSMES
 // Tu sa definicje, ktore powinny byc w C++, ale VS6 ich nie ma
 
@@ -4520,7 +4524,7 @@ void wzmocnienie::profil_wzmocnienia_ze_splotem_dopliku(std::ofstream & plik, do
     }
 }
 /*****************************************************************************/
-double wzmocnienie::lumin(double E, double polar) 
+double wzmocnienie::lumin(double E, double polar)
 {
   double wynikTE = 0., wynikTM = 0.;
   for (int nr_c = 0; nr_c <= (int)pasma->pasmo_przew.size() - 1; nr_c++)

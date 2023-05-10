@@ -287,7 +287,7 @@ template <typename MeshT> struct PythonDataVector_SliceBase {
             std::vector<double> points;
             points.reserve(length[id]);
             auto src_axis = src_mesh->getAxis(ax);
-            for (ssize_t i = start[id]; i < stop[id]; i += step[id]) points.push_back(src_axis->at(i));
+            for (py::ssize_t i = start[id]; i < stop[id]; i += step[id]) points.push_back(src_axis->at(i));
             mesh->setAxis(ax, plask::make_shared<OrderedAxis>(std::move(points)));
         }
     }

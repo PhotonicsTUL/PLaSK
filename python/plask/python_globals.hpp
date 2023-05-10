@@ -400,10 +400,21 @@ struct Overriden
                             frame->f_code;
                         #endif
                     PyCodeObject* method_code = (PyCodeObject*)((PyFunctionObject*)mo->im_func)->func_code;
-                    if (f_code == method_code && frame->f_localsplus[0] == self)
-                        result = false;
-                    #if PY_VERSION_HEX >= 0x030900B1
-                        Py_XDECREF(f_code);
+                    #if PY_VERSION_HEX >= 0x030b0000
+                        if (f_code == method_code && f_code->co_argcount > 0) {
+                            PyObject* f_locals = PyFrame_GetLocals(frame);
+                            PyObject* co_varnames = PyCode_GetVarnames(f_code);
+                            if (PyDict_GetItem(f_locals, PyTuple_GetItem(co_varnames, 0)) == self)
+                                result = false;
+                            Py_XDECREF(co_varnames);
+                            Py_XDECREF(f_locals);
+                        }
+                    #else
+                        if (f_code == method_code && frame->f_localsplus[0] == self)
+                            result = false;
+                        #if PY_VERSION_HEX >= 0x030900B1
+                            Py_XDECREF(f_code);
+                        #endif
                     #endif
                     return result;
                 }

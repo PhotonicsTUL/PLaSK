@@ -29,6 +29,7 @@ This file contains:
 
 #include "utils/xml/reader.hpp"
 
+#include "math.hpp"
 #include "mesh/mesh.hpp"
 #include "material/db.hpp"
 #include "geometry/path.hpp"

@@ -597,6 +597,17 @@ namespace detail {
     MAKE_CACHED_VALUE_GETTER(double, y3)
 }
 
+#if PY_VERSION_HEX >= 0x030b0000
+    #define IF_CO_VARNAMES \
+        PyObject* co_varnames = PyCode_GetVarnames(code); \
+        bool __co_varnames = co_varnames && PyTuple_GET_SIZE(co_varnames) == 0; \
+        Py_XDECREF(co_varnames); \
+        if (__co_varnames)
+#else
+    #define IF_CO_VARNAMES if (code->co_varnames && PyTuple_GET_SIZE(code->co_varnames) == 0)
+#endif
+
+
 shared_ptr<Material> PythonMaterial::__init__(const py::tuple& args, const py::dict& kwargs)
 {
     auto len = py::len(args);
@@ -652,7 +663,7 @@ shared_ptr<Material> PythonMaterial::__init__(const py::tuple& args, const py::d
             py::object method = py::object(self.attr(BOOST_PP_STRINGIZE(param))); \
             if (PyFunction_Check(method.ptr())) { \
                 if (PyCodeObject* code = reinterpret_cast<PyCodeObject*>(PyFunction_GetCode(method.ptr()))) { \
-                    if (code->co_varnames && PyTuple_GET_SIZE(code->co_varnames) == 0) { \
+                    IF_CO_VARNAMES { \
                         writelog(LOG_DEBUG, "Caching parameter '" BOOST_PP_STRINGIZE(param) "' in material class '{}'", cls_name); \
                         try { \
                             py::object value = method(); \

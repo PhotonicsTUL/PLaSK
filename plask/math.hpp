@@ -35,83 +35,83 @@ namespace plask {
 
 // std. libraries of some compilers, but potentially not all, defines this in cmath (as non-standard extension),
 // for other compilers, numbers are copy/pasted from gcc's math.h:
-#ifdef M_PI     /* pi */
-    constexpr double PI = M_PI;
-#else
-    constexpr double PI = 3.14159265358979323846;
+#ifndef M_PI     /* pi */
+    #define M_PI 3.14159265358979323846
 #endif
+constexpr double PI = M_PI;
 
-#ifdef M_E      /* e */
-    constexpr double E = M_E;
-#else
-    constexpr double E = 2.7182818284590452354;
-#endif
 
-#ifdef M_LOG2E  /* log_2 e */
-    constexpr double LOG2E = M_LOG2E;
-#else
-    constexpr double LOG2E = 1.4426950408889634074;
+#ifndef M_E      /* e */
+    #define M_E 2.7182818284590452354
 #endif
+constexpr double E = M_E;
 
-#ifdef M_LOG10E /* log_10 e */
-    constexpr double LOG10E = M_LOG10E;
-#else
-    constexpr double LOG10E = 0.43429448190325182765;
-#endif
 
-#ifdef M_LN2 /* log_e 2 */
-    constexpr double LN2 = M_LN2;
-#else
-    constexpr double LN2 = 0.69314718055994530942;
+#ifndef M_LOG2E  /* log_2 e */
+    #define M_LOG2E 1.4426950408889634074
 #endif
+constexpr double LOG2E = M_LOG2E;
 
-#ifdef M_LN10 /* log_e 10 */
-    constexpr double LN10 = M_LN10;
-#else
-    constexpr double LN10 = 2.30258509299404568402;
-#endif
 
-#ifdef M_PI_2 /* pi/2 */
-    constexpr double PI_2 = M_PI_2;
-#else
-    constexpr double PI_2 = 1.57079632679489661923;
+#ifndef M_LOG10E /* log_10 e */
+    #define M_LOG10E 0.43429448190325182765
 #endif
+constexpr double LOG10E = M_LOG10E;
 
-#ifdef M_PI_4 /* pi/4 */
-    constexpr double PI_4 = M_PI_4;
-#else
-    constexpr double PI_4 = 0.78539816339744830962;
-#endif
 
-#ifdef M_1_PI /* 1/pi */
-    constexpr double _1_PI = M_1_PI;
-#else
-    constexpr double _1_PI = 0.31830988618379067154;
+#ifndef M_LN2 /* log_e 2 */
+    #define M_LN2 0.69314718055994530942
 #endif
+constexpr double LN2 = M_LN2;
 
-#ifdef M_2_PI /* 2/pi */
-    constexpr double _2_PI = M_2_PI;
-#else
-    constexpr double _2_PI = 0.63661977236758134308;
-#endif
 
-#ifdef M_2_SQRTPI /* 2/sqrt(pi) */
-    constexpr double _2_SQRTPI = M_2_SQRTPI;
-#else
-    constexpr double _2_SQRTPI = 1.12837916709551257390;
+#ifndef M_LN10 /* log_e 10 */
+    #define M_LN10 2.30258509299404568402
 #endif
+constexpr double LN10 = M_LN10;
 
-#ifdef M_SQRT2 /* sqrt(2) */
-    constexpr double SQRT2 = M_SQRT2;
-#else
-    constexpr double SQRT2 = 1.41421356237309504880;
-#endif
 
-#ifdef M_SQRT1_2 /* 1/sqrt(2) */
-    constexpr double SQRT1_2 = M_SQRT1_2;
-#else
-    constexpr double SQRT1_2 = 0.70710678118654752440;
+#ifndef M_PI_2 /* pi/2 */
+    #define M_PI_2 1.57079632679489661923
 #endif
+constexpr double PI_2 = M_PI_2;
+
+
+#ifndef M_PI_4 /* pi/4 */
+    #define M_PI_4 0.78539816339744830962
+#endif
+constexpr double PI_4 = M_PI_4;
+
+
+#ifndef M_1_PI /* 1/pi */
+    #define M_1_PI 0.31830988618379067154
+#endif
+constexpr double _1_PI = M_1_PI;
+
+
+#ifndef M_2_PI /* 2/pi */
+    #define M_2_PI 0.63661977236758134308
+#endif
+constexpr double _2_PI = M_2_PI;
+
+
+#ifndef M_2_SQRTPI /* 2/sqrt(pi) */
+    #define M_2_SQRTPI 1.12837916709551257390
+#endif
+constexpr double _2_SQRTPI = M_2_SQRTPI;
+
+
+#ifndef M_SQRT2 /* sqrt(2) */
+    #define M_SQRT2 1.41421356237309504880
+#endif
+constexpr double SQRT2 = M_SQRT2;
+
+
+#ifndef M_SQRT1_2 /* 1/sqrt(2) */
+    #define M_SQRT1_2 0.70710678118654752440
+#endif
+constexpr double SQRT1_2 = M_SQRT1_2;
+
 
 constexpr double PI_DOUBLED = 6.28318530717958647692;
 

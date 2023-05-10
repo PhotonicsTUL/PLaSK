@@ -11,6 +11,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
+#include "../plask/math.hpp"
 #include "solver.hpp"
 #include "diagonalizer.hpp"
 #include "expansion.hpp"
