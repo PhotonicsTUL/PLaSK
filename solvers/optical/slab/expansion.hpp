@@ -233,7 +233,7 @@ struct PLASK_SOLVER_API Expansion {
     virtual void getDiagonalEigenvectors(cmatrix& Te, cmatrix& Te1, const cmatrix& RE, const cdiagonal& gamma);
 
     /**
-     * Prepare for computatiations of the fields
+     * Prepare for computations of the fields
      * \param field which field is computed
      * \param method interpolation method
      */

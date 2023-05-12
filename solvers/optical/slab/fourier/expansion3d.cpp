@@ -1189,7 +1189,7 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
                 }
             }
         }
-    } else { // which_field == FIELD_H
+    } else { // field == FIELD_H
         for (int it = symmetric_tran()? 0 : -ordt; it <= ordt; ++it) {
             for (int il = symmetric_long()? 0 : -ordl; il <= ordl; ++il) {
                 size_t ihx = nl * (((it<0)?Nt+it:it) - dxt) + ((il<0)?Nl+il:il) - dxl;
@@ -1409,8 +1409,8 @@ void ExpansionPW3D::getDiagonalEigenvectors(cmatrix& Te, cmatrix& Te1, const cma
 double ExpansionPW3D::integrateField(WhichField field, size_t layer, const cmatrix& TE, const cmatrix& TH,
                                      const std::function<std::pair<dcomplex,dcomplex>(size_t, size_t)>& vertical)
 {
-    Component syml = (which_field == FIELD_E)? symmetry_long : Component((3-symmetry_long) % 3);
-    Component symt = (which_field == FIELD_E)? symmetry_tran : Component((3-symmetry_tran) % 3);
+    Component syml = (field == FIELD_E)? symmetry_long : Component((3-symmetry_long) % 3);
+    Component symt = (field == FIELD_E)? symmetry_tran : Component((3-symmetry_tran) % 3);
 
     bool diagonal = diagonals[layer];
 
@@ -1433,7 +1433,7 @@ double ExpansionPW3D::integrateField(WhichField field, size_t layer, const cmatr
     TempMatrix temp = getTempMatrix();
     cmatrix Fz(NN, M, temp.data());
 
-    if (which_field == FIELD_E) {
+    if (field == FIELD_E) {
         #pragma omp parallel for
         for (openmp_size_t m = 0; m < M; m++) {
             for (int it = symmetric_tran()? 0 : -ordt; it <= ordt; ++it) {
@@ -1457,7 +1457,7 @@ double ExpansionPW3D::integrateField(WhichField field, size_t layer, const cmatr
                 }
             }
         }
-    } else { // which_field == FIELD_H
+    } else { // field == FIELD_H
         #pragma omp parallel for
         for (openmp_size_t m = 0; m < M; m++) {
             for (int it = symmetric_tran()? 0 : -ordt; it <= ordt; ++it) {

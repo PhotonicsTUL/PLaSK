@@ -1322,7 +1322,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
     TempMatrix temp = getTempMatrix();
     cmatrix verts(N, M, temp.data());
 
-    if (which_field == FIELD_E) {
+    if (field == FIELD_E) {
         if (polarization == E_LONG) {
             std::fill_n(verts.data(), verts.rows() * verts.cols(), 0.);
         } else if (polarization == E_TRAN) {
@@ -1374,7 +1374,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cmatrix& 
                 }
             }
         }
-    } else { // which_field == FIELD_H
+    } else { // field == FIELD_H
         if (polarization == E_TRAN) {
             std::fill_n(verts.data(), verts.rows() * verts.cols(), 0.);
         } else if (polarization == E_LONG) {  // polarization == H_TRAN
