@@ -640,35 +640,92 @@ void EffectiveFrequencyCyl::computeBessel(size_t i, dcomplex v, const Mode& mode
 }
 
 
+#define zgeev F77_GLOBAL(zgeev,ZGEEV)
+F77SUB zgeev(const char& jobvl, const char& jobvr, const int& n, dcomplex* a,
+             const int& lda, dcomplex* w, dcomplex* vl, const int& ldvl,
+             dcomplex* vr, const int& ldvr, dcomplex* work, const int& lwork,
+             double* rwork, int& info);
+
 dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, Mode& mode, bool save)
 {
     dcomplex v = freqv(lam);
     dcomplex J1[2], H1[2];
     dcomplex J2[2], H2[2];
 
-    if (determinant == DETERMINANT_FULL && !save) {
-        size_t N = 2 * rsize;
-        ZgbMatrix matrix(N);
-        // In the intermostmost layer the solution is only the J function
-        matrix(0, 0) = 1.;
-        matrix(0, 1) = 0.;
-        for (size_t i = 1, n = 1; i != rsize; ++i, n += 2) {
-            computeBessel(i, v, mode, J1, H1, J2, H2);
-            matrix(n-1, n+1) =   0.;
-            matrix(n  , n-1) =   H1[0];
-            matrix(n  , n  ) =   J1[0];
-            matrix(n  , n+1) = - H2[0];
-            matrix(n  , n+2) = - J2[0];
-            matrix(n+1, n-1) =   mode.m * H1[0] - H1[1];
-            matrix(n+1, n  ) =   mode.m * J1[0] - J1[1];
-            matrix(n+1, n+1) = - mode.m * H2[0] + H2[1];
-            matrix(n+1, n+2) = - mode.m * J2[0] + J2[1];
-            matrix(n+2, n  ) =   0.;
+    if (determinant == DETERMINANT_FULL) {
+        const size_t N = 2 * rsize;
+        if (!save) {
+            ZgbMatrix matrix(N);
+            // In the innermost layer the solution is only the J function
+            matrix(0, 0) = 1.;
+            matrix(0, 1) = 0.;
+            for (size_t i = 1, n = 1; i != rsize; ++i, n += 2) {
+                computeBessel(i, v, mode, J1, H1, J2, H2);
+                matrix(n-1, n+1) =   0.;
+                matrix(n  , n-1) =   H1[0];
+                matrix(n  , n  ) =   J1[0];
+                matrix(n  , n+1) = - H2[0];
+                matrix(n  , n+2) = - J2[0];
+                matrix(n+1, n-1) =   mode.m * H1[0] - H1[1];
+                matrix(n+1, n  ) =   mode.m * J1[0] - J1[1];
+                matrix(n+1, n+1) = - mode.m * H2[0] + H2[1];
+                matrix(n+1, n+2) = - mode.m * J2[0] + J2[1];
+                matrix(n+2, n  ) =   0.;
+            }
+            // In the outermost area there must only outgoing wave, so J = 0.
+            matrix(N-1, N-2) = 0.;
+            matrix(N-1, N-1) = 1.;
+            return matrix.determinant();
+        } else {
+            const std::size_t NN = N*N;
+            dcomplex *matrix = aligned_malloc<dcomplex>(NN),
+                     *evals = aligned_malloc<dcomplex>(N),
+                     *evecs = aligned_malloc<dcomplex>(NN);
+            aligned_unique_ptr<dcomplex[]> pmatrix(matrix), pevals(evals), pevecs(evecs);
+
+            std::fill_n(matrix, N*N, 0.);
+            // In the innermost layer the solution is only the J function
+            matrix[0] = 1.;
+            matrix[N] = 0.;
+            for (size_t i = 1, n = 1; i != rsize; ++i, n += 2) {
+                computeBessel(i, v, mode, J1, H1, J2, H2);
+                matrix[n   + N*(n-1)] =   H1[0];
+                matrix[n   + N*(n  )] =   J1[0];
+                matrix[n   + N*(n+1)] = - H2[0];
+                matrix[n   + N*(n+2)] = - J2[0];
+                matrix[n+1 + N*(n-1)] =   mode.m * H1[0] - H1[1];
+                matrix[n+1 + N*(n  )] =   mode.m * J1[0] - J1[1];
+                matrix[n+1 + N*(n+1)] = - mode.m * H2[0] + H2[1];
+                matrix[n+1 + N*(n+2)] = - mode.m * J2[0] + J2[1];
+            }
+            // In the outermost area there must only outgoing wave, so J = 0.
+            matrix[NN - 1] = 1.;
+            const std::size_t lwork = 2*N+1;
+            aligned_unique_ptr<dcomplex[]> work(aligned_malloc<dcomplex>(lwork));
+            aligned_unique_ptr<double[]> rwork(aligned_malloc<double>(2*N));
+            int info;
+            zgeev('N', 'V', int(N), matrix, int(N), evals, nullptr, 1, evecs, int(N), work.get(), int(lwork), rwork.get(), info);
+            if (info != 0) throw ComputationError(getId(), "Could not compute eigenvalues of radial continuity matrix");
+            // Find the eigenvalue with the smallest absolute value
+            double minabs = INFINITY;
+            size_t minidx;
+            dcomplex res = 1.;
+            for (int i = 0; i != N; ++i) {
+                res *= evals[i];
+                double abs = abs2(evals[i]);
+                if (abs < minabs) {
+                    minabs = abs;
+                    minidx = i;
+                }
+            }
+            dcomplex* evec = evecs + N * minidx;
+            for (size_t i = 0, n = 0; i < rsize; ++i, n += 2) {
+                 mode.rfields[i] = FieldR(evec[n+1], evec[n]);
+            }
+            dcomplex f = 1e6 * sqrt(1. / integrateBessel(mode)); // 1e6: V/µm -> V/m
+            for (size_t r = 0; r != rsize; ++r) mode.rfields[r] *= f;
+            return res;
         }
-        // In the outermost area there must only outgoing wave, so J = 0.
-        matrix(N-1, N-1) = 1.;
-        matrix(N-1, N-2) = 0.;
-        return matrix.determinant();
     } else if (determinant == DETERMINANT_INWARDS) {
         MatrixR T = MatrixR::eye();
         mode.rfields[rsize-1] = FieldR(0., 1.);

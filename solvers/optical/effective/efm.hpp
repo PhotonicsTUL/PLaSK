@@ -74,8 +74,11 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
         MatrixR(dcomplex jj, dcomplex jh, dcomplex hj, dcomplex hh): JJ(jj), JH(jh), HJ(hj), HH(hh) {}
         static MatrixR eye() { return MatrixR(1.,0.,0.,1.); }
         static MatrixR diag(dcomplex j, dcomplex h) { return MatrixR(j,0.,0.,h); }
-        MatrixR& operator*(dcomplex c) { JJ *= c; JH *= c; HJ *= c; HH *= c; return *this; }
-        MatrixR& operator/(dcomplex d) { dcomplex c = 1./d; JJ *= c; JH *= c; HJ *= c; HH *= c; return *this; }
+        MatrixR operator*(dcomplex c) { return MatrixR(c * JJ, c * JH, c * HJ, c * HH); }
+        friend MatrixR operator*(dcomplex c, const MatrixR& M) { return MatrixR(c * M.JJ, c * M.JH, c * M.HJ, c * M.HH); }
+        MatrixR operator/(dcomplex d) { dcomplex c = 1./d; return MatrixR(c * JJ, c * JH, c * HJ, c * HH); }
+        MatrixR& operator*=(dcomplex c) { JJ *= c; JH *= c; HJ *= c; HH *= c; return *this; }
+        MatrixR& operator/=(dcomplex d) { dcomplex c = 1./d; JJ *= c; JH *= c; HJ *= c; HH *= c; return *this; }
         FieldR operator*(const FieldR& v) {
             return FieldR(JJ*v.J + JH*v.H, HJ*v.J + HH*v.H);
         }
@@ -87,10 +90,12 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
             return FieldR(HH*v.J - JH*v.H, -HJ*v.J + JJ*v.H) / (JJ*HH - JH*HJ);
         }
         MatrixR solve(const MatrixR& o) {
-            return MatrixR(HH*o.JJ - JH*o.HJ, HH*o.JH - JH*o.HH, -HJ*o.JJ + JJ*o.HJ, -HJ*o.JH + JJ*o.HH)
-                    / (JJ*HH - JH*HJ);
+            MatrixR result(HH*o.JJ - JH*o.HJ, HH*o.JH - JH*o.HH, -HJ*o.JJ + JJ*o.HJ, -HJ*o.JH + JJ*o.HH);
+            result /= (JJ*HH - JH*HJ);
+            return result;
         }
     };
+
 
     /// Direction of the possible emission
     enum Emission {
