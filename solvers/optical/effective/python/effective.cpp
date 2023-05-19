@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -533,8 +533,10 @@ BOOST_PYTHON_MODULE(effective) {
             .def("__repr__", &EffectiveFrequencyCyl_Mode_repr);
 
         py_enum<EffectiveFrequencyCyl::Determinant>()
-            .value("TRANSFER", EffectiveFrequencyCyl::DETERMINANT_TRANSFER)
-            .value("FULL", EffectiveFrequencyCyl::DETERMINANT_FULL);
+            .value("OUTWARDS", EffectiveFrequencyCyl::DETERMINANT_OUTWARDS)
+            .value("INWARDS", EffectiveFrequencyCyl::DETERMINANT_INWARDS)
+            .value("FULL", EffectiveFrequencyCyl::DETERMINANT_FULL)
+            .value("TRANSFER", EffectiveFrequencyCyl::DETERMINANT_INWARDS);
         py_enum<EffectiveFrequencyCyl::Emission>()
             .value("TOP", EffectiveFrequencyCyl::TOP)
             .value("BOTTOM", EffectiveFrequencyCyl::BOTTOM);

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -26,7 +26,7 @@ EffectiveFrequencyCyl::EffectiveFrequencyCyl(const std::string& name) :
     log_value(dataLog<dcomplex, dcomplex>("radial", "lam", "det")),
     emission(TOP),
     rstripe(-1),
-    determinant(DETERMINANT_TRANSFER),
+    determinant(DETERMINANT_OUTWARDS),
     perr(1e-3),
     k0(NAN),
     vlam(0.),
@@ -79,7 +79,9 @@ void EffectiveFrequencyCyl::loadConfiguration(XMLReader& reader, Manager& manage
         } else if (param == "root") {
             determinant = reader.enumAttribute<Determinant>("determinant")
                 .value("full", DETERMINANT_FULL)
-                .value("transfer", DETERMINANT_TRANSFER)
+                .value("outwards", DETERMINANT_OUTWARDS)
+                .value("inwards", DETERMINANT_INWARDS)
+                .value("transfer", DETERMINANT_INWARDS)
             .get(determinant);
             RootDigger::readRootDiggerConfig(reader, root);
         } else if (param == "stripe-root") {
@@ -649,7 +651,7 @@ dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, Mode& mode, bool save)
         ZgbMatrix matrix(N);
         // In the intermostmost layer the solution is only the J function
         matrix(0, 0) = 1.;
-        matrix(0, 1) =0.;
+        matrix(0, 1) = 0.;
         for (size_t i = 1, n = 1; i != rsize; ++i, n += 2) {
             computeBessel(i, v, mode, J1, H1, J2, H2);
             matrix(n-1, n+1) =   0.;
@@ -667,16 +669,16 @@ dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, Mode& mode, bool save)
         matrix(N-1, N-1) = 1.;
         matrix(N-1, N-2) = 0.;
         return matrix.determinant();
-    } else {
+    } else if (determinant == DETERMINANT_INWARDS) {
         MatrixR T = MatrixR::eye();
         mode.rfields[rsize-1] = FieldR(0., 1.);
         for (size_t i = rsize-1; i > 0; --i) {
             computeBessel(i, v, mode, J1, H1, J2, H2);
-            MatrixR A(       J1[0],                H1[0],
-                      mode.m*J1[0] - J1[1], mode.m*H1[0] - H1[1]);
-            MatrixR B(       J2[0],                H2[0],
+            MatrixR M1(       J1[0],                H1[0],
+                       mode.m*J1[0] - J1[1], mode.m*H1[0] - H1[1]);
+            MatrixR M2(       J2[0],                H2[0],
                       mode.m*J2[0] - J2[1], mode.m*H2[0] - H2[1]);
-            T = A.solve(B) * T;
+            T = M1.solve(M2) * T;
             if (save) mode.rfields[i-1] = T * mode.rfields[rsize-1];
         }
         if (save) {
@@ -687,6 +689,26 @@ dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, Mode& mode, bool save)
         //    j = [ JJ JH ] 0
         //    0 = [ HJ HH ] 1
         return T.HH/T.JH * H1[0]/J1[0];
+    } else {
+        MatrixR T = MatrixR::eye();
+        mode.rfields[0] = FieldR(1., 0.);
+        for (size_t i = 1; i < rsize; ++i) {
+            computeBessel(i, v, mode, J1, H1, J2, H2);
+            MatrixR M1(       J1[0],                H1[0],
+                       mode.m*J1[0] - J1[1], mode.m*H1[0] - H1[1]);
+            MatrixR M2(       J2[0],                H2[0],
+                       mode.m*J2[0] - J2[1], mode.m*H2[0] - H2[1]);
+            T = M2.solve(M1) * T;
+            if (save) mode.rfields[i] = T * mode.rfields[0];
+        }
+        if (save) {
+            dcomplex f = 1e6 * sqrt(1. / integrateBessel(mode)); // 1e6: V/µm -> V/m
+            for (size_t r = 0; r != rsize; ++r) mode.rfields[r] *= f;
+        }
+        // In the outermost area there is only outgoing wave, so J_N = 0.
+        //    0 = [ JJ JH ] 1
+        //    h = [ HJ HH ] 0
+        return T.JJ/T.HJ * J2[0]/H2[0];
     }
 }
 
