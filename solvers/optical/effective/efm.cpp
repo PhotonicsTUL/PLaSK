@@ -652,6 +652,8 @@ dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, Mode& mode, bool save)
     dcomplex J1[2], H1[2];
     dcomplex J2[2], H2[2];
 
+    double m = mode.m;
+
     if (determinant == DETERMINANT_FULL) {
         const size_t N = 2 * rsize;
         if (!save) {
@@ -666,10 +668,10 @@ dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, Mode& mode, bool save)
                 matrix(n  , n  ) =   J1[0];
                 matrix(n  , n+1) = - H2[0];
                 matrix(n  , n+2) = - J2[0];
-                matrix(n+1, n-1) =   mode.m * H1[0] - H1[1];
-                matrix(n+1, n  ) =   mode.m * J1[0] - J1[1];
-                matrix(n+1, n+1) = - mode.m * H2[0] + H2[1];
-                matrix(n+1, n+2) = - mode.m * J2[0] + J2[1];
+                matrix(n+1, n-1) =   m * H1[0] - H1[1];
+                matrix(n+1, n  ) =   m * J1[0] - J1[1];
+                matrix(n+1, n+1) = - m * H2[0] + H2[1];
+                matrix(n+1, n+2) = - m * J2[0] + J2[1];
                 matrix(n+2, n  ) =   0.;
             }
             // In the outermost area there must only outgoing wave, so J = 0.
@@ -693,10 +695,10 @@ dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, Mode& mode, bool save)
                 matrix[n   + N*(n  )] =   J1[0];
                 matrix[n   + N*(n+1)] = - H2[0];
                 matrix[n   + N*(n+2)] = - J2[0];
-                matrix[n+1 + N*(n-1)] =   mode.m * H1[0] - H1[1];
-                matrix[n+1 + N*(n  )] =   mode.m * J1[0] - J1[1];
-                matrix[n+1 + N*(n+1)] = - mode.m * H2[0] + H2[1];
-                matrix[n+1 + N*(n+2)] = - mode.m * J2[0] + J2[1];
+                matrix[n+1 + N*(n-1)] =   m * H1[0] - H1[1];
+                matrix[n+1 + N*(n  )] =   m * J1[0] - J1[1];
+                matrix[n+1 + N*(n+1)] = - m * H2[0] + H2[1];
+                matrix[n+1 + N*(n+2)] = - m * J2[0] + J2[1];
             }
             // In the outermost area there must only outgoing wave, so J = 0.
             matrix[NN - 1] = 1.;
@@ -731,10 +733,10 @@ dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, Mode& mode, bool save)
         mode.rfields[rsize-1] = FieldR(0., 1.);
         for (size_t i = rsize-1; i > 0; --i) {
             computeBessel(i, v, mode, J1, H1, J2, H2);
-            MatrixR M1(       J1[0],                H1[0],
-                       mode.m*J1[0] - J1[1], mode.m*H1[0] - H1[1]);
-            MatrixR M2(       J2[0],                H2[0],
-                      mode.m*J2[0] - J2[1], mode.m*H2[0] - H2[1]);
+            MatrixR M1(  J1[0],           H1[0],
+                       m*J1[0] - J1[1], m*H1[0] - H1[1]);
+            MatrixR M2(  J2[0],           H2[0],
+                       m*J2[0] - J2[1], m*H2[0] - H2[1]);
             T = M1.solve(M2) * T;
             if (save) mode.rfields[i-1] = T * mode.rfields[rsize-1];
         }
@@ -751,10 +753,10 @@ dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, Mode& mode, bool save)
         mode.rfields[0] = FieldR(1., 0.);
         for (size_t i = 1; i < rsize; ++i) {
             computeBessel(i, v, mode, J1, H1, J2, H2);
-            MatrixR M1(       J1[0],                H1[0],
-                       mode.m*J1[0] - J1[1], mode.m*H1[0] - H1[1]);
-            MatrixR M2(       J2[0],                H2[0],
-                       mode.m*J2[0] - J2[1], mode.m*H2[0] - H2[1]);
+            MatrixR M1(  J1[0],           H1[0],
+                       m*J1[0] - J1[1], m*H1[0] - H1[1]);
+            MatrixR M2(  J2[0],           H2[0],
+                       m*J2[0] - J2[1], m*H2[0] - H2[1]);
             T = M2.solve(M1) * T;
             if (save) mode.rfields[i] = T * mode.rfields[0];
         }
