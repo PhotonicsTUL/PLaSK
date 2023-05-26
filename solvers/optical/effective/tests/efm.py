@@ -77,7 +77,7 @@ class EffectiveFrequency(unittest.TestCase):
               </cylindrical>
             </geometry>
             <solvers>
-              <optical name="efm" lib="effective" solver="EffectiveFrequencyCyl">
+              <optical name="efm" lib="effective" solver="EffectiveFreqCyl">
                 <geometry ref="vcsel"/>
               </optical>
             </solvers>

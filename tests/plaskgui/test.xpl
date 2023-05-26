@@ -469,14 +469,14 @@
     <geometry ref="GeoO"/>
     <config lifetime="0.5" matrix-elem="8" substrate="Al(0.2)GaN"/>
   </gain>
-  <optical name="OPTICAL" solver="EffectiveFrequencyCyl" lib="effective">
+  <optical name="OPTICAL" solver="OldEffectiveFreqCyl" lib="effective">
     <geometry ref="GeoO"/>
     <mesh ref="optical"/>
     <mode lam0="980" emission="bottom"/>
   </optical>
   <!--filtr-->
   <filter name="filtr" for="Temperature" geometry="GeoT"/>
-  <optical name="efm" solver="EffectiveFrequencyCyl" lib="effective">
+  <optical name="efm" solver="OldEffectiveFreqCyl" lib="effective">
     <geometry ref="GeoO"/>
   </optical>
   <electrical name="DDM" solver="DriftDiffusion2D" lib="ddm2d">

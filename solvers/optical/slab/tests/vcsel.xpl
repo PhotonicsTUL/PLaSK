@@ -70,7 +70,7 @@
 </geometry>
 
 <solvers>
-  <optical name="efm" solver="EffectiveFrequencyCyl" lib="effective">
+  <optical name="efm" solver="EffectiveFreqCyl" lib="effective">
     <geometry ref="vcsel"/>
     <mode lam0="980." emission="top" vlam="981." vat="0"/>
   </optical>

@@ -20,7 +20,7 @@ from plask import *
 from plask import material, geometry, mesh
 from plask.geometry import Cartesian2D, Cylindrical
 
-from optical.effective import EffectiveIndex2D, EffectiveFrequencyCyl
+from optical.effective import EffectiveIndex2D, EffectiveFreqCyl
 from electrical.diffusion import Diffusion2D, DiffusionCyl
 
 
@@ -92,5 +92,5 @@ class EffectiveIndexCarriers(CarriersTest, unittest.TestCase):
 class EffectiveFrequencyCarriers(CarriersTest, unittest.TestCase):
     name = "efm"
     Geometry = Cylindrical
-    Solver = EffectiveFrequencyCyl
+    Solver = OldEffectiveFrequencyCyl
     Diffusion = DiffusionCyl

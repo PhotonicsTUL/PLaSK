@@ -180,7 +180,7 @@
 
 ###########################################################################################
 
-- solver: EffectiveFrequencyCyl
+- solver: OldEffectiveFrequencyCyl
   lib: effective
   category: optical
   help: >

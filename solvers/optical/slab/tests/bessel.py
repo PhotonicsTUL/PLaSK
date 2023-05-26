@@ -20,7 +20,7 @@ from plask import *
 from plask import material, geometry, mesh
 
 from optical.slab import BesselCyl
-from optical.effective import EffectiveFrequencyCyl
+from optical.effective import OldEffectiveFrequencyCyl
 
 
 @material.simple()
@@ -49,7 +49,7 @@ class Disk(unittest.TestCase):
         stack.prepend(above)
         self.geometry = geometry.Cylindrical(stack)
 
-        #self.solver = EffectiveFrequencyCyl('EFM')
+        #self.solver = OldEffectiveFrequencyCyl('EFM')
         #self.solver.geometry = self.geometry
         #self.solver.lam0 = 1500./f
         #self.solver.vat = 0.

@@ -11,7 +11,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#include "efm.hpp"
+#include "old_efm.hpp"
 #include "patterson.hpp"
 #include "gauss_matrix.hpp"
 
@@ -21,7 +21,7 @@ namespace plask { namespace optical { namespace effective {
 
 #define DLAM 1e-3
 
-EffectiveFrequencyCyl::EffectiveFrequencyCyl(const std::string& name) :
+OldEffectiveFrequencyCyl::OldEffectiveFrequencyCyl(const std::string& name) :
     SolverWithMesh<Geometry2DCylindrical, RectangularMesh<2>>(name),
     log_value(dataLog<dcomplex, dcomplex>("radial", "lam", "det")),
     emission(TOP),
@@ -30,12 +30,12 @@ EffectiveFrequencyCyl::EffectiveFrequencyCyl(const std::string& name) :
     perr(1e-3),
     k0(NAN),
     vlam(0.),
-    outWavelength(this, &EffectiveFrequencyCyl::getWavelength, &EffectiveFrequencyCyl::nmodes),
-    outLoss(this, &EffectiveFrequencyCyl::getModalLoss,  &EffectiveFrequencyCyl::nmodes),
-    outLightMagnitude(this, &EffectiveFrequencyCyl::getLightMagnitude,  &EffectiveFrequencyCyl::nmodes),
-    outLightE(this, &EffectiveFrequencyCyl::getElectricField,  &EffectiveFrequencyCyl::nmodes),
-    outRefractiveIndex(this, &EffectiveFrequencyCyl::getRefractiveIndex),
-    outHeat(this, &EffectiveFrequencyCyl::getHeat),
+    outWavelength(this, &OldEffectiveFrequencyCyl::getWavelength, &OldEffectiveFrequencyCyl::nmodes),
+    outLoss(this, &OldEffectiveFrequencyCyl::getModalLoss,  &OldEffectiveFrequencyCyl::nmodes),
+    outLightMagnitude(this, &OldEffectiveFrequencyCyl::getLightMagnitude,  &OldEffectiveFrequencyCyl::nmodes),
+    outLightE(this, &OldEffectiveFrequencyCyl::getElectricField,  &OldEffectiveFrequencyCyl::nmodes),
+    outRefractiveIndex(this, &OldEffectiveFrequencyCyl::getRefractiveIndex),
+    outHeat(this, &OldEffectiveFrequencyCyl::getHeat),
     asymptotic(false) {
     inTemperature = 300.;
     root.tolx = 1.0e-6;
@@ -48,13 +48,13 @@ EffectiveFrequencyCyl::EffectiveFrequencyCyl(const std::string& name) :
     stripe_root.tolf_max = 1.0e-5;
     stripe_root.maxiter = 500;
     stripe_root.method = RootDigger::ROOT_MULLER;
-    inTemperature.changedConnectMethod(this, &EffectiveFrequencyCyl::onInputChange);
-    inGain.changedConnectMethod(this, &EffectiveFrequencyCyl::onInputChange);
-    inCarriersConcentration.changedConnectMethod(this, &EffectiveFrequencyCyl::onInputChange);
+    inTemperature.changedConnectMethod(this, &OldEffectiveFrequencyCyl::onInputChange);
+    inGain.changedConnectMethod(this, &OldEffectiveFrequencyCyl::onInputChange);
+    inCarriersConcentration.changedConnectMethod(this, &OldEffectiveFrequencyCyl::onInputChange);
 }
 
 
-void EffectiveFrequencyCyl::loadConfiguration(XMLReader& reader, Manager& manager) {
+void OldEffectiveFrequencyCyl::loadConfiguration(XMLReader& reader, Manager& manager) {
     while (reader.requireTagOrEnd()) {
         std::string param = reader.getNodeName();
         if (param == "mode") {
@@ -112,7 +112,7 @@ void EffectiveFrequencyCyl::loadConfiguration(XMLReader& reader, Manager& manage
 }
 
 
-size_t EffectiveFrequencyCyl::findMode(dcomplex lambda, int m)
+size_t OldEffectiveFrequencyCyl::findMode(dcomplex lambda, int m)
 {
     writelog(LOG_INFO, "Searching for the mode starting from wavelength = {0}", str(lambda));
     if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
@@ -123,7 +123,7 @@ size_t EffectiveFrequencyCyl::findMode(dcomplex lambda, int m)
 }
 
 
-std::vector<size_t> EffectiveFrequencyCyl::findModes(dcomplex lambda1, dcomplex lambda2, int m, size_t resteps, size_t imsteps, dcomplex eps)
+std::vector<size_t> OldEffectiveFrequencyCyl::findModes(dcomplex lambda1, dcomplex lambda2, int m, size_t resteps, size_t imsteps, dcomplex eps)
 {
     if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
     stageOne();
@@ -193,7 +193,7 @@ std::vector<size_t> EffectiveFrequencyCyl::findModes(dcomplex lambda1, dcomplex 
 }
 
 
-size_t EffectiveFrequencyCyl::setMode(dcomplex clambda, int m)
+size_t OldEffectiveFrequencyCyl::setMode(dcomplex clambda, int m)
 {
     if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
     stageOne();
@@ -207,7 +207,7 @@ size_t EffectiveFrequencyCyl::setMode(dcomplex clambda, int m)
 }
 
 
-void EffectiveFrequencyCyl::onInitialize()
+void OldEffectiveFrequencyCyl::onInitialize()
 {
     if (!geometry) throw NoGeometryException(getId());
 
@@ -242,7 +242,7 @@ void EffectiveFrequencyCyl::onInitialize()
 }
 
 
-void EffectiveFrequencyCyl::onInvalidate()
+void OldEffectiveFrequencyCyl::onInvalidate()
 {
     if (!modes.empty()) {
         writelog(LOG_DETAIL, "Clearing computed modes");
@@ -256,7 +256,7 @@ void EffectiveFrequencyCyl::onInvalidate()
 
 /********* Here are the computations *********/
 
-void EffectiveFrequencyCyl::updateCache()
+void OldEffectiveFrequencyCyl::updateCache()
 {
     bool fresh = initCalculation();
 
@@ -340,7 +340,7 @@ void EffectiveFrequencyCyl::updateCache()
     }
 }
 
-void EffectiveFrequencyCyl::stageOne()
+void OldEffectiveFrequencyCyl::stageOne()
 {
     updateCache();
 
@@ -432,7 +432,7 @@ void EffectiveFrequencyCyl::stageOne()
 }
 
 
-dcomplex EffectiveFrequencyCyl::detS1(const dcomplex& v, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR,
+dcomplex OldEffectiveFrequencyCyl::detS1(const dcomplex& v, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR,
                                             const std::vector<dcomplex,aligned_allocator<dcomplex>>& NG, std::vector<FieldZ>* saveto)
 {
     if (saveto) (*saveto)[zbegin] = FieldZ(0., 1.);
@@ -527,7 +527,7 @@ dcomplex EffectiveFrequencyCyl::detS1(const dcomplex& v, const std::vector<dcomp
 }
 
 
-void EffectiveFrequencyCyl::computeStripeNNg(size_t stripe, bool save_integrals)
+void OldEffectiveFrequencyCyl::computeStripeNNg(size_t stripe, bool save_integrals)
 {
     size_t stripe0 = (rstripe < 0)? stripe : rstripe;
 
@@ -592,7 +592,7 @@ void EffectiveFrequencyCyl::computeStripeNNg(size_t stripe, bool save_integrals)
     nng[stripe] /= sum;
 }
 
-double EffectiveFrequencyCyl::integrateBessel(Mode& mode)
+double OldEffectiveFrequencyCyl::integrateBessel(Mode& mode)
 {
     double sum = 0;
     for (size_t i = 0; i != rsize; ++i) {
@@ -608,7 +608,7 @@ double EffectiveFrequencyCyl::integrateBessel(Mode& mode)
     return 2.*PI * sum;
 }
 
-void EffectiveFrequencyCyl::computeBessel(size_t i, dcomplex v, const Mode& mode,
+void OldEffectiveFrequencyCyl::computeBessel(size_t i, dcomplex v, const Mode& mode,
                                           dcomplex* J1, dcomplex* H1, dcomplex* J2, dcomplex* H2)
 {
     double r = mesh->axis[0]->at(i);
@@ -646,7 +646,7 @@ F77SUB zgeev(const char& jobvl, const char& jobvr, const int& n, dcomplex* a,
              dcomplex* vr, const int& ldvr, dcomplex* work, const int& lwork,
              double* rwork, int& info);
 
-dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, Mode& mode, bool save)
+dcomplex OldEffectiveFrequencyCyl::detS(const dcomplex& lam, Mode& mode, bool save)
 {
     dcomplex v = freqv(lam);
     dcomplex J1[2], H1[2];
@@ -772,7 +772,7 @@ dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, Mode& mode, bool save)
 }
 
 
-double EffectiveFrequencyCyl::getTotalAbsorption(Mode& mode)
+double OldEffectiveFrequencyCyl::getTotalAbsorption(Mode& mode)
 {
     if (!mode.have_fields) {
         size_t stripe = getMainStripe();
@@ -808,7 +808,7 @@ double EffectiveFrequencyCyl::getTotalAbsorption(Mode& mode)
     return result;
 }
 
-double EffectiveFrequencyCyl::getTotalAbsorption(size_t num)
+double OldEffectiveFrequencyCyl::getTotalAbsorption(size_t num)
 {
     if (modes.size() <= num || k0 != old_k0) throw NoValue("absorption");
 
@@ -816,7 +816,7 @@ double EffectiveFrequencyCyl::getTotalAbsorption(size_t num)
 }
 
 
-double EffectiveFrequencyCyl::getGainIntegral(Mode& mode)
+double OldEffectiveFrequencyCyl::getGainIntegral(Mode& mode)
 {
     if (!mode.have_fields) {
         size_t stripe = getMainStripe();
@@ -844,7 +844,7 @@ double EffectiveFrequencyCyl::getGainIntegral(Mode& mode)
     return -result;
 }
 
-double EffectiveFrequencyCyl::getGainIntegral(size_t num)
+double OldEffectiveFrequencyCyl::getGainIntegral(size_t num)
 {
     if (modes.size() <= num || k0 != old_k0) throw NoValue("absorption");
 
@@ -853,12 +853,12 @@ double EffectiveFrequencyCyl::getGainIntegral(size_t num)
 
 
 template <typename FieldT>
-struct EffectiveFrequencyCyl::FieldDataBase: public LazyDataImpl<FieldT>
+struct OldEffectiveFrequencyCyl::FieldDataBase: public LazyDataImpl<FieldT>
 {
-    EffectiveFrequencyCyl* solver;
+    OldEffectiveFrequencyCyl* solver;
     std::size_t num;
 
-    FieldDataBase(EffectiveFrequencyCyl* solver, std::size_t num);
+    FieldDataBase(OldEffectiveFrequencyCyl* solver, std::size_t num);
 
   protected:
     inline FieldT value(dcomplex val) const;
@@ -866,34 +866,34 @@ struct EffectiveFrequencyCyl::FieldDataBase: public LazyDataImpl<FieldT>
 };
 
 template <>
-EffectiveFrequencyCyl::FieldDataBase<double>::FieldDataBase(EffectiveFrequencyCyl* solver, std::size_t num):
+OldEffectiveFrequencyCyl::FieldDataBase<double>::FieldDataBase(OldEffectiveFrequencyCyl* solver, std::size_t num):
     solver(solver), num(num), scale(1e-3 * solver->modes[num].power)
 {}
 
 template <>
-double EffectiveFrequencyCyl::FieldDataBase<double>::value(dcomplex val) const {
+double OldEffectiveFrequencyCyl::FieldDataBase<double>::value(dcomplex val) const {
     return scale * abs2(val);
 }
 
 template <>
-EffectiveFrequencyCyl::FieldDataBase<Vec<3,dcomplex>>::FieldDataBase(EffectiveFrequencyCyl* solver, std::size_t num):
+OldEffectiveFrequencyCyl::FieldDataBase<Vec<3,dcomplex>>::FieldDataBase(OldEffectiveFrequencyCyl* solver, std::size_t num):
     solver(solver), num(num), scale(sqrt(2e-3 * phys::Z0 * solver->modes[num].power))
     // <M> = ½ E conj(E) / Z0
 {}
 
 template <>
-Vec<3,dcomplex> EffectiveFrequencyCyl::FieldDataBase<Vec<3,dcomplex>>::value(dcomplex val) const {
+Vec<3,dcomplex> OldEffectiveFrequencyCyl::FieldDataBase<Vec<3,dcomplex>>::value(dcomplex val) const {
     return Vec<3,dcomplex>(0., scale * val, 0.);
 }
 
 
 template <typename FieldT>
-struct EffectiveFrequencyCyl::FieldDataInefficient: public FieldDataBase<FieldT>
+struct OldEffectiveFrequencyCyl::FieldDataInefficient: public FieldDataBase<FieldT>
 {
     shared_ptr<const MeshD<2>> dst_mesh;
     size_t stripe;
 
-    FieldDataInefficient(EffectiveFrequencyCyl* solver, std::size_t num,
+    FieldDataInefficient(OldEffectiveFrequencyCyl* solver, std::size_t num,
                          const shared_ptr<const MeshD<2>>& dst_mesh,
                          size_t stripe):
         FieldDataBase<FieldT>(solver, num),
@@ -926,12 +926,12 @@ struct EffectiveFrequencyCyl::FieldDataInefficient: public FieldDataBase<FieldT>
 };
 
 template <typename FieldT>
-struct EffectiveFrequencyCyl::FieldDataEfficient: public FieldDataBase<FieldT>
+struct OldEffectiveFrequencyCyl::FieldDataEfficient: public FieldDataBase<FieldT>
 {
     shared_ptr<const RectangularMesh<2>> rect_mesh;
     std::vector<dcomplex> valr, valz;
 
-    FieldDataEfficient(EffectiveFrequencyCyl* solver, std::size_t num,
+    FieldDataEfficient(OldEffectiveFrequencyCyl* solver, std::size_t num,
                        const shared_ptr<const RectangularMesh<2>>& rect_mesh,
                        size_t stripe):
         FieldDataBase<FieldT>(solver, num),
@@ -1010,7 +1010,7 @@ struct EffectiveFrequencyCyl::FieldDataEfficient: public FieldDataBase<FieldT>
     }
 };
 
-const LazyData<double> EffectiveFrequencyCyl::getLightMagnitude(std::size_t num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
+const LazyData<double> OldEffectiveFrequencyCyl::getLightMagnitude(std::size_t num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
     this->writelog(LOG_DEBUG, "Getting light magnitude");
 
@@ -1039,7 +1039,7 @@ const LazyData<double> EffectiveFrequencyCyl::getLightMagnitude(std::size_t num,
         return LazyData<double>(new FieldDataInefficient<double>(this, num, dst_mesh, stripe));
 }
 
-const LazyData<Vec<3,dcomplex>> EffectiveFrequencyCyl::getElectricField(std::size_t num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
+const LazyData<Vec<3,dcomplex>> OldEffectiveFrequencyCyl::getElectricField(std::size_t num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
     this->writelog(LOG_DEBUG, "Getting light electric field");
 
@@ -1068,7 +1068,7 @@ const LazyData<Vec<3,dcomplex>> EffectiveFrequencyCyl::getElectricField(std::siz
         return LazyData<Vec<3,dcomplex>>(new FieldDataInefficient<Vec<3,dcomplex>>(this, num, dst_mesh, stripe));
 }
 
-const LazyData<Tensor3<dcomplex>> EffectiveFrequencyCyl::getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod)
+const LazyData<Tensor3<dcomplex>> OldEffectiveFrequencyCyl::getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod)
 {
     this->writelog(LOG_DEBUG, "Getting refractive indices");
     dcomplex lam0 = 2e3*PI / k0;
@@ -1085,15 +1085,15 @@ const LazyData<Tensor3<dcomplex>> EffectiveFrequencyCyl::getRefractiveIndex(cons
 }
 
 
-struct EffectiveFrequencyCyl::HeatDataImpl: public LazyDataImpl<double>
+struct OldEffectiveFrequencyCyl::HeatDataImpl: public LazyDataImpl<double>
 {
-    EffectiveFrequencyCyl* solver;
+    OldEffectiveFrequencyCyl* solver;
     shared_ptr<const MeshD<2>> dest_mesh;
     InterpolationFlags flags;
     std::vector<LazyData<double>> EE;
     dcomplex lam0;
 
-    HeatDataImpl(EffectiveFrequencyCyl* solver, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method):
+    HeatDataImpl(OldEffectiveFrequencyCyl* solver, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method):
         solver(solver), dest_mesh(dst_mesh), flags(solver->geometry), EE(solver->modes.size()), lam0(2e3*PI / solver->k0)
     {
         for (size_t m = 0; m != solver->modes.size(); ++m)
@@ -1116,7 +1116,7 @@ struct EffectiveFrequencyCyl::HeatDataImpl: public LazyDataImpl<double>
     }
 };
 
-const LazyData<double> EffectiveFrequencyCyl::getHeat(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method)
+const LazyData<double> OldEffectiveFrequencyCyl::getHeat(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method)
 {
     // This is somehow naive implementation using the field value from the mesh points. The heat may be slightly off
     // in case of fast varying light intensity and too sparse mesh.
