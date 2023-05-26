@@ -286,24 +286,24 @@ void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
 
     if (color == COLOR_ANSI) {
         if (dest == DEST_STDERR)
-            PySys_WriteStderr("%s: %s%s%s" ANSI_DEFAULT "\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
+            PySys_FormatStderr("%s: %s%s%s" ANSI_DEFAULT "\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
         else
-            PySys_WriteStdout("%s: %s%s%s" ANSI_DEFAULT "\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
+            PySys_FormatStdout("%s: %s%s%s" ANSI_DEFAULT "\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     } else if (color == COLOR_WINDOWS) {
         if (dest == DEST_STDERR) {
-            PySys_WriteStderr("%s: %s%s%s\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
+            PySys_FormatStderr("%s: %s%s%s\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
             SetConsoleTextAttribute(GetStdHandle(STD_ERROR_HANDLE), previous_color);
         } else {
-            PySys_WriteStdout("%s: %s%s%s\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
+            PySys_FormatStdout("%s: %s%s%s\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
             SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), previous_color);
         }
 #endif
     } else {
         if (dest == DEST_STDERR)
-            PySys_WriteStderr("%s: %s%s%s\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
+            PySys_FormatStderr("%s: %s%s%s\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
         else
-            PySys_WriteStdout("%s: %s%s%s\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
+            PySys_FormatStdout("%s: %s%s%s\n", head(level), prefix.c_str(), pyinfo.c_str(), msg.c_str());
     }
 }
 
