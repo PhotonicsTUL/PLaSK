@@ -1,6 +1,6 @@
 /*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
- * Copyright (c) 2022 Lodz University of Technology
+ * Copyright (c) 2023 Lodz University of Technology
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -11,13 +11,12 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#ifndef PLASK__MODULE_OPTICAL_OLD_EFM_HPP
-#define PLASK__MODULE_OPTICAL_OLD_EFM_HPP
+#ifndef PLASK__MODULE_OPTICAL_EFM_HPP
+#define PLASK__MODULE_OPTICAL_EFM_HPP
 
 #include <limits>
 
 #include <plask/plask.hpp>
-#include <camos/camos.h>
 
 #include "rootdigger.hpp"
 #include "bisection.hpp"
@@ -29,7 +28,7 @@ static constexpr int MH = 2; // Hankel function type (1 or 2)
 /**
  * Solver performing calculations in 2D Cartesian space using effective index method
  */
-struct PLASK_SOLVER_API OldEffectiveFrequencyCyl: public SolverWithMesh<Geometry2DCylindrical, RectangularMesh<2>> {
+struct PLASK_SOLVER_API EffectiveFreqCyl: public SolverWithMesh<Geometry2DCylindrical, RectangularMesh<2>> {
 
     struct FieldZ {
         dcomplex F, B;
@@ -60,42 +59,10 @@ struct PLASK_SOLVER_API OldEffectiveFrequencyCyl: public SolverWithMesh<Geometry
     };
 
     struct FieldR {
-        dcomplex J, H;
+        dcomplex a0, b0, a1, b1;
         FieldR() = default;
-        FieldR(dcomplex j, dcomplex h): J(j), H(h) {}
-        FieldR operator*(dcomplex a) const { return FieldR(a*J, a*H); }
-        FieldR operator/(dcomplex a) const { return FieldR(J/a, H/a); }
-        FieldR& operator*=(dcomplex a) { J *= a; H *= a; return *this; }
-        FieldR& operator/=(dcomplex a) { J /= a; H /= a; return *this; }
+        FieldR(dcomplex a0, dcomplex b0, dcomplex a1, dcomplex b1): a0(a0), b0(b0), a1(a1), b1(b1) {}
     };
-
-    struct MatrixR {
-        dcomplex JJ, JH, HJ, HH;
-        MatrixR(dcomplex jj, dcomplex jh, dcomplex hj, dcomplex hh): JJ(jj), JH(jh), HJ(hj), HH(hh) {}
-        static MatrixR eye() { return MatrixR(1.,0.,0.,1.); }
-        static MatrixR diag(dcomplex j, dcomplex h) { return MatrixR(j,0.,0.,h); }
-        MatrixR operator*(dcomplex c) { return MatrixR(c * JJ, c * JH, c * HJ, c * HH); }
-        friend MatrixR operator*(dcomplex c, const MatrixR& M) { return MatrixR(c * M.JJ, c * M.JH, c * M.HJ, c * M.HH); }
-        MatrixR operator/(dcomplex d) { dcomplex c = 1./d; return MatrixR(c * JJ, c * JH, c * HJ, c * HH); }
-        MatrixR& operator*=(dcomplex c) { JJ *= c; JH *= c; HJ *= c; HH *= c; return *this; }
-        MatrixR& operator/=(dcomplex d) { dcomplex c = 1./d; JJ *= c; JH *= c; HJ *= c; HH *= c; return *this; }
-        FieldR operator*(const FieldR& v) {
-            return FieldR(JJ*v.J + JH*v.H, HJ*v.J + HH*v.H);
-        }
-        MatrixR operator*(const MatrixR& o) {
-            return MatrixR(JJ*o.JJ + JH*o.HJ, JJ*o.JH + JH*o.HH,
-                           HJ*o.JJ + HH*o.HJ, HJ*o.JH + HH*o.HH);
-        }
-        FieldR solve(const FieldR& v) {
-            return FieldR(HH*v.J - JH*v.H, -HJ*v.J + JJ*v.H) / (JJ*HH - JH*HJ);
-        }
-        MatrixR solve(const MatrixR& o) {
-            MatrixR result(HH*o.JJ - JH*o.HJ, HH*o.JH - JH*o.HH, -HJ*o.JJ + JJ*o.HJ, -HJ*o.JH + JJ*o.HH);
-            result /= (JJ*HH - JH*HJ);
-            return result;
-        }
-    };
-
 
     /// Direction of the possible emission
     enum Emission {
@@ -112,15 +79,15 @@ struct PLASK_SOLVER_API OldEffectiveFrequencyCyl: public SolverWithMesh<Geometry
 
     /// Details of the computed mode
     struct Mode {
-        OldEffectiveFrequencyCyl* solver;      ///< Solver this mode belongs to
+        EffectiveFreqCyl* solver;      ///< Solver this mode belongs to
         int m;                              ///< Number of the LP_mn mode describing angular dependence
         bool have_fields;                   ///< Did we compute fields for current state?
         std::vector<FieldR,aligned_allocator<FieldR>> rfields; ///< Computed horizontal fields
         std::vector<double,aligned_allocator<double>> rweights; /// Computed normalized lateral field integral for each stripe
         dcomplex lam;                       ///< Stored wavelength
-        double power;                       ///< Mode power (mW)
+        double power;                       ///< Mode power [mW]
 
-        Mode(OldEffectiveFrequencyCyl* solver, int m=0):
+        Mode(EffectiveFreqCyl* solver, int m=0):
             solver(solver), m(m), have_fields(false), rfields(solver->rsize), rweights(solver->rsize), power(1.) {}
 
         bool operator==(const Mode& other) const {
@@ -285,7 +252,7 @@ struct PLASK_SOLVER_API OldEffectiveFrequencyCyl: public SolverWithMesh<Geometry
     /// Allowed relative power integral precision
     double perr;
 
-    /// Current value of reference normalized frequency (1/µm)
+    /// Current value of reference normalized frequency [1/µm]
     dcomplex k0;
 
     /// 'Vertical wavelength' used as a helper for searching vertical modes
@@ -321,15 +288,15 @@ struct PLASK_SOLVER_API OldEffectiveFrequencyCyl: public SolverWithMesh<Geometry
     /// Provider of the heat absorbed/generated by the light
     typename ProviderFor<Heat, Geometry2DCylindrical>::Delegate outHeat;
 
-    OldEffectiveFrequencyCyl(const std::string& name="");
+    EffectiveFreqCyl(const std::string& name="");
 
-    virtual ~OldEffectiveFrequencyCyl() {
-        inTemperature.changedDisconnectMethod(this, &OldEffectiveFrequencyCyl::onInputChange);
-        inGain.changedDisconnectMethod(this, &OldEffectiveFrequencyCyl::onInputChange);
-        inCarriersConcentration.changedDisconnectMethod(this, &OldEffectiveFrequencyCyl::onInputChange);
+    virtual ~EffectiveFreqCyl() {
+        inTemperature.changedDisconnectMethod(this, &EffectiveFreqCyl::onInputChange);
+        inGain.changedDisconnectMethod(this, &EffectiveFreqCyl::onInputChange);
+        inCarriersConcentration.changedDisconnectMethod(this, &EffectiveFreqCyl::onInputChange);
     }
 
-    std::string getClassName() const override { return "optical.OldEffectiveFrequencyCyl"; }
+    std::string getClassName() const override { return "optical.EffectiveFreqCyl"; }
 
     std::string getClassDescription() const override {
         return "Calculate optical modes and optical field distribution using the effective index method "
@@ -606,4 +573,4 @@ struct PLASK_SOLVER_API OldEffectiveFrequencyCyl: public SolverWithMesh<Geometry
 
 }}} // namespace plask::optical::effective
 
-#endif // PLASK__MODULE_OPTICAL_OLD_EFM_HPP
+#endif // PLASK__MODULE_OPTICAL_EFM_HPP
