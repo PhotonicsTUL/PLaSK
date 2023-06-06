@@ -794,9 +794,9 @@ class MainWindow(QMainWindow):
             outer.setSpacing(0)
 
             try:
-                scale = QApplication.primaryScreen().logicalDotsPerInch() / 96.
+                scale = QApplication.primaryScreen().physicalDotsPerInch() / 96.
             except AttributeError:
-                scale = QApplication.desktop().logicalDpiX() / 96.
+                scale = QApplication.desktop().physicalDpiX() / 96.
             if scale < 1.4:
                 image_name = 'splash620'
             elif scale < 1.8:

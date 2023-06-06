@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -228,7 +228,9 @@ class Splash {
         int scr = DefaultScreen(display);
 
         int screen_width = DisplayWidth(display, scr), screen_height = DisplayHeight(display, scr);
-        double scale = 25.4 / 96.0 * screen_height / DisplayHeightMM(display, scr);
+
+        double dpi = 25.4 * screen_height / DisplayHeightMM(display, scr);
+        double scale = dpi / 96.0;
         if (scale < 1.4) {
             width = splash620.width;
             height = splash620.height;
