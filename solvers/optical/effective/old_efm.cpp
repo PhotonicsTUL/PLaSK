@@ -107,7 +107,7 @@ void OldEffectiveFrequencyCyl::loadConfiguration(XMLReader& reader, Manager& man
                 }
             }
         } else
-            parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, <stripe-root>, or <outer>");
+            parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <mode>, <root>, or <stripe-root>");
     }
 }
 

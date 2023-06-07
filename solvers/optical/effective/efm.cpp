@@ -110,107 +110,30 @@ void EffectiveFreqCyl::loadConfiguration(XMLReader& reader, Manager& manager) {
 }
 
 
-size_t EffectiveFreqCyl::findMode(dcomplex lambda, int m)
+void EffectiveFreqCyl::computeModes(int m)
 {
-    writelog(LOG_INFO, "Searching for the mode starting from wavelength = {0}", str(lambda));
-    if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
-    stageOne();
-    Mode mode(this, m);
-    mode.lam = RootDigger::get(this, [this,&mode](const dcomplex& lam){return this->detS(lam,mode);}, log_value, root)->find(lambda);
-    return insertMode(mode);
-}
-
-
-std::vector<size_t> EffectiveFreqCyl::findModes(dcomplex lambda1, dcomplex lambda2, int m, size_t resteps, size_t imsteps, dcomplex eps)
-{
+    writelog(LOG_INFO, "Computing modes for m = {}", m);
     if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
     stageOne();
 
-    if ((real(lambda1) == 0. && real(lambda2) != 0.) || (real(lambda1) != 0. && real(lambda2) == 0.))
-        throw BadInput(getId(), "Bad area to browse specified");
+    // Allocate space for matrices
 
-    dcomplex lam0 =  lambda1;
-    dcomplex lam1 =  lambda2;
+    cmatrix A(rsize, rsize), B(rsize, rsize);
+    cdiagonal vs(rsize);
 
-    if (eps.imag() == 0.) eps.imag(eps.real());
 
-    if (real(eps) <= 0. || imag(eps) <= 0.)
-        throw BadInput(this->getId(), "Bad precision specified");
-
-    double re0 = real(lam0), im0 = imag(lam0);
-    double re1 = real(lam1), im1 = imag(lam1);
-    if (re0 > re1) std::swap(re0, re1);
-    if (im0 > im1) std::swap(im0, im1);
-
-    if (real(lambda1) == 0. && real(lambda2) == 0.) {
-        re0 = 1e30;
-        re1 = -1e30;
-        for (size_t i = 0; i != rsize; ++i) {
-            dcomplex v = veffs[i];
-            if (v.real() < re0) re0 = v.real();
-            if (v.real() > re1) re1 = v.real();
-        }
-    }
-    if (imag(lambda1) == 0. && imag(lambda2) == 0.) {
-        im0 = 1e30;
-        im1 = -1e30;
-        for (size_t i = 0; i != rsize; ++i) {
-            dcomplex v = veffs[i];
-            if (v.imag() < im0) im0 = v.imag();
-            if (v.imag() > im1) im1 = v.imag();
-        }
-    }
-    lam0 = 1.000001 * dcomplex(re0,im0);
-    lam1 = 0.999999 * dcomplex(re1,im1);
-
-    Mode mode(this, m);
-    auto results = findZeros(this, [this,&mode](dcomplex lam){return this->detS(lam,mode);}, lam0, lam1, resteps, imsteps, eps);
-
-    std::vector<size_t> idx(results.size());
-
-    if (results.size() != 0) {
-        log_value.resetCounter();
-        auto refine = RootDigger::get(this, [this,&mode](const dcomplex& lam){return this->detS(lam,mode);}, log_value, root);
-        std::string msg = "Found modes at: ";
-        for (auto& zz: results) {
-            dcomplex z;
-            try {
-                z = refine->find(0.5*(zz.first+zz.second));
-            } catch (ComputationError&) {
-                continue;
-            }
-            mode.lam = z;
-            idx.push_back(insertMode(mode));
-            msg += str(z) + ", ";
-        }
-        writelog(LOG_RESULT, msg.substr(0, msg.length()-2));
-    } else
-        writelog(LOG_RESULT, "Did not find any modes");
-
-    return idx;
+    // Mode mode(this, m);
+    // // TODO limit modes based on real part of lambda
+    // return insertMode(mode);
 }
 
 
-size_t EffectiveFreqCyl::setMode(dcomplex clambda, int m)
-{
-    if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
-    stageOne();
-    Mode mode(this, m);
-    mode.lam = clambda;
-    double det = abs(detS(mode.lam, mode));
-    if (det > root.tolf_max)
-        writelog(LOG_WARNING, "Provided wavelength does not correspond to any mode (det = {0})", det);
-    writelog(LOG_INFO, "Setting mode at {0}", str(clambda));
-    return insertMode(mode);
-}
-
-
-void EffectiveFreqCyl::onInitialize()
+svoid EffectiveFreqCyl::onInitialize()
 {
     if (!geometry) throw NoGeometryException(getId());
 
     // Set default mesh
-    if (!mesh) setSimpleMesh();
+    if (!mesh) throw NoMeshException(getId());
 
     // Assign space for refractive indices cache and stripe effective indices
     rsize = mesh->axis[0]->size();
@@ -590,195 +513,14 @@ void EffectiveFreqCyl::computeStripeNNg(size_t stripe, bool save_integrals)
     nng[stripe] /= sum;
 }
 
-double EffectiveFreqCyl::integrateBessel(Mode& mode)
+double EffectiveFreqCyl::integrateRadial(Mode& mode)
 {
     double sum = 0;
-    for (size_t i = 0; i != rsize; ++i) {
-        double start = mesh->axis[0]->at(i);
-        double end = (i != rsize-1)? mesh->axis[0]->at(i+1) : 3.0 * mesh->axis[0]->at(mesh->axis[0]->size()-1);
-        double err = perr;
-        mode.rweights[i] = patterson<double,double>([this,&mode](double r){return r * abs2(mode.rField(r));}, start, end, err);
-        //TODO use exponential asymptotic approximation to compute weight in the last stripe
-        sum += mode.rweights[i];
-    }
-    //TODO consider m <> 0
-    double f = 1e12 / sum; for (double& w: mode.rweights) w *= f;
     return 2.*PI * sum;
 }
 
-void EffectiveFreqCyl::computeBessel(size_t i, dcomplex v, const Mode& mode,
-                                          dcomplex* J1, dcomplex* H1, dcomplex* J2, dcomplex* H2)
-{
-    double r = mesh->axis[0]->at(i);
-    dcomplex x1 = r * k0 * sqrt(nng[i-1] * (veffs[i-1]-v));
-    if (real(x1) < 0.) x1 = -x1;
-    if (imag(x1) > SMALL) x1 = -x1;
-    dcomplex x2 = r * k0 * sqrt(nng[i] * (veffs[i]-v));
-    if (real(x2) < 0.) x2 = -x2;
-    if (imag(x2) > SMALL) x2 = -x2;
-    // Compute Bessel functions and their derivatives
-    double Jr[2], Ji[2], Hr[2], Hi[2];
-    long nz, ierr;
-    zbesj(x1.real(), x1.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
-    if (ierr != 0) throw ComputationError(getId(), "Could not compute J({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
-        mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i-1])));
-    zbesh(x1.real(), x1.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
-    if (ierr != 0) throw ComputationError(getId(), "Could not compute H({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
-        mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i-1])));
-    for (int j = 0; j < 2; ++j) { J1[j] = dcomplex(Jr[j], Ji[j]); H1[j] = dcomplex(Hr[j], Hi[j]); }
-    zbesj(x2.real(), x2.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
-    if (ierr != 0) throw ComputationError(getId(), "Could not compute J({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
-        mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i])));
-    zbesh(x2.real(), x2.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
-    if (ierr != 0) throw ComputationError(getId(), "Could not compute H({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
-        mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i])));
-    for (int j = 0; j < 2; ++j) { J2[j] = dcomplex(Jr[j], Ji[j]); H2[j] = dcomplex(Hr[j], Hi[j]); }
-    J1[1] *= x1; H1[1] *= x1;
-    J2[1] *= x2; H2[1] *= x2;
-}
-
-
-#define zgeev F77_GLOBAL(zgeev,ZGEEV)
-F77SUB zgeev(const char& jobvl, const char& jobvr, const int& n, dcomplex* a,
-             const int& lda, dcomplex* w, dcomplex* vl, const int& ldvl,
-             dcomplex* vr, const int& ldvr, dcomplex* work, const int& lwork,
-             double* rwork, int& info);
-
-dcomplex EffectiveFreqCyl::detS(const dcomplex& lam, Mode& mode, bool save)
-{
-    dcomplex v = freqv(lam);
-    dcomplex J1[2], H1[2];
-    dcomplex J2[2], H2[2];
-
-    double m = mode.m;
-
-    if (determinant == DETERMINANT_FULL) {
-        const size_t N = 2 * rsize;
-        if (!save) {
-            ZgbMatrix matrix(N);
-            // In the innermost layer the solution is only the J function
-            matrix(0, 0) = 1.;
-            matrix(0, 1) = 0.;
-            for (size_t i = 1, n = 1; i != rsize; ++i, n += 2) {
-                computeBessel(i, v, mode, J1, H1, J2, H2);
-                matrix(n-1, n+1) =   0.;
-                matrix(n  , n-1) =   H1[0];
-                matrix(n  , n  ) =   J1[0];
-                matrix(n  , n+1) = - H2[0];
-                matrix(n  , n+2) = - J2[0];
-                matrix(n+1, n-1) =   m * H1[0] - H1[1];
-                matrix(n+1, n  ) =   m * J1[0] - J1[1];
-                matrix(n+1, n+1) = - m * H2[0] + H2[1];
-                matrix(n+1, n+2) = - m * J2[0] + J2[1];
-                matrix(n+2, n  ) =   0.;
-            }
-            // In the outermost area there must only outgoing wave, so J = 0.
-            matrix(N-1, N-2) = 0.;
-            matrix(N-1, N-1) = 1.;
-            return matrix.determinant();
-        } else {
-            const std::size_t NN = N*N;
-            dcomplex *matrix = aligned_malloc<dcomplex>(NN),
-                     *evals = aligned_malloc<dcomplex>(N),
-                     *evecs = aligned_malloc<dcomplex>(NN);
-            aligned_unique_ptr<dcomplex[]> pmatrix(matrix), pevals(evals), pevecs(evecs);
-
-            std::fill_n(matrix, N*N, 0.);
-            // In the innermost layer the solution is only the J function
-            matrix[0] = 1.;
-            matrix[N] = 0.;
-            for (size_t i = 1, n = 1; i != rsize; ++i, n += 2) {
-                computeBessel(i, v, mode, J1, H1, J2, H2);
-                matrix[n   + N*(n-1)] =   H1[0];
-                matrix[n   + N*(n  )] =   J1[0];
-                matrix[n   + N*(n+1)] = - H2[0];
-                matrix[n   + N*(n+2)] = - J2[0];
-                matrix[n+1 + N*(n-1)] =   m * H1[0] - H1[1];
-                matrix[n+1 + N*(n  )] =   m * J1[0] - J1[1];
-                matrix[n+1 + N*(n+1)] = - m * H2[0] + H2[1];
-                matrix[n+1 + N*(n+2)] = - m * J2[0] + J2[1];
-            }
-            // In the outermost area there must only outgoing wave, so J = 0.
-            matrix[NN - 1] = 1.;
-            const std::size_t lwork = 2*N+1;
-            aligned_unique_ptr<dcomplex[]> work(aligned_malloc<dcomplex>(lwork));
-            aligned_unique_ptr<double[]> rwork(aligned_malloc<double>(2*N));
-            int info;
-            zgeev('N', 'V', int(N), matrix, int(N), evals, nullptr, 1, evecs, int(N), work.get(), int(lwork), rwork.get(), info);
-            if (info != 0) throw ComputationError(getId(), "Could not compute eigenvalues of radial continuity matrix");
-            // Find the eigenvalue with the smallest absolute value
-            double minabs = INFINITY;
-            size_t minidx;
-            dcomplex res = 1.;
-            for (int i = 0; i != N; ++i) {
-                res *= evals[i];
-                double abs = abs2(evals[i]);
-                if (abs < minabs) {
-                    minabs = abs;
-                    minidx = i;
-                }
-            }
-            dcomplex* evec = evecs + N * minidx;
-            for (size_t i = 0, n = 0; i < rsize; ++i, n += 2) {
-                 mode.rfields[i] = FieldR(evec[n+1], evec[n]);
-            }
-            dcomplex f = 1e6 * sqrt(1. / integrateBessel(mode)); // 1e6: V/µm -> V/m
-            for (size_t r = 0; r != rsize; ++r) mode.rfields[r] *= f;
-            return res;
-        }
-    } else if (determinant == DETERMINANT_INWARDS) {
-        MatrixR T = MatrixR::eye();
-        mode.rfields[rsize-1] = FieldR(0., 1.);
-        for (size_t i = rsize-1; i > 0; --i) {
-            computeBessel(i, v, mode, J1, H1, J2, H2);
-            MatrixR M1(  J1[0],           H1[0],
-                       m*J1[0] - J1[1], m*H1[0] - H1[1]);
-            MatrixR M2(  J2[0],           H2[0],
-                       m*J2[0] - J2[1], m*H2[0] - H2[1]);
-            T = M1.solve(M2) * T;
-            if (save) mode.rfields[i-1] = T * mode.rfields[rsize-1];
-        }
-        if (save) {
-            dcomplex f = 1e6 * sqrt(1. / integrateBessel(mode)); // 1e6: V/µm -> V/m
-            for (size_t r = 0; r != rsize; ++r) mode.rfields[r] *= f;
-        }
-        // In the innermost area there must not be any infinity, so H_0 = 0.
-        //    j = [ JJ JH ] 0
-        //    0 = [ HJ HH ] 1
-        return T.HH/T.JH * H1[0]/J1[0];
-    } else {
-        MatrixR T = MatrixR::eye();
-        mode.rfields[0] = FieldR(1., 0.);
-        for (size_t i = 1; i < rsize; ++i) {
-            computeBessel(i, v, mode, J1, H1, J2, H2);
-            MatrixR M1(  J1[0],           H1[0],
-                       m*J1[0] - J1[1], m*H1[0] - H1[1]);
-            MatrixR M2(  J2[0],           H2[0],
-                       m*J2[0] - J2[1], m*H2[0] - H2[1]);
-            T = M2.solve(M1) * T;
-            if (save) mode.rfields[i] = T * mode.rfields[0];
-        }
-        if (save) {
-            dcomplex f = 1e6 * sqrt(1. / integrateBessel(mode)); // 1e6: V/µm -> V/m
-            for (size_t r = 0; r != rsize; ++r) mode.rfields[r] *= f;
-        }
-        // In the outermost area there is only outgoing wave, so J_N = 0.
-        //    0 = [ JJ JH ] 1
-        //    h = [ HJ HH ] 0
-        return T.JJ/T.HJ * J2[0]/H2[0];
-    }
-}
-
-
 double EffectiveFreqCyl::getTotalAbsorption(Mode& mode)
 {
-    if (!mode.have_fields) {
-        size_t stripe = getMainStripe();
-        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields); // compute vertical part
-        detS(mode.lam, mode, true); // compute horizontal part
-        mode.have_fields = true;
-    }
-
     double result = 0.;
     dcomplex lam0 = 2e3*PI / k0;
 
@@ -787,19 +529,6 @@ double EffectiveFreqCyl::getTotalAbsorption(Mode& mode)
             dcomplex n = nrCache[ir][iz] + ngCache[ir][iz] * (1. - mode.lam/lam0);
             double absp = - 2. * real(n) * imag(n);
             result += absp * mode.rweights[ir] * zintegrals[iz]; // [dV] = µm³
-            // double err = 1e-6, erz = 1e-6;
-            // double rstart = mesh->axis[0][ir];
-            // double rend = (ir != rsize-1)? mesh->axis[0][ir+1] : 3.0 * mesh->axis[0][ir];
-            // result += absp * 2.*PI *
-            //     patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, rstart,  rend, err) *
-            //     patterson<double>([&](double z){
-            //         size_t stripe = getMainStripe();
-            //         dcomplex kz = k0 * sqrt(nrCache[stripe][iz]*nrCache[stripe][iz] - veffs[stripe] * nrCache[stripe][iz]*ngCache[stripe][iz]);
-            //         if (real(kz) < 0.) kz = -kz;
-            //         z -= mesh->axis[1][iz];
-            //         dcomplex phasz = exp(- I * kz * z);
-            //         return abs2(zfields[iz].F * phasz + zfields[iz].B / phasz);
-            //     }, mesh->axis[1][iz-1], mesh->axis[1][iz], erz);
         }
     }
     result *= 2e-9 * PI / real(mode.lam) * mode.power; // 1e-9: µm³ / nm -> m², 2: ½ is already hidden in mode.power
@@ -809,20 +538,12 @@ double EffectiveFreqCyl::getTotalAbsorption(Mode& mode)
 double EffectiveFreqCyl::getTotalAbsorption(size_t num)
 {
     if (modes.size() <= num || k0 != old_k0) throw NoValue("absorption");
-
     return getTotalAbsorption(modes[num]);
 }
 
 
 double EffectiveFreqCyl::getGainIntegral(Mode& mode)
 {
-    if (!mode.have_fields) {
-        size_t stripe = getMainStripe();
-        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields); // compute vertical part
-        detS(mode.lam, mode, true); // compute horizontal part
-        mode.have_fields = true;
-    }
-
     double result = 0.;
     dcomplex lam0 = 2e3*PI / k0;
 
@@ -844,8 +565,7 @@ double EffectiveFreqCyl::getGainIntegral(Mode& mode)
 
 double EffectiveFreqCyl::getGainIntegral(size_t num)
 {
-    if (modes.size() <= num || k0 != old_k0) throw NoValue("absorption");
-
+    if (modes.size() <= num || k0 != old_k0) throw NoValue("gain integral");
     return getGainIntegral(modes[num]);
 }
 
@@ -1016,21 +736,6 @@ const LazyData<double> EffectiveFreqCyl::getLightMagnitude(std::size_t num, cons
 
     size_t stripe = getMainStripe();
 
-    if (!modes[num].have_fields) {
-        // Compute vertical part
-        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields);
-        // Compute horizontal part
-        detS(modes[num].lam, modes[num], true);
-        #ifndef NDEBUG
-        {
-            std::stringstream nrs; for (size_t i = 0; i < rsize; ++i)
-                nrs << "), (" << str(modes[num].rfields[i].J) << ":" << str(modes[num].rfields[i].H);
-            writelog(LOG_DEBUG, "horizontal fields = [{0}) ]", nrs.str().substr(2));
-        }
-        #endif
-        modes[num].have_fields = true;
-    }
-
     if (auto rect_mesh = dynamic_pointer_cast<const RectangularMesh<2>>(dst_mesh))
         return LazyData<double>(new FieldDataEfficient<double>(this, num, rect_mesh, stripe));
     else
@@ -1044,21 +749,6 @@ const LazyData<Vec<3,dcomplex>> EffectiveFreqCyl::getElectricField(std::size_t n
     if (modes.size() <= num || k0 != old_k0) throw NoValue(LightMagnitude::NAME);
 
     size_t stripe = getMainStripe();
-
-    if (!modes[num].have_fields) {
-        // Compute vertical part
-        detS1(veffs[stripe], nrCache[stripe], ngCache[stripe], &zfields);
-        // Compute horizontal part
-        detS(modes[num].lam, modes[num], true);
-        #ifndef NDEBUG
-        {
-            std::stringstream nrs; for (size_t i = 0; i < rsize; ++i)
-                nrs << "), (" << str(modes[num].rfields[i].J) << ":" << str(modes[num].rfields[i].H);
-            writelog(LOG_DEBUG, "horizontal fields = [{0}) ]", nrs.str().substr(2));
-        }
-        #endif
-        modes[num].have_fields = true;
-    }
 
     if (auto rect_mesh = dynamic_pointer_cast<const RectangularMesh<2>>(dst_mesh))
         return LazyData<Vec<3,dcomplex>>(new FieldDataEfficient<Vec<3,dcomplex>>(this, num, rect_mesh, stripe));

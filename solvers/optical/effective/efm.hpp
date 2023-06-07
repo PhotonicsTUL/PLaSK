@@ -79,9 +79,8 @@ struct PLASK_SOLVER_API EffectiveFreqCyl: public SolverWithMesh<Geometry2DCylind
 
     /// Details of the computed mode
     struct Mode {
-        EffectiveFreqCyl* solver;      ///< Solver this mode belongs to
+        EffectiveFreqCyl* solver;           ///< Solver this mode belongs to
         int m;                              ///< Number of the LP_mn mode describing angular dependence
-        bool have_fields;                   ///< Did we compute fields for current state?
         std::vector<FieldR,aligned_allocator<FieldR>> rfields; ///< Computed horizontal fields
         std::vector<double,aligned_allocator<double>> rweights; /// Computed normalized lateral field integral for each stripe
         dcomplex lam;                       ///< Stored wavelength
@@ -96,27 +95,27 @@ struct PLASK_SOLVER_API EffectiveFreqCyl: public SolverWithMesh<Geometry2DCylind
 
         /// Compute horizontal part of the field
         dcomplex rField(double r) const {
-            double Jr, Ji, Hr, Hi;
-            long nz, ierr;
-            size_t ir = solver->mesh->axis[0]->findIndex(r); if (ir > 0) --ir; if (ir >= solver->veffs.size()) ir = solver->veffs.size()-1;
-            dcomplex x = r * solver->k0 * sqrt(solver->nng[ir] * (solver->veffs[ir] - solver->freqv(lam)));
-            if (real(x) < 0.) x = -x;
-            if (imag(x) > SMALL) x = -x;
-            if (ir == solver->rsize-1) {
-                Jr = Ji = 0.;
-            } else {
-                zbesj(x.real(), x.imag(), m, 1, 1, &Jr, &Ji, nz, ierr);
-                if (ierr != 0)
-                    throw ComputationError(solver->getId(), "Could not compute J({0}, {1}) @ r = {2}um", m, str(x), r);
-            }
-            if (ir == 0) {
-                Hr = Hi = 0.;
-            } else {
-                zbesh(x.real(), x.imag(), m, 1, MH, 1, &Hr, &Hi, nz, ierr);
-                if (ierr != 0)
-                    throw ComputationError(solver->getId(), "Could not compute H({0}, {1}) @ r = {2}um", m, str(x), r);
-            }
-            return rfields[ir].J * dcomplex(Jr, Ji) + rfields[ir].H * dcomplex(Hr, Hi);
+            // double Jr, Ji, Hr, Hi;
+            // long nz, ierr;
+            // size_t ir = solver->mesh->axis[0]->findIndex(r); if (ir > 0) --ir; if (ir >= solver->veffs.size()) ir = solver->veffs.size()-1;
+            // dcomplex x = r * solver->k0 * sqrt(solver->nng[ir] * (solver->veffs[ir] - solver->freqv(lam)));
+            // if (real(x) < 0.) x = -x;
+            // if (imag(x) > SMALL) x = -x;
+            // if (ir == solver->rsize-1) {
+            //     Jr = Ji = 0.;
+            // } else {
+            //     zbesj(x.real(), x.imag(), m, 1, 1, &Jr, &Ji, nz, ierr);
+            //     if (ierr != 0)
+            //         throw ComputationError(solver->getId(), "Could not compute J({0}, {1}) @ r = {2}um", m, str(x), r);
+            // }
+            // if (ir == 0) {
+            //     Hr = Hi = 0.;
+            // } else {
+            //     zbesh(x.real(), x.imag(), m, 1, MH, 1, &Hr, &Hi, nz, ierr);
+            //     if (ierr != 0)
+            //         throw ComputationError(solver->getId(), "Could not compute H({0}, {1}) @ r = {2}um", m, str(x), r);
+            // }
+            // return rfields[ir].J * dcomplex(Jr, Ji) + rfields[ir].H * dcomplex(Hr, Hi);
         }
 
         /// Return mode loss
@@ -246,7 +245,6 @@ struct PLASK_SOLVER_API EffectiveFreqCyl: public SolverWithMesh<Geometry2DCylind
     }
 
     // Parameters for rootdigger
-    RootDigger::Params root;        ///< Parameters for horizontal root digger
     RootDigger::Params stripe_root; ///< Parameters for vertical root diggers
 
     /// Allowed relative power integral precision
@@ -348,33 +346,7 @@ struct PLASK_SOLVER_API EffectiveFreqCyl: public SolverWithMesh<Geometry2DCylind
     }
 
     /**
-     * Find the mode around the specified effective wavelength.
-     *
-     * This method remembers the determined mode, for retrieval of the field profiles.
-     *
-     * \param lambda initial wavelength close to the solution
-     * \param m number of the LP_mn mode describing angular dependence
-     * \return index of the found mode
-     */
-    size_t findMode(dcomplex lambda, int m=0);
-
-    /**
-     * Find the modes within the specified range
-     *
-     * This method \b does \b not remember the determined modes!
-     *
-     * \param lambda1 one corner of the range to browse
-     * \param lambda2 another corner of the range to browse
-     * \param m number of the LP_mn mode describing angular dependence
-     * \param resteps minimum number of steps to check function value on real contour
-     * \param imsteps minimum number of steps to check function value on imaginary contour
-     * \param eps approximate error for integrals
-     * \return vector of indices of determined modes
-     */
-    std::vector<size_t> findModes(plask::dcomplex lambda1=0., plask::dcomplex lambda2=0., int m=0, size_t resteps=256, size_t imsteps=64, dcomplex eps=dcomplex(1e-6,1e-9));
-
-    /**
-     * Compute vectical modal determinant
+     * Compute vertical modal determinant
      * \param vlambda vertical plane-wave wavelength
      */
     dcomplex getVertDeterminant(dcomplex vlambda) {
@@ -386,38 +358,13 @@ struct PLASK_SOLVER_API EffectiveFreqCyl: public SolverWithMesh<Geometry2DCylind
     }
 
     /**
-     * Compute modal determinant for the whole matrix
-     * \param lambda wavelength
+     * Compute and store all radial modes
+     *
+     * This method \b does \b not remember the determined modes!
+     *
      * \param m number of the LP_mn mode describing angular dependence
      */
-    dcomplex getDeterminant(dcomplex lambda, int m=0) {
-    if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
-        stageOne();
-        Mode mode(this,m);
-        dcomplex det = detS(lambda, mode);
-        // log_value(v, det);
-        return det;
-    }
-
-    /**
-     * Set particular value of the effective wavelength, e.g. to one of the values returned by findModes.
-     * If it is not proper mode, exception is throw.
-     * \param clambda complex wavelength of the mode
-     * \return index of the set mode
-     */
-    size_t setMode(dcomplex clambda, int m=0);
-
-    /**
-     * Set particular value of the effective wavelength, e.g. to one of the values returned by findModes.
-     * If it is not proper mode, exception is throw.
-     * \param lambda wavelength of the mode
-     * \param loss modal loss (as returned by outLoss)
-     * \param m number of the LP_mn mode describing angular dependence
-     * \return index of the set mode
-     */
-    inline size_t setMode(double lambda, double loss, int m=0) {
-        return setMode(dcomplex(lambda, -lambda*lambda / (4e7*PI) * loss), m);
-    }
+    void computeModes(int m=0);
 
     /// Clear computed modes
     void clearModes() {
@@ -486,16 +433,10 @@ struct PLASK_SOLVER_API EffectiveFreqCyl: public SolverWithMesh<Geometry2DCylind
     /// Compute stripe averaged n ng
     void computeStripeNNg(size_t stripe, bool save_integrals=false);
 
-    /** Integrate horizontal field
+    /** Integrate radial field
      * \param mode mode to integrate
      */
-    double integrateBessel(Mode& mode);
-
-    /// Compute Bessel functions
-    void computeBessel(size_t i, dcomplex v, const Mode& mode, dcomplex* J1, dcomplex* H1, dcomplex* J2, dcomplex* H2);
-
-    /// Return S matrix determinant for the whole structure
-    dcomplex detS(const plask::dcomplex& lam, Mode& mode, bool save=false);
+    double integrateRadial(Mode& mode);
 
     /// Obtain main stripe
     size_t getMainStripe() {
