@@ -220,7 +220,7 @@ class GridsController(Controller):
             self._current_controller.on_edit_enter()
             self.update_geometries()
             if plask is not None:
-                if self.plot_auto_refresh or hasattr(self._current_controller.model, 'geometry_name'):
+                if self.plot_auto_refresh:
                     self.plot_mesh(self._current_controller.model, set_limits=True, ignore_no_geometry=True)
                 else:
                     self.mesh_preview.clear()
@@ -242,18 +242,21 @@ class GridsController(Controller):
     def on_model_change(self, *args, **kwargs):
         self.save_data_in_model()
         if plask is not None:
-            if self.plot_auto_refresh:
-                if self._current_controller is not None:
+            if self._current_controller is not None:
+                if self.plot_auto_refresh:
                     self.plot_mesh(self._current_controller.model, set_limits=False, ignore_no_geometry=True)
-            else:
-                self.show_update_required()
+                else:
+                    self.show_update_required()
 
     def plot_mesh(self, model, set_limits, ignore_no_geometry=False):
         self.model.clear_info_messages()
         self.mesh_preview.clear()
         if plask is None: return
         if model is not None:
-            model.geometry_name = self.mesh_preview.toolbar.widgets['select_geometry'].currentText()
+            if hasattr(model, 'geometry_name') and model.geometry_name and model.geometry_name in self.geometry_axes_names.keys():
+                self.mesh_preview.toolbar.widgets['select_geometry'].setCurrentText(model.geometry_name)
+            else:
+                model.geometry_name = self.mesh_preview.toolbar.widgets['select_geometry'].currentText()
         try:
             if self.manager is None:
                 manager = get_manager()
@@ -308,7 +311,6 @@ class GridsController(Controller):
             #     self.preview.toolbar.enable_planes(tree_element.get_axes_conf())
             # else:
             #     self.preview.toolbar.disable_planes(tree_element.get_axes_conf())
-            self.model.info_message()
             res = True
         for err in manager.errors:
             self.model.add_info_message(err, Info.WARNING)

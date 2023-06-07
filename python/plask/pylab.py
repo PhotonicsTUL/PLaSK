@@ -291,13 +291,8 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
             axes = figure.add_subplot(111)
 
     if isinstance(field.mesh, plask.mesh.Rectangular2D):
-        if fill and levels is None:
-            xaxis = plask.mesh.Regular(field.mesh.axis0[0], field.mesh.axis0[-1], len(field.mesh.axis0))
-            yaxis = plask.mesh.Regular(field.mesh.axis1[0], field.mesh.axis1[-1], len(field.mesh.axis1))
-            field = field.interpolate(plask.mesh.Rectangular2D(xaxis, yaxis), 'linear')
-        else:
-            xaxis = field.mesh.axis0
-            yaxis = field.mesh.axis1
+        xaxis = field.mesh.axis0
+        yaxis = field.mesh.axis1
         data = field.array.real
         ax = 0, 1
         if len(data.shape) == 3:
@@ -310,11 +305,6 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
                 data = data[:,:,comp]
         data = data.transpose()
     elif isinstance(field.mesh, plask.mesh.Rectangular3D):
-        if fill and levels is None:
-            axis0 = plask.mesh.Regular(field.mesh.axis0[0], field.mesh.axis0[-1], len(field.mesh.axis0))
-            axis1 = plask.mesh.Regular(field.mesh.axis1[0], field.mesh.axis1[-1], len(field.mesh.axis1))
-            axis2 = plask.mesh.Regular(field.mesh.axis2[0], field.mesh.axis2[-1], len(field.mesh.axis2))
-            field = field.interpolate(plask.mesh.Rectangular3D(axis0, axis1, axis2), 'linear')
         data = field.array.real
         if plane is None:
             if data.shape[2] == 1: ax = 1, 0
@@ -357,7 +347,10 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
         if levels is not None:
             result = axes.contourf(xaxis, yaxis, data, levels, antialiased=antialiased, **kwargs)
         else:
-            result = axes.pcolormesh(xaxis, yaxis, data, antialiased=antialiased, **kwargs)
+            try:
+                result = axes.pcolormesh(xaxis, yaxis, data, antialiased=antialiased, shading='gouraud', **kwargs)
+            except (TypeError, ValueError):
+                result = axes.pcolormesh(xaxis, yaxis, data, antialiased=antialiased, **kwargs)
     else:
         if 'colors' not in kwargs and 'cmap' not in kwargs:
             result = axes.contour(xaxis, yaxis, data, levels, colors='k', antialiased=antialiased, **kwargs)

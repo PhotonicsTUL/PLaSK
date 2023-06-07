@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -27,7 +27,7 @@ class PlotWidget(PlotWidgetBase):
             ('Geometry:', 'Select geometry for mesh preview', None, 'select_geometry', ((), 0), 'plot_geometry'),
             (None, None, None, None, None, None),
             ('Plot', 'Plot mesh preview', 'draw-brush', 'plot', None, 'plot_plot'),
-            ('Refresh', 'Refresh plot after each change of geometry', 'view-refresh', 'auto_refresh', True, 'plot_refresh'),
+            ('Refresh', 'Refresh plot after each change of geometry', 'view-refresh', 'auto_refresh', False, 'plot_refresh'),
             (None, None, None, None, None, None),
             ('Home', 'Zoom to whole geometry', 'go-home', 'home', None, 'plot_home'),
             ('Back', 'Back to previous view', 'go-previous', 'back', None, 'plot_back'),
@@ -81,6 +81,7 @@ class PlotWidget(PlotWidgetBase):
         colors = CONFIG['geometry/material_colors'].copy()
         self.get_color = BwColor(colors, self.axes)
         # self.layout().setContentsMargins(0, 9, 6, 2)
+        self.clear()
 
     def update_plot(self, mesh, geometry, set_limits, plane='12'):
         updater = self.plot_updater(set_limits, plane)
