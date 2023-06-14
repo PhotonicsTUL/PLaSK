@@ -219,14 +219,6 @@ Possible <generator> contents for different types and methods
 
                Exactly one of ``at``, ``by``, or ``every`` attribute must be present.
 
-      .. xml:tag:: <warnings/>
-
-         Control printing of the warnings.
-
-         :attr missing: Warn if any refinement references to non-existing object. Defaults to ‘yes’. (bool)
-         :attr multiple: Warn if any refinement references to multiple objects. Defaults to ‘yes’. (bool)
-         :attr outside: Warn if refining line lies outside of the specified object. Defaults to ‘yes’. (bool)
-
 
 .. xml:tag:: <generator type="ordered" method="regular"> [ordered, regular]
 
@@ -282,14 +274,6 @@ Possible <generator> contents for different types and methods
 
                Exactly one of ``at``, ``by``, or ``every`` attribute must be present.
 
-      .. xml:tag:: <warnings/>
-
-         Control printing of the warnings.
-
-         :attr missing: Warn if any refinement references to non-existing object. Defaults to ‘yes’. (bool)
-         :attr multiple: Warn if any refinement references to multiple objects. Defaults to ‘yes’. (bool)
-         :attr outside: Warn if refining line lies outside of the specified object. Defaults to ‘yes’. (bool)
-
 
 .. xml:tag:: <generator type="rectangular2d" method="divide"> [rectangular2d, divide]
 
@@ -342,14 +326,6 @@ Possible <generator> contents for different types and methods
                Add refinement to the vertical axis.
 
                It has same attributes as :xml:tag:`<axis0/> [in rectangular2d, divide generator]`.
-
-      .. xml:tag:: <warnings/>
-
-         Control printing of the warnings.
-
-         :attr missing: Warn if any refinement references to non-existing object. Defaults to ‘yes’. (bool)
-         :attr multiple: Warn if any refinement references to multiple objects. Defaults to ‘yes’. (bool)
-         :attr outside: Warn if refining line lies outside of the specified object. Defaults to ‘yes’. (bool)
 
 
 .. xml:tag:: <generator type="rectangular2d" method="regular"> [rectangular2d, regular]
@@ -411,14 +387,6 @@ Possible <generator> contents for different types and methods
                :attr every: If this attribute is present, multiple refinement lines are places at distance from each other specified in the attribute value.
 
                Exactly one of ``at``, ``by``, or ``every`` attribute must be present.
-
-      .. xml:tag:: <warnings/>
-
-         Control printing of the warnings.
-
-         :attr missing: Warn if any refinement references to non-existing object. Defaults to ‘yes’. (bool)
-         :attr multiple: Warn if any refinement references to multiple objects. Defaults to ‘yes’. (bool)
-         :attr outside: Warn if refining line lies outside of the specified object. Defaults to ‘yes’. (bool)
 
 .. xml:tag:: <generator type="triangular2d" method="triangle"> [triangular2d, triangle]
 
@@ -504,14 +472,6 @@ Possible <generator> contents for different types and methods
 
                It has same attributes as :xml:tag:`<axis0/> [in rectangular3d, divide generator]`.
 
-      .. xml:tag:: <warnings/>
-
-         Control printing of the warnings.
-
-         :attr missing: Warn if any refinement references to non-existing object. Defaults to ‘yes’. (bool)
-         :attr multiple: Warn if any refinement references to multiple objects. Defaults to ‘yes’. (bool)
-         :attr outside: Warn if refining line lies outside of the specified object. Defaults to ‘yes’. (bool)
-
 
 .. xml:tag:: <generator type="rectangular3d" method="regular"> [rectangular3d, regular]
 
@@ -585,11 +545,3 @@ Possible <generator> contents for different types and methods
                Add refinement to the vertical axis.
 
                It has same attributes as :xml:tag:`<axis0/> [in rectangular3d, divide generator]`.
-
-      .. xml:tag:: <warnings/>
-
-         Control printing of the warnings.
-
-         :attr missing: Warn if any refinement references to non-existing object. Defaults to ‘yes’. (bool)
-         :attr multiple: Warn if any refinement references to multiple objects. Defaults to ‘yes’. (bool)
-         :attr outside: Warn if refining line lies outside of the specified object. Defaults to ‘yes’. (bool)

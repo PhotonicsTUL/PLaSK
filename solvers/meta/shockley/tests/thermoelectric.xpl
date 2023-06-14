@@ -70,7 +70,6 @@
 <grids>
   <generator method="divide" name="default" type="rectangular2d">
     <postdiv by0="2"/>
-    <warnings outside="no"/>
   </generator>
 </grids>
 

@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -279,20 +279,13 @@ class RectangularRegularGenerator(RectangularSimpleGenerator):
 
 class RectangularRefinedGenerator(Grid):
 
-    warnings = ('missing', 'multiple', 'outside')
-
-    def __init__(self, grids_model, name, type, method, aspect=None, refinements=None,
-                 warn_missing=None, warn_multiple=None, warn_outside=None):
+    def __init__(self, grids_model, name, type, method, aspect=None, refinements=None):
         super().__init__(grids_model, name, type, method)
         self.aspect = aspect
         self.refinements = Refinements(self, refinements)
-        self.warn_missing = warn_missing
-        self.warn_multiple = warn_multiple
-        self.warn_outside = warn_outside
         self.options_comments = []
         self.refinements_comments = []
         self.refinements_endcomments = []
-        self.warnings_comments = []
 
     @property
     def dim(self):
@@ -317,16 +310,9 @@ class RectangularRefinedGenerator(Grid):
                 refinements_element.append(r.make_xml_element())
             for c in self.refinements_endcomments:
                 refinements_element.append(etree.Comment(c))
-        warnings_el = etree.Element('warnings')
-        for w in RectangularDivideGenerator.warnings:
-            v = getattr(self, 'warn_' + w, None)
-            if v is not None and v != '': warnings_el.attrib[w] = v
-        for c in self.warnings_comments:
-            res.append(etree.Comment(c))
-        if warnings_el.attrib:
-            res.append(warnings_el)
 
     def load_xml_common(self, reader: UnorderedTagReader, *opts):
+        reader.mark_read('warnings')
         options_element = reader.find('options')
         if options_element is not None:
             with AttributeReader(options_element) as a:
@@ -359,25 +345,11 @@ class RectangularRefinedGenerator(Grid):
             self.refinements_comments = refinements_element.comments
         else:
             self.refinements_comments = []
-        warnings_element = reader.find('warnings')
-        if warnings_element is not None:
-            with AttributeReader(warnings_element) as a:
-                for w in RectangularDivideGenerator.warnings:
-                    setattr(self, 'warn_' + w, a.get(w, None))
-            self.warnings_comments = warnings_element.comments
-        else:
-            for w in RectangularDivideGenerator.warnings:
-                setattr(self, 'warn_' + w, None)
-            self.warnings_comments = []
 
     def create_info(self, res, rows):
         super().create_info(res, rows)
         self.refinements.create_info(res, rows, 'refinements')
         if not can_be_float(self.aspect): self._required(res, rows, 'aspect', type='float')
-        for w in RectangularDivideGenerator.warnings:
-            a = 'warn_' + w
-            if not can_be_bool(getattr(self, a, None)):
-                self._required(res, rows, a, display_name='{} warning'.format(w), type='boolean')
 
 
 class RectangularDivideGenerator(RectangularRefinedGenerator):
@@ -389,11 +361,9 @@ class RectangularDivideGenerator(RectangularRefinedGenerator):
         e.load_xml_element(element)
         return e
 
-    def __init__(self, grids_model, name, type, gradual=None, aspect=None, prediv=None, postdiv=None, refinements=None,
-                 warn_missing=None, warn_multiple=None, warn_outside=None):
+    def __init__(self, grids_model, name, type, gradual=None, aspect=None, prediv=None, postdiv=None, refinements=None):
 
-        super().__init__(grids_model, name, type, 'divide', aspect,
-                                                         refinements, warn_missing, warn_multiple, warn_outside)
+        super().__init__(grids_model, name, type, 'divide', aspect, refinements)
         self.gradual = [None for _ in range(0, self.dim)] if gradual is None else gradual
         self.prediv = [None for _ in range(0, self.dim)] if prediv is None else prediv
         self.postdiv = [None for _ in range(0, self.dim)] if postdiv is None else postdiv
@@ -477,11 +447,9 @@ class RectangularSmoothGenerator(RectangularRefinedGenerator):
         e.load_xml_element(element)
         return e
 
-    def __init__(self, grids_model, name, type, aspect=None, small=None, large=None, factor=None, refinements=None,
-                 warn_missing=None, warn_multiple=None, warn_outside=None):
+    def __init__(self, grids_model, name, type, aspect=None, small=None, large=None, factor=None, refinements=None):
 
-        super().__init__(grids_model, name, type, 'smooth', aspect,
-                                                         refinements, warn_missing, warn_multiple, warn_outside)
+        super().__init__(grids_model, name, type, 'smooth', aspect, refinements)
         self.small = [None for _ in range(0, self.dim)] if small is None else small
         self.large = [None for _ in range(0, self.dim)] if large is None else large
         self.factor = [None for _ in range(0, self.dim)] if factor is None else factor

@@ -69,7 +69,7 @@ class PlotWidget(PlotWidgetBase):
         def home(self):
             if self.controller.plotted_geometry is not None:
                 box = self.controller.plotted_geometry.bbox
-                self.parent.zoom_bbox(box)
+                self.parent().zoom_bbox(box)
 
         def select_plane(self, index):
             super().select_plane(index)

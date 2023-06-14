@@ -43,11 +43,9 @@ class ManagerTest(unittest.TestCase):
             <generator type="rectangular2d" method="divide" name="test">
               <prediv by="4"/>
               <postdiv by0="2" by1="3"/>
-              <warnings missing="false"/>
             </generator>
             <generator type="rectangular2d" method="divide" name="refined">
               <postdiv by0="2"/>
-              <warnings multiple="no"/>
               <refinements>
                 <axis0 object="Block-3" at="1.0"/>
                 <axis1 object="Block-3" path="Path-4" at="1.0"/>
@@ -89,7 +87,6 @@ class ManagerTest(unittest.TestCase):
     def testGenerators(self):
         self.assertEqual(tuple(self.manager.msh.test.prediv), (4,4))
         self.assertEqual(tuple(self.manager.msh.test.postdiv), (2,3))
-        self.assertEqual(self.manager.msh.test.warn_missing, False)
 
         mesh = self.manager.msh.refined.generate(self.manager.geo.Stack_2)
         self.assertEqual(mesh.axis1, [0., 2., 3., 4.])

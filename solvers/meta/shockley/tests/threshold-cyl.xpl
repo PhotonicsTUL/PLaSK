@@ -75,7 +75,6 @@
       <axis0 object="oxide" at="-0.05"/>
       <axis0 object="aperture" at="0.1"/>
     </refinements>
-    <warnings outside="no"/>
   </generator>
   <mesh name="diffusion" type="regular">
     <axis start="0" stop="{mesa}" num="2000"></axis>

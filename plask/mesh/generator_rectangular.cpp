@@ -31,9 +31,10 @@ inline static void addPoints(shared_ptr<OrderedAxis> mesh,
     } else {
         std::vector<double> ptsv;
         ptsv.reserve(2 * pts.size());
-        for(double p: pts) {
+        for (double p : pts) {
             std::vector<double>::reverse_iterator it;
-            for (it = ptsv.rbegin(); it != ptsv.rend() && *it > p - split; ++it);
+            for (it = ptsv.rbegin(); it != ptsv.rend() && *it > p - split; ++it)
+                ;
             ptsv.insert(it.base(), p - split);
             ptsv.push_back(p + split);
         }
@@ -122,8 +123,7 @@ shared_ptr<MeshD<1>> OrderedMesh1DRegularGenerator::generate(const shared_ptr<Ge
 
 shared_ptr<MeshD<2>> RectangularMesh2DRegularGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry) {
     auto mesh1 = makeGeometryGrid(geometry, split ? OrderedAxis::MIN_DISTANCE : 0.);
-    auto mesh =
-        make_shared<RectangularMesh<2>>(refineAxis(mesh1->axis[0], spacing0), refineAxis(mesh1->axis[1], spacing1));
+    auto mesh = make_shared<RectangularMesh<2>>(refineAxis(mesh1->axis[0], spacing0), refineAxis(mesh1->axis[1], spacing1));
     writelog(LOG_DETAIL, "mesh.Rectangular2D.RegularGenerator: Generating new mesh ({0}x{1})", mesh->axis[0]->size(),
              mesh->axis[1]->size());
     return mesh;
@@ -131,16 +131,14 @@ shared_ptr<MeshD<2>> RectangularMesh2DRegularGenerator::generate(const shared_pt
 
 shared_ptr<MeshD<3>> RectangularMesh3DRegularGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry) {
     auto mesh1 = makeGeometryGrid(geometry, split ? OrderedAxis::MIN_DISTANCE : 0.);
-    auto mesh =
-        make_shared<RectangularMesh<3>>(refineAxis(mesh1->axis[0], spacing0), refineAxis(mesh1->axis[1], spacing1),
-                                        refineAxis(mesh1->axis[2], spacing2));
-    writelog(LOG_DETAIL, "mesh.Rectangular3D.RegularGenerator: Generating new mesh ({0}x{1}x{2})",
-             mesh->axis[0]->size(), mesh->axis[1]->size(), mesh->axis[2]->size());
+    auto mesh = make_shared<RectangularMesh<3>>(refineAxis(mesh1->axis[0], spacing0), refineAxis(mesh1->axis[1], spacing1),
+                                                refineAxis(mesh1->axis[2], spacing2));
+    writelog(LOG_DETAIL, "mesh.Rectangular3D.RegularGenerator: Generating new mesh ({0}x{1}x{2})", mesh->axis[0]->size(),
+             mesh->axis[1]->size(), mesh->axis[2]->size());
     return mesh;
 }
 
-template <int dim>
-std::pair<double, double> RectangularMeshRefinedGenerator<dim>::getMinMax(const shared_ptr<OrderedAxis>& axis) {
+template <int dim> std::pair<double, double> RectangularMeshRefinedGenerator<dim>::getMinMax(const shared_ptr<OrderedAxis>& axis) {
     double min = INFINITY, max = 0;
     for (size_t i = 1; i != axis->size(); ++i) {
         double L = axis->at(i) - axis->at(i - 1);
@@ -171,20 +169,19 @@ shared_ptr<OrderedAxis> RectangularMeshRefinedGenerator<dim>::getAxis(shared_ptr
     assert(bool(axis));
     OrderedAxis::WarningOff warning_off(axis);
 
+    double geometry_lower = geometry->getBoundingBox().lower[dir], geometry_upper = geometry->getBoundingBox().upper[dir];
+
     // Add refinement points
     for (auto ref : this->refinements[dir]) {
         auto object = ref.first.first.lock();
         if (!object) {
-            if (this->warn_missing)
-                writelog(LOG_WARNING, "{}: Refinement defined for object not existing any more", name());
+            writelog(LOG_WARNING, "{}: Refinement defined for object not existing any more", name());
         } else {
             auto path = ref.first.second;
             auto boxes = geometry->getObjectBoundingBoxes(*object, path);
             auto origins = geometry->getObjectPositions(*object, path);
-            if (this->warn_missing && boxes.size() == 0)
+            if (boxes.size() == 0)
                 writelog(LOG_WARNING, "DivideGenerator: Refinement defined for object absent from the geometry");
-            else if (this->warn_multiple && boxes.size() > 1)
-                writelog(LOG_WARNING, "DivideGenerator: Single refinement defined for more than one object");
             auto box = boxes.begin();
             auto origin = origins.begin();
             for (; box != boxes.end(); ++box, ++origin) {
@@ -192,12 +189,9 @@ shared_ptr<OrderedAxis> RectangularMeshRefinedGenerator<dim>::getAxis(shared_ptr
                     double zero = (*origin)[dir];
                     double lower = box->lower[dir] - zero;
                     double upper = box->upper[dir] - zero;
-                    if (this->warn_outside && (x < lower || x > upper))
-                        writelog(LOG_WARNING,
-                                 "{4}: Refinement at specified at {0} lying at {1} in global coords. is outside of the "
-                                 "object ({2} to {3})",
-                                 x, x + zero, lower + zero, upper + zero, name());
-                    axis->addPoint(zero + x);
+                    double x0 = x + zero;
+                    if (geometry_lower <= x0 && x0 <= geometry_upper)
+                        axis->addPoint(x0);
                 }
             }
         }
@@ -208,8 +202,7 @@ shared_ptr<OrderedAxis> RectangularMeshRefinedGenerator<dim>::getAxis(shared_ptr
 }
 
 template <>
-shared_ptr<MeshD<1>> RectangularMeshRefinedGenerator<1>::generate(
-    const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry) {
+shared_ptr<MeshD<1>> RectangularMeshRefinedGenerator<1>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry) {
     shared_ptr<OrderedAxis> mesh = makeGeometryGrid1D(geometry);
     getAxis(mesh, geometry, 0);
     writelog(LOG_DETAIL, "mesh.Rectilinear1D::{}: Generating new mesh ({:d})", name(), mesh->size());
@@ -217,11 +210,9 @@ shared_ptr<MeshD<1>> RectangularMeshRefinedGenerator<1>::generate(
 }
 
 template <>
-shared_ptr<MeshD<2>> RectangularMeshRefinedGenerator<2>::generate(
-    const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry) {
+shared_ptr<MeshD<2>> RectangularMeshRefinedGenerator<2>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry) {
     auto mesh = makeGeometryGrid(geometry);
-    auto axis0 = dynamic_pointer_cast<OrderedAxis>(mesh->axis[0]),
-         axis1 = dynamic_pointer_cast<OrderedAxis>(mesh->axis[1]);
+    auto axis0 = dynamic_pointer_cast<OrderedAxis>(mesh->axis[0]), axis1 = dynamic_pointer_cast<OrderedAxis>(mesh->axis[1]);
     getAxis(axis0, geometry, 0);
     getAxis(axis1, geometry, 1);
 
@@ -244,19 +235,16 @@ shared_ptr<MeshD<2>> RectangularMeshRefinedGenerator<2>::generate(
 }
 
 template <>
-shared_ptr<MeshD<3>> RectangularMeshRefinedGenerator<3>::generate(
-    const boost::shared_ptr<plask::GeometryObjectD<3>>& geometry) {
+shared_ptr<MeshD<3>> RectangularMeshRefinedGenerator<3>::generate(const boost::shared_ptr<plask::GeometryObjectD<3>>& geometry) {
     auto mesh = makeGeometryGrid(geometry);
-    auto axis0 = dynamic_pointer_cast<OrderedAxis>(mesh->axis[0]),
-         axis1 = dynamic_pointer_cast<OrderedAxis>(mesh->axis[1]),
+    auto axis0 = dynamic_pointer_cast<OrderedAxis>(mesh->axis[0]), axis1 = dynamic_pointer_cast<OrderedAxis>(mesh->axis[1]),
          axis2 = dynamic_pointer_cast<OrderedAxis>(mesh->axis[2]);
     getAxis(axis0, geometry, 0);
     getAxis(axis1, geometry, 1);
     getAxis(axis2, geometry, 2);
 
     auto minmax0 = getMinMax(axis0), minmax1 = getMinMax(axis1), minmax2 = getMinMax(axis2);
-    double asp0 = minmax0.second / min(minmax1.first, minmax2.first),
-           asp1 = minmax1.second / min(minmax0.first, minmax2.first),
+    double asp0 = minmax0.second / min(minmax1.first, minmax2.first), asp1 = minmax1.second / min(minmax0.first, minmax2.first),
            asp2 = minmax2.second / min(minmax0.first, minmax1.first);
     double limit = (1 + SMALL) * aspect;
     while (aspect != 0. && (asp0 > limit || asp1 > limit || asp2 > limit)) {
@@ -278,10 +266,9 @@ shared_ptr<MeshD<3>> RectangularMeshRefinedGenerator<3>::generate(
 }
 
 template <int dim>
-shared_ptr<OrderedAxis> RectangularMeshDivideGenerator<dim>::processAxis(
-    shared_ptr<OrderedAxis> axis,
-    const shared_ptr<GeometryObjectD<DIM>>& /*geometry*/,
-    size_t dir) {
+shared_ptr<OrderedAxis> RectangularMeshDivideGenerator<dim>::processAxis(shared_ptr<OrderedAxis> axis,
+                                                                         const shared_ptr<GeometryObjectD<DIM>>& /*geometry*/,
+                                                                         size_t dir) {
     assert(bool(axis));
     OrderedAxis::WarningOff warning_off(axis);
     (void)warning_off;  // don't warn about unused variable warning_off
@@ -297,8 +284,7 @@ shared_ptr<OrderedAxis> RectangularMeshDivideGenerator<dim>::processAxis(
     points.reserve((pre_divisions[dir] - 1) * (result.size() - 1));
     for (auto i = result.begin() + 1; i != result.end(); ++i) {
         double w = *i - x;
-        for (size_t j = 1; j != pre_divisions[dir]; ++j)
-            points.push_back(x + w * double(j) / double(pre_divisions[dir]));
+        for (size_t j = 1; j != pre_divisions[dir]; ++j) points.push_back(x + w * double(j) / double(pre_divisions[dir]));
         x = *i;
     }
     result.addOrderedPoints(points.begin(), points.end());
@@ -344,8 +330,7 @@ shared_ptr<OrderedAxis> RectangularMeshDivideGenerator<dim>::processAxis(
     points.reserve((post_divisions[dir] - 1) * (result.size() - 1));
     for (auto i = result.begin() + 1; i != result.end(); ++i) {
         double w = *i - x;
-        for (size_t j = 1; j != post_divisions[dir]; ++j)
-            points.push_back(x + w * double(j) / double(post_divisions[dir]));
+        for (size_t j = 1; j != post_divisions[dir]; ++j) points.push_back(x + w * double(j) / double(post_divisions[dir]));
         x = *i;
     }
 
@@ -354,8 +339,7 @@ shared_ptr<OrderedAxis> RectangularMeshDivideGenerator<dim>::processAxis(
     return axis;
 }
 
-template <>
-RectangularMeshSmoothGenerator<1>::RectangularMeshSmoothGenerator() : finestep{0.005}, maxstep{INFINITY}, factor{1.2} {}
+template <> RectangularMeshSmoothGenerator<1>::RectangularMeshSmoothGenerator() : finestep{0.005}, maxstep{INFINITY}, factor{1.2} {}
 
 template <>
 RectangularMeshSmoothGenerator<2>::RectangularMeshSmoothGenerator()
@@ -366,10 +350,9 @@ RectangularMeshSmoothGenerator<3>::RectangularMeshSmoothGenerator()
     : finestep{0.005, 0.005, 0.005}, maxstep{INFINITY, INFINITY, INFINITY}, factor{1.2, 1.2, 1.2} {}
 
 template <int dim>
-shared_ptr<OrderedAxis> RectangularMeshSmoothGenerator<dim>::processAxis(
-    shared_ptr<OrderedAxis> axis,
-    const shared_ptr<GeometryObjectD<DIM>>& /*geometry*/,
-    size_t dir) {
+shared_ptr<OrderedAxis> RectangularMeshSmoothGenerator<dim>::processAxis(shared_ptr<OrderedAxis> axis,
+                                                                         const shared_ptr<GeometryObjectD<DIM>>& /*geometry*/,
+                                                                         size_t dir) {
     OrderedAxis::WarningOff warning_off(axis);
 
     // Next divide each object
@@ -386,9 +369,8 @@ shared_ptr<OrderedAxis> RectangularMeshSmoothGenerator<dim>::processAxis(
         }
         double logf = log(factor[dir]);
         double maxm = floor(log(maxstep[dir] / finestep[dir]) / logf + OrderedAxis::MIN_DISTANCE);
-        double m =
-            ceil(log(0.5 * (width - OrderedAxis::MIN_DISTANCE) / finestep[dir] * (factor[dir] - 1.) + 1.) / logf) -
-            1.;  // number of points in one half
+        double m = ceil(log(0.5 * (width - OrderedAxis::MIN_DISTANCE) / finestep[dir] * (factor[dir] - 1.) + 1.) / logf) -
+                   1.;  // number of points in one half
         size_t lin = 0;
         if (m > maxm) {
             m = maxm;
@@ -428,12 +410,7 @@ shared_ptr<OrderedAxis> RectangularMeshSmoothGenerator<dim>::processAxis(
 }
 
 template <int dim> void RectangularMeshRefinedGenerator<dim>::fromXML(XMLReader& reader, Manager& manager) {
-    if (reader.getNodeName() == "warnings") {
-        warn_missing = reader.getAttribute<bool>("missing", true);
-        warn_multiple = reader.getAttribute<bool>("multiple", true);
-        warn_outside = reader.getAttribute<bool>("outside", true);
-        reader.requireTagEnd();
-    } else if (reader.getNodeName() == "refinements") {
+    if (reader.getNodeName() == "refinements") {
         while (reader.requireTagOrEnd()) {
             if (reader.getNodeName() != "axis0" &&
                 (dim == 1 || (reader.getNodeName() != "axis1" && (dim == 2 || reader.getNodeName() != "axis2")))) {
@@ -442,11 +419,10 @@ template <int dim> void RectangularMeshRefinedGenerator<dim>::fromXML(XMLReader&
                 if (dim == 3) throw XMLUnexpectedElementException(reader, "<axis0>, <axis1>, or <axis2>");
             }
             PLASK_NO_CONVERSION_WARNING_BEGIN
-            auto direction = (reader.getNodeName() == "axis0")
-                                 ? typename Primitive<RectangularMeshRefinedGenerator<dim>::DIM>::Direction(0)
-                                 : (reader.getNodeName() == "axis1")
-                                       ? typename Primitive<RectangularMeshRefinedGenerator<dim>::DIM>::Direction(1)
-                                       : typename Primitive<RectangularMeshRefinedGenerator<dim>::DIM>::Direction(2);
+            auto direction =
+                (reader.getNodeName() == "axis0")   ? typename Primitive<RectangularMeshRefinedGenerator<dim>::DIM>::Direction(0)
+                : (reader.getNodeName() == "axis1") ? typename Primitive<RectangularMeshRefinedGenerator<dim>::DIM>::Direction(1)
+                                                    : typename Primitive<RectangularMeshRefinedGenerator<dim>::DIM>::Direction(2);
             PLASK_NO_WARNING_END
             weak_ptr<GeometryObjectD<RectangularMeshRefinedGenerator<dim>::DIM>> object =
                 manager.requireGeometryObject<GeometryObjectD<RectangularMeshRefinedGenerator<dim>::DIM>>(
@@ -463,7 +439,12 @@ template <int dim> void RectangularMeshRefinedGenerator<dim>::fromXML(XMLReader&
                 double objsize = object.lock()->getBoundingBox().size()[unsigned(direction)];
                 size_t n = int(max(round(objsize / *every), 1.));
                 double step = objsize / n;
-                for (struct {size_t i; double pos;} loop = {1, step}; loop.i < n; ++loop.i, loop.pos += step)
+                for (
+                    struct {
+                        size_t i;
+                        double pos;
+                    } loop = {1, step};
+                    loop.i < n; ++loop.i, loop.pos += step)
                     addRefinement(direction, object, path, loop.pos);
             } else if (auto pos = reader.getAttribute<double>("at")) {
                 addRefinement(direction, object, path, *pos);
@@ -471,6 +452,10 @@ template <int dim> void RectangularMeshRefinedGenerator<dim>::fromXML(XMLReader&
                 throw XMLNoAttrException(reader, "at', 'every', or 'by");
             reader.requireTagEnd();
         }
+    } else if (reader.getNodeName() == "warnings") {
+        writelog(LOG_WARNING, "XML {:d}: <warnings> tag is deprecated", reader.getLineNr());
+        reader.ignoreAllAttributes();
+        reader.requireTagEnd();
     } else
         throw XMLUnexpectedElementException(reader, "proper generator configuration tag");
 }
@@ -479,8 +464,7 @@ template struct PLASK_API RectangularMeshRefinedGenerator<1>;
 template struct PLASK_API RectangularMeshRefinedGenerator<2>;
 template struct PLASK_API RectangularMeshRefinedGenerator<3>;
 
-template <typename GeneratorT>
-static shared_ptr<MeshGenerator> readTrivialGenerator(XMLReader& reader, Manager&) {
+template <typename GeneratorT> static shared_ptr<MeshGenerator> readTrivialGenerator(XMLReader& reader, Manager&) {
     bool split = false;
     while (reader.requireTagOrEnd()) {
         if (reader.getNodeName() == "boundaries") {
@@ -494,12 +478,10 @@ static shared_ptr<MeshGenerator> readTrivialGenerator(XMLReader& reader, Manager
 
 static RegisterMeshGeneratorReader ordered_simplegenerator_reader("ordered.simple",
                                                                   readTrivialGenerator<OrderedMesh1DSimpleGenerator>);
-static RegisterMeshGeneratorReader rectangular2d_simplegenerator_reader(
-    "rectangular2d.simple",
-    readTrivialGenerator<RectangularMesh2DSimpleGenerator>);
-static RegisterMeshGeneratorReader rectangular3d_simplegenerator_reader(
-    "rectangular3d.simple",
-    readTrivialGenerator<RectangularMesh3DSimpleGenerator>);
+static RegisterMeshGeneratorReader rectangular2d_simplegenerator_reader("rectangular2d.simple",
+                                                                        readTrivialGenerator<RectangularMesh2DSimpleGenerator>);
+static RegisterMeshGeneratorReader rectangular3d_simplegenerator_reader("rectangular3d.simple",
+                                                                        readTrivialGenerator<RectangularMesh3DSimpleGenerator>);
 
 static shared_ptr<MeshGenerator> readRegularGenerator1(XMLReader& reader, Manager&) {
     double spacing = INFINITY;
@@ -566,10 +548,8 @@ static shared_ptr<MeshGenerator> readRegularGenerator3(XMLReader& reader, Manage
 }
 
 static RegisterMeshGeneratorReader ordered_regulargenerator_reader("ordered.regular", readRegularGenerator1);
-static RegisterMeshGeneratorReader rectangular2d_regulargenerator_reader("rectangular2d.regular",
-                                                                         readRegularGenerator2);
-static RegisterMeshGeneratorReader rectangular3d_regulargenerator_reader("rectangular3d.regular",
-                                                                         readRegularGenerator3);
+static RegisterMeshGeneratorReader rectangular2d_regulargenerator_reader("rectangular2d.regular", readRegularGenerator2);
+static RegisterMeshGeneratorReader rectangular3d_regulargenerator_reader("rectangular3d.regular", readRegularGenerator3);
 
 template <int dim> shared_ptr<MeshGenerator> readRectangularDivideGenerator(XMLReader& reader, Manager& manager) {
     auto result = plask::make_shared<RectangularMeshDivideGenerator<dim>>();
@@ -587,9 +567,8 @@ template <int dim> shared_ptr<MeshGenerator> readRectangularDivideGenerator(XMLR
                 if (reader.hasAttribute("by2")) throw XMLConflictingAttributesException(reader, "by", "by2");
                 for (int i = 0; i < dim; ++i) result->pre_divisions[i] = *into;
             } else {
-                for (int i = 0; i < dim; ++i)
-                    result->pre_divisions[i] = reader.getAttribute<size_t>(format("by{0}", i), 1);
-                }
+                for (int i = 0; i < dim; ++i) result->pre_divisions[i] = reader.getAttribute<size_t>(format("by{0}", i), 1);
+            }
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "postdiv") {
             plask::optional<size_t> into = reader.getAttribute<size_t>("by");
@@ -599,9 +578,8 @@ template <int dim> shared_ptr<MeshGenerator> readRectangularDivideGenerator(XMLR
                 if (reader.hasAttribute("by2")) throw XMLConflictingAttributesException(reader, "by", "by2");
                 for (int i = 0; i < dim; ++i) result->post_divisions[i] = *into;
             } else {
-                for (int i = 0; i < dim; ++i)
-                    result->post_divisions[i] = reader.getAttribute<size_t>(format("by{0}", i), 1);
-                }
+                for (int i = 0; i < dim; ++i) result->post_divisions[i] = reader.getAttribute<size_t>(format("by{0}", i), 1);
+            }
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "options") {
             plask::optional<bool> gradual = reader.getAttribute<bool>("gradual");
@@ -609,7 +587,7 @@ template <int dim> shared_ptr<MeshGenerator> readRectangularDivideGenerator(XMLR
                 if (reader.hasAttribute("gradual0")) throw XMLConflictingAttributesException(reader, "gradual", "gradual0");
                 if (reader.hasAttribute("gradual1")) throw XMLConflictingAttributesException(reader, "gradual", "gradual1");
                 if (reader.hasAttribute("gradual2")) throw XMLConflictingAttributesException(reader, "gradual", "gradual2");
-                result->gradual = (*gradual)? 7 : 0;
+                result->gradual = (*gradual) ? 7 : 0;
             } else {
                 for (int i = 0; i < dim; ++i) {
                     result->setGradual(i, reader.getAttribute<bool>(format("gradual{0}", i), true));
@@ -627,8 +605,7 @@ template struct PLASK_API RectangularMeshDivideGenerator<1>;
 template struct PLASK_API RectangularMeshDivideGenerator<2>;
 template struct PLASK_API RectangularMeshDivideGenerator<3>;
 
-static RegisterMeshGeneratorReader ordered_dividinggenerator_reader("ordered.divide",
-                                                                    readRectangularDivideGenerator<1>);
+static RegisterMeshGeneratorReader ordered_dividinggenerator_reader("ordered.divide", readRectangularDivideGenerator<1>);
 static RegisterMeshGeneratorReader rectangular2d_dividinggenerator_reader("rectangular2d.divide",
                                                                           readRectangularDivideGenerator<2>);
 static RegisterMeshGeneratorReader rectangular3d_dividinggenerator_reader("rectangular3d.divide",
@@ -664,12 +641,9 @@ template <int dim> shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLR
                     result->maxstep[i] = reader.getAttribute<double>(format("large{:d}", i), result->maxstep[i]);
             plask::optional<double> factor = reader.getAttribute<double>("factor");
             if (factor) {
-                if (reader.hasAttribute("factor0"))
-                    throw XMLConflictingAttributesException(reader, "factor", "factor0");
-                if (reader.hasAttribute("factor1"))
-                    throw XMLConflictingAttributesException(reader, "factor", "factor1");
-                if (reader.hasAttribute("factor2"))
-                    throw XMLConflictingAttributesException(reader, "factor", "factor2");
+                if (reader.hasAttribute("factor0")) throw XMLConflictingAttributesException(reader, "factor", "factor0");
+                if (reader.hasAttribute("factor1")) throw XMLConflictingAttributesException(reader, "factor", "factor1");
+                if (reader.hasAttribute("factor2")) throw XMLConflictingAttributesException(reader, "factor", "factor2");
                 for (int i = 0; i < dim; ++i) result->factor[i] = *factor;
             } else
                 for (int i = 0; i < dim; ++i)
@@ -685,10 +659,8 @@ template <int dim> shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLR
 }
 
 static RegisterMeshGeneratorReader ordered_smoothgenerator_reader("ordered.smooth", readRectangularSmoothGenerator<1>);
-static RegisterMeshGeneratorReader rectangular2d_smoothgenerator_reader("rectangular2d.smooth",
-                                                                        readRectangularSmoothGenerator<2>);
-static RegisterMeshGeneratorReader rectangular3d_smoothgenerator_reader("rectangular3d.smooth",
-                                                                        readRectangularSmoothGenerator<3>);
+static RegisterMeshGeneratorReader rectangular2d_smoothgenerator_reader("rectangular2d.smooth", readRectangularSmoothGenerator<2>);
+static RegisterMeshGeneratorReader rectangular3d_smoothgenerator_reader("rectangular3d.smooth", readRectangularSmoothGenerator<3>);
 
 template struct PLASK_API RectangularMeshSmoothGenerator<1>;
 template struct PLASK_API RectangularMeshSmoothGenerator<2>;

@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -118,12 +118,6 @@ class RectangularRegularGeneratorController(RectangularSimpleGeneratorController
 
 class RectangularRefinedGeneratorController(GridController):
 
-    warnings_help = {
-        'missing': 'Warn if any refinement references to non-existing object. Defaults to true.',
-        'multiple': 'Warn if any refinement references to multiple objects. Defaults to true.',
-        'outside': 'Warn if refining line lies outside of the specified object. Defaults to true.'
-    }
-
     def _make_param_hbox(self, container_to_add, label, tooltip, defines_completer, model_path=None):
         hbox_div = QHBoxLayout()
         res = tuple(QLineEdit() for _ in range(0, self.model.dim))
@@ -175,26 +169,6 @@ class RectangularRefinedGeneratorController(GridController):
         self.form_layout = QFormLayout()
         self.form_layout.addRow('Options:', self.options)
 
-        warnings_layout = QHBoxLayout()
-        for w in RectangularDivideGenerator.warnings:
-            cb = EditComboBox()
-            cb.editingFinished.connect(
-                lambda w=w, cb=cb: weakself._change_attr('warn_'+w, empty_to_none(cb.currentText()), w+' warning'))
-            # cb.editingFinished.connect(self.fire_changed)
-            # cb.currentIndexChanged.connect(self.fire_changed)
-            cb.addItems(['', 'yes', 'no'])
-            cb.setEditable(True)
-            cb.setToolTip('&lt;warnings <b>{}</b>=""&gt;\n'.format(w) +
-                          RectangularDivideGeneratorController.warnings_help.get(w, ''))
-            setattr(self, 'warn_'+w, cb)
-            label = QLabel(w+':')
-            label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
-            warnings_layout.addWidget(label)
-            cb.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
-            cb.lineEdit().setPlaceholderText('yes')
-            warnings_layout.addWidget(cb)
-        self.form_layout.addRow('Warnings:', warnings_layout)
-
         vbox.addLayout(self.form_layout)
 
         self.refinements = QTableView()
@@ -233,12 +207,6 @@ class RectangularRefinedGeneratorController(GridController):
     def fill_form(self):
         super().fill_form()
         self.aspect.setText(none_to_empty(self.grid_model.aspect))
-        with self.mute_changes():
-            for attr_name in ['warn_'+w for w in RectangularDivideGenerator.warnings]:
-                cb = getattr(self, attr_name)
-                a = getattr(self.model, attr_name)
-                with BlockQtSignals(cb):
-                    cb.setEditText(none_to_empty(a))
 
     def get_widget(self):
         return self.form

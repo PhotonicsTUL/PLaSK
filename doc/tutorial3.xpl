@@ -75,7 +75,6 @@
       <axis0 object="oxide" at="-0.05"/>
       <axis0 object="aperture" at="0.1"/>
     </refinements>
-    <warnings outside="no"/>
   </generator>
   <generator method="divide" name="optical" type="ordered">
     <prediv by="10"/>

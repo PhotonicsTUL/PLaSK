@@ -265,15 +265,10 @@ struct PLASK_API RectangularMeshRefinedGenerator: public MeshGeneratorD<dim> {
 
     void divideLargestSegment(shared_ptr<OrderedAxis> axis);
 
-    bool warn_multiple, ///< Warn if a single refinement points to more than one object.
-         warn_missing,  ///< Warn if a defined refinement points to object absent from provided geometry.
-         warn_outside;  ///< Warn if a defined refinement takes place outside of the pointed object.
-
     /**
      * Create new generator
      */
-    RectangularMeshRefinedGenerator() :
-        aspect(0), warn_multiple(true), warn_missing(true), warn_outside(true) {}
+    RectangularMeshRefinedGenerator() : aspect(0) {}
 
     shared_ptr<MeshD<dim>> generate(const shared_ptr<GeometryObjectD<DIM>>& geometry) override;
 
