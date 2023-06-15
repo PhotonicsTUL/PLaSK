@@ -219,13 +219,6 @@
       default: 10000
       help: >
         Maximum number of iterations for the iterative algorithm.
-    - &logfreq
-      attr: logfreq
-      label: Progress logging frequency
-      type: int
-      default: 500
-      help: >
-        Number of iterations after which the progress is logged.
 
   - &ematrix
     tag: ematrix
@@ -236,7 +229,6 @@
     - *algorithm
     - *itererr
     - *iterlim
-    - *logfreq
 
   providers: &thermoelectric-providers
   - outTemperature

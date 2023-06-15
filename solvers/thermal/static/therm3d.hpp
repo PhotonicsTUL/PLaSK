@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -104,8 +104,6 @@ struct PLASK_SOLVER_API ThermalFem3DSolver: public SolverWithMesh<Geometry3D, Re
 
     double itererr;     ///< Allowed residual iteration for iterative method
     size_t iterlim;     ///< Maximum nunber of iterations for iterative method
-
-    size_t logfreq;   ///< Frequency of iteration progress reporting
 
     // Boundary conditions
     BoundaryConditions<RectangularMesh<3>::Boundary,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]

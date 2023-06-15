@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -138,12 +138,10 @@ class ThermoElectric(plask.Solver):
             self._read_attr(tag, 'algorithm', self.thermal)
             self._read_attr(tag, 'itererr', self.thermal, float)
             self._read_attr(tag, 'iterlim', self.thermal, int)
-            self._read_attr(tag, 'logfreq', self.thermal, int)
         elif tag == 'ematrix':
             self._read_attr(tag, 'algorithm', self.electrical)
             self._read_attr(tag, 'itererr', self.electrical, float)
             self._read_attr(tag, 'iterlim', self.electrical, int)
-            self._read_attr(tag, 'logfreq', self.electrical, int)
         elif tag == 'temperature':
             self.thermal.temperature_boundary.read_from_xpl(tag, manager)
         elif tag == 'heatflux':

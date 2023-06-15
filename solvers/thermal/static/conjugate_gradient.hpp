@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -14,140 +14,132 @@
 #ifndef PLASK__MODULE_THERMAL_STATIC_CONJUGATE_GRADIENT_H
 #define PLASK__MODULE_THERMAL_STATIC_CONJUGATE_GRADIENT_H
 
-#include <algorithm>
+#include <nspcg/nspcg.hpp>
 #include <plask/plask.hpp>
-
-// Necessary BLAS routines
-#define ddot F77_GLOBAL(ddot,DDOT)
-F77FUN(double) ddot(const int& n, const double* dx, const int& incx, const double* dy, const int& incy); // return dot(dx,dy)
-
-#define daxpy F77_GLOBAL(daxpy,DAXPY)
-F77SUB daxpy(const int& n, const double& sa, const double* sx, const int& incx, double* sy, const int& incy); // sy = sy + sa*sx
 
 namespace plask { namespace thermal { namespace tstatic {
 
-/// Error code of solveDCG
-struct DCGError: public std::exception {
-    const char* msg;
-    DCGError(const char* msg): msg(msg) {}
-    const char* what() const noexcept override { return msg; }
+template <typename MatrixT> struct NspcgSolver {
+    int nw, inw;
+    aligned_unique_ptr<double> wksp;
+    aligned_unique_ptr<int> iwksp;
+    DataVector<double> U;
 
+    NspcgSolver() : nw(0), inw(0) {}
+
+    void reset() {
+        nw = 0;
+        inw = 0;
+        wksp.reset();
+        iwksp.reset();
+        U.reset();
+    }
+
+    template <typename SolverT> void solve(const SolverT* solver, MatrixT& A, DataVector<double>& B) {
+        iparm_t iparm;
+        rparm_t rparm;
+        dfault(iparm, rparm);
+
+        iparm.itmax = solver->iterlim;
+        rparm.zeta = solver->itererr;
+        // iparm.ielim = 1;
+        // iparm.iscale = 1;
+
+#ifdef NDEBUG
+        iparm.level = -1;
+#else
+        iparm.level = 3;
+#endif
+
+        int maxnz = A.nd;
+
+        int NW = 3 * A.size + 2 * iparm.itmax + A.size * A.nd;
+        int INW = A.nd + std::max(2 * A.size, int(A.nd + A.nd * A.nd));
+
+        if (nw < NW) {
+            nw = NW;
+            wksp.reset(aligned_malloc<double>(nw));
+        }
+
+        if (inw < INW) {
+            inw = INW;
+            iwksp.reset(aligned_malloc<int>(inw));
+        }
+
+        // for (size_t r = 0; r < A.size; ++r) {
+        //     for (size_t c = 0; c < A.size; ++c) {
+        //         if (std::find(A.bno, A.bno+A.nd, std::abs(int(r)-int(c))) == A.bno+A.nd )
+        //             std::cout << "    .    ";
+        //         else
+        //             std::cout << str(A(r, c), "{:8.3f}") << " ";
+        //     }
+        //     std::cout << "         " << str(B[r], "{:8.3f}") << std::endl;
+        // }
+
+        if (U.size() != B.size()) U.reset(B.size(), 300.);
+
+        int ier;
+
+        // TODO add choice of algorithms and predonditioners
+
+        while (true) {
+            nspcg(mic2, cg, A.size, A.nd, A.size, maxnz, A.data, A.bno, nullptr, nullptr, U.data(), nullptr, B.data(), wksp.get(),
+                  iwksp.get(), nw, inw, iparm, rparm, ier);
+
+            // Increase workspace if needed
+            if (ier == -2 && nw)
+                wksp.reset(aligned_malloc<double>(nw));
+            else if (ier == -3 && inw)
+                iwksp.reset(aligned_malloc<int>(inw));
+            else
+                break;
+        }
+
+        if (ier != 0) {
+            switch (ier) {
+                case -1: throw ComputationError(solver->getId(), "Nonpositive matrix size {}", A.size);
+                case -2: throw ComputationError(solver->getId(), "Insufficient real workspace ({} required)", nw);
+                case -3: throw ComputationError(solver->getId(), "Insufficient integer workspace ({} required)", inw);
+                case -4: throw ComputationError(solver->getId(), "Nonpositive diagonal element in stiffness matrix");
+                case -5: throw ComputationError(solver->getId(), "Nonexistent diagonal element in stiffness matrix");
+                case -6: throw ComputationError(solver->getId(), "Stiffness matrix A is not positive definite");
+                case -7: throw ComputationError(solver->getId(), "Preconditioned matrix Q is not positive definite");
+                case -8: throw ComputationError(solver->getId(), "Cannot permute stiffness matrix as requested");
+                case -9: throw ComputationError(solver->getId(), "Number of non-zero digonals is not large enough to allow expansion of matrix");
+                case -10: throw ComputationError(solver->getId(), "Inadmissible parameter encountered");
+                case -11: throw ComputationError(solver->getId(), "Incorrect storage mode for block method");
+                case -12: throw ComputationError(solver->getId(), "Zero pivot encountered in factorization");
+                case -13: throw ComputationError(solver->getId(), "Breakdown in direction vector calculation");
+                case -14: throw ComputationError(solver->getId(), "Breakdown in attempt to perform rotation");
+                case -15: throw ComputationError(solver->getId(), "Breakdown in iterate calculation");
+                case -16: throw ComputationError(solver->getId(), "Unimplemented combination of parameters");
+                case -18: throw ComputationError(solver->getId(), "Unable to perform eigenvalue estimation");
+                case 1:
+                    writelog(LOG_WARNING, solver->getId(), "Failure to converge in {} iterations", iparm.itmax);
+                    break;
+                case 2:
+                    solver->writelog(LOG_WARNING, "`itererr` too small - reset to {}", 500 * std::numeric_limits<double>::epsilon());
+                    break;
+                case 3:
+                    solver->writelog(LOG_DEBUG,
+                        "ZBRENT failed to converge in MAXFN iterations (signifies difficulty in eigenvalue estimation)");
+                    break;
+                case 4:
+                    solver->writelog(LOG_DEBUG,
+                        "In ZBRENT, f (a) and f (b) have the same sign (signifies difficulty in eigenvalue estimation)");
+                    break;
+                case 5:
+                    solver->writelog(LOG_DEBUG, "Negative pivot encountered in factorization");
+                    break;
+            }
+        }
+
+        if (ier != 1) solver->writelog(LOG_DETAIL, "Converged after {} iterations", iparm.itmax);
+
+        std::swap(B, U);
+    }
 };
 
+}}}  // namespace plask::thermal::tstatic
 
-/**
- * This routine does preconditioned conjugate gradient iteration
- * on the symmetric positive definite system Ax = b.
- *
- * \param[in] matrix Matrix to solve
- * \param[in] msolve (z, r) Functor that solves M z = r for z, given a vector r. Throw exception if an error occures.
- * \param[in,out] x Initial guess of the solution.  If no information on the solution is available then use a zero vector or b.
- * \param[in] b Right hand side.
- * \param[out] err L2 norm of the relative residual error estimate (||b-Ax||/||b||)².
- *
- *                 This estimate of the true error is not always very accurate.
- * \param[in] eps Requested error tolerence.  System is iterated until ||b-Ax||/||b|| < eps.  Normal choice is 1e-8.
- * \param[in] itmax Maximum number of iterations the user is willing to allow. Default value is 100.
- * \param[in] logfreq Frequency of progress reporting
- * \param[in] log_prefix logging prefix
- * \param[in] updatea Function that updates the matrix A basing on the current solution x
- * \return number of iterations
- * \throw DCGError
- */
-template <typename Matrix, typename Preconditioner>
-std::size_t solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b, double& err,
-             size_t itmax=10000, double eps=1e-8, size_t logfreq=500, const std::string& log_prefix="",
-             void(Matrix::*updatea)(double*)=&Matrix::noUpdate)
-{
-    DataLog<size_t,double> logger(log_prefix, "conjugate gradient", "iter", "resid");
-    size_t logcount = logfreq;
-
-    size_t n = matrix.size;
-
-    aligned_unique_ptr<double[]> r = nullptr, z = nullptr, p = nullptr;
-    double bknum, bkden, bk;
-    double akden, ak;
-    double toobig; // when error estimate gets this big we signal divergence!
-
-    // Calculate norm of right hand size and squared tolerance.
-    double bnorm2 = ddot(int(n), b, 1, b, 1);
-    double eps2 = eps * eps;
-
-    if (bnorm2 == 0.) {
-        std::fill_n(x, n, 0.);
-        return 0;
-    }
-
-    // Check input data and allocate temporary storage.
-    if(n < 2) throw DCGError("system size too small");
-    try {
-        r.reset(aligned_malloc<double>(n));
-        z.reset(aligned_malloc<double>(n));
-        p.reset(aligned_malloc<double>(n));
-    } catch (...) {
-        throw DCGError("could not allocate memory for temporary vectors");
-    }
-
-    // Calculate r = b - Ax and initial error.
-    matrix.multiply(x, r.get());
-
-    for (std::size_t j = 0; j < n; ++j) r[j] = b[j] - r[j];
-    err = ddot(int(n), r.get(), 1, r.get(), 1) / bnorm2;
-    if (err < eps2) {
-        return 0;
-    }
-    toobig = err * 1.e8;
-
-    // Iterate!!!
-    for (size_t i = 0; i < itmax; i++) {
-
-        // Solve M z = r.
-        msolve(z.get(), r.get());
-
-        // Calculate bknum = (z,Mz) and p = z (first iteration).
-        if(i == 0) {
-            std::copy_n(z.get(), n, p.get());
-            bknum = bkden = ddot(int(n), z.get(), 1, r.get(), 1);
-        } else {
-            // Calculate bknum = (z, r), bkden and bk.
-            bknum = ddot(int(n), z.get(), 1, r.get(), 1);
-            bk    = bknum / bkden;
-            bkden = bknum;
-
-            // Calculate p = z + bk*p
-            for (std::size_t j = 0; j < n; ++j)
-                p[j] = fma(bk, p[j], z[j]);
-        }
-        // Calculate z = Ap, akden = (p,Ap) and ak.
-        matrix.multiply(p.get(), z.get());
-
-        akden = ddot(int(n), p.get(), 1, z.get(), 1);
-        ak    = bknum / akden;
-
-        // Update x and r. Calculate error.
-        daxpy(int(n),  ak, p.get(), 1, x, 1);
-        daxpy(int(n), -ak, z.get(), 1, r.get(), 1);
-        err = ddot(int(n), r.get(), 1, r.get(), 1) / bnorm2;
-        if(err < eps2) {
-            return i+1;
-        }
-        if(err > toobig) {
-            throw DCGError("divergence of iteration detected");
-        }
-
-        if (--logcount == 0) {
-            logcount = logfreq;
-            logger(i+1, sqrt(err));
-        }
-
-        // Update the matrix A
-        (matrix.*updatea)(x);
-    }
-    throw DCGError("iteration limit reached");
-    return itmax;
-}
-
-
-}}} // namespace plask::thermal::tstatict3d
-
-#endif // PLASK__MODULE_THERMAL_STATIC_CONJUGATE_GRADIENT_H
+#endif  // PLASK__MODULE_THERMAL_STATIC_CONJUGATE_GRADIENT_H

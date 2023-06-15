@@ -314,6 +314,9 @@ add_subdirectory(extlib/fftpacx)
 # Triangle
 add_subdirectory(extlib/triangle)
 
+# NSPCG
+add_subdirectory(extlib/nspcg)
+
 # fmt
 if(PLASK_EXPORTS_FMT)
     list(APPEND plask_src extlib/fmt/format.cc extlib/fmt/posix.cc)

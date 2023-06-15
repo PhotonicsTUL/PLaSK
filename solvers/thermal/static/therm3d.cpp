@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -26,7 +26,6 @@ ThermalFem3DSolver::ThermalFem3DSolver(const std::string& name) :
     maxerr(0.05),
     itererr(1e-8),
     iterlim(10000),
-    logfreq(500),
     outTemperature(this, &ThermalFem3DSolver::getTemperatures),
     outHeatFlux(this, &ThermalFem3DSolver::getHeatFluxes),
     outThermalConductivity(this, &ThermalFem3DSolver::getThermalConductivity),
@@ -74,7 +73,6 @@ void ThermalFem3DSolver::loadConfiguration(XMLReader &source, Manager &manager)
                 .get(algorithm);
             itererr = source.getAttribute<double>("itererr", itererr);
             iterlim = source.getAttribute<size_t>("iterlim", iterlim);
-            logfreq = source.getAttribute<size_t>("logfreq", logfreq);
             source.requireTagEnd();
         }
 
@@ -92,10 +90,12 @@ void ThermalFem3DSolver::onInitialize() {
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
 
-    if (use_full_mesh)
+    if (use_full_mesh || algorithm == ALGORITHM_ITERATIVE) {
+        if (!use_full_mesh) writelog(LOG_WARNING, this->getId(), "For iterative algorithm empty materials are always included");
         maskedMesh->selectAll(*this->mesh);
-    else
+    } else {
         maskedMesh->reset(*this->mesh, *this->geometry, ~plask::Material::EMPTY);
+    }
 
     loopno = 0;
     band = 0;
@@ -327,27 +327,28 @@ void ThermalFem3DSolver::applyBC(MatrixT& A, DataVector<double>& B,
 
 template <>
 void ThermalFem3DSolver::applyBC<SparseBandMatrix3D>(SparseBandMatrix3D& A, DataVector<double>& B,
-                                                                   const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature) {
+                                                     const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature) {
     // boundary conditions of the first kind
     for (auto cond: btemperature) {
         for (auto r: cond.place) {
-            double* rdata = A.data + LDA*r;
-            *rdata = 1.;
+            A.data[r] = 1.;
             double val = B[r] = cond.value;
-            // below diagonal
-            for (ptrdiff_t i = 13; i > 0; --i) {
+            // above diagonal
+            for (ptrdiff_t i = A.kd; i > 0; --i) {
                 ptrdiff_t c = r - A.bno[i];
                 if (c >= 0) {
-                    B[c] -= A.data[LDA*c+i] * val;
-                    A.data[LDA*c+i] = 0.;
+                    ptrdiff_t ii = c + A.size * i;
+                    B[c] -= A.data[ii] * val;
+                    A.data[ii] = 0.;
                 }
             }
-            // above diagonal
-            for (ptrdiff_t i = 1; i < 14; ++i) {
+            // below diagonal
+            for (ptrdiff_t i = 1; i < A.nd; ++i) {
                 ptrdiff_t c = r + A.bno[i];
                 if (c < A.size) {
-                    B[c] -= rdata[i] * val;
-                    rdata[i] = 0.;
+                    size_t ii = r + A.size * i;
+                    B[c] -= A.data[ii] * val;
+                    A.data[ii] = 0.;
                 }
             }
         }
@@ -372,8 +373,6 @@ MatrixT ThermalFem3DSolver::makeMatrix() {
 
 template <>
 SparseBandMatrix3D ThermalFem3DSolver::makeMatrix<SparseBandMatrix3D>() {
-    if (!use_full_mesh)
-        throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
     return SparseBandMatrix3D(this->maskedMesh->size(), mesh->mediumAxis()->size()*mesh->minorAxis()->size(), mesh->minorAxis()->size());
 }
 
@@ -489,21 +488,7 @@ void ThermalFem3DSolver::solveMatrix(DgbMatrix& A, DataVector<double>& B)
 void ThermalFem3DSolver::solveMatrix(SparseBandMatrix3D& A, DataVector<double>& B)
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
-
-    PrecondJacobi3D precond(A);
-
-    DataVector<double> X = temperatures.copy(); // We use previous temperatures as initial solution
-    double err;
-    try {
-        std::size_t iter = solveDCG(A, precond, X.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
-        this->writelog(LOG_DETAIL, "Conjugate gradient converged after {0} iterations.", iter);
-    } catch (DCGError& err) {
-        throw ComputationError(this->getId(), "Conjugate gradient failed:, {0}", err.what());
-    }
-
-    B = X;
-
-    // now A contains factorized matrix and B the solutions
+    A.matrix_solver.solve(this, A, B);
 }
 
 

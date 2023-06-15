@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -17,6 +17,9 @@
 #include <plask/plask.hpp>
 
 namespace plask { namespace thermal { namespace tstatic {
+
+constexpr double BIG = 1e16;
+
 
 /// Boundary condition: convection
 struct Convection
@@ -65,4 +68,3 @@ template <> inline thermal::tstatic::Radiation parseBoundaryValue<thermal::tstat
 } // # namespace plask
 
 #endif // PLASK__SOLVER__THERMAL_STATIC_COMMON_H
-

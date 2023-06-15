@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -101,7 +101,6 @@ struct PLASK_SOLVER_API ThermalFem2DSolver: public SolverWithMesh<Geometry2DType
 
     double itererr;        ///< Allowed residual iteration for iterative method
     size_t iterlim;        ///< Maximum nunber of iterations for iterative method
-    size_t logfreq;        ///< Frequency of iteration progress reporting
 
     /// Are we using full mesh?
     bool usingFullMesh() const { return use_full_mesh; }
@@ -150,9 +149,9 @@ struct PLASK_SOLVER_API ThermalFem2DSolver: public SolverWithMesh<Geometry2DType
     const LazyData<Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<2>>& dest_mesh, InterpolationMethod method);
 
     template <typename MatrixT>
-    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bvoltage) {
+    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature) {
         // boundary conditions of the first kind
-        for (auto cond: bvoltage) {
+        for (auto cond: btemperature) {
             for (auto r: cond.place) {
                 A(r,r) = 1.;
                 double val = B[r] = cond.value;
@@ -170,27 +169,28 @@ struct PLASK_SOLVER_API ThermalFem2DSolver: public SolverWithMesh<Geometry2DType
         }
     }
 
-    void applyBC(SparseBandMatrix2D& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bvoltage) {
+    void applyBC(SparseBandMatrix2D& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature) {
         // boundary conditions of the first kind
-        for (auto cond: bvoltage) {
+        for (auto cond: btemperature) {
             for (auto r: cond.place) {
-                double* rdata = A.data + LDA*r;
-                *rdata = 1.;
+                A.data[r] = 1.;
                 double val = B[r] = cond.value;
-                // below diagonal
-                for (ptrdiff_t i = 4; i > 0; --i) {
+                // above diagonal
+                for (ptrdiff_t i = A.kd; i > 0; --i) {
                     ptrdiff_t c = r - A.bno[i];
                     if (c >= 0) {
-                        B[c] -= A.data[LDA*c+i] * val;
-                        A.data[LDA*c+i] = 0.;
+                        ptrdiff_t ii = c + A.size * i;
+                        B[c] -= A.data[ii] * val;
+                        A.data[ii] = 0.;
                     }
                 }
-                // above diagonal
-                for (ptrdiff_t i = 1; i < 5; ++i) {
+                // below diagonal
+                for (ptrdiff_t i = 1; i < A.nd; ++i) {
                     ptrdiff_t c = r + A.bno[i];
                     if (c < A.size) {
-                        B[c] -= rdata[i] * val;
-                        rdata[i] = 0.;
+                        size_t ii = r + A.size * i;
+                        B[c] -= A.data[ii] * val;
+                        A.data[ii] = 0.;
                     }
                 }
             }

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -12,7 +12,6 @@
  * GNU General Public License for more details.
  */
 #include "therm2d.hpp"
-#include "conjugate_gradient.hpp"
 
 namespace plask { namespace thermal { namespace tstatic {
 
@@ -28,7 +27,6 @@ ThermalFem2DSolver<Geometry2DType>::ThermalFem2DSolver(const std::string& name) 
     algorithm(ALGORITHM_CHOLESKY),
     itererr(1e-8),
     iterlim(10000),
-    logfreq(500),
     use_full_mesh(false)
 {
     temperatures.reset();
@@ -75,7 +73,6 @@ void ThermalFem2DSolver<Geometry2DType>::loadConfiguration(XMLReader &source, Ma
                 .get(algorithm);
             itererr = source.getAttribute<double>("itererr", itererr);
             iterlim = source.getAttribute<size_t>("iterlim", iterlim);
-            logfreq = source.getAttribute<size_t>("logfreq", logfreq);
             source.requireTagEnd();
         }
 
@@ -94,10 +91,12 @@ void ThermalFem2DSolver<Geometry2DType>::onInitialize() {
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
 
-    if (use_full_mesh)
+    if (use_full_mesh || algorithm == ALGORITHM_ITERATIVE) {
+        if (!use_full_mesh) writelog(LOG_WARNING, this->getId(), "For iterative algorithm empty materials are always included");
         maskedMesh->selectAll(*this->mesh);
-    else
+    } else {
         maskedMesh->reset(*this->mesh, *this->geometry, ~plask::Material::EMPTY);
+    }
 
     loopno = 0;
     band = 0;
@@ -484,15 +483,11 @@ MatrixT ThermalFem2DSolver<Geometry2DType>::makeMatrix() {
 // C++ if fucking stupid!!!!! We need to repeat this twice just because a fucking standard
 template<> template <>
 SparseBandMatrix2D ThermalFem2DSolver<Geometry2DCartesian>::makeMatrix<SparseBandMatrix2D>() {
-    if (!use_full_mesh)
-        throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
     return SparseBandMatrix2D(this->maskedMesh->size(), this->mesh->minorAxis()->size());
 }
 
 template<> template <>
 SparseBandMatrix2D ThermalFem2DSolver<Geometry2DCylindrical>::makeMatrix<SparseBandMatrix2D>() {
-    if (!use_full_mesh)
-        throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
     return SparseBandMatrix2D(this->maskedMesh->size(), this->mesh->minorAxis()->size());
 }
 
@@ -568,6 +563,16 @@ void ThermalFem2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& A, DataVector<do
 
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
+    // for (size_t r = 0; r < A.size; ++r) {
+    //     for (size_t c = 0; c < A.size; ++c) {
+    //         if (std::abs(int(r)-int(c)) > A.kd)
+    //             std::cout << "    .    ";
+    //         else
+    //             std::cout << str(A(r, c), "{:8.3f}") << " ";
+    //     }
+    //     std::cout << "         " << str(B[r], "{:8.3f}") << std::endl;
+    // }
+
     // Factorize matrix
     dpbtrf(UPLO, int(A.size), int(A.kd), A.data, int(A.ld+1), info);
     if (info < 0)
@@ -607,24 +612,10 @@ void ThermalFem2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, DataVector<do
 }
 
 template<typename Geometry2DType>
-void ThermalFem2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix2D& ioA, DataVector<double>& B)
+void ThermalFem2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix2D& A, DataVector<double>& B)
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
-
-    PrecondJacobi2D precond(ioA);
-
-    DataVector<double> x = temperatures.copy(); // We use previous potentials as initial solution
-    double err;
-    try {
-        std::size_t iter = solveDCG(ioA, precond, x.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
-        this->writelog(LOG_DETAIL, "Conjugate gradient converged after {0} iterations.", iter);
-    } catch (DCGError& exc) {
-        throw ComputationError(this->getId(), "Conjugate gradient failed:, {0}", exc.what());
-    }
-
-    B = x;
-
-    // now A contains factorized matrix and B the solutions
+    A.matrix_solver.solve(this, A, B);
 }
 
 

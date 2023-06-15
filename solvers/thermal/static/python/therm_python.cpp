@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -121,7 +121,6 @@ BOOST_PYTHON_MODULE(static)
         solver.def_readwrite("algorithm", &__Class__::algorithm, u8"Chosen matrix factorization algorithm");
         solver.def_readwrite("itererr", &__Class__::itererr, u8"Allowed residual iteration for iterative method");
         solver.def_readwrite("iterlim", &__Class__::iterlim, u8"Maximum number of iterations for iterative method");
-        solver.def_readwrite("logfreq", &__Class__::logfreq, u8"Frequency of iteration progress reporting");
     }
 
     {CLASS(ThermalFem2DSolver<Geometry2DCylindrical>, "StaticCyl",
@@ -142,7 +141,6 @@ BOOST_PYTHON_MODULE(static)
         RW_FIELD(algorithm, u8"Chosen matrix factorization algorithm");
         RW_FIELD(itererr, u8"Allowed residual iteration for iterative method");
         RW_FIELD(iterlim, u8"Maximum number of iterations for iterative method");
-        RW_FIELD(logfreq, u8"Frequency of iteration progress reporting");
     }
 
     {CLASS(ThermalFem3DSolver, "Static3D", u8"Finite element thermal solver for 3D Geometry.")
@@ -163,6 +161,5 @@ BOOST_PYTHON_MODULE(static)
         RW_PROPERTY(algorithm, getAlgorithm, setAlgorithm, u8"Chosen matrix factorization algorithm");
         RW_FIELD(itererr, u8"Allowed residual iteration for iterative method");
         RW_FIELD(iterlim, u8"Maximum number of iterations for iterative method");
-        RW_FIELD(logfreq, u8"Frequency of iteration progress reporting");
     }
 }
