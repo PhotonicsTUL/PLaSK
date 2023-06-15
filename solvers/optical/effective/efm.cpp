@@ -36,11 +36,6 @@ EffectiveFreqCyl::EffectiveFreqCyl(const std::string& name) :
     outHeat(this, &EffectiveFreqCyl::getHeat),
     asymptotic(false) {
     inTemperature = 300.;
-    root.tolx = 1.0e-6;
-    root.tolf_min = 1.0e-7;
-    root.tolf_max = 2.0e-5;
-    root.maxiter = 500;
-    root.method = RootDigger::ROOT_MULLER;
     stripe_root.tolx = 1.0e-6;
     stripe_root.tolf_min = 1.0e-7;
     stripe_root.tolf_max = 1.0e-5;
@@ -128,7 +123,7 @@ void EffectiveFreqCyl::computeModes(int m)
 }
 
 
-svoid EffectiveFreqCyl::onInitialize()
+void EffectiveFreqCyl::onInitialize()
 {
     if (!geometry) throw NoGeometryException(getId());
 
