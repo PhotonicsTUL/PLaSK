@@ -305,6 +305,11 @@ file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp python/pla
 
 # ---------- External libraries built by us -----------------------------------------
 
+# libf2c for Windows
+if(WIN32)
+    add_subdirectory(extlib/libf2c)
+endif()
+
 # CAMOS
 add_subdirectory(extlib/camos)
 

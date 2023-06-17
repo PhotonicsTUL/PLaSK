@@ -1,5 +1,5 @@
-project(nspcg Fortran)
 cmake_minimum_required(VERSION 3.0)
+project(nspcg)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
@@ -12,10 +12,9 @@ foreach(CONF ${CMAKE_CONFIGURATION_TYPES})   # uses by MSVC
 endforeach()
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)  # all functions will be exported from windows DLL
 
-add_library(nspcg SHARED nspcg.f)
-target_compile_options(nspcg PRIVATE $<$<COMPILE_LANGUAGE:Fortran>:-std=legacy>)
-
 if(WIN32)
+    add_library(nspcg SHARED nspcg.c)
+    target_link_libraries(nspcg vcf2c)
     if(INSTALL_DEV)
         install(TARGETS nspcg RUNTIME DESTINATION bin COMPONENT solvers
                               ARCHIVE DESTINATION lib COMPONENT dev)
@@ -23,6 +22,9 @@ if(WIN32)
             install(TARGETS nspcg RUNTIME DESTINATION bin COMPONENT solvers)
     endif()
 else()
+    enable_language(Fortran)
+    add_library(nspcg SHARED nspcg.f)
+    target_compile_options(nspcg PRIVATE $<$<COMPILE_LANGUAGE:Fortran>:-std=legacy>)
     install(TARGETS nspcg LIBRARY DESTINATION lib COMPONENT solvers)
 endif()
 
