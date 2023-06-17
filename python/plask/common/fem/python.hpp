@@ -28,12 +28,15 @@ template <typename SolverT> inline static void registerFemSolver(SolverT& solver
     // solver.def_readwrite("iter_accelerator" = &SolverT::Class::iter_accelerator, u8"Iterative solver accelerator");
     // solver.def_readwrite("iter_preconditioner" = &SolverT::Class::iter_preconditioner, u8"Iterative solver preconditioner");
 
-    py::scope solver_scope = solver;
+    const py::converter::registration* reg;
 
-    py_enum<Algorithm>()
-        .value("CHOLESKY", ALGORITHM_CHOLESKY)
-        .value("GAUSS", ALGORITHM_GAUSS)
-        .value("ITERATIVE", ALGORITHM_ITERATIVE);
+    reg = py::converter::registry::query(py::type_id<FemMatrixAlgorithm>());
+    if (reg == NULL || reg->m_to_python == NULL)  {
+        py_enum<FemMatrixAlgorithm>()
+            .value("CHOLESKY", ALGORITHM_CHOLESKY)
+            .value("GAUSS", ALGORITHM_GAUSS)
+            .value("ITERATIVE", ALGORITHM_ITERATIVE);
+    }
 
     // py_enum<SparseBandMatrix::Accelelator>()
     //     .value("CG", SparseBandMatrix::ACCEL_CG)

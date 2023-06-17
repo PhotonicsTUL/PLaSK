@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -15,7 +15,6 @@
 #define PLASK__MODULE_ELECTRICAL_ELECTR2D_H
 
 #include "common.hpp"
-#include "iterative_matrix2d.hpp"
 
 namespace plask { namespace electrical { namespace shockley {
 
@@ -23,9 +22,8 @@ namespace plask { namespace electrical { namespace shockley {
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
 template <typename Geometry2DType>
-struct PLASK_SOLVER_API ElectricalFem2DSolver : public SolverWithMesh<Geometry2DType, RectangularMesh<2>> {
+struct PLASK_SOLVER_API ElectricalFem2DSolver : public FemSolverWithMaskedMesh<Geometry2DType, RectangularMesh<2>> {
   protected:
-    plask::shared_ptr<RectangularMaskedMesh2D> maskedMesh = plask::make_shared<RectangularMaskedMesh2D>();
 
     /// Details of active region
     struct Active {
@@ -50,8 +48,6 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public SolverWithMesh<Geometry2D
             : left(l), right(r), bottom(b), top(t), offset(tot - l), height(h) {}
     };
 
-    size_t band;  ///< Maximum band size
-
     double pcond;  ///< p-contact electrical conductivity [S/m]
     double ncond;  ///< n-contact electrical conductivity [S/m]
 
@@ -69,8 +65,6 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public SolverWithMesh<Geometry2D
     DataVector<double> heats;             ///< Computed and cached heat source densities
 
     std::vector<Active> active;  ///< Active regions information
-
-    bool use_full_mesh;  ///< Should we use full mesh?
 
     /// Save locate stiffness matrix to global one
     inline void setLocalMatrix(double& k44,
@@ -106,15 +100,6 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public SolverWithMesh<Geometry2D
     /// Create 2D-vector with calculated heat densities
     void saveHeatDensities();
 
-    /// Matrix solver
-    void solveMatrix(DpbMatrix& A, DataVector<double>& B);
-
-    /// Matrix solver
-    void solveMatrix(DgbMatrix& A, DataVector<double>& B);
-
-    /// Matrix solver
-    void solveMatrix(SparseBandMatrix2D& A, DataVector<double>& B);
-
     /// Initialize the solver
     void onInitialize() override;
 
@@ -134,27 +119,11 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public SolverWithMesh<Geometry2D
         setActiveRegions();
     }
 
-    template <typename MatrixT>
-    void applyBC(MatrixT& A,
-                 DataVector<double>& B,
-                 const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary, double>& bvoltage);
-
-    void applyBC(SparseBandMatrix2D& A,
-                 DataVector<double>& B,
-                 const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary, double>& bvoltage);
-
     /// Set stiffness matrix + load vector
-    template <typename MatrixT>
-    void setMatrix(MatrixT& A,
+    void setMatrix(FemMatrix& A,
                    DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary, double>& bvoltage,
                    const LazyData<double>& temperature);
-
-    /// Setup matrix
-    template <typename MatrixT> MatrixT makeMatrix();
-
-    /// Perform computations for particular matrix type
-    template <typename MatrixT> double doCompute(unsigned loops = 1);
 
     /** Return \c true if the specified point is at junction
      * \param point point to test
@@ -204,12 +173,7 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public SolverWithMesh<Geometry2D
 
     ReceiverFor<Temperature, Geometry2DType> inTemperature;
 
-    Algorithm algorithm;        ///< Factorization algorithm to use
     Convergence convergence;    ///< Convergence method
-
-    double itererr;  ///< Allowed residual iteration for iterative method
-    size_t iterlim;  ///< Maximum nunber of iterations for iterative method
-    size_t logfreq;  ///< Frequency of iteration progress reporting
 
     /**
      * Run electrical calculations
@@ -288,14 +252,6 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public SolverWithMesh<Geometry2D
         if (!this->mesh || cond.size() != condsize)
             throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
         junction_conductivity = cond.claim();
-    }
-
-    /// Are we using full mesh?
-    bool usingFullMesh() const { return use_full_mesh; }
-    /// Set whether we should use full mesh
-    void useFullMesh(bool val) {
-        use_full_mesh = val;
-        setActiveRegions();
     }
 
     void loadConfiguration(XMLReader& source, Manager& manager) override;

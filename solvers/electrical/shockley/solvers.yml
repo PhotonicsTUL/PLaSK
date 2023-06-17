@@ -189,9 +189,9 @@
   category: electrical
   help: >
     Two-dimensional phenomenological solver in Cartesian geometry based on custom active region conductivity
-    and using finite-element method. To use this solver, you must create a Python function taking the juction voltage,
-    current density and temperature as asguments and returning junction conductivity. The returned value must be either
-    a dwo-dimensional tensor or a single value, in which case the conductivity is assumend to be zero in lateral direction.
+    and using finite-element method. To use this solver, you must create a Python function taking the junction voltage,
+    current density and temperature as arguments and returning junction conductivity. The returned value must be either
+    a dwo-dimensional tensor or a single value, in which case the conductivity is assumed to be zero in lateral direction.
     Next, you must assign this function to the `cond` (or `cond0`, `cond1` etc. for multiple active regions) of the solver.
 
     Example:
@@ -211,9 +211,9 @@
   category: electrical
   help: >
     Two-dimensional phenomenological solver in cylindrical geometry based on custom active region conductivity
-    and using finite-element method. To use this solver, you must create a Python function taking the juction voltage,
-    current density and temperature as asguments and returning junction conductivity. The returned value must be either
-    a dwo-dimensional tensor or a single value, in which case the conductivity is assumend to be zero in lateral direction.
+    and using finite-element method. To use this solver, you must create a Python function taking the junction voltage,
+    current density and temperature as arguments and returning junction conductivity. The returned value must be either
+    a dwo-dimensional tensor or a single value, in which case the conductivity is assumed to be zero in lateral direction.
     Next, you must assign this function to the `cond` (or `cond0`, `cond1` etc. for multiple active regions) of the solver.
 
     Example:

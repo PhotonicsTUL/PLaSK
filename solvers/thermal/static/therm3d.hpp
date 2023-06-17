@@ -47,8 +47,7 @@ struct PLASK_SOLVER_API ThermalFem3DSolver: public FemSolverWithMaskedMesh<Geome
      * \param bconvection boundary conditions: convention
      * \param bradiation boundary conditions: radiation
      **/
-    template <typename MatrixT>
-    void setMatrix(MatrixT& A, DataVector<double>& B,
+    void setMatrix(FemMatrix& A, DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& bheatflux,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,Convection>& bconvection,
@@ -112,13 +111,13 @@ struct PLASK_SOLVER_API ThermalFem3DSolver: public FemSolverWithMaskedMesh<Geome
     double getErr() const { return toterr; }
 
     /// \return current algorithm
-    Algorithm getAlgorithm() const { return algorithm; }
+    FemMatrixAlgorithm getAlgorithm() const { return algorithm; }
 
     /**
      * Set algorithm
      * \param alg new algorithm
      */
-    void setAlgorithm(Algorithm alg);
+    void setAlgorithm(FemMatrixAlgorithm alg);
 
   protected:
 

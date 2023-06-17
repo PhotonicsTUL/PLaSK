@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -13,10 +13,11 @@
  */
 #include <cmath>
 #include <plask/python.hpp>
+#include <plask/common/fem/python.hpp>
 using namespace plask;
 using namespace plask::python;
 
-#include "../femT.hpp"
+#include "../femT2d.hpp"
 #include "../femT3d.hpp"
 using namespace plask::thermal::dynamic;
 
@@ -28,7 +29,7 @@ using namespace plask::thermal::dynamic;
  */
 BOOST_PYTHON_MODULE(dynamic)
 {
-    py_enum<Algorithm>()
+    py_enum<FemMatrixAlgorithm>()
         .value("CHOLESKY", ALGORITHM_CHOLESKY)
         .value("GAUSS", ALGORITHM_GAUSS)
     ;
@@ -46,11 +47,10 @@ BOOST_PYTHON_MODULE(dynamic)
         RW_FIELD(methodparam, u8"Initial parameter determining the calculation method: 0.5 - Crank-Nicolson method, 0 - explicit method, 1 - implicit method");
         RW_FIELD(lumping, u8"Chosen mass matrix type from lumped or non-lumped (consistent)");
         RW_FIELD(rebuildfreq, u8"Frequency of rebuild mass");
-        RW_FIELD(algorithm, u8"Chosen matrix factorization algorithm");
         RW_FIELD(logfreq, u8"Frequency of iteration progress reporting");
-        RW_PROPERTY(include_empty, usingFullMesh, useFullMesh, "Should empty regions (e.g. air) be included into computation domain?");
         RO_PROPERTY(time, getElapsTime, u8"Time of calculations performed so far since the last solver invalidation.");
         RO_PROPERTY(elapsed_time, getElapsTime, u8"Alias for :attr:`time` (obsolete).");
+        registerFemSolverWithMaskedMesh(solver);
     }
 
     {CLASS(DynamicThermalFem2DSolver<Geometry2DCylindrical>, "DynamicCyl",
@@ -66,11 +66,10 @@ BOOST_PYTHON_MODULE(dynamic)
         RW_FIELD(methodparam, u8"Initial parameter determining the calculation method: 0.5 - Crank-Nicolson method, 0 - explicit method, 1 - implicit method");
         RW_FIELD(lumping, u8"Chosen mass matrix type from lumped or non-lumped (consistent)");
         RW_FIELD(rebuildfreq, u8"Frequency of rebuild mass");
-        RW_FIELD(algorithm, u8"Chosen matrix factorization algorithm");
         RW_FIELD(logfreq, u8"Frequency of iteration progress reporting");
-        RW_PROPERTY(include_empty, usingFullMesh, useFullMesh, "Should empty regions (e.g. air) be included into computation domain?");
         RO_PROPERTY(time, getElapsTime, u8"Time of calculations performed so far since the last solver invalidation.");
         RO_PROPERTY(elapsed_time, getElapsTime, u8"Alias for :attr:`time` (obsolete).");
+        registerFemSolverWithMaskedMesh(solver);
     }
 
     {CLASS(DynamicThermalFem3DSolver, "Dynamic3D",
@@ -90,6 +89,7 @@ BOOST_PYTHON_MODULE(dynamic)
         solver.def_readwrite("logfreq", &__Class__::logfreq, u8"Frequency of iteration progress reporting");
         RO_PROPERTY(time, getElapsTime, u8"Time of calculations performed so far since the last solver invalidation.");
         RO_PROPERTY(elapsed_time, getElapsTime, u8"Alias for :attr:`time` (obsolete).");
+        registerFemSolverWithMaskedMesh(solver);
     }
 
 }

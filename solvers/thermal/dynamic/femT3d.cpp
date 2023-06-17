@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -20,19 +20,17 @@ namespace plask { namespace thermal { namespace dynamic {
 const double BIG = 1e16;
 
 DynamicThermalFem3DSolver::DynamicThermalFem3DSolver(const std::string& name) :
-    SolverWithMesh<Geometry3D, RectangularMesh<3>>(name),
+    FemSolverWithMaskedMesh<Geometry3D, RectangularMesh<3>>(name),
     outTemperature(this, &DynamicThermalFem3DSolver::getTemperatures),
     outHeatFlux(this, &DynamicThermalFem3DSolver::getHeatFluxes),
     outThermalConductivity(this, &DynamicThermalFem3DSolver::getThermalConductivity),
-    algorithm(ALGORITHM_CHOLESKY),
     inittemp(300.),
     methodparam(0.5),
     timestep(0.1),
     elapstime(0.),
     lumping(true),
     rebuildfreq(0),
-    logfreq(500),
-    use_full_mesh(false)
+    logfreq(500)
 {
     temperatures.reset();
     fluxes.reset();
@@ -61,20 +59,7 @@ void DynamicThermalFem3DSolver::loadConfiguration(XMLReader &source, Manager &ma
             source.requireTagEnd();
         }
 
-        else if (param == "matrix") {
-            methodparam = source.getAttribute<double>("methodparam", methodparam);
-            lumping = source.getAttribute<bool>("lumping", lumping);
-            algorithm = source.enumAttribute<Algorithm>("algorithm")
-                .value("cholesky", ALGORITHM_CHOLESKY)
-                .value("gauss", ALGORITHM_GAUSS)
-                .get(algorithm);
-            source.requireTagEnd();
-        }
-
-        else {
-            if (param == "mesh") {
-                use_full_mesh = source.getAttribute<bool>("include-empty", use_full_mesh);
-            }
+        else if (!this->parseFemConfiguration(source, manager)) {
             this->parseStandardConfiguration(source, manager);
         }
     }
@@ -85,12 +70,8 @@ void DynamicThermalFem3DSolver::onInitialize() {
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
     elapstime = 0.;
-    band = 0;
 
-    if (use_full_mesh)
-        maskedMesh->selectAll(*this->mesh);
-    else
-        maskedMesh->reset(*this->mesh, *this->geometry, ~plask::Material::EMPTY);
+    FemSolverWithMaskedMesh<Geometry3D, RectangularMesh<3>>::onInitialize();
 
     temperatures.reset(this->maskedMesh->size(), inittemp);
 
@@ -138,8 +119,7 @@ void DynamicThermalFem3DSolver::onInvalidate() {
 }
 
 
-template<typename MatrixT>
-void DynamicThermalFem3DSolver::setMatrix(MatrixT& A, MatrixT& B, DataVector<double>& F,
+void DynamicThermalFem3DSolver::setMatrix(FemMatrix& A, FemMatrix& B, DataVector<double>& F,
         const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
@@ -147,8 +127,8 @@ void DynamicThermalFem3DSolver::setMatrix(MatrixT& A, MatrixT& B, DataVector<dou
     auto heats = inHeat(maskedMesh->getElementMesh()/*, INTERPOLATION_NEAREST*/);
 
     // zero the matrices A, B and the load vector F
-    std::fill_n(A.data, A.size*(A.ld+1), 0.);
-    std::fill_n(B.data, B.size*(B.ld+1), 0.);
+    A.clear();
+    B.clear();
     F.fill(0.);
 
     // Set stiffness matrix and load vector
@@ -246,15 +226,10 @@ void DynamicThermalFem3DSolver::setMatrix(MatrixT& A, MatrixT& B, DataVector<dou
     }
 
     //boundary conditions of the first kind
-    for (auto cond: btemperature) {
-        for (auto r: cond.place) {
-            A(r,r) += BIG;
-            F[r] += BIG * cond.value;
-        }
-    }
+    A.applyBC(btemperature, F);
 
     // macierz A -> L L^T
-    prepareMatrix(A);
+    A.factorize();
 
 #ifndef NDEBUG
     double* aend = A.data + A.size * A.kd;
@@ -267,40 +242,7 @@ void DynamicThermalFem3DSolver::setMatrix(MatrixT& A, MatrixT& B, DataVector<dou
 }
 
 
-template <typename MatrixT>
-MatrixT DynamicThermalFem3DSolver::makeMatrix() {
-    if (band == 0) {
-        if (use_full_mesh) {
-            band = this->mesh->minorAxis()->size() + 1;
-        } else {
-            for (auto element: this->maskedMesh->elements()) {
-                size_t span = element.getUpUpUpIndex() - element.getLoLoLoIndex();
-                if (span > band) band = span;
-            }
-        }
-    }
-    return MatrixT(this->maskedMesh->size(), band);
-}
-
-// template <>
-// SparseBandMatrix3D DynamicThermalFem3DSolver::makeMatrix<SparseBandMatrix3D>() {
-//     if (!use_full_mesh)
-//         throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
-//     return SparseBandMatrix3D(this->maskedMesh->size(), mesh->mediumAxis()->size()*mesh->minorAxis()->size(), mesh->minorAxis()->size());
-// }
-
-
-double DynamicThermalFem3DSolver::compute(double time) {
-    switch (algorithm) {
-        case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(time);
-        case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(time);
-    }
-    return 0.;
-}
-
-
-template<typename MatrixT>
-double DynamicThermalFem3DSolver::doCompute(double time)
+double DynamicThermalFem3DSolver::compute(double time)
 {
     this->initCalculation();
 
@@ -310,8 +252,12 @@ double DynamicThermalFem3DSolver::doCompute(double time)
     auto btemperature = temperature_boundary(this->maskedMesh, this->geometry);
 
     size_t size = this->maskedMesh->size();
-    MatrixT A = makeMatrix<MatrixT>();
-    MatrixT B = makeMatrix<MatrixT>();
+
+    std::unique_ptr<FemMatrix> pA(this->getMatrix());
+    FemMatrix& A = *pA.get();
+    std::unique_ptr<FemMatrix> pB(this->getMatrix());
+    FemMatrix& B = *pB.get();
+
     this->writelog(LOG_INFO, "Running thermal calculations");
     maxT = *std::max_element(temperatures.begin(), temperatures.end());
 
@@ -319,7 +265,7 @@ double DynamicThermalFem3DSolver::doCompute(double time)
         if (!temperatures.unique()) this->writelog(LOG_DEBUG, "Temperature data held by something else...");
 #   endif
     temperatures = temperatures.claim();
-    DataVector<double> F(size), T(size);
+    DataVector<double> F(size), X(size);
 
     setMatrix(A, B, F, btemperature);
 
@@ -335,12 +281,16 @@ double DynamicThermalFem3DSolver::doCompute(double time)
             r = rebuildfreq;
         }
 
-        B.mult(temperatures, T);
-        for (std::size_t i = 0; i < T.size(); ++i) T[i] += F[i];
+        B.mult(temperatures, X);
+        for (std::size_t i = 0; i < X.size(); ++i) X[i] += F[i];
 
-        solveMatrix(A, T);
+        DataVector<double> T(X);
 
-        std::swap(temperatures, T);
+        A.solve(T, temperatures);
+
+        if (T.data() == X.data()) std::swap(temperatures, X);
+
+        std::swap(temperatures, X);
 
         if (logfreq && l == 0)
         {
@@ -361,60 +311,6 @@ double DynamicThermalFem3DSolver::doCompute(double time)
     return 0.;
 }
 
-
-void DynamicThermalFem3DSolver::prepareMatrix(DpbMatrix& A)
-{
-    int info = 0;
-
-    // Factorize matrix TODO bez tego
-    dpbtrf(UPLO, int(A.size), int(A.kd), A.data, int(A.ld+1), info);
-    if (info < 0)
-        throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", this->getId(), -info);
-    else if (info > 0)
-        throw ComputationError(this->getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite", info);
-
-    // now A contains factorized matrix
-}
-
-void DynamicThermalFem3DSolver::solveMatrix(DpbMatrix& A, DataVector<double>& B)
-{
-    int info = 0;
-
-    // Find solutions
-    dpbtrs(UPLO, int(A.size), int(A.kd), 1, A.data, int(A.ld+1), B.data(), int(B.size()), info);
-    if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", this->getId(), -info);
-
-    // now B contains solutions
-}
-
-void DynamicThermalFem3DSolver::prepareMatrix(DgbMatrix& A)
-{
-    int info = 0;
-    A.ipiv.reset(aligned_malloc<int>(A.size));
-
-    A.mirror();
-
-    // Factorize matrix
-    dgbtrf(int(A.size), int(A.size), int(A.kd), int(A.kd), A.data, int(A.ld+1), A.ipiv.get(), info);
-    if (info < 0) {
-        throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
-    } else if (info > 0) {
-        throw ComputationError(this->getId(), "Matrix is singlar (at {0})", info);
-    }
-
-    // now A contains factorized matrix
-}
-
-void DynamicThermalFem3DSolver::solveMatrix(DgbMatrix& A, DataVector<double>& B)
-{
-    int info = 0;
-
-    // Find solutions
-    dgbtrs('N', int(A.size), int(A.kd), int(A.kd), 1, A.data, int(A.ld+1), A.ipiv.get(), B.data(), int(B.size()), info);
-    if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
-
-    // now A contains factorized matrix and B the solutions
-}
 
 void DynamicThermalFem3DSolver::saveHeatFluxes()
 {
@@ -465,7 +361,7 @@ const LazyData<double> DynamicThermalFem3DSolver::getTemperatures(const shared_p
     this->writelog(LOG_DEBUG, "Getting temperatures");
     if (!temperatures) return LazyData<double>(dst_mesh->size(), inittemp); // in case the receiver is connected and no temperature calculated yet
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    if (use_full_mesh)
+    if (this->maskedMesh->full())
         return SafeData<double>(interpolate(this->mesh, temperatures, dst_mesh, method, this->geometry), 300.);
     else
         return SafeData<double>(interpolate(this->maskedMesh, temperatures, dst_mesh, method, this->geometry), 300.);
@@ -477,7 +373,7 @@ const LazyData<Vec<3>> DynamicThermalFem3DSolver::getHeatFluxes(const shared_ptr
     if (!temperatures) return LazyData<Vec<3>>(dst_mesh->size(), Vec<3>(0.,0.,0.)); // in case the receiver is connected and no fluxes calculated yet
     if (!fluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    if (use_full_mesh)
+    if (this->maskedMesh->full())
         return SafeData<Vec<3>>(interpolate(this->mesh->getElementMesh(), fluxes, dst_mesh, method,
                                             InterpolationFlags(this->geometry, InterpolationFlags::Symmetry::NPP, InterpolationFlags::Symmetry::PNP, InterpolationFlags::Symmetry::PPN)),
                                 Zero<Vec<3>>());

@@ -13,7 +13,7 @@
  */
 #include <cmath>
 #include <plask/python.hpp>
-#include <plask/common/python_fem.hpp>
+#include <plask/common/fem/python.hpp>
 
 using namespace plask;
 using namespace plask::python;
@@ -96,7 +96,7 @@ template<> double& Bc<Radiation>::first(Radiation& self) { return self.emissivit
  */
 BOOST_PYTHON_MODULE(static)
 {
-    py_enum<Algorithm>()
+    py_enum<FemMatrixAlgorithm>()
         .value("CHOLESKY", ALGORITHM_CHOLESKY)
         .value("GAUSS", ALGORITHM_GAUSS)
         .value("ITERATIVE", ALGORITHM_ITERATIVE)

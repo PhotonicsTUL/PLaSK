@@ -120,7 +120,7 @@ void ThermalFem3DSolver::onInvalidate() {
     thickness.reset();
 }
 
-void ThermalFem3DSolver::setAlgorithm(Algorithm alg) {
+void ThermalFem3DSolver::setAlgorithm(FemMatrixAlgorithm alg) {
     //TODO
     algorithm = alg;
 }
@@ -166,8 +166,7 @@ static void setBoundaries(const BoundaryConditionsWithMesh<RectangularMesh<3>::B
     }
 }
 
-template <typename MatrixT>
-void ThermalFem3DSolver::setMatrix(MatrixT& A, DataVector<double>& B,
+void ThermalFem3DSolver::setMatrix(FemMatrix& A, DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& bheatflux,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,Convection>& bconvection,
@@ -275,7 +274,7 @@ void ThermalFem3DSolver::setMatrix(MatrixT& A, DataVector<double>& B,
         }
     }
 
-    A.applyBC(B, btemperature);
+    A.applyBC(btemperature, B);
 }
 
 double ThermalFem3DSolver::compute(int loops)
@@ -323,7 +322,7 @@ double ThermalFem3DSolver::compute(int loops)
         {
             double corr = std::abs(*t - *temp); // for boundary with constant temperature this will be zero anyway
             if (corr > err) err = corr;
-            if (*t > maxT) maxT = *t;
+            if (*temp > maxT) maxT = *temp;
         }
         if (err > toterr) toterr = err;
 

@@ -130,7 +130,6 @@ class ShockleyCyl_Test(unittest.TestCase):
             plot_geometry(self.solver.geometry, margin=0.1, color='k')
             plot_mesh(self.solver.mesh, color='c')
             plot_boundary(self.solver.voltage_boundary, self.solver.mesh, self.solver.geometry, cmap='bwr', s=40)
-            fig.canvas.set_window_title("Mesh")
 
 
 if __name__ == '__main__':

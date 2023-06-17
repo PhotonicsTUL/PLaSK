@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -17,22 +17,17 @@ namespace plask { namespace electrical { namespace shockley {
 
 template <typename Geometry2DType>
 ElectricalFem2DSolver<Geometry2DType>::ElectricalFem2DSolver(const std::string& name)
-    : SolverWithMesh<Geometry2DType, RectangularMesh<2>>(name),
+    : FemSolverWithMaskedMesh<Geometry2DType, RectangularMesh<2>>(name),
       pcond(5.),
       ncond(50.),
       loopno(0),
       default_junction_conductivity(Tensor2<double>(0., 5.)),
-      use_full_mesh(false),
       maxerr(0.05),
       outVoltage(this, &ElectricalFem2DSolver<Geometry2DType>::getVoltage),
       outCurrentDensity(this, &ElectricalFem2DSolver<Geometry2DType>::getCurrentDensities),
       outHeat(this, &ElectricalFem2DSolver<Geometry2DType>::getHeatDensities),
       outConductivity(this, &ElectricalFem2DSolver<Geometry2DType>::getConductivity),
-      algorithm(ALGORITHM_CHOLESKY),
-      convergence(CONVERGENCE_FAST),
-      itererr(1e-8),
-      iterlim(10000),
-      logfreq(500) {
+      convergence(CONVERGENCE_FAST) {
     onInvalidate();
     inTemperature = 300.;
     junction_conductivity.reset(1, default_junction_conductivity);
@@ -79,30 +74,15 @@ void ElectricalFem2DSolver<Geometry2DType>::parseConfiguration(XMLReader& source
         source.requireTagEnd();
     }
 
-    else if (param == "matrix") {
-        algorithm = source.enumAttribute<Algorithm>("algorithm")
-                        .value("cholesky", ALGORITHM_CHOLESKY)
-                        .value("gauss", ALGORITHM_GAUSS)
-                        .value("iterative", ALGORITHM_ITERATIVE)
-                        .get(algorithm);
-        itererr = source.getAttribute<double>("itererr", itererr);
-        iterlim = source.getAttribute<size_t>("iterlim", iterlim);
-        logfreq = source.getAttribute<size_t>("logfreq", logfreq);
-        source.requireTagEnd();
-    }
-
     else if (param == "contacts") {
         pcond = source.getAttribute<double>("pcond", pcond);
         ncond = source.getAttribute<double>("ncond", ncond);
         source.requireTagEnd();
     }
 
-    else {
-        if (param == "mesh") {
-            use_full_mesh = source.getAttribute<bool>("include-empty", use_full_mesh);
+        else if (!this->parseFemConfiguration(source, manager)) {
+            this->parseStandardConfiguration(source, manager);
         }
-        this->parseStandardConfiguration(source, manager);
-    }
 }
 
 template <typename Geometry2DType> ElectricalFem2DSolver<Geometry2DType>::~ElectricalFem2DSolver() {}
@@ -119,10 +99,7 @@ template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::s
         return;
     }
 
-    if (use_full_mesh)
-        maskedMesh->selectAll(*this->mesh);
-    else
-        maskedMesh->reset(*this->mesh, *this->geometry, ~plask::Material::EMPTY);
+    this->setupMaskedMesh();
 
     auto points = this->mesh->getElementMesh();
 
@@ -195,7 +172,6 @@ template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::o
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
     loopno = 0;
-    band = 0;
     potentials.reset(this->maskedMesh->size(), 0.);
     currents.reset(this->maskedMesh->getElementsCount(), vec(0., 0.));
     conds.reset(this->maskedMesh->getElementsCount());
@@ -259,67 +235,10 @@ inline void ElectricalFem2DSolver<Geometry2DCylindrical>::setLocalMatrix(double&
     k41 = r * k41;
 }
 
-template <typename Geometry2DType>
-template <typename MatrixT>
-void ElectricalFem2DSolver<Geometry2DType>::applyBC(
-    MatrixT& A,
-    DataVector<double>& B,
-    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary, double>& bvoltage) {
-    // boundary conditions of the first kind
-    for (auto cond : bvoltage) {
-        for (auto r : cond.place) {
-            A(r, r) = 1.;
-            double val = B[r] = cond.value;
-            size_t start = (r > A.kd) ? r - A.kd : 0;
-            size_t end = (r + A.kd < A.size) ? r + A.kd + 1 : A.size;
-            for (size_t c = start; c < r; ++c) {
-                B[c] -= A(r, c) * val;
-                A(r, c) = 0.;
-            }
-            for (size_t c = r + 1; c < end; ++c) {
-                B[c] -= A(r, c) * val;
-                A(r, c) = 0.;
-            }
-        }
-    }
-}
-
-template <typename Geometry2DType>
-void ElectricalFem2DSolver<Geometry2DType>::applyBC(
-    SparseBandMatrix2D& A,
-    DataVector<double>& B,
-    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary, double>& bvoltage) {
-    // boundary conditions of the first kind
-    for (auto cond : bvoltage) {
-        for (auto r : cond.place) {
-            double* rdata = A.data + LDA * r;
-            *rdata = 1.;
-            double val = B[r] = cond.value;
-            // below diagonal
-            for (ptrdiff_t i = 4; i > 0; --i) {
-                ptrdiff_t c = r - A.bno[i];
-                if (c >= 0) {
-                    B[c] -= A.data[LDA * c + i] * val;
-                    A.data[LDA * c + i] = 0.;
-                }
-            }
-            // above diagonal
-            for (ptrdiff_t i = 1; i < 5; ++i) {
-                ptrdiff_t c = r + A.bno[i];
-                if (c < A.size) {
-                    B[c] -= rdata[i] * val;
-                    rdata[i] = 0.;
-                }
-            }
-        }
-    }
-}
-
 /// Set stiffness matrix + load vector
 template <typename Geometry2DType>
-template <typename MatrixT>
 void ElectricalFem2DSolver<Geometry2DType>::setMatrix(
-    MatrixT& A,
+    FemMatrix& A,
     DataVector<double>& B,
     const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary, double>& bvoltage,
     const LazyData<double>& temperature) {
@@ -351,7 +270,7 @@ void ElectricalFem2DSolver<Geometry2DType>::setMatrix(
         }
     }
 
-    std::fill_n(A.data, A.size * (A.ld + 1), 0.);  // zero the matrix
+    A.clear();
     B.fill(0.);
 
     // Set stiffness matrix and load vector
@@ -402,8 +321,7 @@ void ElectricalFem2DSolver<Geometry2DType>::setMatrix(
         A(upleftno, uprghtno) += k43;
     }
 
-    // boundary conditions of the first kind
-    applyBC(A, B, bvoltage);
+    A.applyBC(bvoltage, B);
 
 #ifndef NDEBUG
     double* aend = A.data + A.size * A.kd;
@@ -448,42 +366,6 @@ template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::s
 }
 
 template <typename Geometry2DType> double ElectricalFem2DSolver<Geometry2DType>::compute(unsigned loops) {
-    switch (algorithm) {
-        case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
-        case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
-        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix2D>(loops);
-    }
-    return 0.;
-}
-
-template <typename Geometry2DType> template <typename MatrixT> MatrixT ElectricalFem2DSolver<Geometry2DType>::makeMatrix() {
-    if (band == 0) {
-        if (use_full_mesh) {
-            band = this->mesh->minorAxis()->size() + 1;
-        } else {
-            for (auto element : this->maskedMesh->elements()) {
-                size_t span = element.getUpUpIndex() - element.getLoLoIndex();
-                if (span > band) band = span;
-            }
-        }
-    }
-    return MatrixT(this->maskedMesh->size(), band);
-}
-
-// C++ if fucking stupid!!!!! We need to repeat this twice just because a fucking standard
-template <> template <> SparseBandMatrix2D ElectricalFem2DSolver<Geometry2DCartesian>::makeMatrix<SparseBandMatrix2D>() {
-    if (!use_full_mesh) throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
-    return SparseBandMatrix2D(this->maskedMesh->size(), this->mesh->minorAxis()->size());
-}
-
-template <> template <> SparseBandMatrix2D ElectricalFem2DSolver<Geometry2DCylindrical>::makeMatrix<SparseBandMatrix2D>() {
-    if (!use_full_mesh) throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
-    return SparseBandMatrix2D(this->maskedMesh->size(), this->mesh->minorAxis()->size());
-}
-
-template <typename Geometry2DType>
-template <typename MatrixT>
-double ElectricalFem2DSolver<Geometry2DType>::doCompute(unsigned loops) {
     this->initCalculation();
 
     heats.reset();
@@ -495,7 +377,8 @@ double ElectricalFem2DSolver<Geometry2DType>::doCompute(unsigned loops) {
 
     unsigned loop = 0;
 
-    MatrixT A = makeMatrix<MatrixT>();
+    std::unique_ptr<FemMatrix> pA(this->getMatrix());
+    FemMatrix& A = *pA.get();
 
     double err = 0.;
     toterr = 0.;
@@ -505,14 +388,18 @@ double ElectricalFem2DSolver<Geometry2DType>::doCompute(unsigned loops) {
 #endif
     potentials = potentials.claim();
 
+    DataVector<double> rhs(potentials.size());
+
     auto temperature = loadConductivities();
 
     bool noactive = (active.size() == 0);
     double minj = 100e-7;  // assume no significant heating below this current
 
     do {
-        setMatrix(A, potentials, vconst, temperature);  // corr holds RHS now
-        solveMatrix(A, potentials);
+        setMatrix(A, rhs, vconst, temperature);
+        DataVector<double> x(rhs);
+        A.solve(x, potentials);
+        if (x.data() != potentials.data()) std::swap(potentials, rhs);
 
         err = 0.;
         double mcur = 0.;
@@ -557,67 +444,6 @@ double ElectricalFem2DSolver<Geometry2DType>::doCompute(unsigned loops) {
     outHeat.fireChanged();
 
     return toterr;
-}
-
-template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& A, DataVector<double>& B) {
-    int info = 0;
-
-    this->writelog(LOG_DETAIL, "Solving matrix system");
-
-    // Factorize matrix
-    dpbtrf(UPLO, int(A.size), int(A.kd), A.data, int(A.ld) + 1, info);
-    if (info < 0)
-        throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", this->getId(), -info);
-    else if (info > 0)
-        throw ComputationError(this->getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite", info);
-
-    // Find solutions
-    dpbtrs(UPLO, int(A.size), int(A.kd), 1, A.data, int(A.ld) + 1, B.data(), int(B.size()), info);
-    if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", this->getId(), -info);
-
-    // now A contains factorized matrix and B the solutions
-}
-
-template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, DataVector<double>& B) {
-    int info = 0;
-    this->writelog(LOG_DETAIL, "Solving matrix system");
-    aligned_unique_ptr<int> ipiv(aligned_malloc<int>(A.size));
-
-    A.mirror();
-
-    // Factorize matrix
-    dgbtrf(int(A.size), int(A.size), int(A.kd), int(A.kd), A.data, int(A.ld + 1), ipiv.get(), info);
-    if (info < 0) {
-        throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
-    } else if (info > 0) {
-        throw ComputationError(this->getId(), "Matrix is singlar (at {0})", info);
-    }
-
-    // Find solutions
-    dgbtrs('N', int(A.size), int(A.kd), int(A.kd), 1, A.data, int(A.ld + 1), ipiv.get(), B.data(), int(B.size()), info);
-    if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
-
-    // now A contains factorized matrix and B the solutions
-}
-
-template <typename Geometry2DType>
-void ElectricalFem2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix2D& A, DataVector<double>& B) {
-    this->writelog(LOG_DETAIL, "Solving matrix system");
-
-    PrecondJacobi2D precond(A);
-
-    DataVector<double> x = potentials.copy();  // We use previous potentials as initial solution
-    double err;
-    try {
-        std::size_t iter = solveDCG(A, precond, x.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
-        this->writelog(LOG_DETAIL, "Conjugate gradient converged after {0} iterations.", iter);
-    } catch (DCGError& exc) {
-        throw ComputationError(this->getId(), "Conjugate gradient failed:, {0}", exc.what());
-    }
-
-    B = x;
-
-    // now A contains factorized matrix and B the solutions
 }
 
 template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::saveHeatDensities() {
@@ -690,7 +516,7 @@ const LazyData<double> ElectricalFem2DSolver<Geometry2DType>::getVoltage(shared_
     if (!potentials) throw NoValue("Voltage");
     this->writelog(LOG_DEBUG, "Getting voltage");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    if (use_full_mesh)
+    if (this->maskedMesh->full())
         return interpolate(this->mesh, potentials, dest_mesh, method, this->geometry);
     else
         return interpolate(this->maskedMesh, potentials, dest_mesh, method, this->geometry);
@@ -703,7 +529,7 @@ const LazyData<Vec<2>> ElectricalFem2DSolver<Geometry2DType>::getCurrentDensitie
     this->writelog(LOG_DEBUG, "Getting current densities");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN);
-    if (use_full_mesh) {
+    if (this->maskedMesh->full()) {
         auto result = interpolate(this->mesh->getElementMesh(), currents, dest_mesh, method, flags);
         return LazyData<Vec<2>>(result.size(), [result, this, flags, dest_mesh](size_t i) {
             return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i))) ? result[i] : Vec<2>(0., 0.);
@@ -726,7 +552,7 @@ const LazyData<double> ElectricalFem2DSolver<Geometry2DType>::getHeatDensities(s
     if (!heats) saveHeatDensities();  // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry);
-    if (use_full_mesh) {
+    if (this->maskedMesh->full()) {
         auto result = interpolate(this->mesh->getElementMesh(), heats, dest_mesh, method, flags);
         return LazyData<double>(result.size(), [result, this, flags, dest_mesh](size_t i) {
             return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i))) ? result[i] : 0.;

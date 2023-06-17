@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -13,6 +13,7 @@
  */
 #include <cmath>
 #include <plask/python.hpp>
+#include <plask/common/fem/python.hpp>
 using namespace plask;
 using namespace plask::python;
 
@@ -209,9 +210,7 @@ inline static ExportSolver<__Class__> register_electrical_solver(const char* nam
     PROVIDER(outConductivity, u8"");
     BOUNDARY_CONDITIONS(voltage_boundary, u8"Boundary conditions of the first kind (constant potential)");
     RW_FIELD(maxerr, u8"Limit for the potential updates");
-    RW_FIELD(algorithm, u8"Chosen matrix factorization algorithm");
     RW_FIELD(convergence, u8"Convergence method.\n\nIf stable, covergence is slown down to ensure stability.");
-    RW_PROPERTY(include_empty, usingFullMesh, useFullMesh, "Should empty regions (e.g. air) be included into computation domain?");
     RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, u8"Conductivity of the p-contact");
     RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, u8"Conductivity of the n-contact");
     solver.add_property("start_cond", &__Class__::getCondJunc, &setCondJunc<__Class__>,
@@ -221,9 +220,6 @@ inline static ExportSolver<__Class__> register_electrical_solver(const char* nam
                         u8"with :attr:`outConductivity`.");
     solver.attr("pnjcond") = solver.attr("start_cond");
     solver.add_property("outPotential", outPotential, u8"Not available in this solver. Use :attr:`outVoltage` instead.");
-    RW_FIELD(itererr, u8"Allowed residual iteration for iterative method");
-    RW_FIELD(iterlim, u8"Maximum number of iterations for iterative method");
-    RW_FIELD(logfreq, u8"Frequency of iteration progress reporting");
     METHOD(get_electrostatic_energy, getTotalEnergy,
            u8"Get the energy stored in the electrostatic field in the analyzed structure.\n\n"
            u8"Return:\n"
@@ -241,6 +237,7 @@ inline static ExportSolver<__Class__> register_electrical_solver(const char* nam
            u8"Get the total heat produced by the current flowing in the structure.\n\n"
            u8"Return:\n"
            u8"    Total produced heat [mW].\n");
+    registerFemSolverWithMaskedMesh(solver);
 
     return solver;
 }
@@ -286,11 +283,6 @@ template <typename GeoT> inline static void register_cond_solver(const char* nam
  * (the one where you have put CMakeLists.txt). It will be visible from user interface under this name.
  */
 BOOST_PYTHON_MODULE(shockley) {
-    py_enum<Algorithm>()
-        .value("CHOLESKY", ALGORITHM_CHOLESKY)
-        .value("GAUSS", ALGORITHM_GAUSS)
-        .value("ITERATIVE", ALGORITHM_ITERATIVE);
-
     register_shockley_solver<Geometry2DCartesian>("Shockley2D", "2D Cartesian");
     register_shockley_solver<Geometry2DCylindrical>("ShockleyCyl", "2D cylindrical");
     register_shockley_solver<Geometry3D>("Shockley3D", "3D Cartesian");

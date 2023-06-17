@@ -173,8 +173,8 @@ static void setBoundaries(const BoundaryConditionsWithMesh<RectangularMesh<2>::B
 }
 
 
-template<> template<typename MatrixT>
-void ThermalFem2DSolver<Geometry2DCartesian>::setMatrix(MatrixT& A, DataVector<double>& B,
+template<>
+void ThermalFem2DSolver<Geometry2DCartesian>::setMatrix(FemMatrix& A, DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bheatflux,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,Convection>& bconvection,
@@ -186,7 +186,7 @@ void ThermalFem2DSolver<Geometry2DCartesian>::setMatrix(MatrixT& A, DataVector<d
     auto iMesh = (this->maskedMesh)->getElementMesh();
     auto heatdensities = inHeat(iMesh);
 
-    std::fill_n(A.data, A.size*(A.ld+1), 0.); // zero the matrix
+    A.clear();
     B.fill(0.);
 
     // Set stiffness matrix and load vector
@@ -285,7 +285,7 @@ void ThermalFem2DSolver<Geometry2DCartesian>::setMatrix(MatrixT& A, DataVector<d
     }
 
     // boundary conditions of the first kind
-    A.applyBC(B, btemperature);
+    A.applyBC(btemperature, B);
 
 #ifndef NDEBUG
     double* aend = A.data + A.size * A.kd;
@@ -298,8 +298,8 @@ void ThermalFem2DSolver<Geometry2DCartesian>::setMatrix(MatrixT& A, DataVector<d
 }
 
 
-template<> template<typename MatrixT>
-void ThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(MatrixT& A, DataVector<double>& B,
+template<>
+void ThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(FemMatrix& A, DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bheatflux,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,Convection>& bconvection,
@@ -427,7 +427,7 @@ void ThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(MatrixT& A, DataVector
     }
 
     // boundary conditions of the first kind
-    A.applyBC(B, btemperature);
+    A.applyBC(btemperature, B);
 
 #ifndef NDEBUG
     double* aend = A.data + A.size * A.kd;
@@ -486,7 +486,7 @@ double ThermalFem2DSolver<Geometry2DType>::compute(int loops){
         {
             double corr = std::abs(*t - *temp); // for boundary with constant temperature this will be zero anyway
             if (corr > err) err = corr;
-            if (*t > maxT) maxT = *t;
+            if (*temp > maxT) maxT = *temp;
         }
         if (err > toterr) toterr = err;
 

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -15,16 +15,14 @@
 #define PLASK__MODULE_ELECTRICAL_ELECTR3D_H
 
 #include "common.hpp"
-#include "iterative_matrix3d.hpp"
 
 namespace plask { namespace electrical { namespace shockley {
 
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
-struct PLASK_SOLVER_API ElectricalFem3DSolver : public SolverWithMesh<Geometry3D, RectangularMesh<3>> {
+struct PLASK_SOLVER_API ElectricalFem3DSolver : public FemSolverWithMaskedMesh<Geometry3D, RectangularMesh<3>> {
   protected:
-    plask::shared_ptr<RectangularMaskedMesh3D> maskedMesh = plask::make_shared<RectangularMaskedMesh3D>();
 
     /// Details of active region
     struct Active {
@@ -79,8 +77,6 @@ struct PLASK_SOLVER_API ElectricalFem3DSolver : public SolverWithMesh<Geometry3D
               height(h) {}
     };
 
-    size_t band;  ///< Maximum band size
-
     double pcond;  ///< p-contact electrical conductivity [S/m]
     double ncond;  ///< n-contact electrical conductivity [S/m]
 
@@ -99,25 +95,16 @@ struct PLASK_SOLVER_API ElectricalFem3DSolver : public SolverWithMesh<Geometry3D
 
     std::vector<Active> active;  ///< Active regions information
 
-    bool use_full_mesh;  ///< Should we use full mesh?
-
     /**
      * Set stiffness matrix and load vector
      * \param[out] A matrix to fill-in
      * \param[out] B load vector
      * \param bvoltage boundary conditions: constant voltage
      **/
-    template <typename MatrixT>
-    void setMatrix(MatrixT& A,
+    void setMatrix(FemMatrix& A,
                    DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary, double>& bvoltage,
                    const LazyData<double>& temperature);
-
-    /// Apply boundary conditions of the first kind
-    template <typename MatrixT>
-    void applyBC(MatrixT& A,
-                 DataVector<double>& B,
-                 const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary, double>& bvoltage);
 
     /** Compute conductivity int the active region
      *  \param n active region number
@@ -138,15 +125,6 @@ struct PLASK_SOLVER_API ElectricalFem3DSolver : public SolverWithMesh<Geometry3D
     /// Create 3D-vector with calculated heat density
     void saveHeatDensity();
 
-    /// Matrix solver for the block cholesky algorithm
-    void solveMatrix(DpbMatrix& A, DataVector<double>& B);
-
-    /// Matrix solver for the block gauss algorithm
-    void solveMatrix(DgbMatrix& A, DataVector<double>& B);
-
-    /// Matrix solver for the iterative algorithm
-    void solveMatrix(SparseBandMatrix3D& A, DataVector<double>& B);
-
     /// Initialize the solver
     void onInitialize() override;
 
@@ -165,12 +143,6 @@ struct PLASK_SOLVER_API ElectricalFem3DSolver : public SolverWithMesh<Geometry3D
 
     /// Get info on active region
     void setActiveRegions();
-
-    /// Setup matrix
-    template <typename MatrixT> MatrixT makeMatrix();
-
-    /// Perform computations for particular matrix type
-    template <typename MatrixT> double doCompute(unsigned loops = 1);
 
     /// Return \c true if the specified point is at junction
     size_t isActive(const Vec<3>& point) const {
@@ -205,16 +177,10 @@ struct PLASK_SOLVER_API ElectricalFem3DSolver : public SolverWithMesh<Geometry3D
     size_t isActive(const RectangularMaskedMesh<3>::Element& element) const { return isActive(element.getMidpoint()); }
 
   public:
-    Algorithm algorithm;        ///< Factorization algorithm to use
     Convergence convergence;    ///< Convergence method
 
     double maxerr;          ///< Maximum relative current density correction accepted as convergence
     Vec<3, double> maxcur;  ///< Maximum current in the structure
-
-    double itererr;  ///< Allowed residual iteration for iterative method
-    size_t iterlim;  ///< Maximum number of iterations for iterative method
-
-    size_t logfreq;  ///< Frequency of iteration progress reporting
 
     // Boundary conditions
     BoundaryConditions<RectangularMesh<3>::Boundary, double> voltage_boundary;  ///< Boundary condition of constant voltage [K]
@@ -315,14 +281,6 @@ struct PLASK_SOLVER_API ElectricalFem3DSolver : public SolverWithMesh<Geometry3D
         if (!this->mesh || cond.size() != condsize)
             throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
         junction_conductivity = cond.claim();
-    }
-
-    /// Are we using full mesh?
-    bool usingFullMesh() const { return use_full_mesh; }
-    /// Set whether we should use full mesh
-    void useFullMesh(bool val) {
-        use_full_mesh = val;
-        setActiveRegions();
     }
 
   protected:

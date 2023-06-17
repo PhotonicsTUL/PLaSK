@@ -22,7 +22,7 @@
 namespace plask {
 
 /// Choice of matrix factorization algorithms
-enum Algorithm {
+enum FemMatrixAlgorithm {
     ALGORITHM_CHOLESKY,  ///< Cholesky factorization
     ALGORITHM_GAUSS,     ///< Gauss elimination of asymmetric matrix (slower but safer as it uses pivoting)
     ALGORITHM_ITERATIVE  ///< Conjugate gradient iterative solver
@@ -30,7 +30,7 @@ enum Algorithm {
 
 template <typename SpaceT, typename MeshT>
 struct FemSolverWithMesh : public SolverWithMesh<SpaceT, MeshT> {
-    Algorithm algorithm = ALGORITHM_CHOLESKY;  ///< Factorization algorithm to use
+    FemMatrixAlgorithm algorithm = ALGORITHM_CHOLESKY;  ///< Factorization algorithm to use
     int iterlim = 1000;                        ///< Allowed residual iteration for iterative method
     double itererr = 1e-6;                     ///< Maximum number of iterations for iterative method
 
@@ -41,7 +41,7 @@ struct FemSolverWithMesh : public SolverWithMesh<SpaceT, MeshT> {
 
     bool parseFemConfiguration(XMLReader& reader, Manager& manager) {
         if (reader.getNodeName() == "matrix") {
-            algorithm = reader.enumAttribute<Algorithm>("algorithm")
+            algorithm = reader.enumAttribute<FemMatrixAlgorithm>("algorithm")
                             .value("cholesky", ALGORITHM_CHOLESKY)
                             .value("gauss", ALGORITHM_GAUSS)
                             .value("iterative", ALGORITHM_ITERATIVE)
@@ -155,13 +155,17 @@ struct FemSolverWithMaskedMesh : public FemSolverWithMesh<SpaceT, MeshT> {
         return FemSolverWithMesh<SpaceT, MeshT>::parseFemConfiguration(reader, manager);
     }
 
-    void onInitialize() {
+    void setupMaskedMesh() {
         if (use_full_mesh || this->algorithm == ALGORITHM_ITERATIVE) {
             if (!use_full_mesh) writelog(LOG_WARNING, this->getId(), "For iterative algorithm empty materials are always included");
             maskedMesh->selectAll(*this->mesh);
         } else {
             maskedMesh->reset(*this->mesh, *this->geometry, ~plask::Material::EMPTY);
         }
+    }
+
+    void onInitialize() {
+        setupMaskedMesh();
     }
 
     inline FemMatrix* getMatrix() const;
@@ -173,6 +177,7 @@ inline FemMatrix* FemSolverWithMaskedMesh<SpaceT, MeshT>::getMatrix() const {
     if (use_full_mesh || this->algorithm == ALGORITHM_ITERATIVE) {
         band = this->mesh->minorAxis()->size() + 1;
     } else {
+        band = 0;
         for (auto element : this->maskedMesh->elements()) {
             size_t span = element.getUpUpIndex() - element.getLoLoIndex();
             if (span > band) band = span;
@@ -192,6 +197,7 @@ inline FemMatrix* FemSolverWithMaskedMesh<Geometry3D, RectangularMesh<3>>::getMa
     if (use_full_mesh || algorithm == ALGORITHM_ITERATIVE) {
         band = this->mesh->minorAxis()->size() * (this->mesh->mediumAxis()->size() + 1) + 1;
     } else {
+        band = 0;
         for (auto element : this->maskedMesh->elements()) {
             size_t span = element.getUpUpUpIndex() - element.getLoLoLoIndex();
             if (span > band) band = span;

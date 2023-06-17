@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -15,23 +15,16 @@
 #define PLASK__MODULE_THERMAL_TFem3D_H
 
 #include <plask/plask.hpp>
-
-#include "block_matrix.hpp"
-#include "gauss_matrix.hpp"
-#include "algorithm.hpp"
-//#include "iterative_matrix.hpp"
+#include <plask/common/fem.hpp>
 
 namespace plask { namespace thermal { namespace dynamic {
 
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
-struct PLASK_SOLVER_API DynamicThermalFem3DSolver: public SolverWithMesh<Geometry3D, RectangularMesh<3>> {
+struct PLASK_SOLVER_API DynamicThermalFem3DSolver: public FemSolverWithMaskedMesh<Geometry3D, RectangularMesh<3>> {
 
   protected:
-
-    /// Masked mesh
-    plask::shared_ptr<RectangularMaskedMesh3D> maskedMesh = plask::make_shared<RectangularMaskedMesh3D>();
 
     double maxT;        ///< Maximum temperature recorded
 
@@ -42,29 +35,12 @@ struct PLASK_SOLVER_API DynamicThermalFem3DSolver: public SolverWithMesh<Geometr
     DataVector<Vec<3,double>> fluxes;      ///< Computed (only when needed) heat fluxes on our own mesh
 
     /// Set stiffness matrix + load vector
-    template <typename MatrixT>
-    void setMatrix(MatrixT& A, MatrixT& B, DataVector<double>& F,
+    void setMatrix(FemMatrix& A, FemMatrix& B, DataVector<double>& F,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature
                   );
 
-    /// Setup matrix
-    template <typename MatrixT>
-    MatrixT makeMatrix();
-
     /// Create 3D-vector with calculated heat fluxes
     void saveHeatFluxes(); // [W/m^2]
-
-    /// Matrix preparation
-    void prepareMatrix(DpbMatrix& A);
-
-    /// Matrix solver
-    void solveMatrix(DpbMatrix& A, DataVector<double>& B);
-
-    /// Matrix preparation
-    void prepareMatrix(DgbMatrix& A);
-
-    /// Matrix solver
-    void solveMatrix(DgbMatrix& A, DataVector<double>& B);
 
     /// Initialize the solver
     void onInitialize() override;
@@ -85,8 +61,6 @@ struct PLASK_SOLVER_API DynamicThermalFem3DSolver: public SolverWithMesh<Geometr
 
     ReceiverFor<Heat, Geometry3D> inHeat;
 
-    Algorithm algorithm;   ///< Factorization algorithm to use
-
     double inittemp;       ///< Initial temperature
     double methodparam;   ///< Initial parameter determining the calculation method (0.5 - Crank-Nicolson, 0 - explicit, 1 - implicit)
     double timestep;       ///< Time step in nanoseconds
@@ -94,14 +68,6 @@ struct PLASK_SOLVER_API DynamicThermalFem3DSolver: public SolverWithMesh<Geometr
     bool lumping;          ///< Wheter use lumping for matrices?
     size_t rebuildfreq;    ///< Frequency of mass matrix rebuilding
     size_t logfreq;        ///< Frequency of iteration progress reporting
-
-    /// Are we using full mesh?
-    bool usingFullMesh() const { return use_full_mesh; }
-    /// Set whether we should use full mesh
-    void useFullMesh(bool val) {
-        use_full_mesh = val;
-        this->invalidate();
-    }
 
     /**
      * Run temperature calculations
@@ -122,9 +88,6 @@ struct PLASK_SOLVER_API DynamicThermalFem3DSolver: public SolverWithMesh<Geometr
 
   protected:
 
-    size_t band;                                ///< Maximum band size
-    bool use_full_mesh;                         ///< Should we use full mesh?
-
     struct ThermalConductivityData: public LazyDataImpl<Tensor2<double>> {
         const DynamicThermalFem3DSolver* solver;
         shared_ptr<const MeshD<3>> dest_mesh;
@@ -140,11 +103,6 @@ struct PLASK_SOLVER_API DynamicThermalFem3DSolver: public SolverWithMesh<Geometr
     const LazyData<Vec<3>> getHeatFluxes(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method);
 
     const LazyData<Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method);
-
-    /// Perform computations for particular matrix type
-    template <typename MatrixT>
-    double doCompute(double time);
-
 };
 
 }} //namespaces

@@ -50,9 +50,12 @@ struct FemMatrix {
     virtual size_t index(size_t r, size_t c) = 0;
 
     /// Clear the matrix
-    void clear() { std::fill_n(data, size * (ld + 1), 0.); }
+    void clear() {
+        std::fill_n(data, size * (ld + 1), 0.);
+        is_factorized = false;
+    }
 
-    template <typename BoundaryConditonsT> void applyBC(DataVector<double>& B, const BoundaryConditonsT& bconds) {
+    template <typename BoundaryConditonsT> void applyBC(const BoundaryConditonsT& bconds, DataVector<double>& B) {
         // boundary conditions of the first kind
         for (auto cond : bconds) {
             for (auto r : cond.place) {

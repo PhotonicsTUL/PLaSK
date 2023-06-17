@@ -39,8 +39,7 @@ struct PLASK_SOLVER_API ThermalFem2DSolver : public FemSolverWithMaskedMesh<Geom
     DataVector<Vec<2, double>> fluxes;  ///< Computed (only when needed) heat fluxes on our own mesh
 
     /// Set stiffness matrix + load vector
-    template <typename MatrixT>
-    void setMatrix(MatrixT& A,
+    void setMatrix(FemMatrix& A,
                    DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary, double>& btemperature,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary, double>& bheatflux,

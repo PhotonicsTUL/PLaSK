@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -18,22 +18,17 @@
 namespace plask { namespace electrical { namespace shockley {
 
 ElectricalFem3DSolver::ElectricalFem3DSolver(const std::string& name)
-    : SolverWithMesh<Geometry3D, plask::RectangularMesh<3>>(name),
+    : FemSolverWithMaskedMesh<Geometry3D, plask::RectangularMesh<3>>(name),
       pcond(5.),
       ncond(50.),
       loopno(0),
       default_junction_conductivity(Tensor2<double>(0., 5.)),
-      use_full_mesh(false),
-      algorithm(ALGORITHM_CHOLESKY),
-      convergence(CONVERGENCE_FAST),
       maxerr(0.05),
-      itererr(1e-8),
-      iterlim(10000),
-      logfreq(500),
       outVoltage(this, &ElectricalFem3DSolver::getVoltage),
       outCurrentDensity(this, &ElectricalFem3DSolver::getCurrentDensity),
       outHeat(this, &ElectricalFem3DSolver::getHeatDensity),
-      outConductivity(this, &ElectricalFem3DSolver::getConductivity) {
+      outConductivity(this, &ElectricalFem3DSolver::getConductivity),
+      convergence(CONVERGENCE_FAST) {
     potential.reset();
     current.reset();
     inTemperature = 300.;
@@ -79,30 +74,15 @@ void ElectricalFem3DSolver::parseConfiguration(XMLReader& source, Manager& manag
         source.requireTagEnd();
     }
 
-    else if (param == "matrix") {
-        algorithm = source.enumAttribute<Algorithm>("algorithm")
-                        .value("cholesky", ALGORITHM_CHOLESKY)
-                        .value("gauss", ALGORITHM_GAUSS)
-                        .value("iterative", ALGORITHM_ITERATIVE)
-                        .get(algorithm);
-        itererr = source.getAttribute<double>("itererr", itererr);
-        iterlim = source.getAttribute<size_t>("iterlim", iterlim);
-        logfreq = source.getAttribute<size_t>("logfreq", logfreq);
-        source.requireTagEnd();
-    }
-
     else if (param == "contacts") {
         pcond = source.getAttribute<double>("pcond", pcond);
         ncond = source.getAttribute<double>("ncond", ncond);
         source.requireTagEnd();
     }
 
-    else {
-        if (param == "mesh") {
-            use_full_mesh = source.getAttribute<bool>("include-empty", use_full_mesh);
+        else if (!this->parseFemConfiguration(source, manager)) {
+            this->parseStandardConfiguration(source, manager);
         }
-        this->parseStandardConfiguration(source, manager);
-    }
 }
 
 void ElectricalFem3DSolver::setActiveRegions() {
@@ -117,10 +97,7 @@ void ElectricalFem3DSolver::setActiveRegions() {
         return;
     }
 
-    if (use_full_mesh)
-        maskedMesh->selectAll(*this->mesh);
-    else
-        maskedMesh->reset(*this->mesh, *this->geometry, ~plask::Material::EMPTY);
+    setupMaskedMesh();
 
     shared_ptr<RectangularMesh<3>> points = mesh->getElementMesh();
 
@@ -210,7 +187,6 @@ void ElectricalFem3DSolver::onInitialize() {
     if (!geometry) throw NoGeometryException(getId());
     if (!mesh) throw NoMeshException(getId());
     loopno = 0;
-    band = 0;
     potential.reset(maskedMesh->size(), 0.);
     current.reset(maskedMesh->getElementsCount(), vec(0., 0., 0.));
     conds.reset(maskedMesh->getElementsCount());
@@ -266,8 +242,7 @@ void ElectricalFem3DSolver::saveConductivity() {
     }
 }
 
-template <typename MatrixT>
-void ElectricalFem3DSolver::setMatrix(MatrixT& A,
+void ElectricalFem3DSolver::setMatrix(FemMatrix& A,
                                       DataVector<double>& B,
                                       const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary, double>& bvoltage,
                                       const LazyData<double>& temperature) {
@@ -372,7 +347,7 @@ void ElectricalFem3DSolver::setMatrix(MatrixT& A,
             for (int j = 0; j <= i; ++j) A(idx[i], idx[j]) += K[i][j];
     }
 
-    applyBC(A, B, bvoltage);
+    A.applyBC(bvoltage, B);
 
 #ifndef NDEBUG
     double* aend = A.data + A.size * A.kd;
@@ -384,93 +359,7 @@ void ElectricalFem3DSolver::setMatrix(MatrixT& A,
 #endif
 }
 
-template <typename MatrixT>
-void ElectricalFem3DSolver::applyBC(MatrixT& A,
-                                    DataVector<double>& B,
-                                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary, double>& bvoltage) {
-    // boundary conditions of the first kind
-    for (auto cond : bvoltage) {
-        for (auto r : cond.place) {
-            A(r, r) = 1.;
-            double val = B[r] = cond.value;
-            size_t start = (r > A.kd) ? r - A.kd : 0;
-            size_t end = (r + A.kd < A.size) ? r + A.kd + 1 : A.size;
-            for (size_t c = start; c < r; ++c) {
-                B[c] -= A(r, c) * val;
-                A(r, c) = 0.;
-            }
-            for (size_t c = r + 1; c < end; ++c) {
-                B[c] -= A(r, c) * val;
-                A(r, c) = 0.;
-            }
-        }
-    }
-}
-
-template <>
-void ElectricalFem3DSolver::applyBC<SparseBandMatrix3D>(
-    SparseBandMatrix3D& A,
-    DataVector<double>& B,
-    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary, double>& bvoltage) {
-    // boundary conditions of the first kind
-    for (auto cond : bvoltage) {
-        for (auto r : cond.place) {
-            double* rdata = A.data + LDA * r;
-            *rdata = 1.;
-            double val = B[r] = cond.value;
-            // below diagonal
-            for (ptrdiff_t i = 13; i > 0; --i) {
-                ptrdiff_t c = r - A.bno[i];
-                if (c >= 0) {
-                    B[c] -= A.data[LDA * c + i] * val;
-                    A.data[LDA * c + i] = 0.;
-                }
-            }
-            // above diagonal
-            for (ptrdiff_t i = 1; i < 14; ++i) {
-                ptrdiff_t c = r + A.bno[i];
-                if (c < A.size) {
-                    B[c] -= rdata[i] * val;
-                    rdata[i] = 0.;
-                }
-            }
-        }
-    }
-}
-
 double ElectricalFem3DSolver::compute(unsigned loops) {
-    switch (algorithm) {
-        case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
-        case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
-        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix3D>(loops);
-    }
-    return 0.;
-}
-
-template <typename MatrixT> MatrixT ElectricalFem3DSolver::makeMatrix() {
-    if (band == 0) {
-        if (use_full_mesh) {
-            band = this->mesh->minorAxis()->size() * (this->mesh->mediumAxis()->size() + 1) + 1;
-        } else {
-            for (auto element : this->maskedMesh->elements()) {
-                size_t span = element.getUpUpUpIndex() - element.getLoLoLoIndex();
-                if (span > band) band = span;
-            }
-        }
-    }
-    if (use_full_mesh)
-        return MatrixT(this->mesh->size(), band);
-    else
-        return MatrixT(this->maskedMesh->size(), band);
-}
-
-template <> SparseBandMatrix3D ElectricalFem3DSolver::makeMatrix<SparseBandMatrix3D>() {
-    if (!use_full_mesh) throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
-    return SparseBandMatrix3D(this->mesh->size(), mesh->mediumAxis()->size() * mesh->minorAxis()->size(),
-                              mesh->minorAxis()->size());
-}
-
-template <typename MatrixT> double ElectricalFem3DSolver::doCompute(unsigned loops) {
     this->initCalculation();
 
     // store boundary conditions for current mesh
@@ -478,16 +367,19 @@ template <typename MatrixT> double ElectricalFem3DSolver::doCompute(unsigned loo
 
     this->writelog(LOG_INFO, "Running electrical calculations");
 
-    MatrixT A = makeMatrix<MatrixT>();
-
     unsigned loop = 0;
     double err = 0.;
     toterr = 0.;
+
+    std::unique_ptr<FemMatrix> pA(this->getMatrix());
+    FemMatrix& A = *pA.get();
 
 #ifndef NDEBUG
     if (!potential.unique()) this->writelog(LOG_DEBUG, "Potentials data held by something else...");
 #endif
     potential = potential.claim();
+
+    DataVector<double> rhs(potential.size());
 
     auto temperature = loadConductivity();
 
@@ -495,8 +387,11 @@ template <typename MatrixT> double ElectricalFem3DSolver::doCompute(unsigned loo
     double minj = 100e-7;  // assume no significant heating below this current
 
     do {
-        setMatrix(A, potential, bvoltage, temperature);  // corr holds RHS now
-        solveMatrix(A, potential);
+        setMatrix(A, rhs, bvoltage, temperature);
+
+        DataVector<double> x(rhs);
+        A.solve(x, potential);
+        if (x.data() != potential.data()) std::swap(potential, rhs);
 
         err = 0.;
         double mcur = 0.;
@@ -553,65 +448,6 @@ template <typename MatrixT> double ElectricalFem3DSolver::doCompute(unsigned loo
     outHeat.fireChanged();
 
     return toterr;
-}
-
-void ElectricalFem3DSolver::solveMatrix(DpbMatrix& A, DataVector<double>& B) {
-    this->writelog(LOG_DETAIL, "Solving matrix system");
-
-    int info = 0;
-
-    // Factorize matrix
-    dpbtrf(UPLO, int(A.size), int(A.kd), A.data, int(A.ld) + 1, info);
-    if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", getId(), -info);
-    if (info > 0)
-        throw ComputationError(getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite", info);
-
-    // Find solutions
-    dpbtrs(UPLO, int(A.size), int(A.kd), 1, A.data, int(A.ld) + 1, B.data(), int(B.size()), info);
-    if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", getId(), -info);
-
-    // now A contains factorized matrix and B the solutions
-}
-
-void ElectricalFem3DSolver::solveMatrix(DgbMatrix& A, DataVector<double>& B) {
-    int info = 0;
-    this->writelog(LOG_DETAIL, "Solving matrix system");
-    aligned_unique_ptr<int> ipiv(aligned_malloc<int>(A.size));
-
-    A.mirror();
-
-    // Factorize matrix
-    dgbtrf(int(A.size), int(A.size), int(A.kd), int(A.kd), A.data, int(A.ld + 1), ipiv.get(), info);
-    if (info < 0) {
-        throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
-    } else if (info > 0) {
-        throw ComputationError(this->getId(), "Matrix is singular (at {0})", info);
-    }
-
-    // Find solutions
-    dgbtrs('N', int(A.size), int(A.kd), int(A.kd), 1, A.data, int(A.ld + 1), ipiv.get(), B.data(), int(B.size()), info);
-    if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
-
-    // now A contains factorized matrix and B the solutions
-}
-
-void ElectricalFem3DSolver::solveMatrix(SparseBandMatrix3D& A, DataVector<double>& B) {
-    this->writelog(LOG_DETAIL, "Solving matrix system");
-
-    PrecondJacobi3D precond(A);
-
-    DataVector<double> X = potential.copy();  // We use previous potential as initial solution
-    double err;
-    try {
-        std::size_t iter = solveDCG(A, precond, X.data(), B.data(), err, iterlim, itererr, logfreq, getId());
-        this->writelog(LOG_DETAIL, "Conjugate gradient converged after {0} iterations.", iter);
-    } catch (DCGError& err) {
-        throw ComputationError(getId(), "Conjugate gradient failed: {0}", err.what());
-    }
-
-    B = X;
-
-    // now A contains factorized matrix and B the solutions
 }
 
 void ElectricalFem3DSolver::saveHeatDensity() {
@@ -681,7 +517,7 @@ const LazyData<double> ElectricalFem3DSolver::getVoltage(shared_ptr<const MeshD<
     if (!potential) throw NoValue("Voltage");
     this->writelog(LOG_DEBUG, "Getting potential");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    if (use_full_mesh)
+    if (maskedMesh->full())
         return interpolate(mesh, potential, dest_mesh, method, geometry);
     else
         return interpolate(maskedMesh, potential, dest_mesh, method, geometry);
@@ -693,7 +529,7 @@ const LazyData<Vec<3>> ElectricalFem3DSolver::getCurrentDensity(shared_ptr<const
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(geometry, InterpolationFlags::Symmetry::NPP, InterpolationFlags::Symmetry::PNP,
                              InterpolationFlags::Symmetry::PPN);
-    if (use_full_mesh) {
+    if (maskedMesh->full()) {
         auto result = interpolate(mesh->getElementMesh(), current, dest_mesh, method, flags);
         return LazyData<Vec<3>>(result.size(), [this, dest_mesh, result, flags](size_t i) {
             return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i))) ? result[i] : Vec<3>(0., 0., 0.);
@@ -714,7 +550,7 @@ const LazyData<double> ElectricalFem3DSolver::getHeatDensity(shared_ptr<const Me
     if (!heat) saveHeatDensity();  // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(geometry);
-    if (use_full_mesh) {
+    if (maskedMesh->full()) {
         auto result = interpolate(mesh->getElementMesh(), heat, dest_mesh, method, flags);
         return LazyData<double>(result.size(), [this, dest_mesh, result, flags](size_t i) {
             return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i))) ? result[i] : 0.;
