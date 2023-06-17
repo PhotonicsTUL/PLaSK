@@ -52,7 +52,7 @@ struct SparseBandMatrix : FemMatrix {
         ACCEL_CGCR,
         ACCEL_BCGS
     };
-    // Accelelator accelerator;  ///< NSPCG acceleration method
+    Accelelator accelerator;  ///< NSPCG acceleration method
 
     /// NSPCG preconditioner
     enum Preconditioner {
@@ -75,12 +75,14 @@ struct SparseBandMatrix : FemMatrix {
         PRECOND_MBIC,
         PRECOND_MBICX
     };
-    // Preconditioner preconditioner;  ///< NSPCG preconditioner
+    Preconditioner preconditioner;  ///< NSPCG preconditioner
 
   protected:
-    int nw, inw;
-    aligned_unique_ptr<double> wksp;
-    aligned_unique_ptr<int> iwksp;
+    int nw = 0, inw = 0;
+    double* wksp = nullptr;
+    int* iwksp = nullptr;
+    int* piv;
+    int* ipiv;
 
   public:
     /**
@@ -90,7 +92,12 @@ struct SparseBandMatrix : FemMatrix {
      */
     template <typename SolverT>
     SparseBandMatrix(const SolverT* solver, size_t size, size_t major)
-        : FemMatrix(solver, size, 4, 4), bno(aligned_malloc<int>(5)), iterlim(solver->iterlim), itererr(solver->itererr) {
+        : FemMatrix(solver, size, 4, 4),
+          bno(aligned_malloc<int>(5)),
+          iterlim(solver->iterlim),
+          itererr(solver->itererr),
+          accelerator(solver->iter_accelerator),
+          preconditioner(solver->iter_preconditioner) {
         bno[0] = 0;
         bno[1] = 1;
         bno[2] = major - 1;
@@ -106,7 +113,14 @@ struct SparseBandMatrix : FemMatrix {
      */
     template <typename SolverT>
     SparseBandMatrix(const SolverT* solver, size_t size, size_t major, size_t minor)
-        : FemMatrix(solver, size, 14, 14), bno(aligned_malloc<int>(14)), iterlim(solver->iterlim), itererr(solver->itererr) {
+        : FemMatrix(solver, size, 13, 13),
+          bno(aligned_malloc<int>(14)),
+          iterlim(solver->iterlim),
+          itererr(solver->itererr),
+          accelerator(solver->iter_accelerator),
+          preconditioner(solver->iter_preconditioner),
+          piv(aligned_malloc<int>(size)),
+          ipiv(aligned_malloc<int>(size)) {
         bno[0] = 0;
         bno[1] = 1;
         bno[2] = minor - 1;
@@ -123,7 +137,13 @@ struct SparseBandMatrix : FemMatrix {
         bno[13] = major + minor + 1;
     }
 
-    ~SparseBandMatrix() { aligned_free<int>(bno); }
+    ~SparseBandMatrix() {
+        aligned_free<int>(bno);
+        aligned_free<double>(wksp);
+        aligned_free<int>(iwksp);
+        aligned_free<int>(piv);
+        aligned_free<int>(ipiv);
+    }
 
     /**
      * Return reference to array element.
@@ -149,7 +169,6 @@ struct SparseBandMatrix : FemMatrix {
 
         solver->writelog(LOG_DETAIL, "Iterating linear system");
 
-
 #ifdef NDEBUG
         iparm.level = -1;
 #else
@@ -158,17 +177,19 @@ struct SparseBandMatrix : FemMatrix {
 
         int n = size, maxnz = ld + 1;
 
-        int NW = 3 * size + 2 * iparm.itmax + size * (ld + 1);
-        int INW = ld + 1 + std::max(2 * size, (ld + 1) + (ld + 1) * (ld + 1));
+        int NW = 3 * size + 2 * iparm.itmax + size * maxnz;
+        int INW = maxnz + std::max(2 * n, maxnz * maxnz + maxnz);
 
         if (nw < NW) {
             nw = NW;
-            wksp.reset(aligned_malloc<double>(nw));
+            aligned_free<double>(wksp);
+            wksp = aligned_malloc<double>(nw);
         }
 
         if (inw < INW) {
             inw = INW;
-            iwksp.reset(aligned_malloc<int>(inw));
+            aligned_free<int>(iwksp);
+            iwksp = aligned_malloc<int>(inw);
         }
 
         // for (size_t r = 0; r < size; ++r) {
@@ -194,16 +215,65 @@ struct SparseBandMatrix : FemMatrix {
 
         // TODO add choice of algorithms and predonditioners
 
+        void (*precond_func)(...), (*accel_func)(...);
+
+        // clang-format off
+        switch (preconditioner) {
+            case PRECOND_RICH: precond_func = nspcg_rich2; break;
+            case PRECOND_JAC: precond_func = nspcg_jac2; break;
+            case PRECOND_LJAC: precond_func = nspcg_ljac2; break;
+            case PRECOND_LJACX: precond_func = nspcg_ljacx2; break;
+            case PRECOND_SOR: precond_func = nspcg_sor2; break;
+            case PRECOND_SSOR: precond_func = nspcg_ssor2; break;
+            case PRECOND_IC: precond_func = nspcg_ic2; break;
+            case PRECOND_MIC: precond_func = nspcg_mic2; break;
+            case PRECOND_LSP: precond_func = nspcg_lsp2; break;
+            case PRECOND_NEU: precond_func = nspcg_neu2; break;
+            case PRECOND_LSOR: precond_func = nspcg_lsor2; break;
+            case PRECOND_LSSOR: precond_func = nspcg_lssor2; break;
+            case PRECOND_LLSP: precond_func = nspcg_llsp2; break;
+            case PRECOND_LNEU: precond_func = nspcg_lneu2; break;
+            case PRECOND_BIC: precond_func = nspcg_bic2; break;
+            case PRECOND_BICX: precond_func = nspcg_bicx2; break;
+            case PRECOND_MBIC: precond_func = nspcg_mbic2; break;
+            case PRECOND_MBICX: precond_func = nspcg_mbicx2; break;
+        };
+        switch (accelerator) {
+            case ACCEL_CG: accel_func = nspcg_cg; break;
+            case ACCEL_SI: accel_func = nspcg_si; break;
+            case ACCEL_SOR: accel_func = nspcg_sor; break;
+            case ACCEL_SRCG: accel_func = nspcg_srcg; break;
+            case ACCEL_SRSI: accel_func = nspcg_srsi; break;
+            case ACCEL_BASIC: accel_func = nspcg_basic; break;
+            case ACCEL_ME: accel_func = nspcg_me; break;
+            case ACCEL_CGNR: accel_func = nspcg_cgnr; break;
+            case ACCEL_LSQR: accel_func = nspcg_lsqr; break;
+            case ACCEL_ODIR: accel_func = nspcg_odir; break;
+            case ACCEL_OMIN: accel_func = nspcg_omin; break;
+            case ACCEL_ORES: accel_func = nspcg_ores; break;
+            case ACCEL_IOM: accel_func = nspcg_iom; break;
+            case ACCEL_GMRES: accel_func = nspcg_gmres; break;
+            case ACCEL_USYMLQ: accel_func = nspcg_usymlq; break;
+            case ACCEL_USYMQR: accel_func = nspcg_usymqr; break;
+            case ACCEL_LANMIN: accel_func = nspcg_lanmin; break;
+            case ACCEL_LANRES: accel_func = nspcg_lanres; break;
+            case ACCEL_CGCR: accel_func = nspcg_cgcr; break;
+            case ACCEL_BCGS: accel_func = nspcg_bcgs; break;
+        };
+        // clang-format on
+
         while (true) {
-            nspcg(nspcg_mic2, nspcg_cg, n, ld + 1, n, maxnz, data, bno, nullptr, nullptr, U.data(), nullptr, B.data(),
-                  wksp.get(), iwksp.get(), nw, inw, iparm, rparm, ier);
+            nspcg(precond_func, accel_func, n, maxnz, n, maxnz, data, bno, piv, ipiv, U.data(), nullptr, B.data(),
+                  wksp, iwksp, nw, inw, iparm, rparm, ier);
 
             // Increase workspace if needed
-            if (ier == -2 && nw)
-                wksp.reset(aligned_malloc<double>(nw));
-            else if (ier == -3 && inw)
-                iwksp.reset(aligned_malloc<int>(inw));
-            else
+            if (ier == -2 && nw) {
+                aligned_free<double>(wksp);
+                wksp = aligned_malloc<double>(nw);
+            } else if (ier == -3 && inw) {
+                aligned_free<int>(iwksp);
+                iwksp = aligned_malloc<int>(inw);
+            } else
                 break;
         }
 
@@ -228,7 +298,9 @@ struct SparseBandMatrix : FemMatrix {
                 case -15: throw ComputationError(solver->getId(), "Breakdown in iterate calculation");
                 case -16: throw ComputationError(solver->getId(), "Unimplemented combination of parameters");
                 case -18: throw ComputationError(solver->getId(), "Unable to perform eigenvalue estimation");
-                case 1: writelog(LOG_WARNING, solver->getId(), "Failed to converge in {} iterations", iparm.itmax); break;
+                case 1:
+                    solver->writelog(LOG_WARNING, "Failed to converge in {} iterations (err. is {})", iparm.itmax, rparm.zeta);
+                    break;
                 case 2:
                     solver->writelog(LOG_WARNING, "`itererr` too small - reset to {}",
                                      500 * std::numeric_limits<double>::epsilon());
@@ -261,11 +333,16 @@ struct SparseBandMatrix : FemMatrix {
     }
 
     void addmult(const DataVector<const double>& vector, DataVector<double>& result) {
-        for (size_t d = 0; d <= ld; ++d) {
+        for (size_t r = 0; r < size; ++r) {
+            result[r] += data[r] * vector[r];
+        }
+        for (size_t d = 1; d <= ld; ++d) {
+            size_t sd = size * d;
             for (size_t r = 0; r < size; ++r) {
                 size_t c = r + bno[d];
                 if (c >= size) break;
-                result[r] += data[r + size * d] * vector[c];
+                result[r] += data[r + sd] * vector[c];
+                result[c] += data[r + sd] * vector[r];
             }
         }
     }
@@ -278,6 +355,7 @@ struct SparseBandMatrix : FemMatrix {
             ptrdiff_t c = r - bno[i];
             if (c >= 0) {
                 ptrdiff_t ii = c + size * i;
+                assert(ii < size * (ld + 1));
                 B[c] -= data[ii] * val;
                 data[ii] = 0.;
             }
@@ -287,6 +365,7 @@ struct SparseBandMatrix : FemMatrix {
             ptrdiff_t c = r + bno[i];
             if (c < size) {
                 size_t ii = r + size * i;
+                assert(ii < size * (ld + 1));
                 B[c] -= data[ii] * val;
                 data[ii] = 0.;
             }

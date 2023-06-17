@@ -334,7 +334,7 @@ struct rparm_t {
  * \param[inout] maxnz  active column width of the \c coef array
  * \param coef          matrix data array
  * \param jcoef         matrix data array
- * \param p, ip         pivot and inverse pivot information (or certain solvers, these vectors may not be necessary)
+ * \param p, ip         pivot and inverse pivot information (for certain solvers, these vectors may not be necessary)
  * \param[inout] u      on input the initial guess to the solution, on output the latest estimate to the solution
  * \param ubar          optional input quantity containing the true solution
  * \param rhs           right hand side of the matrix problem

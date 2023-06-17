@@ -25,8 +25,8 @@ template <typename SolverT> inline static void registerFemSolver(SolverT& solver
     solver.def_readwrite("itererr", &SolverT::Class::itererr, "Allowed residual iteration for iterative method");
     solver.def_readwrite("iterlim", &SolverT::Class::iterlim, "Maximum number of iterations for iterative method");
 
-    // solver.def_readwrite("iter_accelerator" = &SolverT::Class::iter_accelerator, u8"Iterative solver accelerator");
-    // solver.def_readwrite("iter_preconditioner" = &SolverT::Class::iter_preconditioner, u8"Iterative solver preconditioner");
+    solver.def_readwrite("iter_accelerator", &SolverT::Class::iter_accelerator, "Iterative solver accelerator");
+    solver.def_readwrite("iter_preconditioner", &SolverT::Class::iter_preconditioner, "Iterative solver preconditioner");
 
     const py::converter::registration* reg;
 
@@ -38,50 +38,56 @@ template <typename SolverT> inline static void registerFemSolver(SolverT& solver
             .value("ITERATIVE", ALGORITHM_ITERATIVE);
     }
 
-    // py_enum<SparseBandMatrix::Accelelator>()
-    //     .value("CG", SparseBandMatrix::ACCEL_CG)
-    //     .value("SI", SparseBandMatrix::ACCEL_SI)
-    //     .value("SOR", SparseBandMatrix::ACCEL_SOR)
-    //     .value("SRCG", SparseBandMatrix::ACCEL_SRCG)
-    //     .value("SRSI", SparseBandMatrix::ACCEL_SRSI)
-    //     .value("BASIC", SparseBandMatrix::ACCEL_BASIC)
-    //     .value("ME", SparseBandMatrix::ACCEL_ME)
-    //     .value("CGNR", SparseBandMatrix::ACCEL_CGNR)
-    //     .value("LSQR", SparseBandMatrix::ACCEL_LSQR)
-    //     .value("ODIR", SparseBandMatrix::ACCEL_ODIR)
-    //     .value("OMIN", SparseBandMatrix::ACCEL_OMIN)
-    //     .value("ORES", SparseBandMatrix::ACCEL_ORES)
-    //     .value("IOM", SparseBandMatrix::ACCEL_IOM)
-    //     .value("GMRES", SparseBandMatrix::ACCEL_GMRES)
-    //     .value("USYMLQ", SparseBandMatrix::ACCEL_USYMLQ)
-    //     .value("USYMQR", SparseBandMatrix::ACCEL_USYMQR)
-    //     .value("LANDIR", SparseBandMatrix::ACCEL_LANDIR)
-    //     .value("LANMIN", SparseBandMatrix::ACCEL_LANMIN)
-    //     .value("LANRES", SparseBandMatrix::ACCEL_LANRES)
-    //     .value("CGCR", SparseBandMatrix::ACCEL_CGCR)
-    //     .value("BCGS", SparseBandMatrix::ACCEL_BCGS)
-    // ;
+    reg = py::converter::registry::query(py::type_id<SparseBandMatrix::Accelelator>());
+    if (reg == NULL || reg->m_to_python == NULL)  {
+        py_enum<SparseBandMatrix::Accelelator>()
+            .value("CG", SparseBandMatrix::ACCEL_CG)
+            .value("SI", SparseBandMatrix::ACCEL_SI)
+            .value("SOR", SparseBandMatrix::ACCEL_SOR)
+            .value("SRCG", SparseBandMatrix::ACCEL_SRCG)
+            .value("SRSI", SparseBandMatrix::ACCEL_SRSI)
+            .value("BASIC", SparseBandMatrix::ACCEL_BASIC)
+            .value("ME", SparseBandMatrix::ACCEL_ME)
+            .value("CGNR", SparseBandMatrix::ACCEL_CGNR)
+            .value("LSQR", SparseBandMatrix::ACCEL_LSQR)
+            .value("ODIR", SparseBandMatrix::ACCEL_ODIR)
+            .value("OMIN", SparseBandMatrix::ACCEL_OMIN)
+            .value("ORES", SparseBandMatrix::ACCEL_ORES)
+            .value("IOM", SparseBandMatrix::ACCEL_IOM)
+            .value("GMRES", SparseBandMatrix::ACCEL_GMRES)
+            .value("USYMLQ", SparseBandMatrix::ACCEL_USYMLQ)
+            .value("USYMQR", SparseBandMatrix::ACCEL_USYMQR)
+            .value("LANDIR", SparseBandMatrix::ACCEL_LANDIR)
+            .value("LANMIN", SparseBandMatrix::ACCEL_LANMIN)
+            .value("LANRES", SparseBandMatrix::ACCEL_LANRES)
+            .value("CGCR", SparseBandMatrix::ACCEL_CGCR)
+            .value("BCGS", SparseBandMatrix::ACCEL_BCGS)
+        ;
+    }
 
-    // py_enum<SparseBandMatrix::Preconditioner>()
-    //     .value("RICH", SparseBandMatrix::PRECOND_RICH)
-    //     .value("JAC", SparseBandMatrix::PRECOND_JAC)
-    //     .value("LJAC", SparseBandMatrix::PRECOND_LJAC)
-    //     .value("LJACX", SparseBandMatrix::PRECOND_LJACX)
-    //     .value("SOR", SparseBandMatrix::PRECOND_SOR)
-    //     .value("SSOR", SparseBandMatrix::PRECOND_SSOR)
-    //     .value("IC", SparseBandMatrix::PRECOND_IC)
-    //     .value("MIC", SparseBandMatrix::PRECOND_MIC)
-    //     .value("LSP", SparseBandMatrix::PRECOND_LSP)
-    //     .value("NEU", SparseBandMatrix::PRECOND_NEU)
-    //     .value("LSOR", SparseBandMatrix::PRECOND_LSOR)
-    //     .value("LSSOR", SparseBandMatrix::PRECOND_LSSOR)
-    //     .value("LLSP", SparseBandMatrix::PRECOND_LLSP)
-    //     .value("LNEU", SparseBandMatrix::PRECOND_LNEU)
-    //     .value("BIC", SparseBandMatrix::PRECOND_BIC)
-    //     .value("BICX", SparseBandMatrix::PRECOND_BICX)
-    //     .value("MBIC", SparseBandMatrix::PRECOND_MBIC)
-    //     .value("MBICX", SparseBandMatrix::PRECOND_MBICX)
-    // ;
+    reg = py::converter::registry::query(py::type_id<SparseBandMatrix::Preconditioner>());
+    if (reg == NULL || reg->m_to_python == NULL)  {
+        py_enum<SparseBandMatrix::Preconditioner>()
+            .value("RICH", SparseBandMatrix::PRECOND_RICH)
+            .value("JAC", SparseBandMatrix::PRECOND_JAC)
+            .value("LJAC", SparseBandMatrix::PRECOND_LJAC)
+            .value("LJACX", SparseBandMatrix::PRECOND_LJACX)
+            .value("SOR", SparseBandMatrix::PRECOND_SOR)
+            .value("SSOR", SparseBandMatrix::PRECOND_SSOR)
+            .value("IC", SparseBandMatrix::PRECOND_IC)
+            .value("MIC", SparseBandMatrix::PRECOND_MIC)
+            .value("LSP", SparseBandMatrix::PRECOND_LSP)
+            .value("NEU", SparseBandMatrix::PRECOND_NEU)
+            .value("LSOR", SparseBandMatrix::PRECOND_LSOR)
+            .value("LSSOR", SparseBandMatrix::PRECOND_LSSOR)
+            .value("LLSP", SparseBandMatrix::PRECOND_LLSP)
+            .value("LNEU", SparseBandMatrix::PRECOND_LNEU)
+            .value("BIC", SparseBandMatrix::PRECOND_BIC)
+            .value("BICX", SparseBandMatrix::PRECOND_BICX)
+            .value("MBIC", SparseBandMatrix::PRECOND_MBIC)
+            .value("MBICX", SparseBandMatrix::PRECOND_MBICX)
+        ;
+    }
 }
 template <typename SolverT>
 inline static void registerFemSolverWithMaskedMesh(SolverT& solver) {

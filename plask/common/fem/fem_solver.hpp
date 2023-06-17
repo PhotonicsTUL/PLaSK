@@ -28,16 +28,15 @@ enum FemMatrixAlgorithm {
     ALGORITHM_ITERATIVE  ///< Conjugate gradient iterative solver
 };
 
-template <typename SpaceT, typename MeshT>
-struct FemSolverWithMesh : public SolverWithMesh<SpaceT, MeshT> {
+template <typename SpaceT, typename MeshT> struct FemSolverWithMesh : public SolverWithMesh<SpaceT, MeshT> {
     FemMatrixAlgorithm algorithm = ALGORITHM_CHOLESKY;  ///< Factorization algorithm to use
-    int iterlim = 1000;                        ///< Allowed residual iteration for iterative method
-    double itererr = 1e-6;                     ///< Maximum number of iterations for iterative method
+    int iterlim = 1000;                                 ///< Allowed residual iteration for iterative method
+    double itererr = 1e-6;                              ///< Maximum number of iterations for iterative method
 
-    // SparseBandMatrix::Accelelator iter_accelerator = SparseBandMatrix::ACCEL_CG;  ///< Iterative solver accelerator
-    // SparseBandMatrix::Preconditioner iter_preconditioner = SparseBandMatrix::PRECOND_NONE;  ///< Iterative solver preconditioner
+    SparseBandMatrix::Accelelator iter_accelerator = SparseBandMatrix::ACCEL_CG;          ///< Iterative solver accelerator
+    SparseBandMatrix::Preconditioner iter_preconditioner = SparseBandMatrix::PRECOND_IC;  ///< Iterative solver preconditioner
 
-    FemSolverWithMesh(const std::string& name=""): SolverWithMesh<SpaceT, MeshT>(name) {}
+    FemSolverWithMesh(const std::string& name = "") : SolverWithMesh<SpaceT, MeshT>(name) {}
 
     bool parseFemConfiguration(XMLReader& reader, Manager& manager) {
         if (reader.getNodeName() == "matrix") {
@@ -49,49 +48,50 @@ struct FemSolverWithMesh : public SolverWithMesh<SpaceT, MeshT> {
             itererr = reader.getAttribute<double>("itererr", itererr);
             iterlim = reader.getAttribute<size_t>("iterlim", iterlim);
 
-            // iter_accelerator = reader.enumAttribute<Algorithm>("algorithm")
-            //     .value("cg", SparseBandMatrix::ACCEL_CG)
-            //     .value("si", SparseBandMatrix::ACCEL_SI)
-            //     .value("sor", SparseBandMatrix::ACCEL_SOR)
-            //     .value("srcg", SparseBandMatrix::ACCEL_SRCG)
-            //     .value("srsi", SparseBandMatrix::ACCEL_SRSI)
-            //     .value("basic", SparseBandMatrix::ACCEL_BASIC)
-            //     .value("me", SparseBandMatrix::ACCEL_ME)
-            //     .value("cgnr", SparseBandMatrix::ACCEL_CGNR)
-            //     .value("lsqr", SparseBandMatrix::ACCEL_LSQR)
-            //     .value("odir", SparseBandMatrix::ACCEL_ODIR)
-            //     .value("omin", SparseBandMatrix::ACCEL_OMIN)
-            //     .value("ores", SparseBandMatrix::ACCEL_ORES)
-            //     .value("iom", SparseBandMatrix::ACCEL_IOM)
-            //     .value("gmres", SparseBandMatrix::ACCEL_GMRES)
-            //     .value("usymlq", SparseBandMatrix::ACCEL_USYMLQ)
-            //     .value("usymqr", SparseBandMatrix::ACCEL_USYMQR)
-            //     .value("landir", SparseBandMatrix::ACCEL_LANDIR)
-            //     .value("lanmin", SparseBandMatrix::ACCEL_LANMIN)
-            //     .value("lanres", SparseBandMatrix::ACCEL_LANRES)
-            //     .value("cgcr", SparseBandMatrix::ACCEL_CGCR)
-            //     .value("bcgs", SparseBandMatrix::ACCEL_BCGS)
-            //     .get(iter_accelerator);
-            // iter_preconditioner = reader.enumAttribute<Algorithm>("algorithm")
-            //     .value("rich", SparseBandMatrix::PRECOND_RICH)
-            //     .value("jac", SparseBandMatrix::PRECOND_JAC)
-            //     .value("ljac", SparseBandMatrix::PRECOND_LJAC)
-            //     .value("ljacx", SparseBandMatrix::PRECOND_LJACX)
-            //     .value("sor", SparseBandMatrix::PRECOND_SOR)
-            //     .value("ssor", SparseBandMatrix::PRECOND_SSOR)
-            //     .value("ic", SparseBandMatrix::PRECOND_IC)
-            //     .value("mic", SparseBandMatrix::PRECOND_MIC)
-            //     .value("lsp", SparseBandMatrix::PRECOND_LSP)
-            //     .value("neu", SparseBandMatrix::PRECOND_NEU)
-            //     .value("lsor", SparseBandMatrix::PRECOND_LSOR)
-            //     .value("lssor", SparseBandMatrix::PRECOND_LSSOR)
-            //     .value("llsp", SparseBandMatrix::PRECOND_LLSP)
-            //     .value("lneu", SparseBandMatrix::PRECOND_LNEU)
-            //     .value("bic", SparseBandMatrix::PRECOND_BIC)
-            //     .value("bicx", SparseBandMatrix::PRECOND_BICX)
-            //     .value("mbic", SparseBandMatrix::PRECOND_MBIC)
-            //     .value("mbicx", SparseBandMatrix::PRECOND_MBICX)
-            //     .get(iter_preconditioner);
+            iter_accelerator = reader.enumAttribute<SparseBandMatrix::Accelelator>("iter-accelerator")
+                                   .value("cg", SparseBandMatrix::ACCEL_CG)
+                                   .value("si", SparseBandMatrix::ACCEL_SI)
+                                   .value("sor", SparseBandMatrix::ACCEL_SOR)
+                                   .value("srcg", SparseBandMatrix::ACCEL_SRCG)
+                                   .value("srsi", SparseBandMatrix::ACCEL_SRSI)
+                                   .value("basic", SparseBandMatrix::ACCEL_BASIC)
+                                   .value("me", SparseBandMatrix::ACCEL_ME)
+                                   .value("cgnr", SparseBandMatrix::ACCEL_CGNR)
+                                   .value("lsqr", SparseBandMatrix::ACCEL_LSQR)
+                                   .value("odir", SparseBandMatrix::ACCEL_ODIR)
+                                   .value("omin", SparseBandMatrix::ACCEL_OMIN)
+                                   .value("ores", SparseBandMatrix::ACCEL_ORES)
+                                   .value("iom", SparseBandMatrix::ACCEL_IOM)
+                                   .value("gmres", SparseBandMatrix::ACCEL_GMRES)
+                                   .value("usymlq", SparseBandMatrix::ACCEL_USYMLQ)
+                                   .value("usymqr", SparseBandMatrix::ACCEL_USYMQR)
+                                   .value("landir", SparseBandMatrix::ACCEL_LANDIR)
+                                   .value("lanmin", SparseBandMatrix::ACCEL_LANMIN)
+                                   .value("lanres", SparseBandMatrix::ACCEL_LANRES)
+                                   .value("cgcr", SparseBandMatrix::ACCEL_CGCR)
+                                   .value("bcgs", SparseBandMatrix::ACCEL_BCGS)
+                                   .get(iter_accelerator);
+
+            iter_preconditioner = reader.enumAttribute<SparseBandMatrix::Preconditioner>("iter-preconditioner")
+                                      .value("rich", SparseBandMatrix::PRECOND_RICH)
+                                      .value("jac", SparseBandMatrix::PRECOND_JAC)
+                                      .value("ljac", SparseBandMatrix::PRECOND_LJAC)
+                                      .value("ljacx", SparseBandMatrix::PRECOND_LJACX)
+                                      .value("sor", SparseBandMatrix::PRECOND_SOR)
+                                      .value("ssor", SparseBandMatrix::PRECOND_SSOR)
+                                      .value("ic", SparseBandMatrix::PRECOND_IC)
+                                      .value("mic", SparseBandMatrix::PRECOND_MIC)
+                                      .value("lsp", SparseBandMatrix::PRECOND_LSP)
+                                      .value("neu", SparseBandMatrix::PRECOND_NEU)
+                                      .value("lsor", SparseBandMatrix::PRECOND_LSOR)
+                                      .value("lssor", SparseBandMatrix::PRECOND_LSSOR)
+                                      .value("llsp", SparseBandMatrix::PRECOND_LLSP)
+                                      .value("lneu", SparseBandMatrix::PRECOND_LNEU)
+                                      .value("bic", SparseBandMatrix::PRECOND_BIC)
+                                      .value("bicx", SparseBandMatrix::PRECOND_BICX)
+                                      .value("mbic", SparseBandMatrix::PRECOND_MBIC)
+                                      .value("mbicx", SparseBandMatrix::PRECOND_MBICX)
+                                      .get(iter_preconditioner);
 
             reader.requireTagEnd();
             return true;
@@ -102,8 +102,7 @@ struct FemSolverWithMesh : public SolverWithMesh<SpaceT, MeshT> {
     inline FemMatrix* getMatrix() const;
 };
 
-template <typename SpaceT, typename MeshT>
-inline FemMatrix* FemSolverWithMesh<SpaceT, MeshT>::getMatrix() const {
+template <typename SpaceT, typename MeshT> inline FemMatrix* FemSolverWithMesh<SpaceT, MeshT>::getMatrix() const {
     switch (algorithm) {
         case ALGORITHM_CHOLESKY: return new DpbMatrix(this, this->mesh->size(), this->mesh->minorAxis()->size() + 1);
         case ALGORITHM_GAUSS: return new DgbMatrix(this, this->mesh->size(), this->mesh->minorAxis()->size() + 1);
@@ -112,8 +111,7 @@ inline FemMatrix* FemSolverWithMesh<SpaceT, MeshT>::getMatrix() const {
     return nullptr;
 }
 
-template <>
-inline FemMatrix* FemSolverWithMesh<Geometry3D, RectangularMesh<3>>::getMatrix() const {
+template <> inline FemMatrix* FemSolverWithMesh<Geometry3D, RectangularMesh<3>>::getMatrix() const {
     size_t band = this->mesh->minorAxis()->size() * (this->mesh->mediumAxis()->size() + 1) + 1;
     switch (algorithm) {
         case ALGORITHM_CHOLESKY: return new DpbMatrix(this, this->mesh->size(), band);
@@ -127,12 +125,11 @@ inline FemMatrix* FemSolverWithMesh<Geometry3D, RectangularMesh<3>>::getMatrix()
 
 //////////////////////// Solver with masked mesh ////////////////////////
 
-template <typename SpaceT, typename MeshT>
-struct FemSolverWithMaskedMesh : public FemSolverWithMesh<SpaceT, MeshT> {
+template <typename SpaceT, typename MeshT> struct FemSolverWithMaskedMesh : public FemSolverWithMesh<SpaceT, MeshT> {
     static_assert(std::is_base_of<RectangularMesh<MeshT::DIM>, MeshT>::value,
                   "FemSolverWithMaskedMesh only works with RectangularMesh");
 
-    FemSolverWithMaskedMesh(const std::string& name="") : FemSolverWithMesh<SpaceT, MeshT>(name) {}
+    FemSolverWithMaskedMesh(const std::string& name = "") : FemSolverWithMesh<SpaceT, MeshT>(name) {}
 
   protected:
     plask::shared_ptr<RectangularMaskedMesh<MeshT::DIM>> maskedMesh = plask::make_shared<RectangularMaskedMesh<MeshT::DIM>>();
@@ -164,15 +161,12 @@ struct FemSolverWithMaskedMesh : public FemSolverWithMesh<SpaceT, MeshT> {
         }
     }
 
-    void onInitialize() {
-        setupMaskedMesh();
-    }
+    void onInitialize() { setupMaskedMesh(); }
 
     inline FemMatrix* getMatrix() const;
 };
 
-template <typename SpaceT, typename MeshT>
-inline FemMatrix* FemSolverWithMaskedMesh<SpaceT, MeshT>::getMatrix() const {
+template <typename SpaceT, typename MeshT> inline FemMatrix* FemSolverWithMaskedMesh<SpaceT, MeshT>::getMatrix() const {
     size_t band;
     if (use_full_mesh || this->algorithm == ALGORITHM_ITERATIVE) {
         band = this->mesh->minorAxis()->size() + 1;
@@ -191,8 +185,7 @@ inline FemMatrix* FemSolverWithMaskedMesh<SpaceT, MeshT>::getMatrix() const {
     return nullptr;
 }
 
-template <>
-inline FemMatrix* FemSolverWithMaskedMesh<Geometry3D, RectangularMesh<3>>::getMatrix() const {
+template <> inline FemMatrix* FemSolverWithMaskedMesh<Geometry3D, RectangularMesh<3>>::getMatrix() const {
     size_t band;
     if (use_full_mesh || algorithm == ALGORITHM_ITERATIVE) {
         band = this->mesh->minorAxis()->size() * (this->mesh->mediumAxis()->size() + 1) + 1;
