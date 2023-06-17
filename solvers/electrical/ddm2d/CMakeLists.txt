@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -32,7 +32,7 @@ include(PLaSK)
 #  BLAS, LAPACK, Matlab, ARPACK, FFTW3, GSL, ZLIB
 #
 find_package(LAPACK)
-set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
+set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES} nspcg)
 
 find_package(Eigen3)
 set(SOLVER_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR})

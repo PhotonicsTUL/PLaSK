@@ -142,7 +142,7 @@ struct SparseBandMatrix : FemMatrix {
     int solve(DataVector<double>& B, const DataVector<double>& X0) override {
         iparm_t iparm;
         rparm_t rparm;
-        dfault(iparm, rparm);
+        nspcg_dfault(iparm, rparm);
 
         iparm.itmax = iterlim;
         rparm.zeta = itererr;
@@ -189,8 +189,8 @@ struct SparseBandMatrix : FemMatrix {
         // TODO add choice of algorithms and predonditioners
 
         while (true) {
-            nspcg(mic2, cg, n, ld + 1, n, maxnz, data, bno, nullptr, nullptr, U.data(), nullptr, B.data(), wksp.get(), iwksp.get(),
-                  nw, inw, iparm, rparm, ier);
+            nspcg(nspcg_mic2, nspcg_cg, n, ld + 1, n, maxnz, data, bno, nullptr, nullptr, U.data(), nullptr, B.data(),
+                  wksp.get(), iwksp.get(), nw, inw, iparm, rparm, ier);
 
             // Increase workspace if needed
             if (ier == -2 && nw)

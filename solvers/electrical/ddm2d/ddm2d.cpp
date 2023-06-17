@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -48,7 +48,8 @@ static inline double Ni(double Nc, double Nv, double Eg, double T) {
 }
 
 template <typename Geometry2DType>
-DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const std::string& name) : SolverWithMesh <Geometry2DType, RectangularMesh<2>>(name),
+DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const std::string& name)
+  : FemSolverWithMesh<Geometry2DType, RectangularMesh<2>>(name),
     mTx(300.),
     mEx(phys::kB_eV*mTx),
     mNx(1e18),
@@ -82,7 +83,6 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     outCarriersConcentration(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getCarriersConcentration),
     outHeat(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDensities),
     //outConductivity(this, &DriftDiffusionModel2DSolver<Geometry2DType>::getConductivity),
-    algorithm(ALGORITHM_CHOLESKY),
     mRsrh(false),
     mRrad(false),
     mRaug(false),
@@ -100,9 +100,6 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     loopsPsi(3),
     loopsFn(3),
     loopsFp(3),
-    itererr(1e-8),
-    iterlim(10000),
-    logfreq(500),
 	T(300.), // TODO T=300 for kp method tests
 	T0(300.)
 {
@@ -149,24 +146,14 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::loadConfiguration(XMLReader &s
             loopsFn = source.getAttribute<size_t>("loopsFn", loopsFn);
             loopsFp = source.getAttribute<size_t>("loopsFp", loopsFp);
             source.requireTagEnd();
-        } else if (param == "matrix") {
-            algorithm = source.enumAttribute<Algorithm>("algorithm")
-                .value("cholesky", ALGORITHM_CHOLESKY)
-                .value("gauss", ALGORITHM_GAUSS)
-                .value("iterative", ALGORITHM_ITERATIVE)
-                .get(algorithm);
-            itererr = source.getAttribute<double>("itererr", itererr);
-            iterlim = source.getAttribute<size_t>("iterlim", iterlim);
-            logfreq = source.getAttribute<size_t>("logfreq", logfreq);
-            source.requireTagEnd();
         } else if (param == "config") {
 			T0 = source.getAttribute<double>("T0", T0);
 			strained = source.getAttribute<bool>("strained", strained);
 			//             quick_levels = reader.getAttribute<bool>("quick-levels", quick_levels);
 			source.requireTagEnd();
-		}
-		else
+		} else if (!this->parseFemConfiguration(source, manager)) {
             this->parseStandardConfiguration(source, manager);
+        }
     }
 }
 
@@ -271,46 +258,6 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInvalidate() {
 }
 
 
-template <typename Geometry2DType>
-template <typename MatrixT> // add deltaPsi = 0 on p- and n-contacts
-void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(MatrixT& A, DataVector<double>& B,
-                                                          const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double> & bvoltage) {
-    // boundary conditions of the first kind
-    for (auto cond: bvoltage) {
-        for (auto r: cond.place) {
-            A(r,r) = 1.;
-            B[r] = 0.;
-            size_t start = (r > A.kd)? r-A.kd : 0;
-            size_t end = (r + A.kd < A.size)? r+A.kd+1 : A.size;
-            for(size_t c = start; c < r; ++c) A(r,c) = 0.;
-            for(size_t c = r+1; c < end; ++c) A(r,c) = 0.;
-        }
-    }
-}
-
-template <typename Geometry2DType> // add deltaPsi = 0 on p- and n-contacts
-void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(SparseBandMatrix& A, DataVector<double>& B,
-                                                          const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double> &bvoltage) {
-    // boundary conditions of the first kind
-    for (auto cond: bvoltage) {
-        for (auto r: cond.place) {
-            double* rdata = A.data + LDA*r;
-            *rdata = 1.;
-            B[r] = 0.;
-            // below diagonal
-            for (ptrdiff_t i = 4; i > 0; --i) {
-                ptrdiff_t c = r - A.bno[i];
-                if (c >= 0) A.data[LDA*c+i] = 0.;
-            }
-            // above diagonal
-            for (ptrdiff_t i = 1; i < 5; ++i) {
-                ptrdiff_t c = r + A.bno[i];
-                if (c < A.size) rdata[i] = 0.;
-            }
-        }
-    }
-}
-
 template <>
 inline void DriftDiffusionModel2DSolver<Geometry2DCartesian>::addCurvature(double&, double&, double&, double&,
                              double&, double&, double&, double&, double&, double&,
@@ -337,8 +284,8 @@ inline void DriftDiffusionModel2DSolver<Geometry2DCylindrical>::addCurvature(dou
 }
 
 template <typename Geometry2DType>
-template <CalcType calctype, typename MatrixT>
-void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVector<double>& B,
+template <CalcType calctype>
+void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(FemMatrix& A, DataVector<double>& B,
                                                             const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double> &bvoltage)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
@@ -617,7 +564,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
     }
 
     // boundary conditions of the first kind
-    applyBC(A, B, bvoltage);
+    A.applyBC(bvoltage, B);
 
 #ifndef NDEBUG
     double* aend = A.data + A.size * A.kd;
@@ -999,17 +946,6 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findPsiI(double iEc0, double
     return tPsi0;
 }
 
-
-template <typename Geometry2DType>
-double DriftDiffusionModel2DSolver<Geometry2DType>::compute(unsigned loops) {
-    switch (algorithm) {
-        case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
-        case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
-        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix>(loops);
-    }
-    return 0.;
-}
-
 template <typename Geometry2DType>
 double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 	this->writelog(LOG_INFO, "Finding energy levels..");
@@ -1212,8 +1148,7 @@ bool DriftDiffusionModel2DSolver<Geometry2DType>::checkWell(std::string _carrier
 }
 
 template <typename Geometry2DType>
-template <typename MatrixT>
-double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
+double DriftDiffusionModel2DSolver<Geometry2DType>::compute(unsigned loops)
 {
     bool was_initialized = !this->initCalculation();
     needPsi0 |= !was_initialized;
@@ -1228,7 +1163,9 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
 
     this->writelog(LOG_INFO, "Running drift-diffusion calculations for a single voltage");
 
-    MatrixT A(size, this->mesh->minorAxis()->size());
+    std::unique_ptr<FemMatrix> pA(this->getMatrix());
+    FemMatrix& A = *pA.get();
+
     DataVector<double> B(size);
 
     double errorPsi0 = 0.;
@@ -1239,7 +1176,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
         unsigned iter = 0;
         while (errorPsi0 > maxerrPsi0 && iter < loopsPsi0) {
             setMatrix<CALC_PSI0>(A, B, vconst);
-            solveMatrix(A, B);
+            A.solve(B);
             errorPsi0 = addCorr<CALC_PSI0>(B, vconst); // max. update
             this->writelog(LOG_DEBUG, "Initial potential maximum update: {0}", errorPsi0*mEx); // czy dla Fn i Fp tez bedzie mEx?
             iter += 1;
@@ -1292,7 +1229,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
         err = 2.*maxerrPsi;
         while(err > maxerrPsi && itersPsi < loopsPsi) {
             setMatrix<CALC_PSI>(A, B, vconst);
-            solveMatrix(A, B);
+            A.solve(B);
             err = addCorr<CALC_PSI>(B, vconst); // max. update
             if (err > errorPsi) errorPsi = err;
             this->writelog(LOG_DETAIL, "Maximum potential update: {0}", err*mEx); // czy dla Fn i Fp tez bedzie mEx?
@@ -1307,7 +1244,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
         err = 2.*maxerrFn;
         while(err > maxerrFn && itersFn < loopsFn) {
             setMatrix<CALC_FN>(A, B, vconst);
-            solveMatrix(A, B);
+            A.solve(B);
             err = addCorr<CALC_FN>(B, vconst); // max. update
             if (err > errorFn) errorFn = err;
             this->writelog(LOG_DETAIL, "Maximum electrons quasi-Fermi level update: {0}", err*mEx); // czy dla Fn i Fp tez bedzie mEx?
@@ -1321,7 +1258,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
         err = 2.*maxerrFp;
         while(err > maxerrFp && itersFp < loopsFp) {
             setMatrix<CALC_FP>(A, B, vconst);
-            solveMatrix(A, B);
+            A.solve(B);
             err = addCorr<CALC_FP>(B, vconst); // max. update
             if (err > errorFp) errorFp = err;
             this->writelog(LOG_DETAIL, "Maximum holes quasi-Fermi level update: {0}", err*mEx); // czy dla Fn i Fp tez bedzie mEx?
@@ -1387,74 +1324,6 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
     outHeat.fireChanged();
 
     return errorPsi + errorFn + errorFp;
-}
-
-
-template <typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& A, DataVector<double>& B)
-{
-    int info = 0;
-
-    this->writelog(LOG_DETAIL, "Solving matrix system");
-
-    // Factorize matrix
-    dpbtrf(UPLO, int(A.size), int(A.kd), A.data, int(A.ld+1), info);
-    if (info < 0)
-        throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", this->getId(), -info);
-    else if (info > 0)
-        throw ComputationError(this->getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite", info);
-
-    // Find solutions
-    dpbtrs(UPLO, int(A.size), int(A.kd), 1, A.data, int(A.ld+1), B.data(), int(B.size()), info);
-    if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", this->getId(), -info);
-
-    // now A contains factorized matrix and B the solutions
-}
-
-template <typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, DataVector<double>& B)
-{
-    int info = 0;
-    this->writelog(LOG_DETAIL, "Solving matrix system");
-    aligned_unique_ptr <int> ipiv(aligned_malloc<int>(A.size));
-
-    A.mirror();
-
-    // Factorize matrix
-    dgbtrf(int(A.size), int(A.size), int(A.kd), int(A.kd), A.data, int(A.ld+1), ipiv.get(), info);
-    if (info < 0) {
-        throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
-    } else if (info > 0) {
-        throw ComputationError(this->getId(), "Matrix is singlar (at {0})", info);
-    }
-
-    // Find solutions
-    dgbtrs('N', int(A.size), int(A.kd), int(A.kd), 1, A.data, int(A.ld+1), ipiv.get(), B.data(), int(B.size()), info);
-    if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
-
-    // now A contains factorized matrix and B the solutions
-}
-
-template <typename Geometry2DType>
-void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix& ioA, DataVector<double>& B)
-{
-    this->writelog(LOG_DETAIL, "Solving matrix system");
-
-    PrecondJacobi precond(ioA);
-
-    //DataVector < double> x = dvnPsi.copy(); // We use previous potentials as initial solution // LP_09.2015
-    DataVector < double> x(B.size(), 0.); // We use 0 as initial solution for corrections // LP_09.2015
-    double err;
-    try {
-        std::size_t iter = solveDCG(ioA, precond, x.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
-        this->writelog(LOG_DETAIL, "Conjugate gradient converged after {0} iterations.", iter);
-    } catch (DCGError& exc) {
-        throw ComputationError(this->getId(), "Conjugate gradient failed:, {0}", exc.what());
-    }
-
-    B = x;
-
-    // now A contains factorized matrix and B the solutions
 }
 
 template <typename Geometry2DType>

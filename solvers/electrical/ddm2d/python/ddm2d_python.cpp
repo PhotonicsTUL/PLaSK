@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -13,6 +13,7 @@
  */
 #include <cmath>
 #include <plask/python.hpp>
+#include <plask/common/fem/python.hpp>
 using namespace plask;
 using namespace plask::python;
 
@@ -55,10 +56,6 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     solver.def_readwrite("loopsV", &__Class__::loopsPsi, u8"Loops limit for the potential");
     solver.def_readwrite("loopsFn", &__Class__::loopsFn, u8"Loops limit for the electrons quasi-Fermi level");
     solver.def_readwrite("loopsFp", &__Class__::loopsFp, u8"Loops limit for the holes quasi-Fermi level");
-    solver.def_readwrite("algorithm", &__Class__::algorithm, u8"Chosen matrix factorization algorithm");
-    solver.def_readwrite("itererr", &__Class__::itererr, u8"Allowed residual iteration for iterative method");
-    solver.def_readwrite("iterlim", &__Class__::iterlim, u8"Maximum number of iterations for iterative method");
-    solver.def_readwrite("logfreq", &__Class__::logfreq, u8"Frequency of iteration progress reporting");
     solver.def_readwrite("Rsrh", &__Class__::mRsrh, u8"True if SRH recombination is taken into account");
     solver.def_readwrite("Rrad", &__Class__::mRrad, u8"True if radiative recombination is taken into account");
     solver.def_readwrite("Raug", &__Class__::mRaug, u8"True if Auger recombination is taken into account");
@@ -86,6 +83,7 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
            u8"Return:\n"
            u8"    Total produced heat [mW].\n"
     );*/
+    registerFemSolver(solver);
 }
 
 /**
@@ -96,12 +94,6 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
  */
 BOOST_PYTHON_MODULE(ddm2d)
 {
-    py_enum<Algorithm>()
-        .value("CHOLESKY", ALGORITHM_CHOLESKY)
-        .value("GAUSS", ALGORITHM_GAUSS)
-        .value("ITERATIVE", ALGORITHM_ITERATIVE)
-    ;
-
     py_enum<Stat>()
         .value("MAXWELL_BOLTZMANN", STAT_MB)
         .value("FERMI_DIRAC", STAT_FD)
@@ -116,4 +108,3 @@ BOOST_PYTHON_MODULE(ddm2d)
 
     register_drift_diffusion_solver<Geometry2DCylindrical>("DriftDiffusionCyl", "cylindrical");
 }
-
