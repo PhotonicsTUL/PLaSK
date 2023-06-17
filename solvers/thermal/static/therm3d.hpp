@@ -15,25 +15,18 @@
 #define PLASK__MODULE_THERMAL_TFem_H
 
 #include <plask/plask.hpp>
+#include <plask/common/fem.hpp>
 
 #include "common.hpp"
-#include "block_matrix.hpp"
-#include "gauss_matrix.hpp"
-#include "iterative_matrix3d.hpp"
 
 namespace plask { namespace thermal { namespace tstatic {
 
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
-struct PLASK_SOLVER_API ThermalFem3DSolver: public SolverWithMesh<Geometry3D, RectangularMesh<3>> {
+struct PLASK_SOLVER_API ThermalFem3DSolver: public FemSolverWithMaskedMesh<Geometry3D, RectangularMesh<3>> {
 
   protected:
-
-    /// Masked mesh
-    plask::shared_ptr<RectangularMaskedMesh3D> maskedMesh = plask::make_shared<RectangularMaskedMesh3D>();
-
-    Algorithm algorithm;   ///< Factorization algorithm to use
 
     int loopno;         ///< Number of completed loops
     double maxT;        ///< Maximum temperature recorded
@@ -72,20 +65,8 @@ struct PLASK_SOLVER_API ThermalFem3DSolver: public SolverWithMesh<Geometry3D, Re
     template <typename MatrixT>
     MatrixT makeMatrix();
 
-    /// Update stored temperatures and calculate corrections
-    double saveTemperatures(DataVector<double>& T);
-
     /// Create 3D-vector with calculated heat fluxes
     void saveHeatFluxes(); // [W/m^2]
-
-    /// Matrix solver for the block cholesky algorithm
-    void solveMatrix(DpbMatrix& A, DataVector<double>& B);
-
-    /// Matrix solver for the block gauss algorithm
-    void solveMatrix(DgbMatrix& A, DataVector<double>& B);
-
-    /// Matrix solver for the iterative algorithm
-    void solveMatrix(SparseBandMatrix3D& A, DataVector<double>& B);
 
     /// Initialize the solver
     void onInitialize() override;
@@ -93,17 +74,10 @@ struct PLASK_SOLVER_API ThermalFem3DSolver: public SolverWithMesh<Geometry3D, Re
     /// Invalidate the data
     void onInvalidate() override;
 
-    /// Perform computations for particular matrix type
-    template <typename MatrixT>
-    double doCompute(int loops=1);
-
   public:
 
     double inittemp;    ///< Initial temperature
     double maxerr;     ///< Maximum temperature correction accepted as convergence
-
-    double itererr;     ///< Allowed residual iteration for iterative method
-    size_t iterlim;     ///< Maximum nunber of iterations for iterative method
 
     // Boundary conditions
     BoundaryConditions<RectangularMesh<3>::Boundary,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]
@@ -118,14 +92,6 @@ struct PLASK_SOLVER_API ThermalFem3DSolver: public SolverWithMesh<Geometry3D, Re
     typename ProviderFor<ThermalConductivity,Geometry3D>::Delegate outThermalConductivity;
 
     ReceiverFor<Heat,Geometry3D> inHeat;
-
-    /// Are we using full mesh?
-    bool usingFullMesh() const { return use_full_mesh; }
-    /// Set whether we should use full mesh
-    void useFullMesh(bool val) {
-        use_full_mesh = val;
-        invalidate();
-    }
 
     /**
      * Run temperature calculations

@@ -14,22 +14,17 @@
 #include <type_traits>
 
 #include "therm3d.hpp"
-#include "conjugate_gradient.hpp"
 
 namespace plask { namespace thermal { namespace tstatic {
 
 ThermalFem3DSolver::ThermalFem3DSolver(const std::string& name) :
-    SolverWithMesh<Geometry3D, RectangularMesh<3>>(name),
-    algorithm(ALGORITHM_CHOLESKY),
+    FemSolverWithMaskedMesh<Geometry3D, RectangularMesh<3>>(name),
     loopno(0),
     inittemp(300.),
     maxerr(0.05),
-    itererr(1e-8),
-    iterlim(10000),
     outTemperature(this, &ThermalFem3DSolver::getTemperatures),
     outHeatFlux(this, &ThermalFem3DSolver::getHeatFluxes),
-    outThermalConductivity(this, &ThermalFem3DSolver::getThermalConductivity),
-    use_full_mesh(false)
+    outThermalConductivity(this, &ThermalFem3DSolver::getThermalConductivity)
 {
     temperatures.reset();
     fluxes.reset();
@@ -65,21 +60,7 @@ void ThermalFem3DSolver::loadConfiguration(XMLReader &source, Manager &manager)
             source.requireTagEnd();
         }
 
-        else if (param == "matrix") {
-            algorithm = source.enumAttribute<Algorithm>("algorithm")
-                .value("cholesky", ALGORITHM_CHOLESKY)
-                .value("gauss", ALGORITHM_GAUSS)
-                .value("iterative", ALGORITHM_ITERATIVE)
-                .get(algorithm);
-            itererr = source.getAttribute<double>("itererr", itererr);
-            iterlim = source.getAttribute<size_t>("iterlim", iterlim);
-            source.requireTagEnd();
-        }
-
-        else {
-            if (param == "mesh") {
-                use_full_mesh = source.getAttribute<bool>("include-empty", use_full_mesh);
-            }
+        else if (!parseFemConfiguration(source, manager)) {
             this->parseStandardConfiguration(source, manager);
         }
     }
@@ -90,15 +71,9 @@ void ThermalFem3DSolver::onInitialize() {
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
 
-    if (use_full_mesh || algorithm == ALGORITHM_ITERATIVE) {
-        if (!use_full_mesh) writelog(LOG_WARNING, this->getId(), "For iterative algorithm empty materials are always included");
-        maskedMesh->selectAll(*this->mesh);
-    } else {
-        maskedMesh->reset(*this->mesh, *this->geometry, ~plask::Material::EMPTY);
-    }
+    FemSolverWithMaskedMesh<Geometry3D, RectangularMesh<3>>::onInitialize();
 
     loopno = 0;
-    band = 0;
 
     temperatures.reset(this->maskedMesh->size(), inittemp);
 
@@ -300,85 +275,10 @@ void ThermalFem3DSolver::setMatrix(MatrixT& A, DataVector<double>& B,
         }
     }
 
-    applyBC(A, B, btemperature);
+    A.applyBC(B, btemperature);
 }
 
-template <typename MatrixT>
-void ThermalFem3DSolver::applyBC(MatrixT& A, DataVector<double>& B,
-                                                 const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature) {
-    // boundary conditions of the first kind
-    for (auto cond: btemperature) {
-        for (auto r: cond.place) {
-            A(r,r) = 1.;
-            double val = B[r] = cond.value;
-            size_t start = (r > A.kd)? r-A.kd : 0;
-            size_t end = (r + A.kd < A.size)? r+A.kd+1 : A.size;
-            for(size_t c = start; c < r; ++c) {
-                B[c] -= A(r,c) * val;
-                A(r,c) = 0.;
-            }
-            for(size_t c = r+1; c < end; ++c) {
-                B[c] -= A(r,c) * val;
-                A(r,c) = 0.;
-            }
-        }
-    }
-}
-
-template <>
-void ThermalFem3DSolver::applyBC<SparseBandMatrix3D>(SparseBandMatrix3D& A, DataVector<double>& B,
-                                                     const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature) {
-    // boundary conditions of the first kind
-    for (auto cond: btemperature) {
-        for (auto r: cond.place) {
-            A.data[r] = 1.;
-            double val = B[r] = cond.value;
-            // above diagonal
-            for (ptrdiff_t i = A.kd; i > 0; --i) {
-                ptrdiff_t c = r - A.bno[i];
-                if (c >= 0) {
-                    ptrdiff_t ii = c + A.size * i;
-                    B[c] -= A.data[ii] * val;
-                    A.data[ii] = 0.;
-                }
-            }
-            // below diagonal
-            for (ptrdiff_t i = 1; i < A.nd; ++i) {
-                ptrdiff_t c = r + A.bno[i];
-                if (c < A.size) {
-                    size_t ii = r + A.size * i;
-                    B[c] -= A.data[ii] * val;
-                    A.data[ii] = 0.;
-                }
-            }
-        }
-    }
-}
-
-
-template <typename MatrixT>
-MatrixT ThermalFem3DSolver::makeMatrix() {
-    if (band == 0) {
-        if (use_full_mesh) {
-            band = this->mesh->minorAxis()->size() + 1;
-        } else {
-            for (auto element: this->maskedMesh->elements()) {
-                size_t span = element.getUpUpUpIndex() - element.getLoLoLoIndex();
-                if (span > band) band = span;
-            }
-        }
-    }
-    return MatrixT(this->maskedMesh->size(), band);
-}
-
-template <>
-SparseBandMatrix3D ThermalFem3DSolver::makeMatrix<SparseBandMatrix3D>() {
-    return SparseBandMatrix3D(this->maskedMesh->size(), mesh->mediumAxis()->size()*mesh->minorAxis()->size(), mesh->minorAxis()->size());
-}
-
-
-template <typename MatrixT>
-double ThermalFem3DSolver::doCompute(int loops)
+double ThermalFem3DSolver::compute(int loops)
 {
     this->initCalculation();
 
@@ -395,7 +295,8 @@ double ThermalFem3DSolver::doCompute(int loops)
     int loop = 0;
     size_t size = maskedMesh->size();
 
-    MatrixT A = makeMatrix<MatrixT>();
+    std::unique_ptr<FemMatrix> pA(getMatrix());
+    FemMatrix& A = *pA.get();
 
     double err = 0.;
     toterr = 0.;
@@ -404,14 +305,26 @@ double ThermalFem3DSolver::doCompute(int loops)
         if (!temperatures.unique()) this->writelog(LOG_DEBUG, "Temperature data held by something else...");
 #   endif
     temperatures = temperatures.claim();
-    DataVector<double> T(size);
+
+    DataVector<double> BT(size), temp0(size);
 
     do {
-        setMatrix(A, T, btemperature, bheatflux, bconvection, bradiation);
-        solveMatrix(A, T);
+        setMatrix(A, BT, btemperature, bheatflux, bconvection, bradiation);
+        std::copy(temperatures.begin(), temperatures.end(), temp0.begin());
 
-        err = saveTemperatures(T);
+        A.solve(BT, temperatures);
 
+        if (BT.data() != temperatures.data()) std::swap(BT, temperatures);
+
+        // Update error
+        err = 0.;
+        maxT = 0.;
+        for (auto temp = temperatures.begin(), t = temp0.begin(); t != temp0.end(); ++temp, ++t)
+        {
+            double corr = std::abs(*t - *temp); // for boundary with constant temperature this will be zero anyway
+            if (corr > err) err = corr;
+            if (*t > maxT) maxT = *t;
+        }
         if (err > toterr) toterr = err;
 
         ++loopno;
@@ -427,85 +340,6 @@ double ThermalFem3DSolver::doCompute(int loops)
 
     return toterr;
 }
-
-
-double ThermalFem3DSolver::compute(int loops) {
-    switch (algorithm) {
-        case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
-        case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
-        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix3D>(loops);
-    }
-    return 0.;
-}
-
-
-
-void ThermalFem3DSolver::solveMatrix(DpbMatrix& A, DataVector<double>& B)
-{
-    this->writelog(LOG_DETAIL, "Solving matrix system");
-
-    int info = 0;
-
-    // Factorize matrix
-    dpbtrf(UPLO, int(A.size), int(A.kd), A.data, int(A.ld+1), info);
-    if (info < 0)
-        throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", this->getId(), -info);
-    if (info > 0)
-        throw ComputationError(this->getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite", info);
-
-    // Find solutions
-    dpbtrs(UPLO, int(A.size), int(A.kd), 1, A.data, int(A.ld+1), B.data(), int(B.size()), info);
-    if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", this->getId(), -info);
-
-    // now A contains factorized matrix and B the solutions
-}
-
-
-void ThermalFem3DSolver::solveMatrix(DgbMatrix& A, DataVector<double>& B)
-{
-    int info = 0;
-    this->writelog(LOG_DETAIL, "Solving matrix system");
-    aligned_unique_ptr<int> ipiv(aligned_malloc<int>(A.size));
-
-    A.mirror();
-
-    // Factorize matrix
-    dgbtrf(int(A.size), int(A.size), int(A.kd), int(A.kd), A.data, int(A.ld+1), ipiv.get(), info);
-    if (info < 0) {
-        throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
-    } else if (info > 0) {
-        throw ComputationError(this->getId(), "Matrix is singlar (at {0})", info);
-    }
-
-    // Find solutions
-    dgbtrs('N', int(A.size), int(A.kd), int(A.kd), 1, A.data, int(A.ld+1), ipiv.get(), B.data(), int(B.size()), info);
-    if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
-
-    // now A contains factorized matrix and B the solutions
-}
-
-
-void ThermalFem3DSolver::solveMatrix(SparseBandMatrix3D& A, DataVector<double>& B)
-{
-    this->writelog(LOG_DETAIL, "Solving matrix system");
-    A.matrix_solver.solve(this, A, B);
-}
-
-
-double ThermalFem3DSolver::saveTemperatures(DataVector<double>& T)
-{
-    double err = 0.;
-    maxT = 0.;
-    for (auto temp = temperatures.begin(), t = T.begin(); t != T.end(); ++temp, ++t)
-    {
-        double corr = std::abs(*t - *temp); // for boundary with constant temperature this will be zero anyway
-        if (corr > err) err = corr;
-        if (*t > maxT) maxT = *t;
-    }
-    std::swap(temperatures, T);
-    return err;
-}
-
 
 void ThermalFem3DSolver::saveHeatFluxes()
 {
@@ -556,7 +390,7 @@ const LazyData<double> ThermalFem3DSolver::getTemperatures(const shared_ptr<cons
     this->writelog(LOG_DEBUG, "Getting temperatures");
     if (!temperatures) return LazyData<double>(dst_mesh->size(), inittemp); // in case the receiver is connected and no temperature calculated yet
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    if (use_full_mesh)
+    if (this->maskedMesh->full())
         return SafeData<double>(interpolate(this->mesh, temperatures, dst_mesh, method, this->geometry), 300.);
     else
         return SafeData<double>(interpolate(this->maskedMesh, temperatures, dst_mesh, method, this->geometry), 300.);
@@ -568,7 +402,7 @@ const LazyData<Vec<3>> ThermalFem3DSolver::getHeatFluxes(const shared_ptr<const 
     if (!temperatures) return LazyData<Vec<3>>(dst_mesh->size(), Vec<3>(0.,0.,0.)); // in case the receiver is connected and no fluxes calculated yet
     if (!fluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    if (use_full_mesh)
+    if (this->maskedMesh->full())
         return SafeData<Vec<3>>(interpolate(this->mesh->getElementMesh(), fluxes, dst_mesh, method,
                                             InterpolationFlags(this->geometry, InterpolationFlags::Symmetry::NPP, InterpolationFlags::Symmetry::PNP, InterpolationFlags::Symmetry::PPN)),
                                 Zero<Vec<3>>());

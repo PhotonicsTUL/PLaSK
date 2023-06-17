@@ -25,6 +25,7 @@ PLaSK
 pmls
 preconditioner
 preconditioners
+predonditioners
 redmine
 rtype
 SOLVERCYL

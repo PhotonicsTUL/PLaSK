@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -211,7 +211,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
             boundaryIndex[d].lo = this->fullMesh.axis[d]->size()-1;
             boundaryIndex[d].up = 0;
         }
-        boundatyIndexInitialized = false;
+        boundaryIndexInitialized = false;
     }
 
     /// Clear nodeSet, elementSet and call resetBoundyIndex().
@@ -291,6 +291,11 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     bool empty() const override { return nodeSet.empty(); }
 
     /**
+     * \return true if all nodes of the wrapped mesh are selected
+     */
+    bool full() const { return nodeSet.size() == fullMesh.size(); }
+
+    /**
      * Set wrapped mesh and select all its elements.
      * @param rectangularMesh input mesh, before masking
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
@@ -311,7 +316,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
             boundaryIndex[d].lo = 0;
             boundaryIndex[d].up = fullMesh.axis[d]->size()-1;
         }
-        boundatyIndexInitialized = true;
+        boundaryIndexInitialized = true;
     }
 
     /**
@@ -474,7 +479,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     bool elementSetInitialized = true;
 
     /// Whether boundatyIndex is initialized.
-    bool boundatyIndexInitialized;
+    bool boundaryIndexInitialized;
 
   private:
 
@@ -567,7 +572,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     template <int d = DIM>
     typename std::enable_if<d == 2>::type calculateBoundaryIndex() {
         boost::lock_guard<boost::mutex> lock((boost::mutex&)writeMutex);
-        if (boundatyIndexInitialized) return;  // another thread has initilized boundaryIndex just when we waited for mutex
+        if (boundaryIndexInitialized) return;  // another thread has initilized boundaryIndex just when we waited for mutex
 
         const auto minor = fullMesh.minorAxisIndex();
         const auto major = fullMesh.majorAxisIndex();
@@ -585,13 +590,13 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
             boundaryIndex[major].improveUp(indexes_l[major]);
         });
 
-        boundatyIndexInitialized = true;
+        boundaryIndexInitialized = true;
     }
 
     template <int d = DIM>
     typename std::enable_if<d == 3>::type calculateBoundaryIndex() {
         boost::lock_guard<boost::mutex> lock((boost::mutex&)writeMutex);
-        if (boundatyIndexInitialized) return;  // another thread has initilized boundaryIndex just when we waited for mutex
+        if (boundaryIndexInitialized) return;  // another thread has initilized boundaryIndex just when we waited for mutex
 
         const auto minor = fullMesh.minorAxisIndex();
         const auto medium = fullMesh.mediumAxisIndex();
@@ -620,7 +625,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
             boundaryIndex[major].improveUp(indexes_l[major]);
         });
 
-        boundatyIndexInitialized = true;
+        boundaryIndexInitialized = true;
     }
 
   protected:
@@ -638,7 +643,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
      * @return this->boundaryIndex
      */
     const BoundaryIndex& ensureHasBoundaryIndex() const {
-        if (!boundatyIndexInitialized) const_cast<RectangularMaskedMeshBase<DIM>*>(this)->calculateBoundaryIndex();
+        if (!boundaryIndexInitialized) const_cast<RectangularMaskedMeshBase<DIM>*>(this)->calculateBoundaryIndex();
         return boundaryIndex;
     }
 };

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -11,11 +11,12 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#ifndef PLASK__MODULE_ELECTRICAL_GAUSS_MATRIX_H
-#define PLASK__MODULE_ELECTRICAL_GAUSS_MATRIX_H
+#ifndef PLASK_COMMON_FEM_GAUSS_MATRIX_H
+#define PLASK_COMMON_FEM_GAUSS_MATRIX_H
 
 #include <cstddef>
-#include <plask/plask.hpp>
+
+#include "matrix.hpp"
 
 // BLAS routine to multiply matrix by vector
 #define dgbmv F77_GLOBAL(dgbmv,DGBMV)
@@ -31,19 +32,15 @@ F77SUB dgbtrf(const int& m, const int& n, const int& kl, const int& ku, double* 
 F77SUB dgbtrs(const char& trans, const int& n, const int& kl, const int& ku, const int& nrhs, double* ab, const int& ldab, int* ipiv, double* b, const int& ldb, int& info);
 
 
-namespace plask { namespace thermal { namespace tstatic {
+namespace plask {
 
 /**
- * Oversimple symmetric band matrix structure. It only offers easy access to elements and nothing more.
+ * Symmetric band matrix structure.
  * Data is stored in LAPACK format.
  */
-struct DgbMatrix {
+struct DgbMatrix: FemMatrix {
 
-    const size_t size;  ///< Order of the matrix, i.e. number of columns or rows
-    const size_t ld;    ///< leading dimension of the matrix
-    const size_t kd;    ///< Size of the band reduced by one
     const size_t shift; ///< Shift of the diagonal
-    double* data;       ///< Pointer to data
 
     aligned_unique_ptr<int> ipiv;
 
@@ -52,26 +49,12 @@ struct DgbMatrix {
      * \param rank size of the matrix
      * \param band band size
      */
-    DgbMatrix(size_t rank, size_t band):
-        size(rank), ld(((3*band+1+(15/sizeof(double))) & ~size_t(15/sizeof(double))) - 1),
-        kd(band), shift(2*band), data(aligned_malloc<double>(rank*(ld+1))) {}
+    DgbMatrix(const Solver* solver, size_t rank, size_t band): FemMatrix(solver, rank, band, ((3*band+1+(15/sizeof(double))) & ~size_t(15/sizeof(double))) - 1),
+        shift(2*band) {}
 
+    DgbMatrix(const DgbMatrix&) = delete;
 
-    DgbMatrix(const DgbMatrix&) = delete; // this object is non-copyable
-
-    DgbMatrix(DgbMatrix&& src): size(src.size), ld(src.ld), kd(src.kd), shift(src.shift),
-        data(src.data), ipiv(std::move(src.ipiv)) {
-            src.data = nullptr;
-    }
-
-    ~DgbMatrix() { if (data) aligned_free(data); }
-
-    /**
-     * Return index in data array
-     * \param r index of the element row
-     * \param c index of the element column
-     */
-    size_t index(size_t r, size_t c) {
+    size_t index(size_t r, size_t c) override {
         assert(r < size && c < size);
         if (r < c) {
             assert(c - r <= kd);
@@ -83,28 +66,36 @@ struct DgbMatrix {
         }
     }
 
-    /**
-     * Return reference to array element
-     * \param r index of the element row
-     * \param c index of the element column
-     **/
-    double& operator()(size_t r, size_t c) {
-        return data[index(r,c)];
-    }
+    void factorize() override {
+        solver->writelog(LOG_DETAIL, "Factorizing system");
 
-    /// Clear the matrix
-    void clear() {
-        std::fill_n(data, size * (ld+1), 0.);
-    }
+        int info = 0;
+        ipiv.reset(aligned_malloc<int>(size));
 
-    /// Mirror upper part of the matrix to the lower one
-    void mirror() {
-        for (size_t i = 0; i < size; ++i) {
-            size_t ldi = shift + (ld+1) * i;
-            size_t knd = min(kd, size-1-i);
-            for (size_t j = 1; j <= knd; ++j)
-                data[ldi + j] = data[ldi + ld * j];
+        mirror();
+
+        // Factorize matrix
+        dgbtrf(int(size), int(size), int(kd), int(kd), data, int(ld+1), ipiv.get(), info);
+        if (info < 0) {
+            throw CriticalException("{0}: Argument {1} of `dgbtrf` has illegal value", solver->getId(), -info);
+        } else if (info > 0) {
+            throw ComputationError(solver->getId(), "Matrix is singular (at {0})", info);
         }
+
+        is_factorized = true;
+    }
+
+    int solve(DataVector<double>& B, const DataVector<double>&) override
+    {
+        if (!is_factorized) factorize();
+
+        solver->writelog(LOG_DETAIL, "Solving matrix system");
+
+        int info = 0;
+        dgbtrs('N', int(size), int(kd), int(kd), 1, data, int(ld+1), ipiv.get(), B.data(), int(B.size()), info);
+        if (info < 0) throw CriticalException("{0}: Argument {1} of `dgbtrs` has illegal value", solver->getId(), -info);
+
+        return 1;
     }
 
     /**
@@ -126,8 +117,21 @@ struct DgbMatrix {
         mirror();
         dgbmv('N', int(size), int(size), int(kd), int(kd), 1.0, data, int(ld)+1, vector.data(), 1, 1.0, result.data(), 1);
     }
+
+  private:
+
+    /// Mirror upper part of the matrix to the lower one
+    void mirror() {
+        for (size_t i = 0; i < size; ++i) {
+            size_t ldi = shift + (ld+1) * i;
+            size_t knd = min(kd, size-1-i);
+            for (size_t j = 1; j <= knd; ++j)
+                data[ldi + j] = data[ldi + ld * j];
+        }
+    }
+
 };
 
-}}} // namespaces
+} // namespace plask
 
-#endif // PLASK__MODULE_ELECTRICAL_GAUSS_MATRIX_H
+#endif // PLASK_COMMON_FEM_GAUSS_MATRIX_H

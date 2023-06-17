@@ -98,13 +98,13 @@
     - attr: itererr
       label: Max. residual error
       type: float
-      default: 1.0e-08
+      default: 1.0e-06
       help: >
         Maximum allowed residual error for the iterative algorithm.
     - attr: iterlim
       label: Max. number of iterations
       type: int
-      default: 10000
+      default: 1000
       help: >
         Maximum number of iterations for the iterative algorithm.
 

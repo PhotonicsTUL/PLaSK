@@ -45,13 +45,6 @@ struct Radiation
     }
 };
 
-/// Choice of matrix factorization algorithms
-enum Algorithm {
-    ALGORITHM_CHOLESKY, ///< Cholesky factorization
-    ALGORITHM_GAUSS,    ///< Gauss elimination of asymmetrix matrix (slower but safer as it uses pivoting)
-    ALGORITHM_ITERATIVE ///< Conjugate gradient iterative solver
-};
-
 }} // # namespace thermal::tstatic
 
 template <> inline thermal::tstatic::Convection parseBoundaryValue<thermal::tstatic::Convection>(const XMLReader& tag_with_value)

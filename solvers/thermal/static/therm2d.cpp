@@ -17,17 +17,13 @@ namespace plask { namespace thermal { namespace tstatic {
 
 template<typename Geometry2DType>
 ThermalFem2DSolver<Geometry2DType>::ThermalFem2DSolver(const std::string& name) :
-    SolverWithMesh<Geometry2DType, RectangularMesh<2>>(name),
+    FemSolverWithMaskedMesh<Geometry2DType, RectangularMesh<2>>(name),
     loopno(0),
     outTemperature(this, &ThermalFem2DSolver<Geometry2DType>::getTemperatures),
     outHeatFlux(this, &ThermalFem2DSolver<Geometry2DType>::getHeatFluxes),
     outThermalConductivity(this, &ThermalFem2DSolver<Geometry2DType>::getThermalConductivity),
     maxerr(0.05),
-    inittemp(300.),
-    algorithm(ALGORITHM_CHOLESKY),
-    itererr(1e-8),
-    iterlim(10000),
-    use_full_mesh(false)
+    inittemp(300.)
 {
     temperatures.reset();
     fluxes.reset();
@@ -65,21 +61,7 @@ void ThermalFem2DSolver<Geometry2DType>::loadConfiguration(XMLReader &source, Ma
             source.requireTagEnd();
         }
 
-        else if (param == "matrix") {
-            algorithm = source.enumAttribute<Algorithm>("algorithm")
-                .value("cholesky", ALGORITHM_CHOLESKY)
-                .value("gauss", ALGORITHM_GAUSS)
-                .value("iterative", ALGORITHM_ITERATIVE)
-                .get(algorithm);
-            itererr = source.getAttribute<double>("itererr", itererr);
-            iterlim = source.getAttribute<size_t>("iterlim", iterlim);
-            source.requireTagEnd();
-        }
-
-        else {
-            if (param == "mesh") {
-                use_full_mesh = source.getAttribute<bool>("include-empty", use_full_mesh);
-            }
+        else if (!this->parseFemConfiguration(source, manager)) {
             this->parseStandardConfiguration(source, manager);
         }
     }
@@ -91,15 +73,9 @@ void ThermalFem2DSolver<Geometry2DType>::onInitialize() {
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
 
-    if (use_full_mesh || algorithm == ALGORITHM_ITERATIVE) {
-        if (!use_full_mesh) writelog(LOG_WARNING, this->getId(), "For iterative algorithm empty materials are always included");
-        maskedMesh->selectAll(*this->mesh);
-    } else {
-        maskedMesh->reset(*this->mesh, *this->geometry, ~plask::Material::EMPTY);
-    }
+    FemSolverWithMaskedMesh<Geometry2DType, RectangularMesh<2>>::onInitialize();
 
     loopno = 0;
-    band = 0;
     temperatures.reset(this->maskedMesh->size(), inittemp);
 
     thickness.reset(this->maskedMesh->getElementsCount(), NAN);
@@ -309,7 +285,7 @@ void ThermalFem2DSolver<Geometry2DCartesian>::setMatrix(MatrixT& A, DataVector<d
     }
 
     // boundary conditions of the first kind
-    applyBC(A, B, btemperature);
+    A.applyBC(B, btemperature);
 
 #ifndef NDEBUG
     double* aend = A.data + A.size * A.kd;
@@ -451,7 +427,7 @@ void ThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(MatrixT& A, DataVector
     }
 
     // boundary conditions of the first kind
-    applyBC(A, B, btemperature);
+    A.applyBC(B, btemperature);
 
 #ifndef NDEBUG
     double* aend = A.data + A.size * A.kd;
@@ -465,47 +441,7 @@ void ThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(MatrixT& A, DataVector
 
 
 template<typename Geometry2DType>
-template <typename MatrixT>
-MatrixT ThermalFem2DSolver<Geometry2DType>::makeMatrix() {
-    if (band == 0) {
-        if (use_full_mesh) {
-            band = this->mesh->minorAxis()->size() + 1;
-        } else {
-            for (auto element: this->maskedMesh->elements()) {
-                size_t span = element.getUpUpIndex() - element.getLoLoIndex();
-                if (span > band) band = span;
-            }
-        }
-    }
-    return MatrixT(this->maskedMesh->size(), band);
-}
-
-// C++ if fucking stupid!!!!! We need to repeat this twice just because a fucking standard
-template<> template <>
-SparseBandMatrix2D ThermalFem2DSolver<Geometry2DCartesian>::makeMatrix<SparseBandMatrix2D>() {
-    return SparseBandMatrix2D(this->maskedMesh->size(), this->mesh->minorAxis()->size());
-}
-
-template<> template <>
-SparseBandMatrix2D ThermalFem2DSolver<Geometry2DCylindrical>::makeMatrix<SparseBandMatrix2D>() {
-    return SparseBandMatrix2D(this->maskedMesh->size(), this->mesh->minorAxis()->size());
-}
-
-
-template<typename Geometry2DType>
-double ThermalFem2DSolver<Geometry2DType>::compute(int loops) {
-    switch (algorithm) {
-        case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
-        case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
-        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix2D>(loops);
-    }
-    return 0.;
-}
-
-
-template<typename Geometry2DType> template<typename MatrixT>
-double ThermalFem2DSolver<Geometry2DType>::doCompute(int loops)
-{
+double ThermalFem2DSolver<Geometry2DType>::compute(int loops){
     this->initCalculation();
 
     fluxes.reset();
@@ -519,26 +455,39 @@ double ThermalFem2DSolver<Geometry2DType>::doCompute(int loops)
     this->writelog(LOG_INFO, "Running thermal calculations");
 
     int loop = 0;
-    size_t size = maskedMesh->size();
+    size_t size = this->maskedMesh->size();
 
-    MatrixT A = makeMatrix<MatrixT>();
+    std::unique_ptr<FemMatrix> pA(this->getMatrix());
+    FemMatrix& A = *pA.get();
 
-    double err = 0.;
+    double err;
     toterr = 0.;
 
 #   ifndef NDEBUG
         if (!temperatures.unique()) this->writelog(LOG_DEBUG, "Temperature data held by something else...");
 #   endif
     temperatures = temperatures.claim();
-    DataVector<double> T(size);
+
+    DataVector<double> BT(size), temp0(size);
 
     do {
-        setMatrix(A, T, btemperature, bheatflux, bconvection, bradiation);
+        setMatrix(A, BT, btemperature, bheatflux, bconvection, bradiation);
 
-        solveMatrix(A, T);
+        std::copy(temperatures.begin(), temperatures.end(), temp0.begin());
 
-        err = saveTemperatures(T);
+        A.solve(BT, temperatures);
 
+        if (BT.data() != temperatures.data()) std::swap(BT, temperatures);
+
+        // Update error
+        err = 0.;
+        maxT = 0.;
+        for (auto temp = temperatures.begin(), t = temp0.begin(); t != temp0.end(); ++temp, ++t)
+        {
+            double corr = std::abs(*t - *temp); // for boundary with constant temperature this will be zero anyway
+            if (corr > err) err = corr;
+            if (*t > maxT) maxT = *t;
+        }
         if (err > toterr) toterr = err;
 
         ++loopno;
@@ -554,86 +503,6 @@ double ThermalFem2DSolver<Geometry2DType>::doCompute(int loops)
 
     return toterr;
 }
-
-
-template<typename Geometry2DType>
-void ThermalFem2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& A, DataVector<double>& B)
-{
-    int info = 0;
-
-    this->writelog(LOG_DETAIL, "Solving matrix system");
-
-    // for (size_t r = 0; r < A.size; ++r) {
-    //     for (size_t c = 0; c < A.size; ++c) {
-    //         if (std::abs(int(r)-int(c)) > A.kd)
-    //             std::cout << "    .    ";
-    //         else
-    //             std::cout << str(A(r, c), "{:8.3f}") << " ";
-    //     }
-    //     std::cout << "         " << str(B[r], "{:8.3f}") << std::endl;
-    // }
-
-    // Factorize matrix
-    dpbtrf(UPLO, int(A.size), int(A.kd), A.data, int(A.ld+1), info);
-    if (info < 0)
-        throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", this->getId(), -info);
-    else if (info > 0)
-        throw ComputationError(this->getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite", info);
-
-    // Find solutions
-    dpbtrs(UPLO, int(A.size), int(A.kd), 1, A.data, int(A.ld+1), B.data(), int(B.size()), info);
-    if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", this->getId(), -info);
-
-    // now A contains factorized matrix and B the solutions
-}
-
-template<typename Geometry2DType>
-void ThermalFem2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, DataVector<double>& B)
-{
-    int info = 0;
-    this->writelog(LOG_DETAIL, "Solving matrix system");
-    aligned_unique_ptr<int> ipiv(aligned_malloc<int>(A.size));
-
-    A.mirror();
-
-    // Factorize matrix
-    dgbtrf(int(A.size), int(A.size), int(A.kd), int(A.kd), A.data, int(A.ld+1), ipiv.get(), info);
-    if (info < 0) {
-        throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
-    } else if (info > 0) {
-        throw ComputationError(this->getId(), "Matrix is singlar (at {0})", info);
-    }
-
-    // Find solutions
-    dgbtrs('N', int(A.size), int(A.kd), int(A.kd), 1, A.data, int(A.ld+1), ipiv.get(), B.data(), int(B.size()), info);
-    if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
-
-    // now A contains factorized matrix and B the solutions
-}
-
-template<typename Geometry2DType>
-void ThermalFem2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix2D& A, DataVector<double>& B)
-{
-    this->writelog(LOG_DETAIL, "Solving matrix system");
-    A.matrix_solver.solve(this, A, B);
-}
-
-
-template<typename Geometry2DType>
-double ThermalFem2DSolver<Geometry2DType>::saveTemperatures(plask::DataVector<double>& T)
-{
-    double err = 0.;
-    maxT = 0.;
-    for (auto temp = temperatures.begin(), t = T.begin(); t != T.end(); ++temp, ++t)
-    {
-        double corr = std::abs(*t - *temp); // for boundary with constant temperature this will be zero anyway
-        if (corr > err) err = corr;
-        if (*t > maxT) maxT = *t;
-    }
-    std::swap(temperatures, T);
-    return err;
-}
-
 
 template<typename Geometry2DType>
 void ThermalFem2DSolver<Geometry2DType>::saveHeatFluxes()
@@ -653,7 +522,7 @@ void ThermalFem2DSolver<Geometry2DType>::saveHeatFluxes()
         size_t uprghtno = e.getUpUpIndex();
 
         double temp = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] +
-                               temperatures[upleftno] + temperatures[uprghtno]);
+                              temperatures[upleftno] + temperatures[uprghtno]);
 
         double kx, ky;
         auto leaf = dynamic_pointer_cast<const GeometryObjectD<2>>(
@@ -679,7 +548,7 @@ const LazyData<double> ThermalFem2DSolver<Geometry2DType>::getTemperatures(const
     this->writelog(LOG_DEBUG, "Getting temperatures");
     if (!temperatures) return LazyData<double>(dest_mesh->size(), inittemp); // in case the receiver is connected and no temperature calculated yet
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    if (use_full_mesh)
+    if (this->maskedMesh->full())
         return SafeData<double>(interpolate(this->mesh, temperatures, dest_mesh, method, this->geometry), 300.);
     else
         return SafeData<double>(interpolate(this->maskedMesh, temperatures, dest_mesh, method, this->geometry), 300.);
@@ -692,7 +561,7 @@ const LazyData<Vec<2>> ThermalFem2DSolver<Geometry2DType>::getHeatFluxes(const s
     if (!temperatures) return LazyData<Vec<2>>(dest_mesh->size(), Vec<2>(0.,0.)); // in case the receiver is connected and no fluxes calculated yet
     if (!fluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    if (use_full_mesh)
+    if (this->maskedMesh->full())
         return SafeData<Vec<2>>(interpolate(this->mesh->getElementMesh(), fluxes, dest_mesh, method,
                                             InterpolationFlags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN)),
                                 Zero<Vec<2>>());
