@@ -468,16 +468,13 @@ double ThermalFem2DSolver<Geometry2DType>::compute(int loops){
 #   endif
     temperatures = temperatures.claim();
 
-    DataVector<double> BT(size), temp0(size);
+    DataVector<double> B(size), temp0(size);
 
     do {
-        setMatrix(A, BT, btemperature, bheatflux, bconvection, bradiation);
-
         std::copy(temperatures.begin(), temperatures.end(), temp0.begin());
 
-        A.solve(BT, temperatures);
-
-        if (BT.data() != temperatures.data()) std::swap(BT, temperatures);
+        setMatrix(A, B, btemperature, bheatflux, bconvection, bradiation);
+        A.solve(B, temperatures);
 
         // Update error
         err = 0.;

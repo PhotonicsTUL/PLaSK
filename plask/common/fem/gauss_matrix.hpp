@@ -81,19 +81,17 @@ struct DgbMatrix: FemMatrix {
         } else if (info > 0) {
             throw ComputationError(solver->getId(), "Matrix is singular (at {0})", info);
         }
-
-        is_factorized = true;
     }
 
-    int solve(DataVector<double>& B, const DataVector<double>&) override
+    int solverhs(DataVector<double>& B, DataVector<double>& X) override
     {
-        if (!is_factorized) factorize();
-
         solver->writelog(LOG_DETAIL, "Solving matrix system");
 
         int info = 0;
         dgbtrs('N', int(size), int(kd), int(kd), 1, data, int(ld+1), ipiv.get(), B.data(), int(B.size()), info);
         if (info < 0) throw CriticalException("{0}: Argument {1} of `dgbtrs` has illegal value", solver->getId(), -info);
+
+        std::swap(B, X);
 
         return 1;
     }

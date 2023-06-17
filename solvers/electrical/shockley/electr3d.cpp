@@ -388,10 +388,7 @@ double ElectricalFem3DSolver::compute(unsigned loops) {
 
     do {
         setMatrix(A, rhs, bvoltage, temperature);
-
-        DataVector<double> x(rhs);
-        A.solve(x, potential);
-        if (x.data() != potential.data()) std::swap(potential, rhs);
+        A.solve(rhs, potential);
 
         err = 0.;
         double mcur = 0.;

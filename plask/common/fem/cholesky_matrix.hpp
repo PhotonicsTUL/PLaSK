@@ -96,20 +96,17 @@ struct DpbMatrix : FemMatrix {
         else if (info > 0)
             throw ComputationError(solver->getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite",
                                    info);
-
-        is_factorized = true;
     }
 
-    int solve(DataVector<double>& B, const DataVector<double>&) override {
-        if (!is_factorized) factorize();
-
+    int solverhs(DataVector<double>& B, DataVector<double>& X) override {
         solver->writelog(LOG_DETAIL, "Solving matrix system");
 
         int info = 0;
         dpbtrs(UPLO, int(size), int(kd), 1, data, int(ld + 1), B.data(), int(B.size()), info);
         if (info < 0) throw CriticalException("{0}: Argument {1} of `dpbtrs` has illegal value", solver->getId(), -info);
 
-        // now A contains factorized matrix and B the solutions
+        std::swap(B, X);
+
         return 1;
     }
 

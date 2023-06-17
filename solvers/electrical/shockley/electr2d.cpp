@@ -397,9 +397,7 @@ template <typename Geometry2DType> double ElectricalFem2DSolver<Geometry2DType>:
 
     do {
         setMatrix(A, rhs, vconst, temperature);
-        DataVector<double> x(rhs);
-        A.solve(x, potentials);
-        if (x.data() != potentials.data()) std::swap(potentials, rhs);
+        A.solve(rhs, potentials);
 
         err = 0.;
         double mcur = 0.;

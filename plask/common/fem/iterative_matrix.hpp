@@ -139,13 +139,16 @@ struct SparseBandMatrix : FemMatrix {
         return c + size * i;
     }
 
-    int solve(DataVector<double>& B, const DataVector<double>& X0) override {
+    int solverhs(DataVector<double>& B, DataVector<double>& X) override {
         iparm_t iparm;
         rparm_t rparm;
         nspcg_dfault(iparm, rparm);
 
         iparm.itmax = iterlim;
         rparm.zeta = itererr;
+
+        solver->writelog(LOG_DETAIL, "Iterating linear system");
+
 
 #ifdef NDEBUG
         iparm.level = -1;
@@ -178,11 +181,14 @@ struct SparseBandMatrix : FemMatrix {
         //     std::cout << "         " << str(B[r], "{:8.3f}") << std::endl;
         // }
 
+        assert(B.size() == size);
+
         DataVector<double> U;
-        if (X0.size() != B.size())
-            U.reset(B.size(), 300.);
+        if (X.data() == nullptr || X.data() == B.data())
+            U.reset(B.size(), 1.);
         else
-            U = X0;
+            U = X;
+        assert(U.size() == B.size());
 
         int ier;
 
@@ -244,7 +250,7 @@ struct SparseBandMatrix : FemMatrix {
 
         if (ier != 1) solver->writelog(LOG_DETAIL, "Converged after {} iterations", iparm.itmax);
 
-        std::swap(B, U);
+        if (X.data() != U.data()) X = U;
 
         return iparm.itmax;
     }

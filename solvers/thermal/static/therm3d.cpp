@@ -308,12 +308,10 @@ double ThermalFem3DSolver::compute(int loops)
     DataVector<double> BT(size), temp0(size);
 
     do {
-        setMatrix(A, BT, btemperature, bheatflux, bconvection, bradiation);
         std::copy(temperatures.begin(), temperatures.end(), temp0.begin());
 
+        setMatrix(A, BT, btemperature, bheatflux, bconvection, bradiation);
         A.solve(BT, temperatures);
-
-        if (BT.data() != temperatures.data()) std::swap(BT, temperatures);
 
         // Update error
         err = 0.;

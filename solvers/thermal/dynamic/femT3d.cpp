@@ -286,9 +286,7 @@ double DynamicThermalFem3DSolver::compute(double time)
 
         DataVector<double> T(X);
 
-        A.solve(T, temperatures);
-
-        if (T.data() == X.data()) std::swap(temperatures, X);
+        A.solverhs(T, temperatures);
 
         std::swap(temperatures, X);
 

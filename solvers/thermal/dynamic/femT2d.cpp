@@ -428,9 +428,7 @@ double DynamicThermalFem2DSolver<Geometry2DType>::compute(double time)
 
         DataVector<double> T(X);
 
-        A.solve(T, temperatures);
-
-        if (T.data() == X.data()) std::swap(temperatures, X);
+        A.solverhs(T, temperatures);
 
         if (logfreq && l == 0)
         {

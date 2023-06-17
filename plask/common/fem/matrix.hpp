@@ -22,12 +22,11 @@ struct FemMatrix {
     const size_t size;     ///< Order of the matrix, i.e. number of columns or rows
     const size_t ld;       ///< leading dimension of the matrix
     const size_t kd;       ///< Size of the band reduced by one
-    bool is_factorized;    ///< Flag indicating if the matrix has been factorized
     double* data;          ///< Pointer to data
     const Solver* solver;  ///< Solver owning the matrix
 
     FemMatrix(const Solver* solver, size_t size, size_t kd, size_t ld)
-        : size(size), ld(ld), kd(kd), is_factorized(false), data(aligned_malloc<double>(size * (ld + 1))), solver(solver) {
+        : size(size), ld(ld), kd(kd), data(aligned_malloc<double>(size * (ld + 1))), solver(solver) {
         clear();
     }
 
@@ -52,7 +51,6 @@ struct FemMatrix {
     /// Clear the matrix
     void clear() {
         std::fill_n(data, size * (ld + 1), 0.);
-        is_factorized = false;
     }
 
     template <typename BoundaryConditonsT> void applyBC(const BoundaryConditonsT& bconds, DataVector<double>& B) {
@@ -71,13 +69,35 @@ struct FemMatrix {
     virtual void factorize() {}
 
     /**
-     * Solve the system of linear equations
+     * Solve for the right-hand-side of a system of linear equations
      * \param solver solver to use
-     * \param[inout] BX right hand side of the equation, on output contains the solution
-     * \param X0 initial estimate of the solution
+     * \param[inout] B right hand side of the equation, on output may be interchanged with X
+     * \param[inout] X initial estimate of the solution, on output contains the solution (may be interchanged with B)
      * \return number of iterations
      */
-    virtual int solve(DataVector<double>& BX, const DataVector<double>& X0 = DataVector<double>()) = 0;
+    virtual int solverhs(DataVector<double>& B, DataVector<double>& X) = 0;
+
+    /**
+     * Solve the set of linear equations
+     * \param solver solver to use
+     * \param[inout] B right hand side of the equation, on output may be interchanged with X
+     * \param[inout] X initial estimate of the solution, on output contains the solution (may be interchanged with B)
+     * \return number of iterations
+     */
+    int solve(DataVector<double>& B, DataVector<double>& X) {
+        factorize();
+        return solverhs(B, X);
+    }
+
+    /**
+     * Solve the set of linear equations
+     * \param solver solver to use
+     * \param[inout] B right hand side of the equation, on output contains the solution
+     * \return number of iterations
+     */
+    int solve(DataVector<double>& B) {
+        return solve(B, B);
+    }
 
     /**
      * Multiply matrix by vector
