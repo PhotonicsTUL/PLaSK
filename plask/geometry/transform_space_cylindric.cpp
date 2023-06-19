@@ -56,8 +56,7 @@ void Revolution::getPositionsToVec(const GeometryObject::Predicate& predicate,
     if (!this->hasChild()) return;
     auto child_pos_vec = this->_child->getPositions(predicate, path);
     for (const auto& v : child_pos_vec)
-        dest.emplace_back(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(),
-                          v.vert()  // only vert component is well defined
+        dest.emplace_back(0., 0., v.vert()  // only vert component is well defined
         );
 }
 

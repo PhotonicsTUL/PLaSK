@@ -76,7 +76,7 @@ void Extrusion::getPositionsToVec(const GeometryObject::Predicate& predicate,
     }
     if (!this->hasChild()) return;
     auto child_pos_vec = this->_child->getPositions(predicate, path);
-    for (const auto& v : child_pos_vec) dest.push_back(parentVec(v, std::numeric_limits<double>::quiet_NaN()));
+    for (const auto& v : child_pos_vec) dest.push_back(parentVec(v, 0.));
 }
 
 // void Extrusion::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const
