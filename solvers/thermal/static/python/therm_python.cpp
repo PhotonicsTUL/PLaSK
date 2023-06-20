@@ -96,12 +96,6 @@ template<> double& Bc<Radiation>::first(Radiation& self) { return self.emissivit
  */
 BOOST_PYTHON_MODULE(static)
 {
-    py_enum<FemMatrixAlgorithm>()
-        .value("CHOLESKY", ALGORITHM_CHOLESKY)
-        .value("GAUSS", ALGORITHM_GAUSS)
-        .value("ITERATIVE", ALGORITHM_ITERATIVE)
-    ;
-
     Bc<Convection>(u8"Convective boundary condition value.");
     Bc<Radiation>(u8"Radiative boundary condition value.");
 

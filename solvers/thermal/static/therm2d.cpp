@@ -493,7 +493,7 @@ double ThermalFem2DSolver<Geometry2DType>::compute(int loops){
         // show max correction
         this->writelog(LOG_RESULT, "Loop {:d}({:d}): max(T) = {:.3f} K, error = {:g} K", loop, loopno, maxT, err);
 
-    } while (err > maxerr && (loops == 0 || loop < loops));
+    } while ((!this->iter_params.converged || err > maxerr) && (loops == 0 || loop < loops));
 
     outTemperature.fireChanged();
     outHeatFlux.fireChanged();

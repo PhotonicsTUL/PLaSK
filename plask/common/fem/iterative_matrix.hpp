@@ -22,12 +22,7 @@
 
 namespace plask {
 
-struct SparseBandMatrix : FemMatrix {
-    int* bno;  ///< Vector of non-zero band numbers (shift from diagonal)
-
-    int iterlim;     ///< Maximum number of iterations
-    double itererr;  ///< Maximum error of iteration
-
+struct IterativeMatrixParams {
     /// NSPCG acceleration method
     enum Accelelator {
         ACCEL_CG,
@@ -52,7 +47,7 @@ struct SparseBandMatrix : FemMatrix {
         ACCEL_CGCR,
         ACCEL_BCGS
     };
-    Accelelator accelerator;  ///< NSPCG acceleration method
+    Accelelator accelerator = ACCEL_CG;  ///< NSPCG acceleration method
 
     /// NSPCG preconditioner
     enum Preconditioner {
@@ -75,9 +70,30 @@ struct SparseBandMatrix : FemMatrix {
         PRECOND_MBIC,
         PRECOND_MBICX
     };
-    Preconditioner preconditioner;  ///< NSPCG preconditioner
+    Preconditioner preconditioner = PRECOND_IC;  ///< NSPCG preconditioner
+
+    int maxit = 1000;      ///< Maximum number of iterations
+    double maxerr = 1e-6;  ///< Maximum allowed residual error of iteration
+    int nfact = 10;        ///< Frequency of partial factorization
+    double omega = 1.0;    ///< Relaxation parameter
+
+    enum NoConvergenceBehavior { NO_CONVERGENCE_ERROR, NO_CONVERGENCE_WARNING, NO_CONVERGENCE_CONTINUE };
+    NoConvergenceBehavior no_convergence_behavior = NO_CONVERGENCE_WARNING;  ///< What to do if the solution does not
+                                                                             ///< converge
+
+    // Output parameters
+    bool converged = true;  ///< True if the solution converged
+    int iters = 0;          ///< Number of iterations
+    double err = 0;         ///< Residual error of the solution
+};
+
+struct SparseBandMatrix : FemMatrix {
+    int* bno;  ///< Vector of non-zero band numbers (shift from diagonal)
 
   protected:
+    IterativeMatrixParams* params;
+
+    int ifact = 1;
     int nw = 0, inw = 0;
     double* wksp = nullptr;
     int* iwksp = nullptr;
@@ -91,13 +107,12 @@ struct SparseBandMatrix : FemMatrix {
      * \param major shift of nodes to the next row (mesh[x,y+1])
      */
     template <typename SolverT>
-    SparseBandMatrix(const SolverT* solver, size_t size, size_t major)
+    SparseBandMatrix(SolverT* solver, size_t size, size_t major)
         : FemMatrix(solver, size, 4, 4),
           bno(aligned_malloc<int>(5)),
-          iterlim(solver->iterlim),
-          itererr(solver->itererr),
-          accelerator(solver->iter_accelerator),
-          preconditioner(solver->iter_preconditioner) {
+          params(&solver->iter_params),
+          piv(aligned_malloc<int>(size)),
+          ipiv(aligned_malloc<int>(size)) {
         bno[0] = 0;
         bno[1] = 1;
         bno[2] = major - 1;
@@ -112,13 +127,10 @@ struct SparseBandMatrix : FemMatrix {
      * \param minor shift of nodes to the next minor row (mesh[x,y+1,z])
      */
     template <typename SolverT>
-    SparseBandMatrix(const SolverT* solver, size_t size, size_t major, size_t minor)
+    SparseBandMatrix(SolverT* solver, size_t size, size_t major, size_t minor)
         : FemMatrix(solver, size, 13, 13),
           bno(aligned_malloc<int>(14)),
-          iterlim(solver->iterlim),
-          itererr(solver->itererr),
-          accelerator(solver->iter_accelerator),
-          preconditioner(solver->iter_preconditioner),
+          params(&solver->iter_params),
           piv(aligned_malloc<int>(size)),
           ipiv(aligned_malloc<int>(size)) {
         bno[0] = 0;
@@ -159,13 +171,18 @@ struct SparseBandMatrix : FemMatrix {
         return c + size * i;
     }
 
-    int solverhs(DataVector<double>& B, DataVector<double>& X) override {
+    void solverhs(DataVector<double>& B, DataVector<double>& X) override {
         iparm_t iparm;
         rparm_t rparm;
         nspcg_dfault(iparm, rparm);
 
-        iparm.itmax = iterlim;
-        rparm.zeta = itererr;
+        iparm.itmax = params->maxit;
+        iparm.ipropa = 0;
+        iparm.ifact = (--ifact) ? 0 : 1;
+        if (ifact <= 0) ifact = params->nfact;
+
+        rparm.zeta = params->maxerr;
+        rparm.omega = params->omega;
 
         solver->writelog(LOG_DETAIL, "Iterating linear system");
 
@@ -184,12 +201,14 @@ struct SparseBandMatrix : FemMatrix {
             nw = NW;
             aligned_free<double>(wksp);
             wksp = aligned_malloc<double>(nw);
+            iparm.ifact = 1;  // we need to do factorization with new workspace
         }
 
         if (inw < INW) {
             inw = INW;
             aligned_free<int>(iwksp);
             iwksp = aligned_malloc<int>(inw);
+            iparm.ifact = 1;  // we need to do factorization with new workspace
         }
 
         // for (size_t r = 0; r < size; ++r) {
@@ -218,61 +237,63 @@ struct SparseBandMatrix : FemMatrix {
         void (*precond_func)(...), (*accel_func)(...);
 
         // clang-format off
-        switch (preconditioner) {
-            case PRECOND_RICH: precond_func = nspcg_rich2; break;
-            case PRECOND_JAC: precond_func = nspcg_jac2; break;
-            case PRECOND_LJAC: precond_func = nspcg_ljac2; break;
-            case PRECOND_LJACX: precond_func = nspcg_ljacx2; break;
-            case PRECOND_SOR: precond_func = nspcg_sor2; break;
-            case PRECOND_SSOR: precond_func = nspcg_ssor2; break;
-            case PRECOND_IC: precond_func = nspcg_ic2; break;
-            case PRECOND_MIC: precond_func = nspcg_mic2; break;
-            case PRECOND_LSP: precond_func = nspcg_lsp2; break;
-            case PRECOND_NEU: precond_func = nspcg_neu2; break;
-            case PRECOND_LSOR: precond_func = nspcg_lsor2; break;
-            case PRECOND_LSSOR: precond_func = nspcg_lssor2; break;
-            case PRECOND_LLSP: precond_func = nspcg_llsp2; break;
-            case PRECOND_LNEU: precond_func = nspcg_lneu2; break;
-            case PRECOND_BIC: precond_func = nspcg_bic2; break;
-            case PRECOND_BICX: precond_func = nspcg_bicx2; break;
-            case PRECOND_MBIC: precond_func = nspcg_mbic2; break;
-            case PRECOND_MBICX: precond_func = nspcg_mbicx2; break;
+        switch (params->preconditioner) {
+            case IterativeMatrixParams::PRECOND_RICH: precond_func = nspcg_rich2; break;
+            case IterativeMatrixParams::PRECOND_JAC: precond_func = nspcg_jac2; break;
+            case IterativeMatrixParams::PRECOND_LJAC: precond_func = nspcg_ljac2; break;
+            case IterativeMatrixParams::PRECOND_LJACX: precond_func = nspcg_ljacx2; break;
+            case IterativeMatrixParams::PRECOND_SOR: precond_func = nspcg_sor2; break;
+            case IterativeMatrixParams::PRECOND_SSOR: precond_func = nspcg_ssor2; break;
+            case IterativeMatrixParams::PRECOND_IC: precond_func = nspcg_ic2; break;
+            case IterativeMatrixParams::PRECOND_MIC: precond_func = nspcg_mic2; break;
+            case IterativeMatrixParams::PRECOND_LSP: precond_func = nspcg_lsp2; break;
+            case IterativeMatrixParams::PRECOND_NEU: precond_func = nspcg_neu2; break;
+            case IterativeMatrixParams::PRECOND_LSOR: precond_func = nspcg_lsor2; break;
+            case IterativeMatrixParams::PRECOND_LSSOR: precond_func = nspcg_lssor2; break;
+            case IterativeMatrixParams::PRECOND_LLSP: precond_func = nspcg_llsp2; break;
+            case IterativeMatrixParams::PRECOND_LNEU: precond_func = nspcg_lneu2; break;
+            case IterativeMatrixParams::PRECOND_BIC: precond_func = nspcg_bic2; break;
+            case IterativeMatrixParams::PRECOND_BICX: precond_func = nspcg_bicx2; break;
+            case IterativeMatrixParams::PRECOND_MBIC: precond_func = nspcg_mbic2; break;
+            case IterativeMatrixParams::PRECOND_MBICX: precond_func = nspcg_mbicx2; break;
         };
-        switch (accelerator) {
-            case ACCEL_CG: accel_func = nspcg_cg; break;
-            case ACCEL_SI: accel_func = nspcg_si; break;
-            case ACCEL_SOR: accel_func = nspcg_sor; break;
-            case ACCEL_SRCG: accel_func = nspcg_srcg; break;
-            case ACCEL_SRSI: accel_func = nspcg_srsi; break;
-            case ACCEL_BASIC: accel_func = nspcg_basic; break;
-            case ACCEL_ME: accel_func = nspcg_me; break;
-            case ACCEL_CGNR: accel_func = nspcg_cgnr; break;
-            case ACCEL_LSQR: accel_func = nspcg_lsqr; break;
-            case ACCEL_ODIR: accel_func = nspcg_odir; break;
-            case ACCEL_OMIN: accel_func = nspcg_omin; break;
-            case ACCEL_ORES: accel_func = nspcg_ores; break;
-            case ACCEL_IOM: accel_func = nspcg_iom; break;
-            case ACCEL_GMRES: accel_func = nspcg_gmres; break;
-            case ACCEL_USYMLQ: accel_func = nspcg_usymlq; break;
-            case ACCEL_USYMQR: accel_func = nspcg_usymqr; break;
-            case ACCEL_LANMIN: accel_func = nspcg_lanmin; break;
-            case ACCEL_LANRES: accel_func = nspcg_lanres; break;
-            case ACCEL_CGCR: accel_func = nspcg_cgcr; break;
-            case ACCEL_BCGS: accel_func = nspcg_bcgs; break;
+        switch (params->accelerator) {
+            case IterativeMatrixParams::ACCEL_CG: accel_func = nspcg_cg; break;
+            case IterativeMatrixParams::ACCEL_SI: accel_func = nspcg_si; break;
+            case IterativeMatrixParams::ACCEL_SOR: accel_func = nspcg_sor; break;
+            case IterativeMatrixParams::ACCEL_SRCG: accel_func = nspcg_srcg; break;
+            case IterativeMatrixParams::ACCEL_SRSI: accel_func = nspcg_srsi; break;
+            case IterativeMatrixParams::ACCEL_BASIC: accel_func = nspcg_basic; break;
+            case IterativeMatrixParams::ACCEL_ME: accel_func = nspcg_me; break;
+            case IterativeMatrixParams::ACCEL_CGNR: accel_func = nspcg_cgnr; break;
+            case IterativeMatrixParams::ACCEL_LSQR: accel_func = nspcg_lsqr; break;
+            case IterativeMatrixParams::ACCEL_ODIR: accel_func = nspcg_odir; break;
+            case IterativeMatrixParams::ACCEL_OMIN: accel_func = nspcg_omin; break;
+            case IterativeMatrixParams::ACCEL_ORES: accel_func = nspcg_ores; break;
+            case IterativeMatrixParams::ACCEL_IOM: accel_func = nspcg_iom; break;
+            case IterativeMatrixParams::ACCEL_GMRES: accel_func = nspcg_gmres; break;
+            case IterativeMatrixParams::ACCEL_USYMLQ: accel_func = nspcg_usymlq; break;
+            case IterativeMatrixParams::ACCEL_USYMQR: accel_func = nspcg_usymqr; break;
+            case IterativeMatrixParams::ACCEL_LANMIN: accel_func = nspcg_lanmin; break;
+            case IterativeMatrixParams::ACCEL_LANRES: accel_func = nspcg_lanres; break;
+            case IterativeMatrixParams::ACCEL_CGCR: accel_func = nspcg_cgcr; break;
+            case IterativeMatrixParams::ACCEL_BCGS: accel_func = nspcg_bcgs; break;
         };
         // clang-format on
 
         while (true) {
-            nspcg(precond_func, accel_func, n, maxnz, n, maxnz, data, bno, piv, ipiv, U.data(), nullptr, B.data(),
-                  wksp, iwksp, nw, inw, iparm, rparm, ier);
+            nspcg(precond_func, accel_func, n, ld + 1, n, maxnz, data, bno, piv, ipiv, U.data(), nullptr, B.data(), wksp, iwksp, nw,
+                  inw, iparm, rparm, ier);
 
             // Increase workspace if needed
             if (ier == -2 && nw) {
                 aligned_free<double>(wksp);
                 wksp = aligned_malloc<double>(nw);
+                iparm.ifact = 1;  // we need to do factorization with new workspace
             } else if (ier == -3 && inw) {
                 aligned_free<int>(iwksp);
                 iwksp = aligned_malloc<int>(inw);
+                iparm.ifact = 1;  // we need to do factorization with new workspace
             } else
                 break;
         }
@@ -299,17 +320,29 @@ struct SparseBandMatrix : FemMatrix {
                 case -16: throw ComputationError(solver->getId(), "Unimplemented combination of parameters");
                 case -18: throw ComputationError(solver->getId(), "Unable to perform eigenvalue estimation");
                 case 1:
-                    solver->writelog(LOG_WARNING, "Failed to converge in {} iterations (err. is {})", iparm.itmax, rparm.zeta);
+                    params->converged = false;
+                    switch (params->no_convergence_behavior) {
+                        case IterativeMatrixParams::NO_CONVERGENCE_ERROR:
+                            throw ComputationError(solver->getId(), "Failed to converge in {} iterations (error {})", iparm.itmax,
+                                                   rparm.zeta);
+                        case IterativeMatrixParams::NO_CONVERGENCE_WARNING:
+                            solver->writelog(LOG_WARNING, "Failed to converge in {} iterations (error {})", iparm.itmax,
+                                             rparm.zeta);
+                            break;
+                        case IterativeMatrixParams::NO_CONVERGENCE_CONTINUE:
+                            solver->writelog(LOG_DETAIL, "Did not converge yen in {} iterations (error {})", iparm.itmax,
+                                             rparm.zeta);
+                            break;
+                    }
                     break;
                 case 2:
-                    solver->writelog(LOG_WARNING, "`itererr` too small - reset to {}",
-                                     500 * std::numeric_limits<double>::epsilon());
+                    solver->writelog(LOG_WARNING, "`maxerr` too small - reset to {}", 500 * std::numeric_limits<double>::epsilon());
                     break;
                 case 3:
                     solver->writelog(LOG_DEBUG,
                                      "NSPGS: `zbrent` failed to converge in the maximum number of {} iterations (signifies "
                                      "difficulty in eigenvalue estimation)",
-                                     std::max(iterlim, 50));
+                                     std::max(params->maxit, 50));
                     break;
                 case 4:
                     solver->writelog(
@@ -319,12 +352,15 @@ struct SparseBandMatrix : FemMatrix {
                 case 5: solver->writelog(LOG_DEBUG, "NSPGS: Negative pivot encountered in factorization"); break;
             }
         }
+        if (ier != 1) {
+            solver->writelog(LOG_DETAIL, "Converged after {} iterations (error {})", iparm.itmax, rparm.zeta);
+            params->converged = true;
+        }
 
-        if (ier != 1) solver->writelog(LOG_DETAIL, "Converged after {} iterations", iparm.itmax);
+        params->iters = iparm.itmax;
+        params->err = rparm.zeta;
 
         if (X.data() != U.data()) X = U;
-
-        return iparm.itmax;
     }
 
     void mult(const DataVector<const double>& vector, DataVector<double>& result) {

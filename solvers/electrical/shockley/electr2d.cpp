@@ -433,7 +433,7 @@ template <typename Geometry2DType> double ElectricalFem2DSolver<Geometry2DType>:
         this->writelog(LOG_RESULT, "Loop {:d}({:d}): max(j{}) = {:g} kA/cm2, error = {:g}%", loop, loopno, noactive ? "" : "@junc",
                        mcur, err);
 
-    } while (err > maxerr && (loops == 0 || loop < loops));
+    } while ((!this->iter_params.converged || err > maxerr) && (loops == 0 || loop < loops));
 
     saveConductivities();
 

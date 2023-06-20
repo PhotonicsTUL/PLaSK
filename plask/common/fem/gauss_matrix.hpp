@@ -83,7 +83,7 @@ struct DgbMatrix: FemMatrix {
         }
     }
 
-    int solverhs(DataVector<double>& B, DataVector<double>& X) override
+    void solverhs(DataVector<double>& B, DataVector<double>& X) override
     {
         solver->writelog(LOG_DETAIL, "Solving matrix system");
 
@@ -92,8 +92,6 @@ struct DgbMatrix: FemMatrix {
         if (info < 0) throw CriticalException("{0}: Argument {1} of `dgbtrs` has illegal value", solver->getId(), -info);
 
         std::swap(B, X);
-
-        return 1;
     }
 
     /**

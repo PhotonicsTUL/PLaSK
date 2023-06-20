@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -27,6 +27,8 @@ from ...utils.files import open_utf8
 from . import Solver, Tag, SOLVERS, CATEGORIES
 from .bconds import BCONDS, SchemaBoundaryConditions
 
+from ...lib import yaml_include
+
 # Disable yaml warning
 try:
     yaml.warnings({'YAMLLoadWarning': False})
@@ -38,11 +40,15 @@ VALIDATORS = {'int': can_be_int, 'float': can_be_float, 'bool': can_be_bool}
 
 basestring = str, bytes
 
-
 try:
     import plask
 except ImportError:
     plask = None
+    _prefix = sys.prefix
+else:
+    _prefix = plask.prefix
+
+yaml_include.AddYamlIncludePath(os.path.join(_prefix, 'share', 'plask', 'schemas'))
 
 
 class AttrList(list):
@@ -353,7 +359,7 @@ class SchemaSolverFactory:
 def read_attr(tn, attr):
     an = attr['attr']
     al = attr['label']
-    ah = attr['help'].strip()
+    ah = attr['help'].strip().split('\n\n')[0]
     at = attr.get('type', '')
     au = attr.get('unit')
     ad = attr.get('default')
@@ -395,6 +401,7 @@ def _iter_tags(tags):
             if 'widget' in tag:
                 raise TypeError("Solver schema cannot specify both 'tags' and 'widget'")
             for t in _iter_tags(tag['tags']):
+                t = t.copy()
                 t['tag'] = tag['tag'] + '/' + t['tag']
                 yield t
 

@@ -29,11 +29,6 @@ using namespace plask::thermal::dynamic;
  */
 BOOST_PYTHON_MODULE(dynamic)
 {
-    py_enum<FemMatrixAlgorithm>()
-        .value("CHOLESKY", ALGORITHM_CHOLESKY)
-        .value("GAUSS", ALGORITHM_GAUSS)
-    ;
-
     {CLASS(DynamicThermalFem2DSolver<Geometry2DCartesian>, "Dynamic2D",
         u8"Finite element thermal solver for 2D Cartesian geometry.")
         METHOD(compute, compute, u8"Run thermal calculations", py::arg("time"));

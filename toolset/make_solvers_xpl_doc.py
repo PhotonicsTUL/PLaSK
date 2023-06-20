@@ -25,6 +25,10 @@ import yaml
 plaskdir = os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[0])))
 docdir = os.path.join(plaskdir, 'doc')
 
+sys.path.insert(2, os.path.join(plaskdir, 'gui', 'lib'))
+import yaml_include
+yaml_include.AddYamlIncludePath(os.path.join(plaskdir, 'plask', 'common'))
+
 try:
     basedir = sys.argv[1]
 except IndexError:

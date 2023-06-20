@@ -29,6 +29,7 @@ ThermalFem3DSolver::ThermalFem3DSolver(const std::string& name) :
     temperatures.reset();
     fluxes.reset();
     inHeat = 0.;
+    algorithm = ALGORITHM_ITERATIVE;
 }
 
 
@@ -330,7 +331,7 @@ double ThermalFem3DSolver::compute(int loops)
         // show max correction
         this->writelog(LOG_RESULT, "Loop {:d}({:d}): max(T) = {:.3f} K, error = {:g} K", loop, loopno, maxT, err);
 
-    } while (err > maxerr && (loops == 0 || loop < loops));
+    } while ((!iter_params.converged || err > maxerr) && (loops == 0 || loop < loops));
 
     outTemperature.fireChanged();
     outHeatFlux.fireChanged();

@@ -753,6 +753,18 @@ add_custom_target(validate-yml DEPENDS ${validate_ymls_targets})
 
 if(BUILD_PYTHON AND BUILD_GUI)
     add_custom_target(plask-stubs ALL DEPENDS ${plask_stubs_files} ${plask_solvers_stubs_files})
+
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/share/plask/schemas/)
+    file(GLOB common_yml FOLLOW_SYMLINKS ${CMAKE_SOURCE_DIR}/plask/common/*.yml)
+    foreach(yml ${common_yml})
+        get_filename_component(yml_name ${yml} NAME)
+        add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/share/plask/schemas/${yml_name}
+                           COMMAND ${CMAKE_COMMAND} ARGS -E copy ${yml} ${CMAKE_BINARY_DIR}/share/plask/schemas/${yml_name}
+                           DEPENDS ${yml})
+        install(FILES ${CMAKE_BINARY_DIR}/share/plask/schemas/${yml_name} DESTINATION share/plask/schemas COMPONENT gui)
+        list(APPEND common_schemas ${CMAKE_BINARY_DIR}/share/plask/schemas/${yml_name})
+    endforeach()
+    add_custom_target(common-schemas ALL DEPENDS ${common_schemas})
 endif()
 
 # ----------===== Unit tests =====--------------------------------------------

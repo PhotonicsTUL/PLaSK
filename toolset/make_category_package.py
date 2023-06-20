@@ -18,6 +18,12 @@ import os
 
 import yaml
 
+plaskdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.insert(2, os.path.join(plaskdir, 'gui', 'lib'))
+import yaml_include
+yaml_include.AddYamlIncludePath(os.path.join(plaskdir, 'plask', 'common'))
+
+
 
 source = sys.argv[1]
 target = sys.argv[2]
@@ -31,11 +37,13 @@ data = []
 
 cls = None
 
+
 def open_utf8(*args, **kwargs):
     try:
         return open(*args, encoding='utf-8', **kwargs)
     except TypeError:
         return open(*args, **kwargs)
+
 
 # Find XML files with solvers configuration
 for dirname, _, files in os.walk(source):
@@ -61,7 +69,8 @@ if cls is None:
     sys.exit(0)
 
 out.write("# Automatically generated. All your changes will be lost on recompilation!\n\n")
-out.write('''"""
+out.write(
+    '''"""
 %(title)s solvers.
 
 This package combines all %(category)s solvers and helper functions that can
@@ -81,7 +90,8 @@ Solver classes
    :toctree: %(category)s
    :template: solver.rst
 
-''' % locals())
+''' % locals()
+)
 
 for lib, cls in data:
     out.write('   %(lib)s.%(cls)s\n' % locals())
@@ -89,7 +99,8 @@ for lib, cls in data:
 out.write('"""\n')
 
 for lib, cls in data:
-    out.write('''\n\ndef %(cls)s(name=''):
+    out.write(
+        '''\n\ndef %(cls)s(name=''):
     """
     Create %(cls)s solver.
 
@@ -100,4 +111,5 @@ for lib, cls in data:
         name (str): Solver name.
     """
     import %(category)s.%(lib)s
-    return %(category)s.%(lib)s.%(cls)s(name)\n''' % locals())
+    return %(category)s.%(lib)s.%(cls)s(name)\n''' % locals()
+    )

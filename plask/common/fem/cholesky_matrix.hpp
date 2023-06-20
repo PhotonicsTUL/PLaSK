@@ -98,7 +98,7 @@ struct DpbMatrix : FemMatrix {
                                    info);
     }
 
-    int solverhs(DataVector<double>& B, DataVector<double>& X) override {
+    void solverhs(DataVector<double>& B, DataVector<double>& X) override {
         solver->writelog(LOG_DETAIL, "Solving matrix system");
 
         int info = 0;
@@ -106,8 +106,6 @@ struct DpbMatrix : FemMatrix {
         if (info < 0) throw CriticalException("{0}: Argument {1} of `dpbtrs` has illegal value", solver->getId(), -info);
 
         std::swap(B, X);
-
-        return 1;
     }
 
     void mult(const DataVector<const double>& vector, DataVector<double>& result) override {

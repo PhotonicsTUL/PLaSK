@@ -7,114 +7,89 @@
   geometry: Cartesian2D
 
   tags:
-
-  - &mesh
-    tag: mesh
-    label: Mesh
-    help: >
-      Rectangular2D mesh used by this solver.
-    attrs:
-    - attr: ref
+    - &mesh
+      tag: mesh
       label: Mesh
-      required: true
-      type: mesh
-      mesh types: [ Rectangular2D ]
       help: >
-        Name of a Rectangular2D mesh defined in the :xml:tag:`<grids>` section.
-    - &full-mesh
-      attr: include-empty
-      label: Include Empty Regions
-      type: bool
-      default: no
-      help: >
-        Should empty regions (e.g. air) be included into computation domain?
+        Rectangular2D mesh used by this solver.
+      attrs:
+        - attr: ref
+          label: Mesh
+          required: true
+          type: mesh
+          mesh types: [Rectangular2D]
+          help: >
+            Name of a Rectangular2D mesh defined in the :xml:tag:`<grids>` section.
+        - &full-mesh
+          attr: include-empty
+          label: Include Empty Regions
+          type: bool
+          default: no
+          help: >
+            Should empty regions (e.g. air) be included into computation domain?
 
-  - &temperature
-    bcond: temperature
-    label: Temperature
-    mesh type: Rectangular2D
-    mesh: { tag: mesh, attr: ref }
+    - &temperature
+      bcond: temperature
+      label: Temperature
+      mesh type: Rectangular2D
+      mesh: { tag: mesh, attr: ref }
 
-  - &heatflux
-    bcond: heatflux
-    label: Heat Flux
-    mesh type: Rectangular2D
-    mesh: { tag: mesh, attr: ref }
+    - &heatflux
+      bcond: heatflux
+      label: Heat Flux
+      mesh type: Rectangular2D
+      mesh: { tag: mesh, attr: ref }
 
-  - &convection
-    bcond: convection
-    label: Convective
-    mesh type: Rectangular2D
-    mesh: { tag: mesh, attr: ref }
-    values: [ coeff, ambient ]
-    help: >
-      This boundary condition does not have <i>value</i> attribute. Use <i>coeff</i> for convection
-      coefficient and <i>ambient</i> for ambient temperature instead.
+    - &convection
+      bcond: convection
+      label: Convective
+      mesh type: Rectangular2D
+      mesh: { tag: mesh, attr: ref }
+      values: [coeff, ambient]
+      help: >
+        This boundary condition does not have <i>value</i> attribute. Use <i>coeff</i> for convection
+        coefficient and <i>ambient</i> for ambient temperature instead.
 
-  - &radiation
-    bcond: radiation
-    label: Radiative
-    mesh type: Rectangular2D
-    mesh: { tag: mesh, attr: ref }
-    values: [ emissivity, ambient ]
-    help: >
-      This boundary condition does not have <i>value</i> attribute. Use <i>emissivity</i> for surface
-      emissivity and <i>ambient</i> for ambient temperature instead.
+    - &radiation
+      bcond: radiation
+      label: Radiative
+      mesh type: Rectangular2D
+      mesh: { tag: mesh, attr: ref }
+      values: [emissivity, ambient]
+      help: >
+        This boundary condition does not have <i>value</i> attribute. Use <i>emissivity</i> for surface
+        emissivity and <i>ambient</i> for ambient temperature instead.
 
-  - &loop
-    tag: loop
-    label: Self-Consistent Loop
-    help: >
-      Configuration of the self-consistent loop.
-    attrs:
-    - attr: inittemp
-      label: Initial temperature
-      type: float
-      unit: K
-      default: 300
+    - &loop
+      tag: loop
+      label: Self-Consistent Loop
       help: >
-        Initial temperature used for the first computation.
-    - attr: maxerr
-      label: Maximum allowed error
-      type: float
-      unit: K
-      default: 0.05
-      help: >
-        Maximum allowed error in a self-consistent loop.
+        Configuration of the self-consistent loop.
+      attrs:
+        - attr: inittemp
+          label: Initial temperature
+          type: float
+          unit: K
+          default: 300
+          help: >
+            Initial temperature used for the first computation.
+        - attr: maxerr
+          label: Maximum allowed error
+          type: float
+          unit: K
+          default: 0.05
+          help: >
+            Maximum allowed error in a self-consistent loop.
 
-  - &matrix
-    tag: matrix
-    label: Matrix Solver
-    help: >
-      Configuration of the matrix solver.
-    attrs:
-    - attr: algorithm
-      label: Solution algorithm
-      type: choice
-      default: cholesky
-      choices: [ cholesky, gauss, iterative ]
-      help: >
-        Algorithm used for solving set of linear positive-definite equations.
-    - attr: itererr
-      label: Max. residual error
-      type: float
-      default: 1.0e-06
-      help: >
-        Maximum allowed residual error for the iterative algorithm.
-    - attr: iterlim
-      label: Max. number of iterations
-      type: int
-      default: 1000
-      help: >
-        Maximum number of iterations for the iterative algorithm.
+    - !include &matrix { $file: fem.yml }
 
   providers: &providers
-  - outTemperature
-  - outHeatFlux
-  - outThermalConductivity
+    - outTemperature
+    - outHeatFlux
+    - outThermalConductivity
 
   receivers: &receivers
-  - inHeat
+    - inHeat
 
 ################################################################################
 
@@ -127,19 +102,19 @@
   geometry: Cylindrical
 
   tags:
-  - *mesh
+    - *mesh
 
-  - *temperature
+    - *temperature
 
-  - *heatflux
+    - *heatflux
 
-  - *convection
+    - *convection
 
-  - *radiation
+    - *radiation
 
-  - *loop
+    - *loop
 
-  - *matrix
+    - *matrix
 
   providers: *providers
 
@@ -156,51 +131,55 @@
   geometry: Cartesian3D
 
   tags:
-  - tag: mesh
-    label: Mesh
-    help: >
-      Rectangular3D mesh used by this solver.
-    attrs:
-    - attr: ref
+    - tag: mesh
       label: Mesh
-      required: true
-      type: mesh
-      mesh types: [ Rectangular3D ]
       help: >
-        Name of a Rectangular3D mesh defined in the :xml:tag:`<grids>` section.
-    - *full-mesh
+        Rectangular3D mesh used by this solver.
+      attrs:
+        - attr: ref
+          label: Mesh
+          required: true
+          type: mesh
+          mesh types: [Rectangular3D]
+          help: >
+            Name of a Rectangular3D mesh defined in the :xml:tag:`<grids>` section.
+        - *full-mesh
 
-  - bcond: temperature
-    label: Temperature
-    mesh type: Rectangular3D
-    mesh: { tag: mesh, attr: ref }
+    - bcond: temperature
+      label: Temperature
+      mesh type: Rectangular3D
+      mesh: { tag: mesh, attr: ref }
 
-  - bcond: heatflux
-    label: Heat Flux
-    mesh type: Rectangular3D
-    mesh: { tag: mesh, attr: ref }
+    - bcond: heatflux
+      label: Heat Flux
+      mesh type: Rectangular3D
+      mesh: { tag: mesh, attr: ref }
 
-  - bcond: convection
-    label: Convective
-    mesh type: Rectangular3D
-    mesh: { tag: mesh, attr: ref }
-    values: [ coeff, ambient ]
-    help: >
-      This boundary condition does not have <i>value</i> attribute. Use <i>coeff</i> for convection
-      coefficient and <i>ambient</i> for ambient temperature instead.
+    - bcond: convection
+      label: Convective
+      mesh type: Rectangular3D
+      mesh: { tag: mesh, attr: ref }
+      values: [coeff, ambient]
+      help: >
+        This boundary condition does not have <i>value</i> attribute. Use <i>coeff</i> for convection
+        coefficient and <i>ambient</i> for ambient temperature instead.
 
-  - bcond: radiation
-    label: Radiative
-    mesh type: Rectangular3D
-    mesh: { tag: mesh, attr: ref }
-    values: [ emissivity, ambient ]
-    help: >
-      This boundary condition does not have <i>value</i> attribute. Use <i>emissivity</i> for surface
-      emissivity and <i>ambient</i> for ambient temperature instead.
+    - bcond: radiation
+      label: Radiative
+      mesh type: Rectangular3D
+      mesh: { tag: mesh, attr: ref }
+      values: [emissivity, ambient]
+      help: >
+        This boundary condition does not have <i>value</i> attribute. Use <i>emissivity</i> for surface
+        emissivity and <i>ambient</i> for ambient temperature instead.
 
-  - *loop
+    - *loop
 
-  - *matrix
+    - !include
+      $file: fem.yml
+      $update:
+        - $path: [attrs, 0, default]
+          $value: iterative
 
   providers: *providers
 

@@ -6,178 +6,150 @@
   geometry: Cartesian2D
   mesh: Rectangular2D
   tags:
-  - &voltage
-    bcond: voltage
-    label: Voltage
-  - &loop
-    tag: loop
-    label: Configuration of the Self-Consistent Loop
-    help: Configuration of the self-consistent loop.
-    attrs:
-    - attr: stat
-      label: Statistics
-      type: choice
-      default: Maxwell-Boltzmann
-      choices:
-      - Maxwell-Boltzmann
-      - Fermi-Dirac
-      help: Statistics assumed in drift-diffusion equations.
-    - attr: conttype
-      label: Type of contacts
-      type: choice
-      default: ohmic
-      choices:
-      - ohmic
-      - Schottky
-      help: Type of contacts.
-    - attr: SchottkyP
-      label: Schottky barrier for p-type contact
-      type: float
-      default: 0.0
-      help: Schottky barrier for p-type contact.
-    - attr: SchottkyN
-      label: Schottky barrier for n-type contact
-      type: float
-      default: 0.0
-      help: Schottky barrier for n-type contact.
-    - attr: Rsrh
-      label: SRH recombination
-      type: bool
-      default: false
-      help: Consider Shockley-Read-Hall recombination.
-    - attr: Rrad
-      label: Radiative recombination
-      type: bool
-      default: false
-      help: Consider radiative recombination.
-    - attr: Raug
-      label: Auger recombination
-      type: bool
-      default: false
-      help: Consider Auger recombination.
-    - attr: Pol
-      label: Polarization effects
-      type: bool
-      default: false
-      help: Polarization effects.
-    - attr: FullIon
-      label: Complete ionization of dopants
-      type: bool
-      default: true
-      help: Complete ionization of dopants.
-    - attr: maxerrVi
-      label: Max. initial potential update
-      type: float
-      unit: V
-      default: 1.0e-06
-      help: Limit for the initial potential estimate updates.
-    - attr: maxerrV0
-      label: Max. built-in potential update
-      type: float
-      unit: V
-      default: 1.0e-06
-      help: Limit for the built-in potential updates.
-    - attr: maxerrV
-      label: Max. potential update
-      type: float
-      unit: V
-      default: 1.0e-06
-      help: Limit for the potential updates.
-    - attr: maxerrFn
-      label: Max. <i>F<sub>n</sub></i> update
-      type: float
-      unit: eV
-      default: 0.0001
-      help: Limit for the electrons quasi-Fermi level updates.
-    - attr: maxerrFp
-      label: Max. <i>F<sub>p</sub></i> update
-      type: float
-      unit: eV
-      default: 0.0001
-      help: Limit for the holes quasi-Fermi level updates.
-    - attr: loopsVi
-      label: Initial potential loop limit
-      type: int
-      default: 10000
-      help: Loops limit for the initial potential estimate.
-    - attr: loopsV0
-      label: Built-in potential loop limit
-      type: int
-      default: 200
-      help: Loops limit for the built-in potential.
-    - attr: loopsV
-      label: Potential loop limit
-      type: int
-      default: 3
-      help: Loops limit for the potential.
-    - attr: loopsFn
-      label: <i>F<sub>n</sub></i> loop limit
-      type: int
-      default: 3
-      help: Loops limit for the electrons quasi-Fermi level.
-    - attr: loopsFp
-      label: <i>F<sub>p</sub></i> loop limit
-      type: int
-      default: 3
-      help: Loops limit for the holes quasi-Fermi level.
-  - &matrix
-    tag: matrix
-    label: Matrix Solver
-    help: Configuration of the matrix solver.
-    attrs:
-    - attr: algorithm
-      label: Solution algorithm
-      type: choice
-      default: cholesky
-      choices:
-      - cholesky
-      - gauss
-      - iterative
-      help: Algorithm used for solving set of linear positive-definite equations.
-    - attr: itererr
-      label: Max. residual error
-      type: float
-      default: 1.0e-08
-      help: Maximum allowed residual error for the iterative algorithm.
-    - attr: iterlim
-      label: Max. number of iterations
-      type: int
-      default: 10000
-      help: Maximum number of iterations for the iterative algorithm.
-    - attr: logfreq
-      label: Progress logging frequency
-      type: int
-      default: 500
-      help: Number of iterations after which the progress is logged.
-  - &config
-    tag: config
-    label: Gain Parameters
-    help: Some important gain parameters.
-    attrs:
-    - attr: strained
-      label: Strained
-      type: bool
-      default: false
-      help: Boolean attribute indicating if the solver should consider strain in the active region. If set
-        to <i>yes</i> then there must a layer with the role "<i>substrate</i>" in the geometry. The strain
-        is computed by comparing the atomic lattice constants of the substrate and the quantum wells.
-    - attr: T0
-      label: Reference temperature
-      type: float
-      unit: K
-      default: 300
-      help: Reference temperature. This is the temperature used for initial computation of the energy levels.
+    - &voltage
+      bcond: voltage
+      label: Voltage
+    - &loop
+      tag: loop
+      label: Configuration of the Self-Consistent Loop
+      help: Configuration of the self-consistent loop.
+      attrs:
+        - attr: stat
+          label: Statistics
+          type: choice
+          default: Maxwell-Boltzmann
+          choices:
+            - Maxwell-Boltzmann
+            - Fermi-Dirac
+          help: Statistics assumed in drift-diffusion equations.
+        - attr: conttype
+          label: Type of contacts
+          type: choice
+          default: ohmic
+          choices:
+            - ohmic
+            - Schottky
+          help: Type of contacts.
+        - attr: SchottkyP
+          label: Schottky barrier for p-type contact
+          type: float
+          default: 0.0
+          help: Schottky barrier for p-type contact.
+        - attr: SchottkyN
+          label: Schottky barrier for n-type contact
+          type: float
+          default: 0.0
+          help: Schottky barrier for n-type contact.
+        - attr: Rsrh
+          label: SRH recombination
+          type: bool
+          default: false
+          help: Consider Shockley-Read-Hall recombination.
+        - attr: Rrad
+          label: Radiative recombination
+          type: bool
+          default: false
+          help: Consider radiative recombination.
+        - attr: Raug
+          label: Auger recombination
+          type: bool
+          default: false
+          help: Consider Auger recombination.
+        - attr: Pol
+          label: Polarization effects
+          type: bool
+          default: false
+          help: Polarization effects.
+        - attr: FullIon
+          label: Complete ionization of dopants
+          type: bool
+          default: true
+          help: Complete ionization of dopants.
+        - attr: maxerrVi
+          label: Max. initial potential update
+          type: float
+          unit: V
+          default: 1.0e-06
+          help: Limit for the initial potential estimate updates.
+        - attr: maxerrV0
+          label: Max. built-in potential update
+          type: float
+          unit: V
+          default: 1.0e-06
+          help: Limit for the built-in potential updates.
+        - attr: maxerrV
+          label: Max. potential update
+          type: float
+          unit: V
+          default: 1.0e-06
+          help: Limit for the potential updates.
+        - attr: maxerrFn
+          label: Max. <i>F<sub>n</sub></i> update
+          type: float
+          unit: eV
+          default: 0.0001
+          help: Limit for the electrons quasi-Fermi level updates.
+        - attr: maxerrFp
+          label: Max. <i>F<sub>p</sub></i> update
+          type: float
+          unit: eV
+          default: 0.0001
+          help: Limit for the holes quasi-Fermi level updates.
+        - attr: loopsVi
+          label: Initial potential loop limit
+          type: int
+          default: 10000
+          help: Loops limit for the initial potential estimate.
+        - attr: loopsV0
+          label: Built-in potential loop limit
+          type: int
+          default: 200
+          help: Loops limit for the built-in potential.
+        - attr: loopsV
+          label: Potential loop limit
+          type: int
+          default: 3
+          help: Loops limit for the potential.
+        - attr: loopsFn
+          label: <i>F<sub>n</sub></i> loop limit
+          type: int
+          default: 3
+          help: Loops limit for the electrons quasi-Fermi level.
+        - attr: loopsFp
+          label: <i>F<sub>p</sub></i> loop limit
+          type: int
+          default: 3
+          help: Loops limit for the holes quasi-Fermi level.
+    - !include &matrix { $file: fem.yml }
+    - &config
+      tag: config
+      label: Gain Parameters
+      help: Some important gain parameters.
+      attrs:
+        - attr: strained
+          label: Strained
+          type: bool
+          default: false
+          help:
+            Boolean attribute indicating if the solver should consider strain in the active region. If set
+            to <i>yes</i> then there must a layer with the role "<i>substrate</i>" in the geometry. The strain
+            is computed by comparing the atomic lattice constants of the substrate and the quantum wells.
+        - attr: T0
+          label: Reference temperature
+          type: float
+          unit: K
+          default: 300
+          help: Reference temperature. This is the temperature used for initial computation of the energy levels.
 
   providers:
-  - outPotential
-  - outQuasiFermiEnergyLevelForElectrons
-  - outQuasiFermiEnergyLevelForHoles
-  - outConductionBandEdge
-  - outValenceBandEdge
+    - outPotential
+    - outQuasiFermiEnergyLevelForElectrons
+    - outQuasiFermiEnergyLevelForHoles
+    - outConductionBandEdge
+    - outValenceBandEdge
   receivers:
-  - inTemperature
-  
-  
+    - inTemperature
+
 - solver: DriftDiffusionCyl
   lib: ddm2d
   category: electrical
@@ -186,14 +158,14 @@
   geometry: Cylindrical
   mesh: Rectangular2D
   tags:
-  - *voltage
-  - *loop
-  - *matrix
+    - *voltage
+    - *loop
+    - *matrix
   providers:
-  - outPotential
-  - outQuasiFermiEnergyLevelForElectrons
-  - outQuasiFermiEnergyLevelForHoles
-  - outConductionBandEdge
-  - outValenceBandEdge
+    - outPotential
+    - outQuasiFermiEnergyLevelForElectrons
+    - outQuasiFermiEnergyLevelForHoles
+    - outConductionBandEdge
+    - outValenceBandEdge
   receivers:
-  - inTemperature
+    - inTemperature

@@ -41,7 +41,16 @@ from .qt.QtWidgets import *
 from .qt.QtGui import *
 from .qt import QtSignal, QT_API, qt_exec
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'share', 'plask', 'stubs'))
+
+try:
+    import plask
+except ImportError:
+    prefix = sys.prefix
+else:
+    prefix = plask.prefix
+
+
+sys.path.insert(0, os.path.join(prefix, 'share', 'plask', 'stubs'))
 
 sys.path.insert(4, os.path.join(__path__[0], 'external', 'pysparkle'))
 
@@ -76,11 +85,6 @@ try:
     from pysparkle import PySparkle
 except:
     PySparkle = None
-
-try:
-    import plask
-except ImportError:
-    pass
 
 
 WINDOWS = set()

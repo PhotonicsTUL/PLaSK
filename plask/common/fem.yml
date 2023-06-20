@@ -1,0 +1,155 @@
+tag: matrix
+label: Matrix Solver
+help: >
+  Matrix solver configuration.
+attrs:
+  - attr: algorithm
+    label: Solution algorithm
+    type: choice
+    default: cholesky
+    choices:
+      - cholesky
+      - gauss
+      - iterative
+    help: >
+      Algorithm used for solving set of linear positive-definite equations.
+tags:
+  - tag: iterative
+    label: Iterative Params
+    help: >
+      Parameters for iterative matrix solver.
+    attrs:
+      - attr: maxit
+        label: Max iterations
+        help: >
+          Maximum number of iterations.
+        type: int
+        default: 1000
+      - attr: maxerr
+        label: Max error
+        help: >
+          Maximum iteration error.
+        type: float
+        default: 1e-6
+      - attr: noconv
+        label: If not converged
+        help: >
+          Desired behavior if the iterative solver does not converge.
+        type: choice
+        choices:
+          - error
+          - warning
+          - continue
+        default: warning
+      - attr: accelerator
+        label: Accelerator
+        help: >
+          Accelerator used for iterative matrix solver. Possible choices are:
+
+          +------------+-------------------------------------------------------------------------------------+
+          | ``cg``     | Conjugate Gradient acceleration — this is the default and should be preferred       |
+          | ``si``     | Chebyshev acceleration or Semi-Iteration                                            |
+          | ``sor``    | Successive Overrelaxation                                                           |
+          | ``srcg``   | Symmetric Successive Overrelaxation Conjugate Gradient Algorithm                    |
+          | ``srsi``   | Symmetric Successive Overrelaxation Semi-Iteration Algorithm                        |
+          | ``basic``  | Basic Iterative Method                                                              |
+          | ``me``     | Minimal Error Algorithm                                                             |
+          | ``cgnr``   | Conjugate Gradient applied to the Normal Equations                                  |
+          | ``lsqr``   | Least Squares Algorithm                                                             |
+          | ``odir``   | ORTHODIR, a truncated/restarted method useful for nonsymmetric systems of equations |
+          | ``omin``   | ORTHOMIN, a common truncated/restarted method used for nonsymmetric systems         |
+          | ``ores``   | ORTHORES, another truncated/restarted method for nonsymmetric systems               |
+          | ``iom``    | Incomplete Orthogonalization Method                                                 |
+          | ``gmres``  | Generalized Minimal Residual Method                                                 |
+          | ``usymlq`` | Unsymmetric LQ                                                                      |
+          | ``usymqr`` | Unsymmetric QR                                                                      |
+          | ``landir`` | Lanczos/ORTHODIR                                                                    |
+          | ``lanmin`` | Lanczos/ORTHOMIN or Biconjugate Gradient Method                                     |
+          | ``lanres`` | Lanczos/ORTHORES or “two-sided” Lanczos Method                                      |
+          | ``cgcr``   | Constrained Generalized Conjugate Residual Method                                   |
+          | ``bcgs``   | Biconjugate Gradient Squared Method                                                 |
+          +------------+-------------------------------------------------------------------------------------+
+
+        type: choice
+        default: cg
+        choices:
+          - cg
+          - si
+          - sor
+          - srcg
+          - srsi
+          - basic
+          - me
+          - cgnr
+          - lsqr
+          - odir
+          - omin
+          - ores
+          - iom
+          - gmres
+          - usymlq
+          - usymqr
+          - landir
+          - lanmin
+          - lanres
+          - cgcr
+          - bcgs
+      - attr: preconditioner
+        label: Preconditioner
+        help: >
+          Preconditioner used for iterative matrix solver. Possible choices are:
+
+          +-----------+---------------------------------------------+
+          | ``rich``  | Richardson's method                         |
+          | ``jac``   | Jacobi method                               |
+          | ``ljac``  | Line Jacobi method                          |
+          | ``ljacx`` | Line Jacobi method (approx. inverse)        |
+          | ``sor``   | Successive Overrelaxation                   |
+          | ``ssor``  | Symmetric SOR                               |
+          | ``ic``    | Incomplete Cholesky                         |
+          | ``mic``   | Modified Incomplete Cholesky                |
+          | ``lsp``   | Least Squares Polynomial                    |
+          | ``neu``   | Neumann Polynomial                          |
+          | ``lsor``  | Line SOR                                    |
+          | ``lssor`` | Line SSOR                                   |
+          | ``llsp``  | Line Least Squares Polynomial               |
+          | ``lneu``  | Line Neumann Polynomial                     |
+          | ``bic``   | Block Incomplete Cholesky (ver. 1)          |
+          | ``bicx``  | Block Incomplete Cholesky (ver. 2)          |
+          | ``mbic``  | Modified Block Incomplete Cholesky (ver. 1) |
+          | ``mbicx`` | Modified Block Incomplete Cholesky (ver. 2) |
+          +-----------+---------------------------------------------+
+        type: choice
+        default: ic
+        choices:
+          - rich
+          - jac
+          - ljac
+          - ljacx
+          - sor
+          - ssor
+          - ic
+          - mic
+          - lsp
+          - neu
+          - lsor
+          - lssor
+          - llsp
+          - lneu
+          - bic
+          - bicx
+          - mbic
+          - mbicx
+      - attr: nfact
+        label: Factorization frequency
+        help: >
+          This number initializes the frequency of partial factorizations. It specifies the number of linear system evaluations
+          between factorizations. The default value is 1, which means that a factorization is performed at every iteration.
+        type: int
+        default: 10
+      # - attr: omega
+      #   label: Omega
+      #   help: >
+      #     Relaxation parameter.
+      #   type: float
+      #   default: 1.0

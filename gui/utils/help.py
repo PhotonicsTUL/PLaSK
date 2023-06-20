@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -38,7 +38,13 @@ from .widgets import set_icon_size
 
 HELP_URL = 'https://docs.plask.app'
 
-HELP_DIR = os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'share', 'doc', 'plask')
+try:
+    from plask import prefix
+except ImportError:
+    prefix = sys.prefix
+
+
+HELP_DIR = os.path.join(prefix, 'share', 'doc', 'plask')
 HELP_DIR = os.environ.get('PLASK_HELP_DIR', HELP_DIR)
 
 HELP_FILE = os.path.join(HELP_DIR, 'plask.qch')

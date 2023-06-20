@@ -35,6 +35,7 @@ DynamicThermalFem3DSolver::DynamicThermalFem3DSolver(const std::string& name) :
     temperatures.reset();
     fluxes.reset();
     inHeat = 0.;
+    algorithm = ALGORITHM_ITERATIVE;
 }
 
 
@@ -59,7 +60,11 @@ void DynamicThermalFem3DSolver::loadConfiguration(XMLReader &source, Manager &ma
             source.requireTagEnd();
         }
 
-        else if (!this->parseFemConfiguration(source, manager)) {
+        else if (source.getNodeName() == "matrix") {
+            methodparam = source.getAttribute<double>("methodparam", methodparam);
+            lumping = source.getAttribute<bool>("lumping", lumping);
+            this->parseFemConfiguration(source, manager);
+        } else {
             this->parseStandardConfiguration(source, manager);
         }
     }

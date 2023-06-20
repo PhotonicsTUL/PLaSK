@@ -18,8 +18,12 @@ import textwrap
 
 import yaml
 
-
 plaskdir = os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[0])))
+
+sys.path.insert(2, os.path.join(plaskdir, 'gui', 'lib'))
+import yaml_include
+
+yaml_include.AddYamlIncludePath(os.path.join(plaskdir, 'plask', 'common'))
 
 fname = sys.argv[1]
 
@@ -66,7 +70,7 @@ def browse_attrs(tn, tag, docs, initializers, loaders=None):
                     initializers.append("self.{an} = {{}}".format(an=an))
                     loaders.append("for key, val in tag.attrs.items():")
                     loaders.append("    if key.startswith('{}'):".format(at[:-1]))
-                    loaders.append("        self.{}[int(key[{}:])] = val".format(an, len(at)-1))
+                    loaders.append("        self.{}[int(key[{}:])] = val".format(an, len(at) - 1))
                 else:
                     loaders.append("self.{an} = tag['{a}']".format(an=an, a=at))
             if '.' in an:
@@ -91,16 +95,17 @@ def browse_tags(outer, docs, initializers, loaders):
             browse_tags(tag, docs, initializers, loaders)
         if 'bcond' in tag:
             msh = outer.get('mesh')
-            if isinstance(msh, list):  msh = msh[0]
-            initializers.append("self.{}_boundary = plask.mesh.{}.BoundaryConditions()"
-                                .format(tag['bcond'], tag.get('mesh type', msh)))
-            loaders[tag['bcond']] = ("self.{}_boundary.read_from_xpl(tag, manager)".format(tag['bcond']),)
+            if isinstance(msh, list): msh = msh[0]
+            initializers.append(
+                "self.{}_boundary = plask.mesh.{}.BoundaryConditions()".format(tag['bcond'], tag.get('mesh type', msh))
+            )
+            loaders[tag['bcond']] = ("self.{}_boundary.read_from_xpl(tag, manager)".format(tag['bcond']), )
 
 
 try:
-	source = yaml.safe_load(open(fname, encoding='utf-8'))
+    source = yaml.safe_load(open(fname, encoding='utf-8'))
 except TypeError:
-	source = yaml.safe_load(open(fname))
+    source = yaml.safe_load(open(fname))
 
 docs = {}
 initializers = []
@@ -140,7 +145,7 @@ for solver in source:
     print("\n    def __init__(self, name=''):")
     print("        super({}, self).__init__(name)".format(cls))
     for init in initializers:
-        print("        "+init)
+        print("        " + init)
 
     print("\n    def load_xpl(self, xpl, manager):")
     print("        for tag in xpl:")

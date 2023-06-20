@@ -24,6 +24,8 @@
 #include <frameobject.h> // for Python traceback
 #include "plask/utils/warnings.hpp"
 
+#include "common/fem/python.hpp"
+
 #include <plask/version.hpp>
 #include "plask/exceptions.hpp"
 #include "plask/mesh/interpolation.hpp"
@@ -739,4 +741,7 @@ BOOST_PYTHON_MODULE(_plask)
 
     // Logging
     if (!plask::default_logger) plask::python::createPythonLogger();
+
+    // Common definitions for solvers
+    registerFemCommon();
 }

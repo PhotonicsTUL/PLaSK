@@ -25,7 +25,7 @@ else()
     enable_language(Fortran)
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS_NO_OPENMP}")
     add_library(nspcg SHARED nspcg.f)
-    target_compile_options(nspcg PRIVATE $<$<COMPILE_LANGUAGE:Fortran>:-std=legacy>)
+    target_compile_options(nspcg PRIVATE -std=legacy)
     install(TARGETS nspcg LIBRARY DESTINATION lib COMPONENT solvers)
 endif()
 

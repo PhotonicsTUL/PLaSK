@@ -60,7 +60,11 @@ void DynamicThermalFem2DSolver<Geometry2DType>::loadConfiguration(XMLReader &sou
             source.requireTagEnd();
         }
 
-        else if (!this->parseFemConfiguration(source, manager)) {
+        else if (source.getNodeName() == "matrix") {
+            methodparam = source.getAttribute<double>("methodparam", methodparam);
+            lumping = source.getAttribute<bool>("lumping", lumping);
+            this->parseFemConfiguration(source, manager);
+        } else {
             this->parseStandardConfiguration(source, manager);
         }
     }

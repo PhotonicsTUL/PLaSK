@@ -177,6 +177,7 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public FemSolverWithMaskedMesh<G
 
     /**
      * Run electrical calculations
+     * \param loops maximum number of loops to run
      * \return max correction of potential against the last call
      **/
     double compute(unsigned loops = 1);

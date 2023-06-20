@@ -558,6 +558,10 @@
       <tag2/>
     </custom>
   </local>
+  <thermal name="dynamic" solver="Dynamic2D" lib="dynamic">
+    <geometry ref="simple"/>
+    <mesh ref="default"/>
+  </thermal>
 </solvers>
 
 <connects>

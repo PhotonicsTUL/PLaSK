@@ -6,7 +6,7 @@
     in Cartesian 2D geometry.
 
     This solver performs under-threshold thermo-electrical computations.
-    It computes electric current flow and tempereture distribution in
+    It computes electric current flow and temperaure distribution in
     a self-consistent loop until desired convergence is reached.
 
   tags:
@@ -189,46 +189,31 @@
         Maximum allowed current density error.
 
   - &tmatrix
-    tag: tmatrix
-    label: Thermal Matrix Solver
-    help: >
-      Matrix configuration for the thermal solver.
-    attrs:
-    - &algorithm
-      attr: algorithm
-      label: Solution algorithm
-      type: choice
-      default: cholesky
-      choices:
-      - cholesky
-      - gauss
-      - iterative
-      help: >
-        Algorithm used for solving set of linear positive-definite equations.
-    - &itererr
-      attr: itererr
-      label: Max. residual error
-      type: float
-      default: 1.0e-08
-      help: >
-        Maximum allowed residual error for the iterative algorithm.
-    - &iterlim
-      attr: iterlim
-      label: Max. number of iterations
-      type: int
-      default: 10000
-      help: >
-        Maximum number of iterations for the iterative algorithm.
+    !include
+      $file: fem.yml
+      $update:
+        - $path: [tag]
+          $value: tmatrix
+        - $path: [label]
+          $value: Thermal Matrix Solver
+        - $path: [help]
+          $value: Matrix configuration for the thermal solver.
+        - $path: [tags, 0, label]
+          $value: Iterative Params (Thermal)
 
   - &ematrix
-    tag: ematrix
-    label: Electrical Matrix Solver
-    help: >
-      Matrix configuration for the electrical solver.
-    attrs:
-    - *algorithm
-    - *itererr
-    - *iterlim
+    !include
+      $file: fem.yml
+      $update:
+        - $path: [tag]
+          $value: ematrix
+        - $path: [label]
+          $value: Electrical Matrix Solver
+        - $path: [help]
+          $value: Matrix configuration for the electrical solver.
+        - $path: [tags, 0, label]
+          $value: Iterative Params (Electrical)
+
 
   providers: &thermoelectric-providers
   - outTemperature
@@ -249,7 +234,7 @@
     in cylindrical 2D geometry.
 
     This solver performs under-threshold thermo-electrical computations.
-    It computes electric current flow and tempereture distribution in
+    It computes electric current flow and temperaure distribution in
     a self-consistent loop until desired convergence is reached.
 
   tags:
@@ -306,7 +291,7 @@
     in 3D geometry.
 
     This solver performs under-threshold thermo-electrical computations.
-    It computes electric current flow and tempereture distribution in
+    It computes electric current flow and temperaure distribution in
     a self-consistent loop until desired convergence is reached.
 
   tags:
@@ -393,9 +378,34 @@
 
   - *loop
 
-  - *tmatrix
 
-  - *ematrix
+  - !include
+      $file: fem.yml
+      $update:
+        - $path: [tag]
+          $value: tmatrix
+        - $path: [label]
+          $value: Thermal Matrix Solver
+        - $path: [help]
+          $value: Matrix configuration for the thermal solver.
+        - $path: [tags, 0, label]
+          $value: Iterative Params (Thermal)
+        - $path: [attrs, 0, default]
+          $value: iterative
+
+  - !include
+      $file: fem.yml
+      $update:
+        - $path: [tag]
+          $value: ematrix
+        - $path: [label]
+          $value: Electrical Matrix Solver
+        - $path: [help]
+          $value: Matrix configuration for the electrical solver.
+        - $path: [tags, 0, label]
+          $value: Iterative Params (Electrical)
+        - $path: [attrs, 0, default]
+          $value: iterative
 
   providers: *thermoelectric-providers
 

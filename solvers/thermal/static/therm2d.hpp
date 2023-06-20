@@ -77,8 +77,10 @@ struct PLASK_SOLVER_API ThermalFem2DSolver : public FemSolverWithMaskedMesh<Geom
 
     double maxerr;    ///< Maximum residual error accepted as convergence
     double inittemp;  ///< Initial temperature
+
     /**
      * Run temperature calculations
+     * \param loops maximum number of loops to run
      * \return max correction of temperature against the last call
      **/
     double compute(int loops = 1);

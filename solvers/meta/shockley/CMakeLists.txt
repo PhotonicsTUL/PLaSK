@@ -35,6 +35,7 @@ enable_testing()
 #add_solvers_test(foo ${PLASK_SOLVER_PATH}/mytest)
 #add_solver_test(bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
 add_solver_test(thermoelectric ${CMAKE_CURRENT_SOURCE_DIR}/tests/thermoelectric.xpl)
+add_solver_test(iterative ${CMAKE_CURRENT_SOURCE_DIR}/tests/iterative.xpl)
 
 
 # Build everything the default way.

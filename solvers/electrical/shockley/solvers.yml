@@ -6,133 +6,104 @@
     and using finite-element method.
   geometry: Cartesian2D
   tags:
-  - &mesh
-    tag: mesh
-    label: Mesh
-    help: >
-      Rectangular2D mesh used by this solver.
-    attrs:
-    - attr: ref
+    - &mesh
+      tag: mesh
       label: Mesh
-      required: true
-      type: mesh
-      mesh types: [ Rectangular2D ]
       help: >
-        Name of a Rectangular2D mesh defined in the :xml:tag:`<grids>` section.
-    - &full-mesh
-      attr: include-empty
-      label: Include Empty Regions
-      type: bool
-      default: no
-      help: >
-        Should empty regions (e.g. air) be included into computation domain?
-  - &voltage
-    bcond: voltage
-    label: Voltage
-    mesh type: Rectangular2D
-    mesh: { tag: mesh, attr: ref }
-  - &loop
-    tag: loop
-    label: Configuration of the Self-Consistent Loop
-    help: Configuration of the self-consistent loop.
-    attrs:
-    - attr: maxerr
-      label: Maximum current density error
-      type: float
-      unit: '%'
-      default: 0.05
-      help: Maximum allowed current density error.
-    - group: Initial active conductivity
+        Rectangular2D mesh used by this solver.
       attrs:
-      - attr: start-cond
-        label: Vertical
-        type: float
-        unit: S/m
-        default: 5.0
-        help: Initial vertical conductivity of all active regions.
-      - attr: start-cond-inplane
-        label: In-plane
-        type: float
-        unit: S/m
-        default: 0.0
-        help: Initial in-plane conductivity of all active regions.
-    - attr: convergence
-      label: Convergence method
-      type: choice
-      default: fast
-      choices:
-      - fast
-      - stable
-      help: Convergence method. If <tt>stable</tt>, covergence is slown down to ensure stability.
-  - &matrix
-    tag: matrix
-    label: Matrix Solver
-    help: Configuration of the matrix solver.
-    attrs:
-    - attr: algorithm
-      label: Solution algorithm
-      type: choice
-      default: cholesky
-      choices:
-      - cholesky
-      - gauss
-      - iterative
-      help: Algorithm used for solving set of linear positive-definite equations.
-    - attr: itererr
-      label: Max. residual error
-      type: float
-      default: 1.0e-08
-      help: Maximum allowed residual error for the iterative algorithm.
-    - attr: iterlim
-      label: Max. number of iterations
-      type: int
-      default: 10000
-      help: Maximum number of iterations for the iterative algorithm.
-    - attr: logfreq
-      label: Progress logging frequency
-      type: int
-      default: 500
-      help: Number of iterations after which the progress is logged.
-  - &junction
-    tag: junction
-    label: Configuration of the Effective Model of p-n Junction
-    help: Configuration of the effective model of p-n junction.
-    attrs:
-    - attr: beta#
-      label: Junction coefficients<br/>(one per line)
-      type: float
-      unit: 1/V
-      help: Junction coefficients. This is an inverse of the junction thermal voltage.
-    - attr: js#
-      label: Reverse bias current densities<br/>(one per line)
-      type: float
-      unit: A/m<sup>2</sup>
-      help: Reverse bias current densities.
-  - &contacts
-    tag: contacts
-    label: Properties of the Contacts
-    help: Properties of the contact layers.
-    attrs:
-    - attr: pcond
-      label: p-contact conductivity
-      type: float
-      unit: S/m
-      default: 5.0
-      help: p-contact conductivity.
-    - attr: ncond
-      label: n-contact conductivity
-      type: float
-      unit: S/m
-      default: 50.0
-      help: n-contact conductivity.
+        - attr: ref
+          label: Mesh
+          required: true
+          type: mesh
+          mesh types: [Rectangular2D]
+          help: >
+            Name of a Rectangular2D mesh defined in the :xml:tag:`<grids>` section.
+        - &full-mesh
+          attr: include-empty
+          label: Include Empty Regions
+          type: bool
+          default: no
+          help: >
+            Should empty regions (e.g. air) be included into computation domain?
+    - &voltage
+      bcond: voltage
+      label: Voltage
+      mesh type: Rectangular2D
+      mesh: { tag: mesh, attr: ref }
+    - &loop
+      tag: loop
+      label: Configuration of the Self-Consistent Loop
+      help: Configuration of the self-consistent loop.
+      attrs:
+        - attr: maxerr
+          label: Maximum current density error
+          type: float
+          unit: "%"
+          default: 0.05
+          help: Maximum allowed current density error.
+        - group: Initial active conductivity
+          attrs:
+            - attr: start-cond
+              label: Vertical
+              type: float
+              unit: S/m
+              default: 5.0
+              help: Initial vertical conductivity of all active regions.
+            - attr: start-cond-inplane
+              label: In-plane
+              type: float
+              unit: S/m
+              default: 0.0
+              help: Initial in-plane conductivity of all active regions.
+        - attr: convergence
+          label: Convergence method
+          type: choice
+          default: fast
+          choices:
+            - fast
+            - stable
+          help: Convergence method. If <tt>stable</tt>, convergence is slowed down to ensure stability.
+    - !include &matrix { $file: fem.yml }
+    - &junction
+      tag: junction
+      label: Configuration of the Effective Model of p-n Junction
+      help: Configuration of the effective model of p-n junction.
+      attrs:
+        - attr: beta#
+          label: Junction coefficients<br/>(one per line)
+          type: float
+          unit: 1/V
+          help: Junction coefficients. This is an inverse of the junction thermal voltage.
+        - attr: js#
+          label: Reverse bias current densities<br/>(one per line)
+          type: float
+          unit: A/m<sup>2</sup>
+          help: Reverse bias current densities.
+    - &contacts
+      tag: contacts
+      label: Properties of the Contacts
+      help: Properties of the contact layers.
+      attrs:
+        - attr: pcond
+          label: p-contact conductivity
+          type: float
+          unit: S/m
+          default: 5.0
+          help: p-contact conductivity.
+        - attr: ncond
+          label: n-contact conductivity
+          type: float
+          unit: S/m
+          default: 50.0
+          help: n-contact conductivity.
   providers: &providers
-  - outVoltage
-  - outCurrentDensity
-  - outHeat
-  - outConductivity
+    - outVoltage
+    - outCurrentDensity
+    - outHeat
+    - outConductivity
   receivers: &receivers
-  - inTemperature
-
+    - inTemperature
 
 - solver: ShockleyCyl
   lib: shockley
@@ -142,12 +113,12 @@
     and using finite-element method.
   geometry: Cylindrical
   tags:
-  - *mesh
-  - *voltage
-  - *loop
-  - *matrix
-  - *junction
-  - *contacts
+    - *mesh
+    - *voltage
+    - *loop
+    - *matrix
+    - *junction
+    - *contacts
   providers: *providers
   receivers: *receivers
 
@@ -159,30 +130,33 @@
     and using finite-element method.
   geometry: Cartesian3D
   tags:
-  - tag: mesh
-    label: Mesh
-    help: >
-      Rectangular3D mesh used by this solver.
-    attrs:
-    - attr: ref
+    - tag: mesh
       label: Mesh
-      required: true
-      type: mesh
-      mesh types: [ Rectangular3D ]
       help: >
-        Name of a Rectangular3D mesh defined in the :xml:tag:`<grids>` section.
-    - *full-mesh
-  - bcond: voltage
-    label: Voltage
-    mesh type: Rectangular3D
-    mesh: { tag: mesh, attr: ref }
-  - *loop
-  - *matrix
-  - *junction
-  - *contacts
+        Rectangular3D mesh used by this solver.
+      attrs:
+        - attr: ref
+          label: Mesh
+          required: true
+          type: mesh
+          mesh types: [Rectangular3D]
+          help: >
+            Name of a Rectangular3D mesh defined in the :xml:tag:`<grids>` section.
+        - *full-mesh
+    - bcond: voltage
+      label: Voltage
+      mesh type: Rectangular3D
+      mesh: { tag: mesh, attr: ref }
+    - *loop
+    - !include
+      $file: fem.yml
+      $update:
+        - $path: [attrs, 0, default]
+          $value: iterative
+    - *junction
+    - *contacts
   providers: *providers
   receivers: *receivers
-
 
 - solver: ActiveCond2D
   lib: shockley
@@ -198,11 +172,11 @@
         >>> solver.cond = lambda U, jy, T: 5.0
   geometry: Cylindrical
   tags:
-  - *mesh
-  - *voltage
-  - *loop
-  - *matrix
-  - *contacts
+    - *mesh
+    - *voltage
+    - *loop
+    - *matrix
+    - *contacts
   providers: *providers
   receivers: *receivers
 
@@ -220,11 +194,11 @@
         >>> solver.cond = lambda U, jz, T: 5.0
   geometry: Cylindrical
   tags:
-  - *mesh
-  - *voltage
-  - *loop
-  - *matrix
-  - *contacts
+    - *mesh
+    - *voltage
+    - *loop
+    - *matrix
+    - *contacts
   providers: *providers
   receivers: *receivers
 
@@ -242,25 +216,25 @@
         >>> solver.cond = lambda U, jz, T: 5.0
   geometry: Cartesian3D
   tags:
-  - tag: mesh
-    label: Mesh
-    help: >
-      Rectangular3D mesh used by this solver.
-    attrs:
-    - attr: ref
+    - tag: mesh
       label: Mesh
-      required: true
-      type: mesh
-      mesh types: [ Rectangular3D ]
       help: >
-        Name of a Rectangular3D mesh defined in the :xml:tag:`<grids>` section.
-    - *full-mesh
-  - bcond: voltage
-    label: Voltage
-    mesh type: Rectangular3D
-    mesh: { tag: mesh, attr: ref }
-  - *loop
-  - *matrix
-  - *contacts
+        Rectangular3D mesh used by this solver.
+      attrs:
+        - attr: ref
+          label: Mesh
+          required: true
+          type: mesh
+          mesh types: [Rectangular3D]
+          help: >
+            Name of a Rectangular3D mesh defined in the :xml:tag:`<grids>` section.
+        - *full-mesh
+    - bcond: voltage
+      label: Voltage
+      mesh type: Rectangular3D
+      mesh: { tag: mesh, attr: ref }
+    - *loop
+    - *matrix
+    - *contacts
   providers: *providers
   receivers: *receivers

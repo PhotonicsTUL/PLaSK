@@ -109,6 +109,19 @@ class ThermoElectric(plask.Solver):
         for tag in xpl:
             self._parse_xpl(tag, manager)
 
+    def _parse_fem_tag(self, tag, manager, solver):
+        self._read_attr(tag, 'algorithm', solver)
+        for it in tag:
+            if it == 'iterative':
+                self._read_attr(it, 'accelerator', solver.iterative)
+                self._read_attr(it, 'preconditioner', solver.iterative)
+                self._read_attr(it, 'noconv', solver.iterative)
+                self._read_attr(it, 'maxit', solver.iterative, int)
+                self._read_attr(it, 'maxerr', solver.iterative, float)
+                self._read_attr(it, 'nfact', solver.iterative, int)
+            else:
+                raise plask.XMLError("{}: Unrecognized tag '{}'".format(it, it.name))
+
     def _parse_xpl(self, tag, manager):
         if tag == 'geometry':
             self.thermal.geometry = tag.getitem(manager.geo, 'thermal')
@@ -135,13 +148,9 @@ class ThermoElectric(plask.Solver):
             self._read_attr(tag, 'maxterr', self.thermal, float, 'maxerr')
             self._read_attr(tag, 'maxcerr', self.electrical, float, 'maxerr')
         elif tag == 'tmatrix':
-            self._read_attr(tag, 'algorithm', self.thermal)
-            self._read_attr(tag, 'itererr', self.thermal, float)
-            self._read_attr(tag, 'iterlim', self.thermal, int)
+            self._parse_fem_tag(tag, manager, self.thermal)
         elif tag == 'ematrix':
-            self._read_attr(tag, 'algorithm', self.electrical)
-            self._read_attr(tag, 'itererr', self.electrical, float)
-            self._read_attr(tag, 'iterlim', self.electrical, int)
+            self._parse_fem_tag(tag, manager, self.electrical)
         elif tag == 'temperature':
             self.thermal.temperature_boundary.read_from_xpl(tag, manager)
         elif tag == 'heatflux':
@@ -561,7 +570,7 @@ class ThermoElectricCyl(ThermoElectric):
     Thermo-electric calculations solver without the optical part.
 
     This solver performs under-threshold thermo-electrical computations.
-    It computes electric current flow and tempereture distribution in a self-
+    It computes electric current flow and temperaure distribution in a self-
     consistent loop until desired convergence is reached.
 
     The computations can be executed using `compute` method, after which
@@ -621,7 +630,7 @@ class ThermoElectric3D(ThermoElectric):
     Thermo-electric calculations solver without the optical part.
 
     This solver performs under-threshold thermo-electrical computations.
-    It computes electric current flow and tempereture distribution in a self-
+    It computes electric current flow and temperaure distribution in a self-
     consistent loop until desired convergence is reached.
 
     The computations can be executed using `compute` method, after which

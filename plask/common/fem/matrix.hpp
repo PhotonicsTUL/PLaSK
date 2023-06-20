@@ -75,18 +75,17 @@ struct FemMatrix {
      * \param[inout] X initial estimate of the solution, on output contains the solution (may be interchanged with B)
      * \return number of iterations
      */
-    virtual int solverhs(DataVector<double>& B, DataVector<double>& X) = 0;
+    virtual void solverhs(DataVector<double>& B, DataVector<double>& X) = 0;
 
     /**
      * Solve the set of linear equations
      * \param solver solver to use
      * \param[inout] B right hand side of the equation, on output may be interchanged with X
      * \param[inout] X initial estimate of the solution, on output contains the solution (may be interchanged with B)
-     * \return number of iterations
      */
-    int solve(DataVector<double>& B, DataVector<double>& X) {
+    void solve(DataVector<double>& B, DataVector<double>& X) {
         factorize();
-        return solverhs(B, X);
+        solverhs(B, X);
     }
 
     /**
@@ -95,8 +94,8 @@ struct FemMatrix {
      * \param[inout] B right hand side of the equation, on output contains the solution
      * \return number of iterations
      */
-    int solve(DataVector<double>& B) {
-        return solve(B, B);
+    void solve(DataVector<double>& B) {
+        solve(B, B);
     }
 
     /**

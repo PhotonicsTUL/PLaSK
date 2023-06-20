@@ -33,6 +33,7 @@ ElectricalFem3DSolver::ElectricalFem3DSolver(const std::string& name)
     current.reset();
     inTemperature = 300.;
     junction_conductivity.reset(1, default_junction_conductivity);
+    algorithm = ALGORITHM_ITERATIVE;
 }
 
 ElectricalFem3DSolver::~ElectricalFem3DSolver() {}
@@ -436,7 +437,7 @@ double ElectricalFem3DSolver::compute(unsigned loops) {
         this->writelog(LOG_RESULT, "Loop {:d}({:d}): max(j{}) = {:g} kA/cm2, error = {:g}%", loop, loopno, noactive ? "" : "@junc",
                        mcur, err);
 
-    } while (err > maxerr && (loops == 0 || loop < loops));
+    } while ((!iter_params.converged || err > maxerr) && (loops == 0 || loop < loops));
 
     saveConductivity();
 
