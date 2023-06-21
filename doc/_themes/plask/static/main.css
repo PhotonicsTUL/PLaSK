@@ -736,3 +736,7 @@ dl.method dt, dl.attribute dt, dl.function dt {
 dl.docutils dd {
     margin-left: 30px;
 }
+
+caption {
+    color: black;
+  }

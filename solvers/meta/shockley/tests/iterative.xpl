@@ -92,9 +92,11 @@
     </temperature>
     <junction beta0="11" js0="1"/>
     <tmatrix algorithm="iterative">
-      <iterative noconv="continue"/>
+      <iterative preconditioner="ljac"/>
     </tmatrix>
-    <ematrix algorithm="iterative"/>
+    <ematrix algorithm="iterative">
+      <iterative accelerator="cg" preconditioner="ljac" ndeg="6"/>
+    </ematrix>
   </meta>
 </solvers>
 
@@ -106,7 +108,7 @@ class GratingTest(unittest.TestCase):
 
     def testComputations(self):
         SOLVER.compute(save=False)
-        self.assertAlmostEqual(SOLVER.get_total_current(), 1.754, 3)
+        self.assertAlmostEqual(SOLVER.get_total_current(), 1.752, 3)
 
 
 if __name__ == '__main__':

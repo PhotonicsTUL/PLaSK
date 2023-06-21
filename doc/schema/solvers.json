@@ -193,6 +193,10 @@
                   "type": "string",
                   "description": "Detailed description of the tag"
                 },
+                "additional-help": {
+                  "type": "string",
+                  "description": "Additional help to display below attributes"
+                },
                 "attrs": {
                   "type": "array",
                   "description": "List of specific configuration attributes and groups",

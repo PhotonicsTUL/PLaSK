@@ -119,6 +119,12 @@ class ThermoElectric(plask.Solver):
                 self._read_attr(it, 'maxit', solver.iterative, int)
                 self._read_attr(it, 'maxerr', solver.iterative, float)
                 self._read_attr(it, 'nfact', solver.iterative, int)
+                self._read_attr(it, 'omega', solver.iterative, float)
+                self._read_attr(it, 'ndeg', solver.iterative, int)
+                self._read_attr(it, 'lvfill', solver.iterative, int)
+                self._read_attr(it, 'ltrunc', solver.iterative, int)
+                self._read_attr(it, 'nsave', solver.iterative, int)
+                self._read_attr(it, 'nrestart', solver.iterative, int)
             else:
                 raise plask.XMLError("{}: Unrecognized tag '{}'".format(it, it.name))
 

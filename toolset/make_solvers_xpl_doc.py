@@ -44,16 +44,16 @@ categories = {}
 
 def html2rst(text):
     return text\
-        .replace(u'<b>', u'\\ **')\
-        .replace(u'</b>', u'**\\ ')\
-        .replace(u'<i>', u'\\ *')\
-        .replace(u'</i>', u'*\\ ')\
-        .replace(u'<tt>', u'\\ ``')\
-        .replace(u'</tt>', u'``\\ ')\
-        .replace(u'<sub>', u'\\ :sub:`')\
-        .replace(u'</sub>', u'`\\ ')\
-        .replace(u'<sup>', u'\\ :sup:`')\
-        .replace(u'</sup>', u'`\\ ')
+        .replace('<b>', '\\ **')\
+        .replace('</b>', '**\\ ')\
+        .replace('<i>', '\\ *')\
+        .replace('</i>', '*\\ ')\
+        .replace('<tt>', '\\ ``')\
+        .replace('</tt>', '``\\ ')\
+        .replace('<sub>', '\\ :sub:`')\
+        .replace('</sub>', '`\\ ')\
+        .replace('<sup>', '\\ :sup:`')\
+        .replace('</sup>', '`\\ ')
 
 
 def make_rst(dirname):
@@ -82,32 +82,39 @@ def make_rst(dirname):
 
         def out_text(text, level, par=False):
             if text is None: return
-            text = html2rst(text.strip())
+            indent = len(text)
+            text = text.lstrip()
+            indent -= len(text)
+            text = html2rst(text.rstrip())
             if text:
                 if not par: out()
                 for line in text.split('\n'):
                     if par: out()
-                    out('   '*level + line.strip())
+                    if all(c == ' ' for c in line[:indent]):
+                        line = line[indent:].rstrip()
+                    else:
+                        line = line.strip()
+                    out('   '*level + line)
 
         out(name)
-        out(u'-' * (len(name)))
-        out(u'\n.. xml:tag:: <{cat} solver="{name}"> [{name}]\n'.format(**locals()))
-        out(u'   Corresponding Python class: :py:class:`{cat}.{lib}.{name}`.'.format(**locals()))
+        out('-' * (len(name)))
+        out('\n.. xml:tag:: <{cat} solver="{name}"> [{name}]\n'.format(**locals()))
+        out('   Corresponding Python class: :py:class:`{cat}.{lib}.{name}`.'.format(**locals()))
 
         out_text(solver.get('help'), 1, True)
 
-        out(u'\n   :attr required name: Solver name.')
+        out('\n   :attr required name: Solver name.')
 
-        out(u'\n   .. xml:contents::')
+        out('\n   .. xml:contents::')
 
         try:
             geom = solver['geometry']
         except KeyError:
             pass
         else:
-            out(u'\n      .. xml:tag:: <geometry> [in {}.{}]'.format(cat, name))
-            out(u'\n         Geometry for use by this solver.')
-            out(u'\n         :attr required ref: Name of a {} geometry defined in the :xml:tag:`<geometry>` section.'
+            out('\n      .. xml:tag:: <geometry> [in {}.{}]'.format(cat, name))
+            out('\n         Geometry for use by this solver.')
+            out('\n         :attr required ref: Name of a {} geometry defined in the :xml:tag:`<geometry>` section.'
                 .format(geom))
 
         try:
@@ -117,10 +124,10 @@ def make_rst(dirname):
         else:
             if mesh is not None:
                 if isinstance(mesh, list): mesh = ', '.join(mesh)
-                out(u'\n      .. xml:tag:: <mesh> [in {}.{}]'.format(cat, name))
-                out(u'\n         {}{} mesh used by this solver.'
-                    .format(u'' if solver.get('need mesh', True) else u'Optional ', mesh))
-                out(u'\n         :attr required ref: Name of a {} mesh defined in the :xml:tag:`<grids>` section.'
+                out('\n      .. xml:tag:: <mesh> [in {}.{}]'.format(cat, name))
+                out('\n         {}{} mesh used by this solver.'
+                    .format('' if solver.get('need mesh', True) else 'Optional ', mesh))
+                out('\n         :attr required ref: Name of a {} mesh defined in the :xml:tag:`<grids>` section.'
                     .format(mesh))
 
         def write_attrs(attr, level, unit=None):
@@ -137,37 +144,37 @@ def make_rst(dirname):
                 if typ == 'choice':
                     choices = [str(ch).strip() for ch in (attr['choices'] + attr.get('other', []))]
                     if len(choices) == 0:
-                        typ = u'choice'
+                        typ = 'choice'
                     elif len(choices) == 1:
-                        typ = u"'\\ *{}*\\ '".format(choices[0])
+                        typ = "\\ `{}``\\ ".format(choices[0])
                     elif len(choices) == 2:
-                        typ = u"'\\ *{}*\\ ' or '\\ *{}*\\ '".format(choices[0], choices[1])
+                        typ = "\\ ``{}``\\  or \\ ``{}``\\ ".format(choices[0], choices[1])
                     else:
-                        typ = u"{}, or '\\ *{}*\\ '".format(
-                            u', '.join(u"'\\ *{}*\\ '".format(ch) for ch in choices[:-1]), choices[-1])
+                        typ = "{}, or \\ ``{}``\\ ".format(
+                            ', '.join("\\ ``{}``\\ ".format(ch) for ch in choices[:-1]), choices[-1])
                 elif typ is not None:
                     if unit is None:
-                        typ = u'{}'.format(html2rst(typ))
+                        typ = '{}'.format(html2rst(typ))
                     else:
-                        typ = html2rst(u'{} [{}]'.format(typ, unit))
+                        typ = html2rst('{} [{}]'.format(typ, unit))
                 else:
                     typ = ''
                 if default is not None:
                     try:
                         float(default)
                     except ValueError:
-                        default = u"is '\\ *" + default + u"*\\ '"
+                        default = "is \\ ``" + default + "``\\ "
                     if typ:
-                        typ = typ + u", default {}".format(default)
+                        typ = typ + ", default {}".format(default)
                     else:
-                        typ = u"default {}".format(default)
+                        typ = "default {}".format(default)
                     if unit is not None:
-                        typ += u" " + html2rst(unit)
+                        typ += " " + html2rst(unit)
                 if typ:
-                    typ = u'(' + typ + u')'
-                doc = (u'\n\n' + u'   ' * (level+1)).join(doc.split(u'\n'))
-                out(u'{}   :attr {}{}: {} {}'
-                    .format(u'   ' * level, u'required ' if req else u'', attr['attr'], doc, typ))
+                    typ = '(' + typ + ')'
+                doc = ('\n\n' + '   ' * (level+1)).join(doc.split('\n'))
+                out('{}   :attr {}{}: {} {}'
+                    .format('   ' * level, 'required ' if req else '', attr['attr'], doc, typ))
             else:
                 for a in attr['attrs']:
                     write_attrs(a, level, unit)
@@ -175,7 +182,7 @@ def make_rst(dirname):
         def write_tags(outer, level=2):
             for tag in outer:
                 if 'tag' in tag:
-                    out(u'\n{}.. xml:tag:: <{}> [in {}.{}]'.format('   '*level, tag['tag'], cat, name))
+                    out('\n{}.. xml:tag:: <{}> [in {}.{}]'.format('   '*level, tag['tag'], cat, name))
                     out_text(tag.get('help'), level+1, True)
                     attrs = tag['attrs']
                     if attrs:
@@ -183,13 +190,21 @@ def make_rst(dirname):
                         for attr in attrs:
                             write_attrs(attr, level)
 
+                    add_help = tag.get('additional-help')
+                    if add_help:
+                        out_text('\n' + add_help, level+1, True)
+
                     write_tags(tag.get('tags', []), level+1)
 
                 elif 'bcond' in tag:
-                    out(u'\n{}.. xml:tag:: <{}> [in {}.{}]'.format('   '*level, tag['bcond'], cat, name))
-                    out(u'\n{}   {} boundary conditions. See subsection :ref:`sec-xpl-Boundary-conditions`.'
+                    out('\n{}.. xml:tag:: <{}> [in {}.{}]'.format('   '*level, tag['bcond'], cat, name))
+                    out('\n{}   {} boundary conditions. See subsection :ref:`sec-xpl-Boundary-conditions`.'
                         .format('   '*level, tag['label']))
                     out_text(tag.get('help'), level+1, True)
+
+                    add_help = tag.get('additional-help')
+                    if add_help:
+                        out_text('\n' + add_help, level+1, True)
 
         write_tags(solver.get('tags', []))
 
@@ -208,8 +223,8 @@ for cat in categories:
     def out(*args, **kwargs):
         print(*args, file=outfile, **kwargs)
 
-    out(u'<{}> solvers'.format(cat))
-    out(u'-' * (len(cat)+10))
-    out(u'\n.. toctree::\n')
+    out('<{}> solvers'.format(cat))
+    out('-' * (len(cat)+10))
+    out('\n.. toctree::\n')
     for item in categories[cat]:
         out('   {}/{}'.format(cat, item))

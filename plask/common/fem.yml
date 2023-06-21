@@ -17,7 +17,90 @@ tags:
   - tag: iterative
     label: Iterative Params
     help: >
-      Parameters for iterative matrix solver.
+      Parameters for iterative matrix solver. PLaSK uses `NSPCG`_ package for performing iterations. Please refer to its documentation for explanation of most of the settings.
+      .. _NSPCG: https://web.ma.utexas.edu/CNA/NSPCG/",
+    additional-help: >
+      .. list-table:: Preconditioner choices:
+        * - ``rich``
+          - Richardson's method
+        * - ``jac``
+          - Jacobi method
+        * - ``ljac``
+          - Line Jacobi method
+        * - ``ljacx``
+          - Line Jacobi method (approx. inverse)
+        * - ``sor``
+          - Successive Overrelaxation
+        * - ``ssor``
+          - Symmetric SOR (can be used only with SOR accelerator)
+        * - ``ic``
+          - Incomplete Cholesky (default)
+        * - ``mic``
+          - Modified Incomplete Cholesky
+        * - ``lsp``
+          - Least Squares Polynomial
+        * - ``neu``
+          - Neumann Polynomial
+        * - ``lsor``
+          - Line SOR
+        * - ``lssor``
+          - Line SSOR
+        * - ``llsp``
+          - Line Least Squares Polynomial
+        * - ``lneu``
+          - Line Neumann Polynomial
+        * - ``bic``
+          - Block Incomplete Cholesky (ver. 1)
+        * - ``bicx``
+          - Block Incomplete Cholesky (ver. 2)
+        * - ``mbic``
+          - Modified Block Incomplete Cholesky (ver. 1)
+        * - ``mbicx``
+          - Modified Block Incomplete Cholesky (ver. 2)
+
+      .. list-table:: Accelerator choices:
+        * - ``cg``
+          - Conjugate Gradient acceleration (default)
+        * - ``si``
+          - Chebyshev acceleration or Semi-Iteration
+        * - ``sor``
+          - Successive Overrelaxation (can use only SOR preconditioner)
+        * - ``srcg``
+          - Symmetric Successive Overrelaxation Conjugate Gradient Algorithm (can use only SSOR preconditioner)
+        * - ``srsi``
+          - Symmetric Successive Overrelaxation Semi-Iteration Algorithm (can use only SSOR preconditioner)
+        * - ``basic``
+          - Basic Iterative Method
+        * - ``me``
+          - Minimal Error Algorithm
+        * - ``cgnr``
+          - Conjugate Gradient applied to the Normal Equations
+        * - ``lsqr``
+          - Least Squares Algorithm
+        * - ``odir``
+          - ORTHODIR, a truncated/restarted method useful for nonsymmetric systems of equations
+        * - ``omin``
+          - ORTHOMIN, a common truncated/restarted method used for nonsymmetric systems
+        * - ``ores``
+          - ORTHORES, another truncated/restarted method for nonsymmetric systems
+        * - ``iom``
+          - Incomplete Orthogonalization Method
+        * - ``gmres``
+          - Generalized Minimal Residual Method
+        * - ``usymlq``
+          - Unsymmetric LQ
+        * - ``usymqr``
+          - Unsymmetric QR
+        * - ``landir``
+          - Lanczos/ORTHODIR
+        * - ``lanmin``
+          - Lanczos/ORTHOMIN or Biconjugate Gradient Method
+        * - ``lanres``
+          - Lanczos/ORTHORES or “two-sided” Lanczos Method
+        * - ``cgcr``
+          - Constrained Generalized Conjugate Residual Method
+        * - ``bcgs``
+          - Biconjugate Gradient Squared Method
     attrs:
       - attr: maxit
         label: Max iterations
@@ -44,32 +127,7 @@ tags:
       - attr: accelerator
         label: Accelerator
         help: >
-          Accelerator used for iterative matrix solver. Possible choices are:
-
-          +------------+-------------------------------------------------------------------------------------+
-          | ``cg``     | Conjugate Gradient acceleration — this is the default and should be preferred       |
-          | ``si``     | Chebyshev acceleration or Semi-Iteration                                            |
-          | ``sor``    | Successive Overrelaxation                                                           |
-          | ``srcg``   | Symmetric Successive Overrelaxation Conjugate Gradient Algorithm                    |
-          | ``srsi``   | Symmetric Successive Overrelaxation Semi-Iteration Algorithm                        |
-          | ``basic``  | Basic Iterative Method                                                              |
-          | ``me``     | Minimal Error Algorithm                                                             |
-          | ``cgnr``   | Conjugate Gradient applied to the Normal Equations                                  |
-          | ``lsqr``   | Least Squares Algorithm                                                             |
-          | ``odir``   | ORTHODIR, a truncated/restarted method useful for nonsymmetric systems of equations |
-          | ``omin``   | ORTHOMIN, a common truncated/restarted method used for nonsymmetric systems         |
-          | ``ores``   | ORTHORES, another truncated/restarted method for nonsymmetric systems               |
-          | ``iom``    | Incomplete Orthogonalization Method                                                 |
-          | ``gmres``  | Generalized Minimal Residual Method                                                 |
-          | ``usymlq`` | Unsymmetric LQ                                                                      |
-          | ``usymqr`` | Unsymmetric QR                                                                      |
-          | ``landir`` | Lanczos/ORTHODIR                                                                    |
-          | ``lanmin`` | Lanczos/ORTHOMIN or Biconjugate Gradient Method                                     |
-          | ``lanres`` | Lanczos/ORTHORES or “two-sided” Lanczos Method                                      |
-          | ``cgcr``   | Constrained Generalized Conjugate Residual Method                                   |
-          | ``bcgs``   | Biconjugate Gradient Squared Method                                                 |
-          +------------+-------------------------------------------------------------------------------------+
-
+          Accelerator used for iterative matrix solver.
         type: choice
         default: cg
         choices:
@@ -97,28 +155,7 @@ tags:
       - attr: preconditioner
         label: Preconditioner
         help: >
-          Preconditioner used for iterative matrix solver. Possible choices are:
-
-          +-----------+---------------------------------------------+
-          | ``rich``  | Richardson's method                         |
-          | ``jac``   | Jacobi method                               |
-          | ``ljac``  | Line Jacobi method                          |
-          | ``ljacx`` | Line Jacobi method (approx. inverse)        |
-          | ``sor``   | Successive Overrelaxation                   |
-          | ``ssor``  | Symmetric SOR                               |
-          | ``ic``    | Incomplete Cholesky                         |
-          | ``mic``   | Modified Incomplete Cholesky                |
-          | ``lsp``   | Least Squares Polynomial                    |
-          | ``neu``   | Neumann Polynomial                          |
-          | ``lsor``  | Line SOR                                    |
-          | ``lssor`` | Line SSOR                                   |
-          | ``llsp``  | Line Least Squares Polynomial               |
-          | ``lneu``  | Line Neumann Polynomial                     |
-          | ``bic``   | Block Incomplete Cholesky (ver. 1)          |
-          | ``bicx``  | Block Incomplete Cholesky (ver. 2)          |
-          | ``mbic``  | Modified Block Incomplete Cholesky (ver. 1) |
-          | ``mbicx`` | Modified Block Incomplete Cholesky (ver. 2) |
-          +-----------+---------------------------------------------+
+          Preconditioner used for iterative matrix solver.
         type: choice
         default: ic
         choices:
@@ -147,9 +184,39 @@ tags:
           between factorizations. The default value is 1, which means that a factorization is performed at every iteration.
         type: int
         default: 10
-      # - attr: omega
-      #   label: Omega
-      #   help: >
-      #     Relaxation parameter.
-      #   type: float
-      #   default: 1.0
+      - attr: ndeg
+        label: Polynomial degree
+        help: >
+           Degree of the polynomial to be used for the polynomial preconditioners.
+        type: int
+        default: 1
+      - attr: lvfill
+        label: Fill-in level
+        help: >
+         Level of fill-in for incomplete Cholesky preconditioners. Increasing this value will result in more accurate factorizations at the expense of increased memory usage and factorization time.
+        type: int
+        default: 0
+      - attr: ltrunc
+        label: Truncation level
+        help: >
+           Truncation bandwidth to be used when approximating the inverses of matrices with dense banded matrices. An increase in this value means a more accurate factorization at the expense of increased storage.
+        type: int
+        default: 0
+      - attr: omega
+        label: Omega
+        help: >
+          Relaxation parameter.
+        type: float
+        default: 1.0
+      - attr: nsave
+        label: Saved vectors number
+        help: >
+           The number of old vectors to be saved for the truncated acceleration methods.
+        type: int
+        default: 5
+      - attr: nrestart
+        label: Restart frequency
+        help: >
+           The number of iterations between restarts for the restarted acceleration methods.
+        type: int
+        default: 100000

@@ -31,6 +31,7 @@ Classes
    config
    vec
    Data
+   IterativeParams
    Manager
    MaterialField
    StepProfile

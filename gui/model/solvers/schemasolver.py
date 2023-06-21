@@ -35,7 +35,6 @@ try:
 except (TypeError, NameError, AttributeError):
     pass
 
-
 VALIDATORS = {'int': can_be_int, 'float': can_be_float, 'bool': can_be_bool}
 
 basestring = str, bytes
@@ -359,7 +358,7 @@ class SchemaSolverFactory:
 def read_attr(tn, attr):
     an = attr['attr']
     al = attr['label']
-    ah = attr['help'].strip().split('\n\n')[0]
+    ah = attr['help'].strip()
     at = attr.get('type', '')
     au = attr.get('unit')
     ad = attr.get('default')

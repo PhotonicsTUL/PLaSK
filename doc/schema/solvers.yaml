@@ -115,6 +115,9 @@ definitions:
               help: &property-help
                 type: string
                 description: Detailed description of the tag
+              additional-help: &property-additional-help
+                type: string
+                description: Additional help to display below attributes
               attrs: &property-attrs
                 type: array
                 description: List of specific configuration attributes and groups

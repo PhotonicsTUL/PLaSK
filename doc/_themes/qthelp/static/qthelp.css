@@ -190,7 +190,7 @@ dl.tag>dt {
 }
 
 dl.xml-contents, dl.tag table.field-list {
-    margin-top: 0.5em;   
+    margin-top: 0.5em;
 }
 
 th.field-name {
@@ -417,17 +417,21 @@ div.genindex-jumpbox a { margin: 0px 1px; }
 div.genindex-jumpbox a:first-child { margin-left: 0px; }
 div.genindex-jumpbox a:last-child { margin-right: 0px; }
 
-.genindex div.entry { 
+.genindex div.entry {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     position: relative;
 }
 
-.genindex div.subentry { 
+.genindex div.subentry {
     margin-left: 1.2em;
 }
 
 dl.docutils dd {
     margin-left: 30px;
+}
+
+caption {
+  color: black;
 }

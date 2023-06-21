@@ -75,7 +75,13 @@ struct IterativeMatrixParams {
     int maxit = 1000;      ///< Maximum number of iterations
     double maxerr = 1e-6;  ///< Maximum allowed residual error of iteration
     int nfact = 10;        ///< Frequency of partial factorization
-    double omega = 1.0;    ///< Relaxation parameter
+
+    int ns1 = 5;         ///< Number of old vectors to be saved for truncated acceleration methods
+    int ns2 = 100000;    ///< Frequency of restarting restarted accelerations methods
+    int lvfill = 0;      ///< Level of fill-in for incomplete Cholesky factorization
+    int ltrunc = 0;      ///< Level of truncation for Cholesky factorization
+    int ndeg = 1;        ///< Degree of the polynomial preconditioner
+    double omega = 1.0;  ///< Relaxation parameter
 
     enum NoConvergenceBehavior { NO_CONVERGENCE_ERROR, NO_CONVERGENCE_WARNING, NO_CONVERGENCE_CONTINUE };
     NoConvergenceBehavior no_convergence_behavior = NO_CONVERGENCE_WARNING;  ///< What to do if the solution does not
@@ -97,8 +103,7 @@ struct SparseBandMatrix : FemMatrix {
     int nw = 0, inw = 0;
     double* wksp = nullptr;
     int* iwksp = nullptr;
-    int* piv;
-    int* ipiv;
+    int kblsz = -1, nbl2d = -1;
 
   public:
     /**
@@ -108,16 +113,14 @@ struct SparseBandMatrix : FemMatrix {
      */
     template <typename SolverT>
     SparseBandMatrix(SolverT* solver, size_t size, size_t major)
-        : FemMatrix(solver, size, 4, 4),
-          bno(aligned_malloc<int>(5)),
-          params(&solver->iter_params),
-          piv(aligned_malloc<int>(size)),
-          ipiv(aligned_malloc<int>(size)) {
+        : FemMatrix(solver, size, 4, 4), bno(aligned_malloc<int>(5)), params(&solver->iter_params) {
         bno[0] = 0;
         bno[1] = 1;
         bno[2] = major - 1;
         bno[3] = major;
         bno[4] = major + 1;
+        kblsz = major - 1;
+        nbl2d = major - 1;
     }
 
     /**
@@ -128,11 +131,7 @@ struct SparseBandMatrix : FemMatrix {
      */
     template <typename SolverT>
     SparseBandMatrix(SolverT* solver, size_t size, size_t major, size_t minor)
-        : FemMatrix(solver, size, 13, 13),
-          bno(aligned_malloc<int>(14)),
-          params(&solver->iter_params),
-          piv(aligned_malloc<int>(size)),
-          ipiv(aligned_malloc<int>(size)) {
+        : FemMatrix(solver, size, 13, 13), bno(aligned_malloc<int>(14)), params(&solver->iter_params) {
         bno[0] = 0;
         bno[1] = 1;
         bno[2] = minor - 1;
@@ -147,14 +146,14 @@ struct SparseBandMatrix : FemMatrix {
         bno[11] = major + minor - 1;
         bno[12] = major + minor;
         bno[13] = major + minor + 1;
+        kblsz = minor - 1;
+        nbl2d = major - minor - 1;
     }
 
     ~SparseBandMatrix() {
         aligned_free<int>(bno);
         aligned_free<double>(wksp);
         aligned_free<int>(iwksp);
-        aligned_free<int>(piv);
-        aligned_free<int>(ipiv);
     }
 
     /**
@@ -180,9 +179,21 @@ struct SparseBandMatrix : FemMatrix {
         iparm.ipropa = 0;
         iparm.ifact = (--ifact) ? 0 : 1;
         if (ifact <= 0) ifact = params->nfact;
-
         rparm.zeta = params->maxerr;
+
+        iparm.ns1 = params->ns1;
+        iparm.ns2 = params->ns2;
+        iparm.lvfill = params->lvfill;
+        iparm.ltrunc = params->ltrunc;
+        iparm.ndeg = params->ndeg;
         rparm.omega = params->omega;
+
+        iparm.ns3 =
+            (params->accelerator == IterativeMatrixParams::ACCEL_LANMIN || params->accelerator == IterativeMatrixParams::ACCEL_CGCR)
+                ? 40
+                : 0;
+        iparm.kblsz = kblsz;
+        iparm.nbl2d = nbl2d;
 
         solver->writelog(LOG_DETAIL, "Iterating linear system");
 
@@ -194,7 +205,7 @@ struct SparseBandMatrix : FemMatrix {
 
         int n = size, maxnz = ld + 1;
 
-        int NW = 3 * size + 2 * iparm.itmax + size * maxnz;
+        int NW = 3 * size + 2 * iparm.itmax + size * maxnz + iparm.kblsz;
         int INW = maxnz + std::max(2 * n, maxnz * maxnz + maxnz);
 
         if (nw < NW) {
@@ -236,6 +247,21 @@ struct SparseBandMatrix : FemMatrix {
 
         void (*precond_func)(...), (*accel_func)(...);
 
+        if ((params->accelerator == IterativeMatrixParams::ACCEL_SOR) !=
+            (params->preconditioner == IterativeMatrixParams::PRECOND_SOR ||
+             params->preconditioner == IterativeMatrixParams::PRECOND_LSOR)) {
+            throw BadInput(solver->getId(), "SOR oraccelerator must be used with SOR or LSOR preconditioner");
+        }
+        if (params->accelerator == IterativeMatrixParams::ACCEL_SRCG &&
+            params->preconditioner != IterativeMatrixParams::PRECOND_SSOR &&
+            params->preconditioner != IterativeMatrixParams::PRECOND_LSSOR) {
+            throw BadInput(solver->getId(), "SRCG accelerator must be used with SSOR or LSSOR preconditioner");
+        }
+        if (params->accelerator == IterativeMatrixParams::ACCEL_SRSI &&
+            params->preconditioner != IterativeMatrixParams::PRECOND_SSOR &&
+            params->preconditioner != IterativeMatrixParams::PRECOND_LSSOR) {
+            throw BadInput(solver->getId(), "SRSI accelerator must be used with SSOR or LSSOR preconditioner");
+        }
         // clang-format off
         switch (params->preconditioner) {
             case IterativeMatrixParams::PRECOND_RICH: precond_func = nspcg_rich2; break;
@@ -282,8 +308,8 @@ struct SparseBandMatrix : FemMatrix {
         // clang-format on
 
         while (true) {
-            nspcg(precond_func, accel_func, n, ld + 1, n, maxnz, data, bno, piv, ipiv, U.data(), nullptr, B.data(), wksp, iwksp, nw,
-                  inw, iparm, rparm, ier);
+            nspcg(precond_func, accel_func, n, ld + 1, n, maxnz, data, bno, nullptr, nullptr, U.data(), nullptr, B.data(), wksp,
+                  iwksp, nw, inw, iparm, rparm, ier);
 
             // Increase workspace if needed
             if (ier == -2 && nw) {
@@ -336,7 +362,7 @@ struct SparseBandMatrix : FemMatrix {
                     }
                     break;
                 case 2:
-                    solver->writelog(LOG_WARNING, "`maxerr` too small - reset to {}", 500 * std::numeric_limits<double>::epsilon());
+                    solver->writelog(LOG_WARNING, "`maxerr` was too small, reset to {}", 3.55e-12);
                     break;
                 case 3:
                     solver->writelog(LOG_DEBUG,
@@ -345,9 +371,9 @@ struct SparseBandMatrix : FemMatrix {
                                      std::max(params->maxit, 50));
                     break;
                 case 4:
-                    solver->writelog(
-                        LOG_DEBUG,
-                        "NSPGS: In `zbrent`, f (a) and f (b) have the same sign (signifies difficulty in eigenvalue estimation)");
+                    solver->writelog(LOG_DEBUG,
+                                     "NSPGS: In `zbrent`, f (a) and f (b) have the same sign (signifies difficulty in "
+                                     "eigenvalue estimation)");
                     break;
                 case 5: solver->writelog(LOG_DEBUG, "NSPGS: Negative pivot encountered in factorization"); break;
             }

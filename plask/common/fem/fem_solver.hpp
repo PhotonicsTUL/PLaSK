@@ -96,6 +96,11 @@ template <typename SpaceT, typename MeshT> struct FemSolverWithMesh : public Sol
                 iter_params.maxerr = reader.getAttribute<double>("maxerr", iter_params.maxerr);
                 iter_params.nfact = reader.getAttribute<int>("nfact", iter_params.nfact);
                 iter_params.omega = reader.getAttribute<double>("omega", iter_params.omega);
+                iter_params.ndeg = reader.getAttribute<int>("ndeg", iter_params.ndeg);
+                iter_params.lvfill = reader.getAttribute<int>("lvfill", iter_params.lvfill);
+                iter_params.ltrunc = reader.getAttribute<int>("ltrunc", iter_params.ltrunc);
+                iter_params.ns1 = reader.getAttribute<int>("nsave", iter_params.ns1);
+                iter_params.ns2 = reader.getAttribute<int>("nrestart", iter_params.ns2);
                 reader.requireTagEnd(); // </iterative>
                 reader.requireTagEnd(); // </matrix>
             }
