@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -196,7 +196,7 @@ BOOST_PYTHON_MODULE(freecarrier)
             u8"Compute quasi-Fermi levels in specified active region.\n\n"
             u8"Args:\n"
             u8"    n (float): Carriers concentration to determine the levels for\n"
-            u8"               [1/cm\\ :sup:`3`\\ ].\n"
+            u8"               (1/cm\\ :sup:`3`\\ ).\n"
             u8"    T (float or ``None``): Temperature to get the levels. If this argument is\n"
             u8"                           ``None``, the estimates for temperature :py:attr:`T0`\n"
             u8"                           are returned.\n\n"
@@ -272,7 +272,7 @@ BOOST_PYTHON_MODULE(freecarrier)
             u8"Compute quasi-Fermi levels in specified active region.\n\n"
             u8"Args:\n"
             u8"    n (float): Carriers concentration to determine the levels for\n"
-            u8"               [1/cm\\ :sup:`3`\\ ].\n"
+            u8"               (1/cm\\ :sup:`3`\\ ).\n"
             u8"    T (float or ``None``): Temperature to get the levels. If this argument is\n"
             u8"                           ``None``, the estimates for temperature :py:attr:`T0`\n"
             u8"                           are returned.\n"

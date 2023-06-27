@@ -951,7 +951,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 	this->writelog(LOG_INFO, "Finding energy levels..");
 
 	hh2m = 0.5 * phys::hb_eV * phys::hb_J * 1e9 * 1e9 / phys::me; /// hb*hb/(2m), unit: eV*nm*nm, 10^9 is introduced to change m into nm
-	Eshift = 20.; /// bands have to be up-shifted - we want only positive values of energy levels; unit: [eV]
+	Eshift = 20.; /// bands have to be up-shifted - we want only positive values of energy levels; unit: (eV)
 
 	double kx = 0., ky = 0.; /// TODO
 
@@ -963,8 +963,8 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 
 	if (potentialWell_el)
 	{
-		double dzdz1 = 1. / (dz*dz*1e6); /// 1/(dz*dz), unit: [1/nm^2]
-		double dz1 = 1. / (dz*1e3); /// 1/(dz), unit: [1/nm]
+		double dzdz1 = 1. / (dz*dz*1e6); /// 1/(dz*dz), unit: (1/nm^2)
+		double dz1 = 1. / (dz*1e3); /// 1/(dz), unit: (1/nm)
 
 		this->writelog(LOG_DETAIL, "Creating matrix for electrons..\n");
 
@@ -1867,7 +1867,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 //	}
 //
 //	this->writelog(LOG_INFO, "active region is from z = {0} um to z = {1} um", z1, z2); /// in [um]
-//	this->writelog(LOG_INFO, "active region thickness: {0} nm", (z2-z1)*1e3); /// [um] -> [nm]
+//	this->writelog(LOG_INFO, "active region thickness: {0} nm", (z2-z1)*1e3); /// [um] -> (nm)
 //
 //	z.clear();
 //	//z.push_back(0.); /// so here z[0] = 0, but later the z.size will be stored here

@@ -146,7 +146,7 @@ class NewGainValues(unittest.TestCase):
         spectrum = GAIN.spectrum(0.5, 0.020)
         self.assertAlmostEqual(spectrum(phys.eV2nm(phen)), expected_gain, 1)
 
-# layer   n_e [1/cm]              n_h [1/cm]
+# layer   n_e (1/cm)              n_h (1/cm)
 # 0       5.6253937984e+18        2.01836458502e+16
 # 1       1.41028843714e+19       1.42125383124e+19
 # 2       9.58195935805e+18       7.37905441174e+17

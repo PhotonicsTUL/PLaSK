@@ -24,10 +24,10 @@ from plask.flow import CurrentDensityProvider2D, CurrentDensityProviderCyl
 from electrical.diffusion import Diffusion2D, DiffusionCyl
 
 
-A = 3e7         # [1/s]
-B = 1.7e-10     # [cm³/s]
-C = 6e-27       # [cm⁶/s]
-D = 10          # [cm²/s]
+A = 3e7         # (1/s)
+B = 1.7e-10     # (cm³/s)
+C = 6e-27       # (cm⁶/s)
+D = 10          # (cm²/s)
 
 @material.simple('GaAs')
 class GaAsQW(material.Material):
@@ -124,15 +124,15 @@ if __name__ == '__main__':
         x = linspace(-4.1, 4.1, 821)
         axhline(0., lw=0.7, color='k')
         plot(x, test.j(x), color='C0', label='current')
-        xlabel(f"${config.axes[1]}$ [µm]")
-        ylabel("$j$ [kA/cm$^2$]")
+        xlabel(f"${config.axes[1]}$ (µm)")
+        ylabel("$j$ (kA/cm$^2$)")
         legend(loc='upper left')
         twinx()
         plot(x, test.n(x), 'C1', label='concentration (analytic)')
         test.solver.compute_threshold()
         plot_profile(test.solver.outCarriersConcentration(mesh.Rectangular2D(x, [0.104])), color='C2', ls='--',
                     label='concentration (numeric)')
-        xlabel(f"${config.axes[1]}$ [µm]")
+        xlabel(f"${config.axes[1]}$ (µm)")
         ylabel("$n$ [cm$^{-3}$]")
         legend(loc='upper right')
         window_title(test.Solver.__name__)

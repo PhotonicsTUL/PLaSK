@@ -18,7 +18,7 @@ Photonic crystal etched in the VCSEL structre breaks its axial symmetry, and, he
 The structure for this tutorial is a gallium arsenide PC-VCSEL presented in the figure :ref:`schematic structure of PC-VCSEL <fig-tutorial5-pc-vcsel>`. It consists of single-wavelength long GaAs cavity, sandwiched by 24/29 pairs of top/bottom GaAs/AlGaAs distributed Bragg reflectors (DBRs). The optical gain is provided by three layers of 8 nm-thick InGaAs quantum wells separated by 5 nm GaAs barriers and located together in the anti-node position. The diameter of the optical gain region is set to be the same as the photonic crystal pitch Λ. Details for layer thickness and refractive index values can be found in the table below:
 
 +--------+---------------------+----------------+------------------+
-| Layer                        | Thickness [nm] | Refractive index |
+| Layer                        | Thickness (nm) | Refractive index |
 +========+=====================+================+==================+
 |        | Top DBR             | 69.40          | 3.53             |
 |        |                     |                |                  |
@@ -187,5 +187,3 @@ Optical Solver
 .. |lock-screen| image:: lock-screen.png
    :align: middle
    :alt: lock
-
-

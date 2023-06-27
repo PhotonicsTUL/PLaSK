@@ -18,9 +18,9 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
    :attr material-bottom: Definition of the material of the bottom of the block (for blocks with material changing from bottom to top). You should also set ``material-top`` and both materials can differs only in composition or amount of dopant.
    :attr material-top: Definition of the material of top of the block (see also ``material-bottom``).
    :attr material-shape: Exponent for graded materials. Setting this value to anything different than one allows non-linear change the block material.
-   :attr required d{X}: where **{X}** is the longitudinal axis name: Longitudinal dimension of the cuboid. (float [µm])
-   :attr required d{Y}: where **{Y}** is the transverse axis name: Transversal dimension of the cuboid. (float [µm])
-   :attr required d{Z}: where **{Z}** is the vertical axis name: Vertical dimension of the cuboid. (float [µm])
+   :attr required d{X}: where **{X}** is the longitudinal axis name: Longitudinal dimension of the cuboid. (float, µm)
+   :attr required d{Y}: where **{Y}** is the transverse axis name: Transversal dimension of the cuboid. (float, µm)
+   :attr required d{Z}: where **{Z}** is the vertical axis name: Vertical dimension of the cuboid. (float, µm)
    :attr depth: Alias for ``d{X}``.
    :attr width: Alias for ``d{Y}``.
    :attr height: Alias for ``d{Z}``.
@@ -65,11 +65,11 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
    :attr material-bottom: Definition of the material of the bottom of the triangle (for triangles with material changing from bottom to top). You should also set ``material-top`` and both materials can differs only in composition or amount of dopant.
    :attr material-top: Definition of the material of top of the triangle (see also ``material-bottom``).
    :attr material-shape: Exponent for graded materials. Setting this value to anything different than one allows non-linear change the triangle material.
-   :attr required a{X}: where **{X}** is the longitudinal axis name: Coordinate of the first base triangle vertex. (float [µm])
-   :attr required a{Y}: where **{Y}** is the transverse axis name: Coordinate of the first base triangle vertex. (float [µm])
-   :attr required b{X}: where **{X}** is the longitudinal axis name: Coordinate of the second base triangle vertex. (float [µm])
-   :attr required b{Y}: where **{Y}** is the transverse axis name: Coordinate of the second base triangle vertex. (float [µm])
-   :attr required height: Prism height in the vertical direction. (float [µm])
+   :attr required a{X}: where **{X}** is the longitudinal axis name: Coordinate of the first base triangle vertex. (float, µm)
+   :attr required a{Y}: where **{Y}** is the transverse axis name: Coordinate of the first base triangle vertex. (float, µm)
+   :attr required b{X}: where **{X}** is the longitudinal axis name: Coordinate of the second base triangle vertex. (float, µm)
+   :attr required b{Y}: where **{Y}** is the transverse axis name: Coordinate of the second base triangle vertex. (float, µm)
+   :attr required height: Prism height in the vertical direction. (float, µm)
    :attr steps-num: Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform.
    :attr steps-dist: Minimum step size if the object is non-uniform.
 
@@ -86,6 +86,6 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
    :attr material-bottom: Definition of the material of the bottom of the sphere (for spheres with material changing from bottom to top). You should also set ``material-top`` and both materials can differs only in composition or amount of dopant.
    :attr material-top: Definition of the material of top of the sphere (see also ``material-bottom``).
    :attr material-shape: Exponent for graded materials. Setting this value to anything different than one allows non-linear change the sphere material.
-   :attr required radius: Radius of the sphere. (float [µm])
+   :attr required radius: Radius of the sphere. (float, µm)
    :attr steps-num: Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform.
    :attr steps-dist: Minimum step size if the object is non-uniform.

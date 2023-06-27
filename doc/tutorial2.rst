@@ -16,7 +16,7 @@ In this section we will perform a simple purely optical analysis of an arsenide 
    Its detailed structure is shown in the table below.
 
    +--------+--------------+----------------+------------------------------------------------+
-   | Layer                 | Thickness [nm] | Material                                       |
+   | Layer                 | Thickness (nm) | Material                                       |
    +========+==============+================+================================================+
    |        | Top DBR      | 70.0           | GaAs                                           |
    |        |              |                |                                                |
@@ -241,4 +241,3 @@ You can download the complete file from this tutorial: :download:`tutorial2.xpl 
 .. |list-add| image:: list-add.png
    :align: middle
    :alt: +
-

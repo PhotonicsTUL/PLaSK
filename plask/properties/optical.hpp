@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -49,7 +49,7 @@ struct PLASK_API LightE: public FieldProperty<Vec<3,dcomplex>> {
 
 
 /**
- * Profile of the optical magnetic field [A/m].
+ * Profile of the optical magnetic field (A/m).
  */
 struct PLASK_API LightH: public FieldProperty<Vec<3,dcomplex>> {
     static constexpr const char* NAME = "magnetic field";
@@ -86,7 +86,7 @@ struct PLASK_API ModeLightE: public MultiFieldProperty<Vec<3,dcomplex>> {
 
 
 /**
- * Profile of the optical magnetic field [A/m].
+ * Profile of the optical magnetic field (A/m).
  *
  * Multimode version. Additional integer parameter is the mode number.
  */
@@ -97,7 +97,7 @@ struct PLASK_API ModeLightH: public MultiFieldProperty<Vec<3,dcomplex>> {
 
 
 /**
- * Wavelength [nm]. It can be either computed by some optical solvers or set by the user.
+ * Wavelength (nm). It can be either computed by some optical solvers or set by the user.
  *
  * It is a complex number, so it can contain information about both the wavelength and losses.
  * Its imaginary part is defined as \f$ \Im(\lambda)=-\frac{\Re(\lambda)^2}{2\pi c}\Im(\omega) \f$.
@@ -110,7 +110,7 @@ struct PLASK_API ModeWavelength: public MultiValueProperty<double> {
 };
 
 /**
- * Modal loss [1/cm].
+ * Modal loss (1/cm).
  *
  * Additional integer parameter is the mode number.
  */
@@ -120,7 +120,7 @@ struct PLASK_API ModeLoss: public MultiValueProperty<double> {
 };
 
 /**
- * Propagation constant [1/µm]. It can be either computed by some optical solvers or set by the user.
+ * Propagation constant (1/µm). It can be either computed by some optical solvers or set by the user.
  *
  * It is a complex number, so it can contain information about both the propagation and losses.
  *

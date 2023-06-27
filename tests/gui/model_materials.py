@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -45,7 +45,7 @@ class TestGUIModelMaterial(GUITestCase):
         self.assertIsInstance(self.material.get(3, 0), str) # HTML help
         self.assertEqual(self.material.get(0, 1), 'mobe')
         self.assertEqual(self.material.get(1, 1), '2*T')
-        self.assertEqual(self.material.get(2, 1), 'cm<sup>2</sup>/(V s)')
+        self.assertEqual(self.material.get(2, 1), 'cm<sup>2</sup>/Vs')
         self.assertIsInstance(self.material.get(3, 1), str) # HTML help
 
     def test_set(self):
@@ -158,5 +158,3 @@ class TestGUIModelMaterials(GUITestCase):
 if __name__ == '__main__':
     test = unittest.main(exit=False)
     sys.exit(not test.result.wasSuccessful())
-
-

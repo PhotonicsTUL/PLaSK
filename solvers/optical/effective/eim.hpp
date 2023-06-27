@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -81,7 +81,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
         bool have_fields;               ///< Did we compute fields for current state?
         std::vector<Field,aligned_allocator<Field>> xfields; ///< Computed horizontal fields
         std::vector<double,aligned_allocator<double>> xweights; ///< Computed horizontal weights
-        double power;                   ///< Mode power [mW]
+        double power;                   ///< Mode power (mW)
 
         Mode(EffectiveIndex2D* solver, Symmetry sym):
             solver(solver), have_fields(false), xfields(solver->xend), xweights(solver->xend), power(1.) {
@@ -364,7 +364,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     /// Invalidate the data
     void onInvalidate() override;
 
-    /// Cache of the normalized frequency [1/µm]
+    /// Cache of the normalized frequency (1/µm)
     dcomplex k0;
 
     /// Do we need to have gain

@@ -427,211 +427,211 @@ struct PLASK_API Material {
     virtual Kind kind() const = 0;
 
     /**
-     * Get lattice constant [A].
-     * @param T temperature [K]
-     * @param x lattice parameter [-]
-     * @return lattice constant [A]
+     * Get lattice constant (Å).
+     * @param T temperature (K)
+     * @param x lattice parameter (-)
+     * @return lattice constant (Å)
      */
     virtual double lattC(double T, char x) const;
 
     /**
-     * Get energy gap Eg [eV]
-     * @param T temperature [K]
-     * @param e lateral strain [-]
-     * @param point point in the Brillouin zone [-]
-     * @return energy gap Eg [eV]
+     * Get energy gap Eg (eV)
+     * @param T temperature (K)
+     * @param e lateral strain (-)
+     * @param point point in the Brillouin zone (-)
+     * @return energy gap Eg (eV)
      */
     virtual double Eg(double T, double e=0., char point='*') const;
 
     /**
-     * Get conduction band level CB [eV].
-     * @param T temperature [K]
-     * @param e lateral strain [-]
-     * @param point point in the Brillouin zone [-]
-     * @return conduction band level CB [eV]
+     * Get conduction band level CB (eV).
+     * @param T temperature (K)
+     * @param e lateral strain (-)
+     * @param point point in the Brillouin zone (-)
+     * @return conduction band level CB (eV)
      */
     virtual double CB(double T, double e=0., char point='*') const;
 
     /**
-     * Get valence band level VB[eV].
-     * @param T temperature [K]
-     * @param e lateral strain [-]
-     * @param point point in Brillouin zone [-]
-     * @param hole hole type ('H'eavy or 'L'ight) [-]
-     * @return valence band level VB[eV]
+     * Get valence band level VB(eV).
+     * @param T temperature (K)
+     * @param e lateral strain (-)
+     * @param point point in Brillouin zone (-)
+     * @param hole hole type ('H'eavy or 'L'ight) (-)
+     * @return valence band level VB(eV)
      */
     virtual double VB(double T, double e=0., char point='*', char hole='H') const;
 
     /**
-     * Get split-off energy Dso [eV].
-     * @param T temperature [K]
-     * @param e lateral strain [-]
-     * @return split-off energy Dso [eV]
+     * Get split-off energy Dso (eV).
+     * @param T temperature (K)
+     * @param e lateral strain (-)
+     * @return split-off energy Dso (eV)
      */
     virtual double Dso(double T, double e=0.) const;
 
     /**
      * Get split-off mass Mso [\f$m_0\f$].
-     * @param T temperature [K]
-     * @param e lateral strain [-]
+     * @param T temperature (K)
+     * @param e lateral strain (-)
      * @return split-off mass Mso [\f$m_0\f$]
      */
     virtual double Mso(double T, double e=0.) const;
 
     /**
      * Get electron effective mass Me in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
-     * @param T temperature [K]
-     * @param e lateral strain [-]
-     * @param point point in Brillouin zone [-]
+     * @param T temperature (K)
+     * @param e lateral strain (-)
+     * @param point point in Brillouin zone (-)
      * @return electron effective mass Me [\f$m_0\f$]
      */
     virtual Tensor2<double> Me(double T, double e=0., char point='*') const;
 
     /**
      * Get heavy hole effective mass Mhh in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
-     * @param T temperature [K]
-     * @param e lateral strain [-]
+     * @param T temperature (K)
+     * @param e lateral strain (-)
      * @return heavy hole effective mass Mhh [\f$m_0\f$]
      */
     virtual Tensor2<double> Mhh(double T, double e=0.) const;
 
     /**
      * Get light hole effective mass Mlh in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
-     * @param T temperature [K]
-     * @param e lateral strain [-]
+     * @param T temperature (K)
+     * @param e lateral strain (-)
      * @return light hole effective mass Mlh [\f$m_0\f$]
      */
     virtual Tensor2<double> Mlh(double T, double e=0.) const;
 
     /**
      * Get hole effective mass Mh in in-plane (lateral) and cross-plane (vertical) direction [\f$m_0\f$].
-     * @param T temperature [K]
-     * @param e lateral strain [-]
+     * @param T temperature (K)
+     * @param e lateral strain (-)
      * @return hole effective mass Mh [\f$m_0\f$]
      */
     virtual Tensor2<double> Mh(double T, double e=0.) const;
 
     /**
-    * Get Luttinger parameter γ1 [-].
-    * @return Luttinger parameter y1 [-]
+    * Get Luttinger parameter γ1 (-).
+    * @return Luttinger parameter y1 (-)
     */
     virtual double y1() const;
 
     /**
-    * Get Luttinger parameter γ2 [-].
-    * @return Luttinger parameter y2 [-]
+    * Get Luttinger parameter γ2 (-).
+    * @return Luttinger parameter y2 (-)
     */
     virtual double y2() const;
 
     /**
-    * Get Luttinger parameter γ3 [-].
-    * @return Luttinger parameter y3 [-]
+    * Get Luttinger parameter γ3 (-).
+    * @return Luttinger parameter y3 (-)
     */
     virtual double y3() const;
 
     /**
-     * Get hydrostatic deformation potential for the conduction band ac [eV].
-     * @param T temperature [K]
-     * @return hydrostatic deformation potential for the conduction band ac [eV]
+     * Get hydrostatic deformation potential for the conduction band ac (eV).
+     * @param T temperature (K)
+     * @return hydrostatic deformation potential for the conduction band ac (eV)
      */
     virtual double ac(double T) const;
 
     /**
-     * Get hydrostatic deformation potential for the valence band av [eV].
-     * @param T temperature [K]
-     * @return hydrostatic deformation potential for the valence band av [eV]
+     * Get hydrostatic deformation potential for the valence band av (eV).
+     * @param T temperature (K)
+     * @return hydrostatic deformation potential for the valence band av (eV)
      */
     virtual double av(double T) const;
 
     /**
-     * Get shear deformation potential b [eV].
-     * @param T temperature [K]
-     * @return shear deformation potential b [eV]
+     * Get shear deformation potential b (eV).
+     * @param T temperature (K)
+     * @return shear deformation potential b (eV)
      */
     virtual double b(double T) const;
 
     /**
-     * Get shear deformation potential d [eV].
-     * @param T temperature [K]
-     * @return shear deformation potential d [eV]
+     * Get shear deformation potential d (eV).
+     * @param T temperature (K)
+     * @return shear deformation potential d (eV)
      */
     virtual double d(double T) const;
 
     /**
-     * Get elastic constant c11 [GPa].
-     * @param T temperature [K]
-     * @return elastic constant c11 [GPa]
+     * Get elastic constant c11 (GPa).
+     * @param T temperature (K)
+     * @return elastic constant c11 (GPa)
      */
     virtual double c11(double T) const;
 
     /**
-     * Get elastic constant c12 [GPa].
-     * @param T temperature [K]
-     * @return elastic constant c12 [GPa]
+     * Get elastic constant c12 (GPa).
+     * @param T temperature (K)
+     * @return elastic constant c12 (GPa)
      */
     virtual double c12(double T) const;
 
     /**
-     * Get elastic constant c44 [GPa].
-     * @param T temperature [K]
-     * @return elastic constant c44 [GPa]
+     * Get elastic constant c44 (GPa).
+     * @param T temperature (K)
+     * @return elastic constant c44 (GPa)
      */
     virtual double c44(double T) const;
 
     /**
-     * Get dielectric constant EpsR [-].
-     * @param T temperature [K]
-     * @return dielectric constant EpsR [-]
+     * Get dielectric constant EpsR (-).
+     * @param T temperature (K)
+     * @return dielectric constant EpsR (-)
      */
     virtual double eps(double T) const;
 
     /**
-     * Get electron affinity Chi[eV].
-     * @param T temperature [K]
-     * @param e lateral strain [-]
-     * @param point point in Brillouin zone [-]
-     * @return electron affinity Chi [eV]
+     * Get electron affinity Chi(eV).
+     * @param T temperature (K)
+     * @param e lateral strain (-)
+     * @param point point in Brillouin zone (-)
+     * @return electron affinity Chi (eV)
      */
     virtual double chi(double T, double e=0., char point='*') const;
 
     /**
      * Get intrinsic carrier concentration Ni [cm^(-3)].
-     * @param T temperature [K]
+     * @param T temperature (K)
      * @return intrinsic carrier concentration Ni [cm^(-3)]
      */
     virtual double Ni(double T) const;
 
     /**
      * Get free carrier concentration N [cm^(-3)].
-     * @param T temperature [K]
+     * @param T temperature (K)
      * @return free carrier concentration N [cm^(-3)]
      */
     virtual double Nf(double T) const;
 
     /**
-     * Get donor ionisation energy EactD [eV].
-     * @param T temperature [K]
-     * @return donor ionisation energy EactD [eV]
+     * Get donor ionisation energy EactD (eV).
+     * @param T temperature (K)
+     * @return donor ionisation energy EactD (eV)
      */
     virtual double EactD(double T) const;
 
     /**
-     * Get acceptor ionisation energy EactA [eV].
-     * @param T temperature [K]
-     * @return acceptor ionisation energy EactA [eV]
+     * Get acceptor ionisation energy EactA (eV).
+     * @param T temperature (K)
+     * @return acceptor ionisation energy EactA (eV)
      */
     virtual double EactA(double T) const;
 
     /**
      * Get mobility in-plane (lateral) and cross-plane (vertical) direction [cm^2/(V*s)].
-     * @param T temperature [K]
+     * @param T temperature (K)
      * @return mobility [cm^2/(V*s)]
      */
     virtual Tensor2<double> mob(double T) const;
 
     /**
      * Get electrical conductivity sigma in-plane (lateral) and cross-plane (vertical) direction [S/m].
-     * @param T temperature [K]
+     * @param T temperature (K)
      * @return electrical conductivity sigma [S/m]
      */
     virtual Tensor2<double> cond(double T) const;
@@ -643,89 +643,89 @@ struct PLASK_API Material {
     virtual ConductivityType condtype() const;
 
     /**
-     * Get monomolecular recombination coefficient A [1/s].
-     * @param T temperature [K]
-     * @return monomolecular recombination coefficient A [1/s]
+     * Get monomolecular recombination coefficient A (1/s).
+     * @param T temperature (K)
+     * @return monomolecular recombination coefficient A (1/s)
      */
     virtual double A(double T) const;
 
     /**
-     * Get radiative recombination coefficient B [cm^3/s].
-     * @param T temperature [K]
-     * @return radiative recombination coefficient B [cm^3/s]
+     * Get radiative recombination coefficient B (cm^3/s).
+     * @param T temperature (K)
+     * @return radiative recombination coefficient B (cm^3/s)
      */
     virtual double B(double T) const;
 
     /**
-     * Get Auger recombination coefficient C [cm^6/s].
-     * @param T temperature [K]
-     * @return Auger recombination coefficient C [cm^6/s]
+     * Get Auger recombination coefficient C (cm^6/s).
+     * @param T temperature (K)
+     * @return Auger recombination coefficient C (cm^6/s)
      */
     virtual double C(double T) const;
 
     /**
-     * Get ambipolar diffusion coefficient D [cm^2/s].
-     * @param T temperature [K]
-     * @return ambipolar diffusion coefficient D [cm^2/s]
+     * Get ambipolar diffusion coefficient D (cm^2/s).
+     * @param T temperature (K)
+     * @return ambipolar diffusion coefficient D (cm^2/s)
      */
     virtual double D(double T) const;
 
     /**
      * Get thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction k [W/(m*K)].
-     * @param T temperature [K]
-     * @param h layer thickness [µm]
+     * @param T temperature (K)
+     * @param h layer thickness (µm)
      * @return thermal conductivity k [W/(m*K)]
      */
     virtual Tensor2<double> thermk(double T, double h=INFINITY) const;
 
     /**
-     * Get density [kg/m^3].
-     * @param T temperature [K]
-     * @return density [kg/m^3]
+     * Get density (kg/m^3).
+     * @param T temperature (K)
+     * @return density (kg/m^3)
      */
     virtual double dens(double T) const;
 
     /**
      * Get specific heat at constant pressure [J/(kg*K)].
-     * @param T temperature [K]
+     * @param T temperature (K)
      * @return specific heat at constant pressure [J/(kg*K)]
      */
     virtual double cp(double T) const;
 
     /**
-     * Get refractive index Nr [-].
-     * @param lam Wavelength [nm]
-     * @param T temperature [K]
-     * @param n injected carriers concentration [1/cm]
-     * @return refractive index Nr [-]
+     * Get refractive index Nr (-).
+     * @param lam Wavelength (nm)
+     * @param T temperature (K)
+     * @param n injected carriers concentration (1/cm)
+     * @return refractive index Nr (-)
      */
     virtual double nr(double lam, double T, double n = 0) const;
 
     /**
      * Get absorption coefficient alpha [cm^(-1)].
-     * @param lam Wavelength [nm]
-     * @param T temperature [K]
-     * @param n injected carriers concentration [1/cm]
+     * @param lam Wavelength (nm)
+     * @param T temperature (K)
+     * @param n injected carriers concentration (1/cm)
      * @return absorption coefficient alpha cm^(-1)]
      */
     virtual double absp(double lam, double T) const;
 
     /**
-     * Get refractive index Nr [-].
-     * @param lam Wavelength [nm]
-     * @param T temperature [K]
-     * @return refractive index Nr[-]
+     * Get refractive index Nr (-).
+     * @param lam Wavelength (nm)
+     * @param T temperature (K)
+     * @return refractive index Nr(-)
      */
     virtual dcomplex Nr(double lam, double T, double n = 0) const;
 
     /**
-     * Get anisotropic refractive index tensor NR [-].
+     * Get anisotropic refractive index tensor NR (-).
      * Tensor must have the form \f$ \left[\begin{array}{ccc} n_{0} & n_{3} & 0\\ n_{4} & n_{1} & 0\\ 0 & 0 & n_{2} \end{array}\right] \f$,
      * where \f$ n_i \f$ is i-th object of the returned tuple.
-     * @param lam Wavelength [nm]
-     * @param T temperature [K]
-     * @param n injected carriers concentration [1/cm]
-     * @return refractive index tensor NR[-]
+     * @param lam Wavelength (nm)
+     * @param T temperature (K)
+     * @param n injected carriers concentration (1/cm)
+     * @return refractive index tensor NR(-)
      */
     virtual Tensor3<dcomplex> NR(double lam, double T, double n = 0) const;
 
@@ -733,85 +733,85 @@ struct PLASK_API Material {
 
     /**
      * Get electron mobility in-plane (lateral) and cross-plane (vertical) direction [cm^2/(V*s)].
-     * \param T temperature [K]
+     * \param T temperature (K)
      * \return mobility [cm^2/(V*s)]
      */
     virtual Tensor2<double> mobe(double T) const;
 
     /**
      * Get hole mobility in-plane (lateral) and cross-plane (vertical) direction [cm^2/(V*s)].
-     * \param T temperature [K]
+     * \param T temperature (K)
      * \return mobility [cm^2/(V*s)]
      */
     virtual Tensor2<double> mobh(double T) const;
 
     /**
-     * Get monomolecular electrons lifetime [ns].
-     * \param T temperature [K]
-     * \return monomolecular electrons lifetime [ns]
+     * Get monomolecular electrons lifetime (ns).
+     * \param T temperature (K)
+     * \return monomolecular electrons lifetime (ns)
      */
     virtual double taue(double T) const;
 
     /**
-     * Get monomolecular holes lifetime [ns].
-     * \param T temperature [K]
-     * \return monomolecular holes lifetime [ns]
+     * Get monomolecular holes lifetime (ns).
+     * \param T temperature (K)
+     * \return monomolecular holes lifetime (ns)
      */
     virtual double tauh(double T) const;
 
     /**
-     * Get Auger recombination coefficient C for electrons [cm^6/s].
-     * \param T temperature [K]
-     * \return Auger recombination coefficient C [cm^6/s]
+     * Get Auger recombination coefficient C for electrons (cm^6/s).
+     * \param T temperature (K)
+     * \return Auger recombination coefficient C (cm^6/s)
      */
     virtual double Ce(double T) const;
 
     /**
-     * Get Auger recombination coefficient C for holes [cm^6/s].
-     * \param T temperature [K]
-     * \return Auger recombination coefficient C [cm^6/s]
+     * Get Auger recombination coefficient C for holes (cm^6/s).
+     * \param T temperature (K)
+     * \return Auger recombination coefficient C (cm^6/s)
      */
     virtual double Ch(double T) const;
 
     /**
-     * Get piezoelectric constant e13 [C/m^2]
-     * \param T temperature [K]
-     * \return piezoelectric constant e13 [C/m^2]
+     * Get piezoelectric constant e13 (C/m^2)
+     * \param T temperature (K)
+     * \return piezoelectric constant e13 (C/m^2)
      */
     virtual double e13(double T) const;
 
     /**
-     * Get piezoelectric constant e13 [C/m^2]
-     * \param T temperature [K]
-     * \return piezoelectric constant e13 [C/m^2]
+     * Get piezoelectric constant e13 (C/m^2)
+     * \param T temperature (K)
+     * \return piezoelectric constant e13 (C/m^2)
      */
     virtual double e15(double T) const;
 
     /**
-     * Get piezoelectric constant e33 [C/m^2]
-     * \param T temperature [K]
-     * \return piezoelectric constant e33 [C/m^2]
+     * Get piezoelectric constant e33 (C/m^2)
+     * \param T temperature (K)
+     * \return piezoelectric constant e33 (C/m^2)
      */
     virtual double e33(double T) const;
 
     /**
-     * Get elastic constant c13 [GPa].
-     * \param T temperature [K]
-     * \return elastic constant c13 [GPa]
+     * Get elastic constant c13 (GPa).
+     * \param T temperature (K)
+     * \return elastic constant c13 (GPa)
      */
     virtual double c13(double T) const;
 
     /**
-     * Get elastic constant c33 [GPa].
-     * \param T temperature [K]
-     * \return elastic constant c33 [GPa]
+     * Get elastic constant c33 (GPa).
+     * \param T temperature (K)
+     * \return elastic constant c33 (GPa)
      */
     virtual double c33(double T) const;
 
     /**
-     * Get spontaneous polarization [C/m^2]
-     * \param T temperature [K]
-     * \return spontaneous polarization [C/m^2]
+     * Get spontaneous polarization (C/m^2)
+     * \param T temperature (K)
+     * \return spontaneous polarization (C/m^2)
      */
     virtual double Psp(double T) const;
 

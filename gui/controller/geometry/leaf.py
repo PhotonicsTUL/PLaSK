@@ -175,7 +175,7 @@ class GNCircleController(GNLeafController):
         self.construct_group('{} Size:'.format('Circle' if self.node.dim == 2 else 'Sphere'))
         self.radius = self.construct_line_edit('Radius:', unit=u'µm', node_property_name='radius')
         self.radius.setToolTip(u'&lt;{} <b>radius</b>="" ...&gt;<br/>'
-                               u'Radius. (float [µm], required)'.format(self.node.tag_name(False)))
+                               u'Radius. (float (µm), required)'.format(self.node.tag_name(False)))
         super().construct_form()
 
     def fill_form(self):
@@ -190,11 +190,11 @@ class GNCylinderController(GNLeafController):
         self.radius = self.construct_line_edit('Radius:', unit=u'µm', node_property_name='radius',
                                                display_property_name='radius of the cylinder base')
         self.radius.setToolTip(u'&lt;cylinder <b>radius</b>="" height="" ...&gt;<br/>'
-                               u'Radius of the cylinder base. (float [µm], required)')
+                               u'Radius of the cylinder base. (float (µm), required)')
         self.height = self.construct_line_edit('Height:', unit=u'µm', node_property_name='height',
                                                display_property_name='height of the cylinder')
         self.height.setToolTip(u'&lt;cylinder radius="" <b>height</b>="" ...&gt;<br/>'
-                               u'Height of the cylinder. (float [µm], required)')
+                               u'Height of the cylinder. (float (µm), required)')
         super().construct_form()
 
     def fill_form(self):
@@ -223,7 +223,7 @@ class GNPrismController(GNLeafController):
         self.height = self.construct_line_edit('Prism Height:', unit=u'µm', node_property_name='height',
                                                display_property_name='height of the prism')
         self.height.setToolTip(u'&lt;prism radius="" <b>height</b>="" ...&gt;<br/>'
-                               u'Height of the prism. (float [µm], required)')
+                               u'Height of the prism. (float (µm), required)')
 
         super().construct_form()
 

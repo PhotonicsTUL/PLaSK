@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -166,10 +166,10 @@ struct PLASK_SOLVER_API FermiGainSolver: public SolverWithMesh<GeometryType, Mes
     friend struct GainSpectrum<GeometryType>;
     friend class QW::gain;
 
-    double cond_waveguide_depth;    ///< waveguide conduction band depth [eV]
-    double vale_waveguide_depth;    ///< waveguide valence band depth [eV]
-    double cond_qw_shift;           ///< additional conduction band shift for qw [eV]
-    double vale_qw_shift;           ///< additional valence band shift for qw [eV]
+    double cond_waveguide_depth;    ///< waveguide conduction band depth (eV)
+    double vale_waveguide_depth;    ///< waveguide valence band depth (eV)
+    double cond_qw_shift;           ///< additional conduction band shift for qw (eV)
+    double vale_qw_shift;           ///< additional valence band shift for qw (eV)
     double lifetime;                ///< stimulated emission lifetime [ps]
     double matrixelem;              ///< optical matrix element [m0*eV]
     double differenceQuotient;      ///< difference quotient of dG_dn derivative
@@ -301,4 +301,3 @@ struct GainSpectrum {
 }}} // namespace
 
 #endif
-

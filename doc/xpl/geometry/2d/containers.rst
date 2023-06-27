@@ -13,16 +13,16 @@ Containers 2D
    :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
    :attr order: Order of items in the container. If ``normal``, the items lower in the list override the ones previous ones. ``reverse`` means that each item is on top of all the later ones.
-   :attr left: Default value for horizontal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
-   :attr right: Default value for horizontal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
-   :attr trancenter: Default value for horizontal alignment specification: position of the center of the bounding box of each element. (float [µm])
+   :attr left: Default value for horizontal alignment specification: position of the left edge of the bounding box of each element. (float, µm)
+   :attr right: Default value for horizontal alignment specification: position of the right edge of the bounding box of each element. (float, µm)
+   :attr trancenter: Default value for horizontal alignment specification: position of the center of the bounding box of each element. (float, µm)
    :attr {X}center: (where **{X}** is the transverse axis name): Alias for ``trancenter``.
-   :attr {X}: (where **{X}** is the transverse axis name): Default value for horizontal alignment specification: position of the origin of each element. (float [µm])
-   :attr top: Default value for vertical alignment specification: position of the top edge of the bounding box of each element. (float [µm])
-   :attr bottom: Default value for vertical alignment specification: position of the bottom edge of the bounding box of each element. (float [µm])
-   :attr vertcenter: Default value for vertical alignment specification: position of the center of the bounding box of each element. (float [µm])
+   :attr {X}: (where **{X}** is the transverse axis name): Default value for horizontal alignment specification: position of the origin of each element. (float, µm)
+   :attr top: Default value for vertical alignment specification: position of the top edge of the bounding box of each element. (float, µm)
+   :attr bottom: Default value for vertical alignment specification: position of the bottom edge of the bounding box of each element. (float, µm)
+   :attr vertcenter: Default value for vertical alignment specification: position of the center of the bounding box of each element. (float, µm)
    :attr {Y}center: (where **{Y}** is the vertical axis name): Alias for *vertcenter*.
-   :attr {Y}: (where **{Y}** is the vertical axis name): Default value for vertical alignment specification: position of the origin of each element. (float [µm])
+   :attr {Y}: (where **{Y}** is the vertical axis name): Default value for vertical alignment specification: position of the origin of each element. (float, µm)
 
    Attributes ``left``, ``right``, ``trancenter``, **{X}**\ ``center``, **{X}**, are mutually exclusive. Attributes ``top``, ``bottom``, ``vertcenter``, **{Y}**\ ``center``, and **{Y}** are mutually exclusive. At most one alignment specification for each axis can be given. If alignment specification for some direction is not given, elements will be not alignment in this direction by default.
 
@@ -37,16 +37,16 @@ Containers 2D
       .. xml:tag:: <item> [in container2d]
 
          :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
-         :attr left: Horizontal alignment specification: position of the left edge of the bounding box of the element. (float [µm])
-         :attr right: Horizontal alignment specification: position of the right edge of the bounding box of the element. (float [µm])
-         :attr trancenter: Horizontal alignment specification: position of the center of the bounding box of the element. (float [µm])
+         :attr left: Horizontal alignment specification: position of the left edge of the bounding box of the element. (float, µm)
+         :attr right: Horizontal alignment specification: position of the right edge of the bounding box of the element. (float, µm)
+         :attr trancenter: Horizontal alignment specification: position of the center of the bounding box of the element. (float, µm)
          :attr {X}center: where **{X}** is the transverse axis name: Alias for ``trancenter``.
-         :attr {X}: where **{X}** is the transverse axis name: Horizontal alignment specification: position of the origin of the element. (float [µm])
-         :attr top: Vertical alignment specification: position of the top edge of the bounding box of the element. (float [µm])
-         :attr bottom: Vertical alignment specification: position of the bottom edge of the bounding box of the element. (float [µm])
-         :attr vertcenter: Vertical alignment specification: position of the center of the bounding box of the element. (float [µm])
+         :attr {X}: where **{X}** is the transverse axis name: Horizontal alignment specification: position of the origin of the element. (float, µm)
+         :attr top: Vertical alignment specification: position of the top edge of the bounding box of the element. (float, µm)
+         :attr bottom: Vertical alignment specification: position of the bottom edge of the bounding box of the element. (float, µm)
+         :attr vertcenter: Vertical alignment specification: position of the center of the bounding box of the element. (float, µm)
          :attr {Y}center: where **{Y}** is the vertical axis name: Alias for vertcenter.
-         :attr {Y}: where **{Y}** is the vertical axis name: Vertical alignment specification: position of the origin of the element. (float [µm])
+         :attr {Y}: where **{Y}** is the vertical axis name: Vertical alignment specification: position of the origin of the element. (float, µm)
 
          Attributes ``left``, ``right``, ``trancenter``, **{X}**\ ``center``, **{X}**, are mutually exclusive. Attributes ``top``, ``bottom``, ``vertcenter``, **{Y}**\ ``center``, and **{Y}** are mutually exclusive. At most one alignment specification for each axis can be given. If alignment specification for some direction is not given, default value is used.
 
@@ -71,7 +71,7 @@ Containers 2D
    :attr role: Object role. Important for some solvers.
    :attr repeat: Number of repetitive occurrences of stack content. This attribute allows to create periodic horizontal structures easily. Defaults to 1. (integer)
    :attr flat: The value of this attribute can be either ``true`` of ``false``. It specifies whether all the items in the shelf are required to have the same height (therefore the top edge of the shelf is flat). Defaults to ``true``.
-   :attr shift: Horizontal position of the shelf left edge in its local coordinates. Defaults to 0. (float [µm])
+   :attr shift: Horizontal position of the shelf left edge in its local coordinates. Defaults to 0. (float, µm)
 
    .. xml:contents::
 
@@ -85,8 +85,8 @@ Containers 2D
 
          Horizontal gap between two objects. The size of the gap can be specified either as the absolute value in µm or as the total horizontal size of the shelf.
 
-         :attr size: Size of the gap. (float [µm])
-         :attr total: Total size of the shelf. The gap will adjust automatically. (float [µm])
+         :attr size: Size of the gap. (float, µm)
+         :attr total: Total size of the shelf. The gap will adjust automatically. (float, µm)
 
          Exactly one of the above attributes must be specified and only one ``gap`` in the shelf can have the ``total`` attribute.
 
@@ -111,12 +111,12 @@ Containers 2D
    :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
    :attr repeat: Number of repetitive occurrences of stack content. This attribute allows to create periodic vertical structures (e. g. DBRs) easily. Defaults to 1. (integer)
-   :attr shift: Vertical position of the stack bottom edge in its local coordinates. Defaults to 0. (float [µm])
-   :attr left: Default horizontal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
-   :attr right: Default horizontal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
-   :attr trancenter: Default horizontal alignment specification: position of the center of the bounding box of each element. (float [µm])
+   :attr shift: Vertical position of the stack bottom edge in its local coordinates. Defaults to 0. (float, µm)
+   :attr left: Default horizontal alignment specification: position of the left edge of the bounding box of each element. (float, µm)
+   :attr right: Default horizontal alignment specification: position of the right edge of the bounding box of each element. (float, µm)
+   :attr trancenter: Default horizontal alignment specification: position of the center of the bounding box of each element. (float, µm)
    :attr {X}center: where **{X}** is the transverse axis name: Alias for ``trancenter``.
-   :attr {X}: where **{X}** is the transverse axis name: Default horizontal alignment specification: position of the origin of the element. (float [µm])
+   :attr {X}: where **{X}** is the transverse axis name: Default horizontal alignment specification: position of the origin of the element. (float, µm)
 
    Attributes ``left``, ``right``, ``trancenter``, **{X}**\ ``center`` and **{X}** are mutually exclusive. Default alignment is ``left="0"``.
 

@@ -740,8 +740,8 @@ gcf().canvas.set_window_title('Light Intensity Field ({0} micron aperture)'.form
 axvline(x=GEO["aperture"].dr, color='w', ls=":", linewidth=1)
 axvline(x=-GEO["aperture"].dr, color='w', ls=":", linewidth=1)
 xticks(append(xticks()[0], [-GEO["aperture"].dr, GEO["aperture"].dr]))
-xlabel("r [\xb5m]")
-ylabel("z [\xb5m]")
+xlabel("r (µm)")
+ylabel("z (µm)")
 
 new_aperture = 3.
 GEO["aperture"].dr = new_aperture
@@ -762,8 +762,8 @@ gcf().canvas.set_window_title('Light Intensity Field ({0} micron aperture)'.form
 axvline(x=GEO["aperture"].dr, color='w', ls=":", linewidth=1)
 axvline(x=-GEO["aperture"].dr, color='w', ls=":", linewidth=1)
 xticks(append(xticks()[0], [-GEO["aperture"].dr, GEO["aperture"].dr]))
-xlabel("r [\xb5m]")
-ylabel("z [\xb5m]")
+xlabel("r (µm)")
+ylabel("z (µm)")
 
 figure()
 plot_geometry(GEO.GeoTE, margin=0.01)

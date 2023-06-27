@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -35,16 +35,16 @@ class TriangularTriangleGeneratorController(GridController):
             lambda: weakself._change_attr('maxarea', empty_to_none(weakself.maxarea.text())))
         self.maxarea.setCompleter(self.defines)
         self.maxarea.setToolTip(u'&lt;options <b>maxarea</b>=""&gt;<br/>'
-                                u'A maximum triangle area constraint (float [µm²])')
-        form_layout.addRow("Maximum triangle area [µm²]:", self.maxarea)
+                                u'A maximum triangle area constraint (float, µm²)')
+        form_layout.addRow("Maximum triangle area (µm²):", self.maxarea)
 
         self.minangle = QLineEdit()
         self.minangle.editingFinished.connect(
             lambda: weakself._change_attr('minangle', empty_to_none(weakself.minangle.text())))
         self.minangle.setCompleter(self.defines)
         self.minangle.setToolTip(u'&lt;options <b>minangle</b>=""&gt;<br/>'
-                                u'A minimum angle (float [°])')
-        form_layout.addRow("Minimum angle [°]:", self.minangle)
+                                u'A minimum angle (float, °)')
+        form_layout.addRow("Minimum angle (°):", self.minangle)
 
         self.full = EditComboBox()
         self.full.addItems(('', 'yes', 'no'))

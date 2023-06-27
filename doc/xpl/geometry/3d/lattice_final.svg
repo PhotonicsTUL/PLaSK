@@ -600,10 +600,10 @@ L0 4" id="m741efc42ff" style="stroke:#000000;stroke-width:0.5;"/>
      </g>
     </g>
     <g id="text_9">
-     <!-- $y$ [µm] -->
+     <!-- $y$ (µm) -->
      <g transform="translate(217.388469828 285.530202376)">
       <text>
-       <tspan style="font-family:Liberation Sans;font-size:12.0px;font-style:regular;" x="6.0 9.333984375 12.66796875 19.58203125 29.578125" y="-0.296875"> [µm]</tspan>
+       <tspan style="font-family:Liberation Sans;font-size:12.0px;font-style:regular;" x="6.0 9.333984375 12.66796875 19.58203125 29.578125" y="-0.296875"> (µm)</tspan>
        <tspan style="font-family:Liberation Sans;font-size:12.0px;font-style:italic;" x="0.0" y="-0.296875">y</tspan>
       </text>
      </g>
@@ -696,10 +696,10 @@ L-4 0" id="mcb0005524f" style="stroke:#000000;stroke-width:0.5;"/>
      </g>
     </g>
     <g id="text_15">
-     <!-- $x$ [µm] -->
+     <!-- $x$ (µm) -->
      <g transform="translate(21.3525646552 178.5)rotate(-90.0)">
       <text>
-       <tspan style="font-family:Liberation Sans;font-size:12.0px;font-style:regular;" x="6.0 9.333984375 12.66796875 19.58203125 29.578125" y="-0.296875"> [µm]</tspan>
+       <tspan style="font-family:Liberation Sans;font-size:12.0px;font-style:regular;" x="6.0 9.333984375 12.66796875 19.58203125 29.578125" y="-0.296875"> (µm)</tspan>
        <tspan style="font-family:Liberation Sans;font-size:12.0px;font-style:italic;" x="0.0" y="-0.296875">x</tspan>
       </text>
      </g>

@@ -61,7 +61,7 @@ struct PLASK_SOLVER_API ThermalFem2DSolver : public FemSolverWithMaskedMesh<Geom
   public:
     // Boundary conditions
     BoundaryConditions<RectangularMesh<2>::Boundary, double>
-        temperature_boundary;  ///< Boundary condition of constant temperature [K]
+        temperature_boundary;  ///< Boundary condition of constant temperature (K)
     BoundaryConditions<RectangularMesh<2>::Boundary, double>
         heatflux_boundary;  ///< Boundary condition of constant heat flux [W/m^2]
     BoundaryConditions<RectangularMesh<2>::Boundary, Convection> convection_boundary;  ///< Boundary condition of convection

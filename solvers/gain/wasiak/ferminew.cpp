@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -27,12 +27,12 @@ FermiNewGainSolver<GeometryType>::FermiNewGainSolver(const std::string& name)
     : SolverWithMesh<GeometryType, MeshAxis>(name),
       outGain(this, &FermiNewGainSolver<GeometryType>::getGain),
       outLuminescence(this, &FermiNewGainSolver<GeometryType>::getLuminescence) {
-    Tref = 300.;                // [K], only for this temperature energy levels are calculated
+    Tref = 300.;                // (K), only for this temperature energy levels are calculated
     inTemperature = 300.;       // temperature receiver has some sensible value
-    condQWshift = 0.;           // [eV]
-    valeQWshift = 0.;           // [eV]
-    QWwidthMod = 100.;          // [-] (if equal to 10 - differences in QW widths are to big)
-    roughness = 1.00;           // [-]
+    condQWshift = 0.;           // (eV)
+    valeQWshift = 0.;           // (eV)
+    QWwidthMod = 100.;          // (-) (if equal to 10 - differences in QW widths are to big)
+    roughness = 1.00;           // (-)
     lifetime = 0.0;             // [ps]
     matrixElem = 0.;            // [m0*eV]
     differenceQuotient = 0.01;  // [%]

@@ -310,7 +310,7 @@ BOOST_PYTHON_MODULE(effective) {
                    u8"Args:\n"
                    u8"    num (int): number of the mode.\n\n"
                    u8"Returns:\n"
-                   u8"    Total absorbed energy [mW].\n",
+                   u8"    Total absorbed energy (mW).\n",
                    py::arg("num") = 0);
         RW_PROPERTY(vat, getStripeX, setStripeX, u8"Horizontal position of the main stripe (with dominant mode).");
         RW_FIELD(vneff, u8"Effective index in the vertical direction.");
@@ -372,10 +372,10 @@ BOOST_PYTHON_MODULE(effective) {
         py::class_<EffectiveIndex2D::Mode>("Mode", u8"Detailed information about the mode.", py::no_init)
             .def_readonly("neff", &EffectiveIndex2D::Mode::neff, u8"Mode effective index.")
             .add_property("symmetry", &EffectiveIndex2D_getSymmetry, u8"Mode symmetry ('positive', 'negative', or None).")
-            .def_readwrite("power", &EffectiveIndex2D::Mode::power, u8"Total power emitted into the mode [mW].")
-            .add_property("loss", &EffectiveIndex2D::Mode::loss, u8"Mode losses [1/cm].")
+            .def_readwrite("power", &EffectiveIndex2D::Mode::power, u8"Total power emitted into the mode (mW).")
+            .add_property("loss", &EffectiveIndex2D::Mode::loss, u8"Mode losses (1/cm).")
             .add_property("total_absorption", &Mode_total_absorption<EffectiveFrequencyCyl>,
-                          u8"Cumulated absorption for the mode [mW].\n\n"
+                          u8"Cumulated absorption for the mode (mW).\n\n"
                           u8"This property combines gain in active region and absorption in the whole\n"
                           u8"structure.")
             .def("__str__", &EffectiveIndex2D_Mode_str)
@@ -465,14 +465,14 @@ BOOST_PYTHON_MODULE(effective) {
                    u8"Args:\n"
                    u8"    num (int): number of the mode.\n\n"
                    u8"Returns:\n"
-                   u8"    Total absorbed energy [mW].\n",
+                   u8"    Total absorbed energy (mW).\n",
                    py::arg("num") = 0);
         solver.def("get_gain_integral", (double (EffectiveFrequencyCyl::*)(size_t)) & EffectiveFrequencyCyl::getGainIntegral,
                    u8"Get total energy generated in the gain region to a mode in unit time.\n\n"
                    u8"Args:\n"
                    u8"    num (int): number of the mode.\n\n"
                    u8"Returns:\n"
-                   u8"    Total generated energy [mW].\n",
+                   u8"    Total generated energy (mW).\n",
                    py::arg("num") = 0);
         RECEIVER(inTemperature, "");
         RECEIVER(inGain, "");
@@ -521,14 +521,14 @@ BOOST_PYTHON_MODULE(effective) {
             .def_readonly("m", &EffectiveFrequencyCyl::Mode::m, u8"LP_mn mode parameter describing angular dependence.")
             .def_readonly("lam", &EffectiveFrequencyCyl::Mode::lam,
                           u8"Alias for :attr:`~optical.effective.EffectiveFrequencyCyl.Mode.wavelength`.")
-            .def_readonly("wavelength", &EffectiveFrequencyCyl::Mode::lam, u8"Mode wavelength [nm].")
+            .def_readonly("wavelength", &EffectiveFrequencyCyl::Mode::lam, u8"Mode wavelength (nm).")
             .def_readwrite("power", &EffectiveFrequencyCyl::Mode::power, u8"Total power emitted into the mode.")
-            .add_property("loss", &EffectiveFrequencyCyl::Mode::loss, u8"Mode losses [1/cm].")
+            .add_property("loss", &EffectiveFrequencyCyl::Mode::loss, u8"Mode losses (1/cm).")
             .add_property("total_absorption", &Mode_total_absorption<EffectiveFrequencyCyl>,
-                          u8"Cumulated absorption for the mode [mW].\n\n"
+                          u8"Cumulated absorption for the mode (mW).\n\n"
                           u8"This property combines gain in active region and absorption in the whole\n"
                           u8"structure.")
-            .add_property("gain_integral", &Mode_gain_integral, u8"Total gain for the mode [mW].")
+            .add_property("gain_integral", &Mode_gain_integral, u8"Total gain for the mode (mW).")
             .def("__str__", &EffectiveFrequencyCyl_Mode_str)
             .def("__repr__", &EffectiveFrequencyCyl_Mode_repr);
 

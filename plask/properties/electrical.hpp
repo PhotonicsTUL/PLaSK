@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -19,7 +19,7 @@
 namespace plask {
 
 /**
- * Electric potential [V]
+ * Electric potential (V)
  */
 struct PLASK_API Potential: public ScalarFieldProperty {
     static constexpr const char* NAME = "potential";
@@ -27,7 +27,7 @@ struct PLASK_API Potential: public ScalarFieldProperty {
 };
 
 /**
- * Electric voltage [V]
+ * Electric voltage (V)
  */
 struct PLASK_API Voltage: public ScalarFieldProperty {
     static constexpr const char* NAME = "voltage";
@@ -35,7 +35,7 @@ struct PLASK_API Voltage: public ScalarFieldProperty {
 };
 
 /**
- * Electric current density [kA/cm²]
+ * Electric current density (kA/cm²)
  * This is 2D vector for two-dimensional sovers
  */
 struct PLASK_API CurrentDensity: public VectorFieldProperty<> {
@@ -44,7 +44,7 @@ struct PLASK_API CurrentDensity: public VectorFieldProperty<> {
 };
 
 /**
- * Carriers concentration [1/cm^3]
+ * Carriers concentration (1/cm^3)
  * For majority carriers it is not specified whether the carriers are electrons or holes
  */
 struct PLASK_API CarriersConcentration: public MultiFieldProperty<double> {
@@ -68,7 +68,7 @@ struct PLASK_API Conductivity: FieldProperty<Tensor2<double>> {
 };
 
 /**
- * Quasi-Fermi levels for electrons and holes [eV]
+ * Quasi-Fermi levels for electrons and holes (eV)
  */
 struct PLASK_API FermiLevels: public MultiFieldProperty<double> {
     enum EnumType {
@@ -81,7 +81,7 @@ struct PLASK_API FermiLevels: public MultiFieldProperty<double> {
 };
 
 /**
- * Conduction and valence band edges [eV]
+ * Conduction and valence band edges (eV)
  */
 struct PLASK_API BandEdges: public MultiFieldProperty<double> {
     enum EnumType {

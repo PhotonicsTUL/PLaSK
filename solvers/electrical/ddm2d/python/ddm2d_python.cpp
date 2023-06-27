@@ -32,9 +32,9 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
 
         , name, geoname).c_str(), py::init<std::string>(py::arg("name")=""));
     METHOD(compute, compute, u8"Run drift-diffusion calculations", py::arg("loops")=0);
-    METHOD(get_total_current, getTotalCurrent, u8"Get total current flowing through active region [mA]", py::arg("nact")=0);
+    METHOD(get_total_current, getTotalCurrent, u8"Get total current flowing through active region (mA)", py::arg("nact")=0);
     METHOD(find_energy_levels, findEnergyLevels, u8"Run energy levels calculations - TEST");
-    //METHOD(integrate_current, integrateCurrent, u8"Integrate vertical total current at certain level [mA]", py::arg("vindex"), py::arg("onlyactive")=false);
+    //METHOD(integrate_current, integrateCurrent, u8"Integrate vertical total current at certain level (mA)", py::arg("vindex"), py::arg("onlyactive")=false);
     /*RO_PROPERTY(err, getErr, u8"Maximum estimated error");*/
     RECEIVER(inTemperature, u8"");
     PROVIDER(outPotential, u8"");
@@ -81,7 +81,7 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     METHOD(get_total_heat, getTotalHeat,
            u8"Get the total heat produced by the current flowing in the structure.\n\n"
            u8"Return:\n"
-           u8"    Total produced heat [mW].\n"
+           u8"    Total produced heat (mW).\n"
     );*/
     registerFemSolver(solver);
 }

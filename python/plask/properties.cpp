@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -42,15 +42,15 @@ void register_standard_properties_energy_levels();
 PLASK_PYTHON_API const char* docstring_receiver =
     u8"{0}Receiver{1}()\n\n"
 
-    u8"Receiver of the {2}{3} [{4}].\n\n"
+    u8"Receiver of the {2}{3} ({4}).\n\n"
 
-    u8"You may connect a provider to this receiver usign either the `connect` method\n"
-    u8"or an assignement operator. Then, you can read the provided value by calling\n"
+    u8"You may connect a provider to this receiver using either the `connect` method\n"
+    u8"or an assignment operator. Then, you can read the provided value by calling\n"
     u8"this receiver with arguments identical as the ones of the corresponding\n"
     u8"provider :class:`~plask.flow.{0}Provider{1}`.\n\n"
 
     u8"Example:\n"
-    u8"   Connect the reveiver to a provider from some other solver:\n\n"
+    u8"   Connect the receiver to a provider from some other solver:\n\n"
 
     u8"   >>> solver.in{0} = other_solver.out{0}\n\n"
 
@@ -83,7 +83,7 @@ template <PropertyType propertyType> PLASK_PYTHON_API const char* docstring_prov
 template <> PLASK_PYTHON_API const char* docstring_provider_impl<SINGLE_VALUE_PROPERTY>() { return
     u8"{0}Provider{1}(data)\n\n"
 
-    u8"Provider of the {2}{3} [{6}].\n\n"
+    u8"Provider of the {2}{3} ({6}).\n\n"
 
     u8"This class is used for {2} provider in binary solvers.\n"
     u8"You can also create a custom provider for your Python solver.\n\n"
@@ -100,7 +100,7 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<SINGLE_VALUE_PR
 
     u8"   {5}\n"
 
-    u8"   :return: Value of the {2} **[{6}]**.\n\n"
+    u8"   :return: Value of the {2} **({6})**.\n\n"
 
     u8"Example:\n"
     u8"   Connect the provider to a receiver in some other solver:\n\n"
@@ -119,7 +119,7 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<SINGLE_VALUE_PR
 template <> PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_VALUE_PROPERTY>() { return
     u8"{0}Provider{1}(data)\n\n"
 
-    u8"Provider of the {2}{3} [{6}].\n\n"
+    u8"Provider of the {2}{3} ({6}).\n\n"
 
     u8"This class is used for {2} provider in binary solvers.\n"
     u8"You can also create a custom provider for your Python solver.\n\n"
@@ -139,7 +139,7 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_VALUE_PRO
     u8"   {8}\n"
     u8"   {5}\n"
 
-    u8"   :return: Value of the {2} **[{6}]**.\n\n"
+    u8"   :return: Value of the {2} **({6})**.\n\n"
 
     u8"You may obtain the number of different values this provider can return by\n"
     u8"testing its length.\n\n"
@@ -166,7 +166,7 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_VALUE_PRO
 template <> PLASK_PYTHON_API const char* docstring_provider_impl<FIELD_PROPERTY>() { return
     u8"{0}Provider{1}(data)\n\n"
 
-    u8"Provider of the {2}{3} [{6}].\n\n"
+    u8"Provider of the {2}{3} ({6}).\n\n"
 
     u8"This class is used for {2} provider in binary solvers.\n"
     u8"You can also create a custom provider for your Python solver.\n\n"
@@ -185,7 +185,7 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<FIELD_PROPERTY>
     u8"   :param str interpolation: Requested interpolation method.\n"
     u8"   {5}\n"
 
-    u8"   :return: Data with the {2} on the specified mesh **[{6}]**.\n\n"
+    u8"   :return: Data with the {2} on the specified mesh **({6})**.\n\n"
 
     u8"Example:\n"
     u8"   Connect the provider to a receiver in some other solver:\n\n"
@@ -205,7 +205,7 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<FIELD_PROPERTY>
 template <> PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_FIELD_PROPERTY>() { return
     u8"{0}Provider{1}(data)\n\n"
 
-    u8"Provider of the {2}{3} [{6}].\n\n"
+    u8"Provider of the {2}{3} ({6}).\n\n"
 
     u8"This class is used for {2} provider in binary solvers.\n"
     u8"You can also create a custom provider for your Python solver.\n\n"
@@ -227,7 +227,7 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_FIELD_PRO
     u8"   :param str interpolation: Requested interpolation method.\n"
     u8"   {5}\n"
 
-    u8"   :return: Data with the {2} on the specified mesh **[{6}]**.\n\n"
+    u8"   :return: Data with the {2} on the specified mesh **({6})**.\n\n"
 
     u8"You may obtain the number of different values this provider can return by\n"
     u8"testing its length.\n\n"
@@ -376,7 +376,7 @@ void register_standard_properties()
             .def("disconnect", &boost::signals2::connection::disconnect, "Disconnect callable watching receiver change.")
         ;
     }
-    
+
     register_standard_properties_thermal();
     register_standard_properties_temperature();
     register_standard_properties_heatdensity();

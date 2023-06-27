@@ -48,7 +48,7 @@ import unittest
 mids = mesh.Rectangular2D.SimpleGenerator()(GEO.main).elements.mesh
 mids = mesh.Rectangular2D(mids.axis0, mids.axis1[1:])
 mats = GEO.main.get_material_field(mids)
-print("                  CB[eV]   VB[eV]   Dso[eV]   Me[m0] Mhh[m0] Mlh[m0]")
+print("                  CB(eV)   VB(eV)   Dso(eV)   Me[m0] Mhh[m0] Mlh[m0]")
 for mat in mats:
     print("{mat:14s} {CB:9.6f}   {VB:6.3f}   {Dso:7.4f}   "
           "{Me:6.4f}   {Mhh:5.3f}   {Mlh:5.3f}".format(

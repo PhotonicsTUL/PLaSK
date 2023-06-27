@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -447,22 +447,22 @@ void export_FourierSolver2D() {
     RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
     solver.add_property("polarization", &__Class__::getPolarization, &FourierSolver2D_setPolarization, "Mode polarization.");
     solver.add_property("lam", &__Class__::getLam, &Solver_setLam<__Class__>,
-                        u8"Wavelength of the light [nm].\n\n"
+                        u8"Wavelength of the light (nm).\n\n"
                         u8"Use this property only if you are looking for anything else than\n"
                         u8"the wavelength, e.g. the effective index of lateral wavevector.\n");
     solver.add_property("wavelength", &__Class__::getLam, &Solver_setLam<__Class__>, u8"Alias for :attr:`lam`");
     solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>,
-                        u8"Normalized frequency of the light [1/µm].\n\n"
+                        u8"Normalized frequency of the light (1/µm).\n\n"
                         u8"Use this property only if you are looking for anything else than\n"
                         u8"the wavelength,e.g. the effective index of lateral wavevector.\n");
     RW_PROPERTY(klong, getBeta, setBeta,
-                u8"Longitudinal propagation constant of the light [1/µm].\n\n"
+                u8"Longitudinal propagation constant of the light (1/µm).\n\n"
                 u8"Use this property only if you are looking for anything else than\n"
                 u8"the longitudinal component of the propagation vector and the effective index.\n");
     RW_PROPERTY(beta, getBeta, setBeta,
                 u8"Alias for :attr:`klong`\n");
     RW_PROPERTY(ktran, getKtran, setKtran,
-                u8"Transverse propagation constant of the light [1/µm].\n\n"
+                u8"Transverse propagation constant of the light (1/µm).\n\n"
                 u8"Use this property only  if you are looking for anything else than\n"
                 u8"the transverse component of the propagation vector.\n");
     RW_FIELD(refine, "Number of refinement points for refractive index averaging.");
@@ -481,19 +481,19 @@ void export_FourierSolver2D() {
                u8"Compute discontinuity matrix determinant.\n\n"
                u8"Arguments can be given through keywords only.\n\n"
                u8"Args:\n"
-               u8"    lam (complex): Wavelength [nm].\n"
-               u8"    k0 (complex): Normalized frequency [1/µm].\n"
+               u8"    lam (complex): Wavelength (nm).\n"
+               u8"    k0 (complex): Normalized frequency (1/µm).\n"
                u8"    neff (complex): Longitudinal effective index.\n"
-               u8"    ktran (complex): Transverse wavevector [1/µm].\n");
+               u8"    ktran (complex): Transverse wavevector (1/µm).\n");
     solver.def("find_mode", py::raw_function(FourierSolver2D_findMode),
                u8"Compute the mode near the specified effective index.\n\n"
                u8"Only one of the following arguments can be given through a keyword.\n"
                u8"It is the starting point for search of the specified parameter.\n\n"
                u8"Args:\n"
-               u8"    lam (complex): Wavelength [nm].\n"
-               u8"    k0 (complex): Normalized frequency [1/µm].\n"
+               u8"    lam (complex): Wavelength (nm).\n"
+               u8"    k0 (complex): Normalized frequency (1/µm).\n"
                u8"    neff (complex): Longitudinal effective index.\n"
-               u8"    ktran (complex): Transverse wavevector [1/µm].\n");
+               u8"    ktran (complex): Transverse wavevector (1/µm).\n");
     solver.def("set_mode", py::raw_function(FourierSolver2D_setMode),
                u8"Set the mode for specified parameters.\n\n"
                u8"This method should be used if you have found a mode manually and want to insert\n"
@@ -501,17 +501,17 @@ void export_FourierSolver2D() {
                u8"exception if the determinant for the specified parameters is too large.\n\n"
                u8"Arguments can be given through keywords only.\n\n"
                u8"Args:\n"
-               u8"    lam (complex): Wavelength [nm].\n"
-               u8"    k0 (complex): Normalized frequency [1/µm].\n"
+               u8"    lam (complex): Wavelength (nm).\n"
+               u8"    k0 (complex): Normalized frequency (1/µm).\n"
                u8"    neff (complex): Longitudinal effective index.\n"
-               u8"    ktran (complex): Transverse wavevector [1/µm].\n");
+               u8"    ktran (complex): Transverse wavevector (1/µm).\n");
     solver.def("compute_reflectivity", &FourierSolver2D_computeReflectivity_polarization,
                (py::arg("lam"), "side", "polarization"));
     solver.def("compute_reflectivity", &Solver_computeReflectivity_index<FourierSolver2D>, (py::arg("lam"), "side", "index"));
     solver.def("compute_reflectivity", &Solver_computeReflectivity_array<FourierSolver2D>, (py::arg("lam"), "side", "coffs"),
                u8"Compute reflection coefficient on planar incidence [%].\n\n"
                u8"Args:\n"
-               u8"    lam (float or array of floats): Incident light wavelength [nm].\n"
+               u8"    lam (float or array of floats): Incident light wavelength (nm).\n"
                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                u8"        present.\n"
                u8"    polarization: Specification of the incident light polarization.\n"
@@ -525,7 +525,7 @@ void export_FourierSolver2D() {
     solver.def("compute_transmittivity", &Solver_computeTransmittivity_array<FourierSolver2D>, (py::arg("lam"), "side", "coffs"),
                u8"Compute transmission coefficient on planar incidence [%].\n\n"
                u8"Args:\n"
-               u8"    lam (float or array of floats): Incident light wavelength [nm].\n"
+               u8"    lam (float or array of floats): Incident light wavelength (nm).\n"
                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                u8"        present.\n"
                u8"    polarization: Specification of the incident light polarization.\n"
@@ -591,8 +591,8 @@ void export_FourierSolver2D() {
                u8"    polarization: Specification of the incident light polarization.\n"
                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
                u8"        of the non-vanishing electric field component.\n"
-               u8"    sigma (float): Gaussian standard deviation [µm].\n"
-               u8"    center (float): Position of the beam center [µm].\n\n"
+               u8"    sigma (float): Gaussian standard deviation (µm).\n"
+               u8"    center (float): Position of the beam center (µm).\n\n"
                u8"Example:\n"
                u8"   >>> scattered = fourier.scattering('top', \n"
                u8"   ...     fourier.gaussian('top', 'Ex', 0.2))\n");
@@ -608,8 +608,8 @@ void export_FourierSolver2D() {
                u8"    polarization: Specification of the incident light polarization.\n"
                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
                u8"        of the non-vanishing electric field component.\n"
-               u8"    sigma (float): Gaussian standard deviation [µm].\n"
-               u8"    center (float): Position of the beam center [µm].\n\n");
+               u8"    sigma (float): Gaussian standard deviation (µm).\n"
+               u8"    center (float): Position of the beam center (µm).\n\n");
 
     py::scope scope = solver;
     (void)scope;  // don't warn about unused variable scope
@@ -618,13 +618,13 @@ void export_FourierSolver2D() {
     py::class_<FourierSolver2D::Mode>("Mode", u8"Detailed information about the mode.", py::no_init)
         .def_readonly("symmetry", &FourierSolver2D::Mode::symmetry, u8"Mode horizontal symmetry.")
         .def_readonly("polarization", &FourierSolver2D::Mode::polarization, u8"Mode polarization.")
-        .add_property("lam", &getModeWavelength<FourierSolver2D::Mode>, u8"Mode wavelength [nm].")
-        .add_property("wavelength", &getModeWavelength<FourierSolver2D::Mode>, u8"Mode wavelength [nm].")
-        .def_readonly("k0", &FourierSolver2D::Mode::k0, u8"Mode normalized frequency [1/µm].")
-        .def_readonly("beta", &FourierSolver2D::Mode::beta, u8"Mode longitudinal wavevector [1/µm].")
-        .add_property("neff", &FourierSolver2D_Mode_Neff, u8"Mode longitudinal effective index [-].")
-        .def_readonly("ktran", &FourierSolver2D::Mode::ktran, u8"Mode transverse wavevector [1/µm].")
-        .def_readwrite("power", &FourierSolver2D::Mode::power, u8"Total power emitted into the mode [mW].")
+        .add_property("lam", &getModeWavelength<FourierSolver2D::Mode>, u8"Mode wavelength (nm).")
+        .add_property("wavelength", &getModeWavelength<FourierSolver2D::Mode>, u8"Mode wavelength (nm).")
+        .def_readonly("k0", &FourierSolver2D::Mode::k0, u8"Mode normalized frequency (1/µm).")
+        .def_readonly("beta", &FourierSolver2D::Mode::beta, u8"Mode longitudinal wavevector (1/µm).")
+        .add_property("neff", &FourierSolver2D_Mode_Neff, u8"Mode longitudinal effective index (-).")
+        .def_readonly("ktran", &FourierSolver2D::Mode::ktran, u8"Mode transverse wavevector (1/µm).")
+        .def_readwrite("power", &FourierSolver2D::Mode::power, u8"Total power emitted into the mode (mW).")
         .def("__str__", &FourierSolver2D_Mode_str)
         .def("__repr__", &FourierSolver2D_Mode_repr)
         .def("__getattr__", &FourierSolver2D_Mode__getattr__);

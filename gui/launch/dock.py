@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -149,7 +149,7 @@ class OutputFilter(QSortFilterProxyModel):
 class OutputWindow(QDockWidget):
 
     def __init__(self, launcher, main_window, filename=None, label="Launch local"):
-        super().__init__("{} [{}]".format(label, strftime('%X')), main_window)
+        super().__init__("{} ({})".format(label, strftime('%X')), main_window)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
         self.launcher = launcher

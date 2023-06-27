@@ -45,8 +45,8 @@ Possible <mesh> contents for different types
 
          If any of the following attributes are specified, the points along this axis are equally distributed like in regular meshes. In such a case the contents must be empty.
 
-         :attr start: Position of the first point on the axis. (float [µm])
-         :attr stop: Position of the last point on the axis. (float [µm])
+         :attr start: Position of the first point on the axis. (float, µm)
+         :attr stop: Position of the last point on the axis. (float, µm)
          :attr num: Number of the equally distributed points along the axis. (integer)
 
          .. xml:contents::
@@ -64,8 +64,8 @@ Possible <mesh> contents for different types
 
          Specification of the horizontal axis.
 
-         :attr required start: Position of the first point on the axis. (float [µm])
-         :attr required stop: Position of the last point on the axis. (float [µm])
+         :attr required start: Position of the first point on the axis. (float, µm)
+         :attr required stop: Position of the last point on the axis. (float, µm)
          :attr required num: Number of the equally distributed points along the axis. (integer)
 
 .. xml:tag:: <mesh type="regular1d"> [regular1d]
@@ -85,8 +85,8 @@ Possible <mesh> contents for different types
          Specification of the horizontal axis.
 
          :attr type: Type of axis: ``ordered`` or ``regular``. If not given, axis will be ``regular`` only if any of the ``start``, ``stop`` or ``num`` attributes are specified (in other case it will be ``ordered``).
-         :attr start: Position of the first point on the axis. (float [µm])
-         :attr stop: Position of the last point on the axis. (float [µm])
+         :attr start: Position of the first point on the axis. (float, µm)
+         :attr stop: Position of the last point on the axis. (float, µm)
          :attr num: Number of the equally distributed points along the axis. (integer)
 
          .. xml:contents::
@@ -117,19 +117,19 @@ Possible <mesh> contents for different types
 
          Specification of a triangular element of the mesh; a triangle.
 
-         :attr a0: horizontal coordinate of the first vertex of the triangle. (float [µm])
-         :attr a1: vertical coordinate of the first vertex of the triangle. (float [µm])
-         :attr b0: horizontal coordinate of the second vertex of the triangle. (float [µm])
-         :attr b1: vertical coordinate of the second vertex of the triangle. (float [µm])
-         :attr c0: horizontal coordinate of the third vertex of the triangle. (float [µm])
-         :attr c1: vertical coordinate of the third vertex of the triangle. (float [µm])
+         :attr a0: horizontal coordinate of the first vertex of the triangle. (float, µm)
+         :attr a1: vertical coordinate of the first vertex of the triangle. (float, µm)
+         :attr b0: horizontal coordinate of the second vertex of the triangle. (float, µm)
+         :attr b1: vertical coordinate of the second vertex of the triangle. (float, µm)
+         :attr c0: horizontal coordinate of the third vertex of the triangle. (float, µm)
+         :attr c1: vertical coordinate of the third vertex of the triangle. (float, µm)
 
       .. xml:tag:: <node> [in triangular2d mesh]
 
          Node specification; a 2D point; a vertex of triangular element.
 
-         :attr tran: horizontal coordinate of the point. (float [µm])
-         :attr vert: vertical coordinate of the point. (float [µm])
+         :attr tran: horizontal coordinate of the point. (float, µm)
+         :attr vert: vertical coordinate of the point. (float, µm)
 
       .. xml:tag:: <element> [in triangular2d mesh]
 
@@ -151,8 +151,8 @@ Possible <mesh> contents for different types
          Specification of the longitudinal axis.
 
          :attr type: Type of axis: ``ordered`` or ``regular``. If not given, axis will be ``regular`` only if any of the ``start``, ``stop`` or ``num`` attributes are specified (in other case it will be ``ordered``).
-         :attr start: Position of the first point on the axis. (float [µm])
-         :attr stop: Position of the last point on the axis. (float [µm])
+         :attr start: Position of the first point on the axis. (float, µm)
+         :attr stop: Position of the last point on the axis. (float, µm)
          :attr num: Number of the equally distributed points along the axis. (integer)
 
          .. xml:contents::

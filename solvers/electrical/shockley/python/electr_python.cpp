@@ -164,9 +164,9 @@ struct PythonCondSolver : public std::conditional<std::is_same<GeometryT, Geomet
 
     /** Compute voltage drop of the active region
      *  \param n active region number
-     *  \param U junction voltage [V]
-     *  \param jy vertical current [kA/cm²]
-     *  \param T temperature [K]
+     *  \param U junction voltage (V)
+     *  \param jy vertical current (kA/cm²)
+     *  \param T temperature (K)
      */
     Tensor2<double> activeCond(size_t n, double U, double jy, double T) override {
         if (n >= this->active.size() || n >= cond_function.size() || cond_function[n].is_none())
@@ -201,7 +201,7 @@ inline static ExportSolver<__Class__> register_electrical_solver(const char* nam
                                        .c_str(),
                                    py::init<std::string>(py::arg("name") = ""));
     METHOD(compute, compute, u8"Run electrical calculations", py::arg("loops") = 0);
-    METHOD(get_total_current, getTotalCurrent, u8"Get total current flowing through active region [mA]", py::arg("nact") = 0);
+    METHOD(get_total_current, getTotalCurrent, u8"Get total current flowing through active region (mA)", py::arg("nact") = 0);
     RO_PROPERTY(err, getErr, u8"Maximum estimated error");
     RECEIVER(inTemperature, u8"");
     PROVIDER(outVoltage, u8"");
@@ -236,7 +236,7 @@ inline static ExportSolver<__Class__> register_electrical_solver(const char* nam
     METHOD(get_total_heat, getTotalHeat,
            u8"Get the total heat produced by the current flowing in the structure.\n\n"
            u8"Return:\n"
-           u8"    Total produced heat [mW].\n");
+           u8"    Total produced heat (mW).\n");
     registerFemSolverWithMaskedMesh(solver);
 
     return solver;
@@ -246,13 +246,13 @@ template <typename GeoT> inline static void register_shockley_solver(const char*
     typedef Shockley<GeoT> __Class__;
     ExportSolver<__Class__> solver = register_electrical_solver<__Class__>(name, geoname);
     solver.add_property("beta", &__Class__::getBeta0, &__Class__::setBeta0,
-                        u8"Junction coefficient [1/V].\n\n"
+                        u8"Junction coefficient (1/V).\n\n"
                         u8"In case, there is more than one junction you may set $\\beta$ parameter for any\n"
                         u8"of them by using ``beta#`` property, where # is the junction number (specified\n"
                         u8"by a role ``junction#`` or ``active#``).\n\n"
                         u8"``beta`` is an alias for ``beta0``.\n");
     solver.add_property("js", &__Class__::getJs0, &__Class__::setJs0,
-                        u8"Reverse bias current density [A/m\\ :sup:`2`\\ ].\n\n"
+                        u8"Reverse bias current density (A/m\\ :sup:`2`\\ ).\n\n"
                         u8"In case, there is more than one junction you may set $j_s$ parameter for any\n"
                         u8"of them by using ``js#`` property, where # is the junction number (specified\n"
                         u8"by a role ``junction#`` or ``active#``).\n\n"
@@ -266,7 +266,7 @@ template <typename GeoT> inline static void register_cond_solver(const char* nam
     ExportSolver<__Class__> solver = register_electrical_solver<__Class__>(name, geoname);
     solver.add_property("cond", &__Class__::getCond0, &__Class__::setCond0,
                         u8"Junction conductivity function [S/m].\n\n"
-                        u8"This function should take current density [kA/cm²] and temperature [K]\n"
+                        u8"This function should take current density (kA/cm²) and temperature (K)\n"
                         u8"as arguments and return a conductivity [S/m]. In case,there is more than\n"
                         u8"one junction you may set such function for any of them by using ``cond#``\n"
                         u8"property, where # is the junction number (specified by a role ``junction#``\n"

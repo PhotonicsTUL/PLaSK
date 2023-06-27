@@ -25,7 +25,7 @@ class GNClipController(GNObjectController):
         for b in self.node.bound_names():
             setattr(self, b, self.construct_line_edit(b.title()+':', unit=u'µm', node_property_name=b))
             getattr(self, b).setToolTip(u'&lt;clip <b>{0}</b>=""...&gt;<br/>'
-                    u'{0} edge of the clipping rectangle. (float [µm], {1}INF by default)'.format(b, sign))
+                    u'{0} edge of the clipping rectangle. (float (µm), {1}INF by default)'.format(b, sign))
             sign = '+' if sign == '-' else '-'
         super().construct_form()
 
@@ -75,7 +75,7 @@ class GNExtrusionController(GNObjectController):
         self.construct_group('Extrusion Settings')
         self.length = self.construct_line_edit('Length:', unit=u'µm', node_property_name='length', display_property_name='extrusion length')
         self.length.setToolTip(u'&lt;extrusion <b>length</b>="" ...&gt;<br/>'
-                               u'Length of the extrusion. (float [µm], required)')
+                               u'Length of the extrusion. (float (µm), required)')
         super().construct_form()
 
     def fill_form(self):

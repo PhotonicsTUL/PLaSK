@@ -864,8 +864,8 @@ struct Scattering {
                  u8"    due to the strong non-Hemiticity!\n"
                 )
 
-            .add_property("R", &Scattering<SolverT>::reflectivity, u8"Total reflection coefficient [-].")
-            .add_property("T", &Scattering<SolverT>::transmittivity, u8"Total transmission coefficient [-].")
+            .add_property("R", &Scattering<SolverT>::reflectivity, u8"Total reflection coefficient (-).")
+            .add_property("T", &Scattering<SolverT>::transmittivity, u8"Total transmission coefficient (-).")
             .add_property("reflectivity", &Scattering<SolverT>::reflectivity100, u8"Total reflection coefficient [%].\n\nThis differs from :attr:`Scattering.R` by unit.\n")
             .add_property("transmittivity", &Scattering<SolverT>::transmittivity100, u8"Total transmission coefficient [%].\n\nThis differs from :attr:`Scattering.T` by unit.\n")
 

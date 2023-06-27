@@ -37,8 +37,8 @@ BOOST_PYTHON_MODULE(dynamic)
         PROVIDER(outHeatFlux, "");
         PROVIDER(outThermalConductivity, "");
         BOUNDARY_CONDITIONS(temperature_boundary, u8"Boundary conditions for the constant temperature");
-        RW_FIELD(inittemp, u8"Initial temperature [K]");
-        RW_FIELD(timestep, u8"Time step [ns]");
+        RW_FIELD(inittemp, u8"Initial temperature (K)");
+        RW_FIELD(timestep, u8"Time step (ns)");
         RW_FIELD(methodparam, u8"Initial parameter determining the calculation method: 0.5 - Crank-Nicolson method, 0 - explicit method, 1 - implicit method");
         RW_FIELD(lumping, u8"Chosen mass matrix type from lumped or non-lumped (consistent)");
         RW_FIELD(rebuildfreq, u8"Frequency of rebuild mass");
@@ -56,8 +56,8 @@ BOOST_PYTHON_MODULE(dynamic)
         PROVIDER(outHeatFlux, "");
         PROVIDER(outThermalConductivity, "");
         BOUNDARY_CONDITIONS(temperature_boundary, u8"Boundary conditions for the constant temperature");
-        RW_FIELD(inittemp, u8"Initial temperature [K]");
-        RW_FIELD(timestep, u8"Time step [ns]");
+        RW_FIELD(inittemp, u8"Initial temperature (K)");
+        RW_FIELD(timestep, u8"Time step (ns)");
         RW_FIELD(methodparam, u8"Initial parameter determining the calculation method: 0.5 - Crank-Nicolson method, 0 - explicit method, 1 - implicit method");
         RW_FIELD(lumping, u8"Chosen mass matrix type from lumped or non-lumped (consistent)");
         RW_FIELD(rebuildfreq, u8"Frequency of rebuild mass");
@@ -75,8 +75,8 @@ BOOST_PYTHON_MODULE(dynamic)
         PROVIDER(outHeatFlux, "");
         PROVIDER(outThermalConductivity, "");
         BOUNDARY_CONDITIONS(temperature_boundary, u8"Boundary conditions for the constant temperature");
-        RW_FIELD(inittemp, u8"Initial temperature [K]");
-        RW_FIELD(timestep, u8"Time step [ns]");
+        RW_FIELD(inittemp, u8"Initial temperature (K)");
+        RW_FIELD(timestep, u8"Time step (ns)");
         RW_FIELD(methodparam, u8"Initial parameter determining the calculation method: 0.5 - Crank-Nicolson method, 0 - explicit method, 1 - implicit method");
         RW_FIELD(lumping, u8"Chosen mass matrix type from lumped or non-lumped (consistent)");
         RW_FIELD(rebuildfreq, u8"Frequency of rebuild mass");

@@ -156,7 +156,7 @@ def make_rst(dirname):
                     if unit is None:
                         typ = '{}'.format(html2rst(typ))
                     else:
-                        typ = html2rst('{} [{}]'.format(typ, unit))
+                        typ = html2rst('{} ({})'.format(typ, unit))
                 else:
                     typ = ''
                 if default is not None:

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -422,7 +422,7 @@ void register_geometry_container_stack()
              u8"This method adds a gap to the end of the shelf. All consecutive items will be\n"
              u8"separated by the specified width from the previous ones.\n\n"
              u8"Args:\n"
-             u8"    size (float): Size of the gap [µm].\n")
+             u8"    size (float): Size of the gap (µm).\n")
         .add_property("flat", &ShelfContainer2D::isFlat,
             u8"True if all items has the same height (the shelf top edge is flat).")
     ;

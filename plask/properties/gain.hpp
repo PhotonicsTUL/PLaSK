@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -20,7 +20,7 @@
 namespace plask {
 
 /**
- * Material gain [1/cm].
+ * Material gain (1/cm).
  *
  * This is the gain property. It should have the same unit as absorption.
  * Providers must set it to NaN everywhere outside of the active region.

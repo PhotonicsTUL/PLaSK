@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -224,18 +224,18 @@ void export_BesselSolverCyl()
     RW_PROPERTY(kscale, getKscale, setKscale,
                 u8"Scale factor for wavevectors used in the infinite domain.\n");
     solver.add_property("lam", &__Class__::getLam, &Solver_setLam<__Class__>,
-                u8"Wavelength of the light [nm].\n");
+                u8"Wavelength of the light (nm).\n");
     solver.add_property("wavelength", &__Class__::getLam, &Solver_setLam<__Class__>,
                 u8"Alias for :attr:`lam`");
     solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>,
-                u8"Normalized frequency of the light [1/µm].\n");
+                u8"Normalized frequency of the light (1/µm).\n");
     solver.add_property("m", &__Class__::getM, &__Class__::setM, "Angular dependence parameter.");
     solver.def("find_mode", &BesselSolverCyl_findMode,
            u8"Compute the mode near the specified effective index.\n\n"
            u8"Only one of the following arguments can be given through a keyword.\n"
            u8"It is the starting point for search of the specified parameter.\n\n"
            u8"Args:\n"
-           u8"    lam (complex): Starting wavelength [nm].\n"
+           u8"    lam (complex): Starting wavelength (nm).\n"
            u8"    m (int): HE/EH Mode angular number. If ``None``, use :attr:`m` attribute.\n",
            (arg("lam"), arg("m")=py::object())
           );
@@ -246,7 +246,7 @@ void export_BesselSolverCyl()
                 u8"exception if the determinant for the specified parameters is too large.\n\n"
                 u8"Arguments can be given through keywords only.\n\n"
                 u8"Args:\n"
-                u8"    lam (complex): Wavelength [nm].\n"
+                u8"    lam (complex): Wavelength (nm).\n"
                 u8"    m (int): HE/EH Mode angular number.\n"
               );
     RW_FIELD(emission, "Direction of the useful light emission.\n\n"
@@ -258,7 +258,7 @@ void export_BesselSolverCyl()
                u8"Compute discontinuity matrix determinant.\n\n"
                u8"Arguments can be given through keywords only.\n\n"
                u8"Args:\n"
-               u8"    lam (complex): Wavelength [nm].\n"
+               u8"    lam (complex): Wavelength (nm).\n"
                u8"    k0 (complex): Normalized frequency.\n"
                u8"    m (int): HE/EH Mode angular number.\n"
               );
@@ -268,7 +268,7 @@ void export_BesselSolverCyl()
                (py::arg("lam"), "side", "coeffs"),
                u8"Compute reflection coefficient on planar incidence [%].\n\n"
                u8"Args:\n"
-               u8"    lam (float or array of floats): Incident light wavelength [nm].\n"
+               u8"    lam (float or array of floats): Incident light wavelength (nm).\n"
                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                u8"        present.\n"
                u8"    index: Eigenmode number.\n"
@@ -279,7 +279,7 @@ void export_BesselSolverCyl()
                (py::arg("lam"), "side", "coeffs"),
                u8"Compute transmission coefficient on planar incidence [%].\n\n"
                u8"Args:\n"
-               u8"    lam (float or array of floats): Incident light wavelength [nm].\n"
+               u8"    lam (float or array of floats): Incident light wavelength (nm).\n"
                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                u8"        present.\n"
                u8"    index: Eigenmode number.\n"
@@ -353,10 +353,10 @@ void export_BesselSolverCyl()
 
     register_vector_of<BesselSolverCyl::Mode>("Modes");
     py::class_<BesselSolverCyl::Mode>("Mode", u8"Detailed information about the mode.", py::no_init)
-        .add_property("lam", &getModeWavelength<BesselSolverCyl::Mode>, u8"Mode wavelength [nm].")
-        .add_property("loss", &getModeLoss<BesselSolverCyl::Mode>, u8"Mode loss [1/cm].")
-        .add_property("wavelength", &getModeWavelength<BesselSolverCyl::Mode>, u8"Mode wavelength [nm].")
-        .def_readonly("k0", &BesselSolverCyl::Mode::k0, u8"Mode normalized frequency [1/µm].")
+        .add_property("lam", &getModeWavelength<BesselSolverCyl::Mode>, u8"Mode wavelength (nm).")
+        .add_property("loss", &getModeLoss<BesselSolverCyl::Mode>, u8"Mode loss (1/cm).")
+        .add_property("wavelength", &getModeWavelength<BesselSolverCyl::Mode>, u8"Mode wavelength (nm).")
+        .def_readonly("k0", &BesselSolverCyl::Mode::k0, u8"Mode normalized frequency (1/µm).")
         .def_readonly("m", &BesselSolverCyl::Mode::m, u8"Angular mode order.")
         .def_readwrite("power", &BesselSolverCyl::Mode::power, u8"Total power emitted into the mode.")
         .def("__str__", &BesselSolverCyl_Mode_str)

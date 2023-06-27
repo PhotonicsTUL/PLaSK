@@ -71,7 +71,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         double lam0;                    ///< Wavelength for which integrals are computed
         dcomplex k0;                    ///< Stored mode frequency
         int m;                          ///< Stored angular parameter
-        double power;                   ///< Mode power [mW]
+        double power;                   ///< Mode power (mW)
         double tolx;                    ///< Tolerance for mode comparison
 
         Mode(const std::unique_ptr<ExpansionBessel>& expansion, double tolx):

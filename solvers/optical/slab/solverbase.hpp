@@ -107,10 +107,10 @@ struct PLASK_SOLVER_API SlabBase {
     /// Approximate position of the matching interface
     double interface_position;
 
-    /// Reference wavelength used for getting material parameters [nm]
+    /// Reference wavelength used for getting material parameters (nm)
     double lam0;
 
-    /// Normalized frequency [1/µm]
+    /// Normalized frequency (1/µm)
     dcomplex k0;
 
     /// Parameters for vertical PMLs (if used)

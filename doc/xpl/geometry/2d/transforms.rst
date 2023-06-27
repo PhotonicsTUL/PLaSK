@@ -15,8 +15,8 @@ Transforms always contain a single geometry object (possibly container) as their
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
-   :attr d{X}: where **{X}** is the transverse axis name: Horizontal component of the spacing vector, by which the adjacent repetitions are shifted. (float [µm])
-   :attr d{Y}: where **{Y}** is the vertical axis name: Vertical dimension of the spacing vector, by which the adjacent repetitions are shifted. (float [µm])
+   :attr d{X}: where **{X}** is the transverse axis name: Horizontal component of the spacing vector, by which the adjacent repetitions are shifted. (float, µm)
+   :attr d{Y}: where **{Y}** is the vertical axis name: Vertical dimension of the spacing vector, by which the adjacent repetitions are shifted. (float, µm)
    :attr required count: Number of repetitions of the container item.
 
    .. xml:contents::
@@ -106,8 +106,8 @@ Transforms always contain a single geometry object (possibly container) as their
    :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
    :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
-   :attr {X}: where **{X}** is the transverse axis name: Horizontal position of the origin of transformed element. (float [µm])
-   :attr {Y}: where **{Y}** is the vertical axis name: Vertical position of the origin of transformed element. (float [µm])
+   :attr {X}: where **{X}** is the transverse axis name: Horizontal position of the origin of transformed element. (float, µm)
+   :attr {Y}: where **{Y}** is the vertical axis name: Vertical position of the origin of transformed element. (float, µm)
 
    .. xml:contents::
 

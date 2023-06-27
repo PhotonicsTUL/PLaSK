@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -234,9 +234,9 @@ class FieldWidget(QWidget):
 
         if axes_names is not None:
             self.toolbar.set_axes_names(axes_names, axi)
-            self.axes.set_xlabel(u"${}$ [µm]".format(axes_names[axi[0]]))
+            self.axes.set_xlabel(u"${}$ (µm)".format(axes_names[axi[0]]))
             if not self.is_profile:
-                self.axes.set_ylabel(u"${}$ [µm]".format(axes_names[axi[1]]))
+                self.axes.set_ylabel(u"${}$ (µm)".format(axes_names[axi[1]]))
 
         self.plotted_field = field
         self.plotted_geometry = geometry

@@ -25,7 +25,7 @@ constexpr double BIG = 1e16;
 struct Convection
 {
     double coeff;   ///< convection coefficient [W/(m^2*K)]
-    double ambient; ///< ambient temperature [K]
+    double ambient; ///< ambient temperature (K)
     Convection(double coeff, double amb): coeff(coeff), ambient(amb) {}
     Convection() = default;
     friend inline std::ostream& operator<<(std::ostream& out, const Convection& to_print) {
@@ -36,8 +36,8 @@ struct Convection
 /// Boundary condition: radiation
 struct Radiation
 {
-    double emissivity;  ///< surface emissivity [-]
-    double ambient;     ///< ambient temperature [K]
+    double emissivity;  ///< surface emissivity (-)
+    double ambient;     ///< ambient temperature (K)
     Radiation(double emiss, double amb): emissivity(emiss), ambient(amb) {}
     Radiation() = default;
     friend inline std::ostream& operator<<(std::ostream& out, const Radiation& to_print) {

@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -51,14 +51,14 @@ See also:
 """
 
 outLoss = """\
-Provider of the computed modal extinction [1/cm].
+Provider of the computed modal extinction (1/cm).
 
 
 outLoss(n=0)
 
 :param int n: Value number.
 
-:return: Value of the modal extinction **[1/cm]**.
+:return: Value of the modal extinction **(1/cm)**.
 
 You may obtain the number of different values this provider can return by
 testing its length.
@@ -86,14 +86,14 @@ See also:
 """
 
 outWavelength = """\
-Provider of the computed wavelength [nm].
+Provider of the computed wavelength (nm).
 
 
 outWavelength(n=0)
 
 :param int n: Computed mode number.
 
-:return: Value of the wavelength **[nm]**.
+:return: Value of the wavelength **(nm)**.
 
 You may obtain the number of different values this provider can return by
 testing its length.
@@ -121,7 +121,7 @@ See also:
 """
 
 outRefractiveIndex = """\
-Provider of the computed refractive index [-].
+Provider of the computed refractive index (-).
 
 
 outRefractiveIndex(mesh, interpolation='default')
@@ -129,7 +129,7 @@ outRefractiveIndex(mesh, interpolation='default')
 :param mesh mesh: Target mesh to get the field at.
 :param str interpolation: Requested interpolation method.
 
-:return: Data with the refractive index on the specified mesh **[-]**.
+:return: Data with the refractive index on the specified mesh **(-)**.
 
 Example:
    Connect the provider to a receiver in some other solver:
@@ -186,14 +186,14 @@ See also:
 """
 
 outNeff = """\
-Provider of the computed effective index [-].
+Provider of the computed effective index (-).
 
 
 outNeff(n=0)
 
 :param int n: Value number.
 
-:return: Value of the effective index **[-]**.
+:return: Value of the effective index **(-)**.
 
 You may obtain the number of different values this provider can return by
 testing its length.

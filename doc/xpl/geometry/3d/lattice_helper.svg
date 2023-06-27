@@ -635,7 +635,7 @@
         </g>
         <g
            id="text_8">
-          <!-- $y$ [µm] -->
+          <!-- $y$ (µm) -->
           <g
              transform="translate(217.388469828 308.658861292)"
              id="g230">
@@ -645,7 +645,7 @@
                  style="font-family:Liberation Sans;font-size:12.0px;font-style:regular;"
                  x="6.0 9.333984375 12.66796875 19.58203125 29.578125"
                  y="-0.296875"
-                 id="tspan234"> [µm]</tspan>
+                 id="tspan234"> (µm)</tspan>
               <tspan
                  style="font-family:Liberation Sans;font-size:12.0px;font-style:italic;"
                  x="0.0"
@@ -853,7 +853,7 @@
         </g>
         <g
            id="text_14">
-          <!-- $x$ [µm] -->
+          <!-- $x$ (µm) -->
           <g
              transform="translate(21.3525646552 169.508140192)rotate(-90.0)"
              id="g316">
@@ -863,7 +863,7 @@
                  style="font-family:Liberation Sans;font-size:12.0px;font-style:regular;"
                  x="6.0 9.333984375 12.66796875 19.58203125 29.578125"
                  y="-0.296875"
-                 id="tspan320"> [µm]</tspan>
+                 id="tspan320"> (µm)</tspan>
               <tspan
                  style="font-family:Liberation Sans;font-size:12.0px;font-style:italic;"
                  x="0.0"

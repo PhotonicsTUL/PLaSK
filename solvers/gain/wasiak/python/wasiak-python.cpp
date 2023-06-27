@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -264,10 +264,10 @@ BOOST_PYTHON_MODULE(wasiak) {
         PROVIDER(outGain, "");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Stimulated emission lifetime [ps]");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "Optical matrix element [m0*eV]");
-        RW_PROPERTY(cond_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV].");
-        RW_PROPERTY(vale_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW [eV].");
-        // solver.def_readwrite("cond_depth", &__Class__::cond_waveguide_depth, "Waveguide conduction band depth [eV]");
-        // solver.def_readwrite("vale_depth", &__Class__::vale_waveguide_depth, "Waveguide valence band depth [eV]");
+        RW_PROPERTY(cond_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW (eV).");
+        RW_PROPERTY(vale_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW (eV).");
+        // solver.def_readwrite("cond_depth", &__Class__::cond_waveguide_depth, "Waveguide conduction band depth (eV)");
+        // solver.def_readwrite("vale_depth", &__Class__::vale_waveguide_depth, "Waveguide valence band depth (eV)");
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0, 1>());
         solver.def("spectrum", FermiGetGainSpectrum2<Geometry2DCartesian>, "Get gain spectrum at given point",
@@ -293,10 +293,10 @@ BOOST_PYTHON_MODULE(wasiak) {
         PROVIDER(outGain, "");
         RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Stimulated emission lifetime [ps]");
         RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "Optical matrix element [m0*eV]");
-        RW_PROPERTY(cond_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV]");
-        RW_PROPERTY(vale_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW [eV]");
-        // solver.def_readwrite("cond_depth", &__Class__::cond_waveguide_depth, "Waveguide conduction band depth [eV]");
-        // solver.def_readwrite("vale_depth", &__Class__::vale_waveguide_depth, "Waveguide valence band depth [eV]");
+        RW_PROPERTY(cond_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW (eV)");
+        RW_PROPERTY(vale_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW (eV)");
+        // solver.def_readwrite("cond_depth", &__Class__::cond_waveguide_depth, "Waveguide conduction band depth (eV)");
+        // solver.def_readwrite("vale_depth", &__Class__::vale_waveguide_depth, "Waveguide valence band depth (eV)");
         solver.def("spectrum", &__Class__::getGainSpectrum, "Get gain spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0, 1>());
         solver.def("spectrum", FermiGetGainSpectrum2<Geometry2DCylindrical>, (py::arg("c0"), "c1"),
@@ -330,15 +330,15 @@ BOOST_PYTHON_MODULE(wasiak) {
         RW_PROPERTY(geometry_mod, getModGeometry, setModGeometry, "Modified geomery for broadening calculations.");
         RW_PROPERTY(roughness, getRoughness, setRoughness,
             "If there is no modified geometry: roughness of the thicknesses of the quantum wells.\n"
-            "With modified geometry present: broadening factor. [-].\n");
+            "With modified geometry present: broadening factor. (-).\n");
         solver.attr("broadening") = solver.attr("roughness");
-        RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Carriers lifetime [ps].");
-        RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "Optical matrix element [m0*eV]");
-        RW_PROPERTY(cond_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV]");
-        RW_PROPERTY(vale_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW [eV]");
+        RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Carriers lifetime (ps)");
+        RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "Optical matrix element (m₀ eV)");
+        RW_PROPERTY(cond_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW (eV)");
+        RW_PROPERTY(vale_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW (eV)");
         RW_PROPERTY(Tref, getTref, setTref,
                     "Reference temperature. If *fast_levels* is True, this is the temperature used\n"
-                    "for initial computation of the energy levels [K].");
+                    "for initial computation of the energy levels (K).");
         solver.def("get_levels", &FermiNew_getLevels<Geometry2DCartesian>, py::arg("T") = py::object());
         solver.def("get_fermi_levels", &FermiNew_getFermiLevels<Geometry2DCartesian>,
                    (py::arg("n"), py::arg("T") = py::object(), py::arg("reg") = 0));
@@ -387,15 +387,15 @@ BOOST_PYTHON_MODULE(wasiak) {
         RW_PROPERTY(geometry_mod, getModGeometry, setModGeometry, "Modified geomery for broadening calculations.");
         RW_PROPERTY(roughness, getRoughness, setRoughness,
             "If there is no modified geometry: roughness of the thicknesses of the quantum wells.\n"
-            "With modified geometry present: broadening factor. [-].\n");
+            "With modified geometry present: broadening factor. (-).\n");
         solver.attr("broadening") = solver.attr("roughness");
-        RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Carriers lifetime [ps].");
-        RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "optical matrix element [m0*eV]");
-        RW_PROPERTY(cond_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW [eV]");
-        RW_PROPERTY(vale_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW [eV]");
+        RW_PROPERTY(lifetime, getLifeTime, setLifeTime, "Carriers lifetime (ps)");
+        RW_PROPERTY(matrix_elem, getMatrixElem, setMatrixElem, "optical matrix element (m₀ eV)");
+        RW_PROPERTY(cond_shift, getCondQWShift, setCondQWShift, "Additional conduction band shift for QW (eV)");
+        RW_PROPERTY(vale_shift, getValeQWShift, setValeQWShift, "Additional valence band shift for QW (eV)");
         RW_PROPERTY(Tref, getTref, setTref,
                     "Reference temperature. If *fast_levels* is True, this is the temperature used\n"
-                    "for initial computation of the energy levels [K].");
+                    "for initial computation of the energy levels (K).");
         solver.def("get_levels", &FermiNew_getLevels<Geometry2DCylindrical>, py::arg("T") = py::object());
         solver.def("get_fermi_levels", &FermiNew_getFermiLevels<Geometry2DCylindrical>,
                    (py::arg("n"), py::arg("T") = py::object(), py::arg("reg") = 0));

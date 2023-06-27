@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -229,14 +229,14 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
     friend struct LuminescenceSpectrum<GeometryType>;
     friend class wzmocnienie;
 
-    double condQWshift;         ///< additional conduction band shift for qw [eV]
-    double valeQWshift;         ///< additional valence band shift for qw [eV]
-    double QWwidthMod;          ///< qw width modifier [-]
-    double roughness;           ///< roughness [-]
+    double condQWshift;         ///< additional conduction band shift for qw (eV)
+    double valeQWshift;         ///< additional valence band shift for qw (eV)
+    double QWwidthMod;          ///< qw width modifier (-)
+    double roughness;           ///< roughness (-)
     double lifetime;            ///< lifetime [ps]
     double matrixElem;          ///< optical matrix element [m0*eV]
     double differenceQuotient;  ///< difference quotient of dG_dn derivative
-    double Tref;                ///< reference temperature [K]
+    double Tref;                ///< reference temperature (K)
 
     void findEnergyLevels(Levels& levels, const ActiveRegionInfo& region, double T, bool showDetails = false);
 

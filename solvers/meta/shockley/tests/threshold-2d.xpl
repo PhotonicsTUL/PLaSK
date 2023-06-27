@@ -93,7 +93,7 @@
 <script><![CDATA[
 lams = linspace(975., 980., 501)
 plot(lams, abs(SOLVER.optical_determinant(lams)))
-xlabel("Wavelength [nm]")
+xlabel("Wavelength (nm)")
 window_title("Determinant")
 
 threshold_voltage = SOLVER.compute()

@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -130,7 +130,7 @@ def make_radial_plot(Er, r=None, m=1, R=1., neff=None, c=1, axs=None):
         ax1.plot((np.nan,), (np.nan,), color='k', ls='-', label="$E_r$")
         ax1.plot((np.nan,), (np.nan,), color='k', ls='-', alpha=0.35, label=r"$E_\varphi$")
         ax1.plot((np.nan,), (np.nan,), color='k', ls='--', label="$E_z$")
-        ax2.set_xlabel("$r$ [µm]")
+        ax2.set_xlabel("$r$ (µm)")
         leg1 = ax1.legend(loc='best', prop={'size': 6})
         try: leg1.set_draggable(True)
         except AttributeError: pass

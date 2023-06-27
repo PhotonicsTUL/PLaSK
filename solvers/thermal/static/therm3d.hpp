@@ -79,7 +79,7 @@ struct PLASK_SOLVER_API ThermalFem3DSolver: public FemSolverWithMaskedMesh<Geome
     double maxerr;     ///< Maximum temperature correction accepted as convergence
 
     // Boundary conditions
-    BoundaryConditions<RectangularMesh<3>::Boundary,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]
+    BoundaryConditions<RectangularMesh<3>::Boundary,double> temperature_boundary;      ///< Boundary condition of constant temperature (K)
     BoundaryConditions<RectangularMesh<3>::Boundary,double> heatflux_boundary;         ///< Boundary condition of constant heat flux [W/m^2]
     BoundaryConditions<RectangularMesh<3>::Boundary,Convection> convection_boundary;   ///< Boundary condition of convection
     BoundaryConditions<RectangularMesh<3>::Boundary,Radiation> radiation_boundary;     ///< Boundary condition of radiation

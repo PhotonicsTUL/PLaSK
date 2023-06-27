@@ -1081,8 +1081,8 @@ def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=
     if ax[0] > ax[1] and not axes.yaxis_inverted():
         axes.invert_yaxis()
 
-    axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[dd+ax[0]]))
-    axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[dd+ax[1]]))
+    axes.set_xlabel(u"${}$ (µm)".format(plask.config.axes[dd+ax[0]]))
+    axes.set_ylabel(u"${}$ (µm)".format(plask.config.axes[dd+ax[1]]))
 
     if extra is not None:
         return axes, env.extra_patches

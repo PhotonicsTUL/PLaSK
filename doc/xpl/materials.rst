@@ -43,107 +43,107 @@ This section contains specification of custom materials that can be used togethe
 
       .. xml:tag:: <A>
 
-         Monomolecular recombination coefficient *A* [1/s].
+         Monomolecular recombination coefficient *A* (1/s).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <absb>
 
-         Absorption coefficient *α* [cm\ :sup:`-1`].
+         Absorption coefficient *α* (cm\ :sup:`-1`).
 
-         Variables: ``lam`` — wavelength [nm], ``T`` — temperature [K].
+         Variables: ``lam`` — wavelength (nm), ``T`` — temperature (K).
 
       .. xml:tag:: <ac>
 
-         Hydrostatic deformation potential for the conduction band *a*\ :sub:`c` [eV].
+         Hydrostatic deformation potential for the conduction band *a*\ :sub:`c` (eV).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <av>
 
-         Hydrostatic deformation potential for the valence band *a*\ :sub:`v` [eV].
+         Hydrostatic deformation potential for the valence band *a*\ :sub:`v` (eV).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <B>
 
-         Radiative recombination coefficient *B* [cm\ :sup:`3`/s].
+         Radiative recombination coefficient *B* (cm\ :sup:`3`/s).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <b>
 
-         Shear deformation potential *b* [eV].
+         Shear deformation potential *b* (eV).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <C>
 
-         Auger recombination coefficient *C* [cm\ :sup:`6`/s].
+         Auger recombination coefficient *C* (cm\ :sup:`6`/s).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <Ce>
 
-         Auger recombination coefficient *C* for electrons [cm\ :sup:`6`/s].
+         Auger recombination coefficient *C* for electrons (cm\ :sup:`6`/s).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <Ch>
 
-         Auger recombination coefficient *C* for holes [cm\ :sup:`6`/s].
+         Auger recombination coefficient *C* for holes (cm\ :sup:`6`/s).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <c11>
 
-         Elastic constant *c*\ :sub:`11` [GPa].
+         Elastic constant *c*\ :sub:`11` (GPa).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <c12>
 
-         Elastic constant *c*\ :sub:`12` [GPa].
+         Elastic constant *c*\ :sub:`12` (GPa).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <c13>
 
-         Elastic constant *c*\ :sub:`13` [GPa].
+         Elastic constant *c*\ :sub:`13` (GPa).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <c33>
 
-         Elastic constant *c*\ :sub:`33` [GPa].
+         Elastic constant *c*\ :sub:`33` (GPa).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <c44>
 
-         Elastic constant *c*\ :sub:`44` [GPa].
+         Elastic constant *c*\ :sub:`44` (GPa).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <CB>
 
-         Conduction band level *CB* [eV].
+         Conduction band level *CB* (eV).
 
-         Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+         Variables: ``T`` — temperature (K), ``e`` — lateral strain (-),
          ``point`` — point in the Brillouin zone ('*' means minimum bandgap).
 
       .. xml:tag:: <chi>
 
-         Electron affinity *χ* [eV].
+         Electron affinity *χ* (eV).
 
-         Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+         Variables: ``T`` — temperature (K), ``e`` — lateral strain (-),
          ``point`` — point in the Brillouin zone ('*' means minimum bandgap).
 
       .. xml:tag:: <cond>
 
-         Electrical conductivity sigma in-plane (lateral) and cross-plane (vertical) direction [S/m].
+         Electrical conductivity sigma in-plane (lateral) and cross-plane (vertical) direction (S/m).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <condtype>
 
@@ -151,178 +151,178 @@ This section contains specification of custom materials that can be used togethe
 
       .. xml:tag:: <cp>
 
-         Specific heat at constant pressure [J/(kg K)].
+         Specific heat at constant pressure (J/(kg K)).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <D>
 
-         Ambipolar diffusion coefficient *D* [cm\ :sup:`2`/s].
+         Ambipolar diffusion coefficient *D* (cm\ :sup:`2`/s).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <dens>
 
-         Density [kg/m\ :sup:`3`].
+         Density (kg/m\ :sup:`3`).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <Dso>
 
-         Split-off energy *D*\ :sub:`so` [eV].
+         Split-off energy *D*\ :sub:`so` (eV).
 
-         Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
+         Variables: ``T`` — temperature (K), ``e`` — lateral strain (-).
 
       .. xml:tag:: <e13>
 
-         Piezoelectric constant *e*\ :sub:`13` [C/m\ :sup:`2`].
+         Piezoelectric constant *e*\ :sub:`13` (C/m\ :sup:`2`).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <e15>
 
-         Piezoelectric constant *e*\ :sub:`15` [C/m\ :sup:`2`].
+         Piezoelectric constant *e*\ :sub:`15` (C/m\ :sup:`2`).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <e33>
 
-         Piezoelectric constant *e*\ :sub:`33` [C/m\ :sup:`2`].
+         Piezoelectric constant *e*\ :sub:`33` (C/m\ :sup:`2`).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <EactA>
 
-         Acceptor ionization energy *E*\ :sub:`actA` [eV].
+         Acceptor ionization energy *E*\ :sub:`actA` (eV).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <EactD>
 
-         Donor ionization energy *E*\ :sub:`actD` [eV].
+         Donor ionization energy *E*\ :sub:`actD` (eV).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <Eg>
 
-         Energy gap *E*\ :sub:`g` [eV].
+         Energy gap *E*\ :sub:`g` (eV).
 
-         Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+         Variables: ``T`` — temperature (K), ``e`` — lateral strain (-),
          ``point`` — point in the Brillouin zone ('*' means minimum bandgap).
 
       .. xml:tag:: <eps>
 
-         Dielectric constant *ε*\ :sub:`R` [-].
+         Dielectric constant *ε*\ :sub:`R` (-).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <lattC>
 
-         Lattice constant [Å].
+         Lattice constant (Å).
 
-         Variables: ``T`` — temperature [K], ``x`` — lattice parameter [-].
+         Variables: ``T`` — temperature (K), ``x`` — lattice parameter (-).
 
       .. xml:tag:: <Me>
 
          Electron effective mass *M*\ :sub:`e` in in-plane (lateral)
-         and cross-plane (vertical) direction [*m*\ :sub:`0`].
+         and cross-plane (vertical) direction (*m*\ :sub:`0`).
 
-         Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
-         ``point`` — point in the irreducible Brillouin zone [-].
+         Variables: ``T`` — temperature (K), ``e`` — lateral strain (-),
+         ``point`` — point in the irreducible Brillouin zone (-).
 
       .. xml:tag:: <Mh>
 
          Hole effective mass *M*\ :sub:`h` in in-plane (lateral)
-         and cross-plane (vertical) direction [*m*\ :sub:`0`].
+         and cross-plane (vertical) direction (*m*\ :sub:`0`).
 
-         Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
+         Variables: ``T`` — temperature (K), ``e`` — lateral strain (-).
 
       .. xml:tag:: <Mhh>
 
          Heavy hole effective mass *M*\ :sub:`hh` in in-plane (lateral)
-         and cross-plane (vertical) direction [*m*\ :sub:`0`].
+         and cross-plane (vertical) direction (*m*\ :sub:`0`).
 
-         Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
+         Variables: ``T`` — temperature (K), ``e`` — lateral strain (-).
 
       .. xml:tag:: <Mlh>
 
          Light hole effective mass *M*\ :sub:`lh` in in-plane (lateral)
-         and cross-plane (vertical) direction [*m*\ :sub:`0`].
+         and cross-plane (vertical) direction (*m*\ :sub:`0`).
 
-         Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
+         Variables: ``T`` — temperature (K), ``e`` — lateral strain (-).
 
       .. xml:tag:: <mob>
 
          Majority carriers mobility in-plane (lateral) and cross-plane (vertical) direction
-         [cm\ :sup:`2`/(V s)].
+         (cm\ :sup:`2`/Vs).
 
-         Variables: T — temperature [K].
+         Variables: T — temperature (K).
 
       .. xml:tag:: <mobe>
 
          Electron mobility in-plane (lateral) and cross-plane (vertical) direction
-         [cm\ :sup:`2`/(V s)].
+         (cm\ :sup:`2`/Vs).
 
-         Variables: T — temperature [K].
+         Variables: T — temperature (K).
 
       .. xml:tag:: <mobh>
 
          Hole mobility in-plane (lateral) and cross-plane (vertical) direction
-         [cm\ :sup:`2`/(V s)].
+         (cm\ :sup:`2`/Vs).
 
-         Variables: T — temperature [K].
+         Variables: T — temperature (K).
 
       .. xml:tag:: <Mso>
 
-         Split-off mass *M*\ :sub:`so` [*m*\ :sub:`0`].
+         Split-off mass *M*\ :sub:`so` (*m*\ :sub:`0`).
 
-         Variables: ``T`` — temperature [K], ``e`` — lateral strain [-].
+         Variables: ``T`` — temperature (K), ``e`` — lateral strain (-).
 
       .. xml:tag:: <Na>
 
-         Acceptor concentration *N*\ :sub:`a` [cm\ :sup:`-3`].
+         Acceptor concentration *N*\ :sub:`a` (cm\ :sup:`-3`).
 
       .. xml:tag:: <Nc>
 
-         Effective density of states in the conduction band *N*\ :sub:`c` [cm\ :sup:`-3`].
+         Effective density of states in the conduction band *N*\ :sub:`c` (cm\ :sup:`-3`).
 
-         Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+         Variables: ``T`` — temperature (K), ``e`` — lateral strain (-),
          ``point`` — point in the Brillouin zone ('*' means minimum bandgap).
 
       .. xml:tag:: <Nd>
 
-         Donor concentration *N*\ :sub:`d` [cm\ :sup:`-3`].
+         Donor concentration *N*\ :sub:`d` (cm\ :sup:`-3`).
 
       .. xml:tag:: <Nf>
 
-         Free carrier concentration *N* [cm\ :sup:`-3`].
+         Free carrier concentration *N* (cm\ :sup:`-3`).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <Ni>
 
-         Intrinsic carrier concentration *N*\ :sub:`i` [cm\ :sup:`-3`].
+         Intrinsic carrier concentration *N*\ :sub:`i` (cm\ :sup:`-3`).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <Nr>
 
-         Complex refractive index *n*\ :sub:`R` [-].
+         Complex refractive index *n*\ :sub:`R` (-).
 
-         Variables: ``lam`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [cm\ :sup:`-3`].
+         Variables: ``lam`` — wavelength (nm), ``T`` — temperature (K), n — injected carriers concentration (cm\ :sup:`-3`).
 
       .. xml:tag:: <nr>
 
-         Real refractive index \ :sup:`2`*n*\ :sub:`R` [-].
+         Real refractive index \ :sup:`2`*n*\ :sub:`R` (-).
 
-         Variables: ``lam`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [cm\ :sup:`-3`].
+         Variables: ``lam`` — wavelength (nm), ``T`` — temperature (K), n — injected carriers concentration (cm\ :sup:`-3`).
 
       .. xml:tag:: <NR>
 
-         Anisotropic complex refractive index tensor *n*\ :sub:`R` [-].
+         Anisotropic complex refractive index tensor *n*\ :sub:`R` (-).
          Tensor must have the form [ *n*\ :sub:`00`, *n*\ :sub:`11`, *n*\ :sub:`22`, *n*\ :sub:`01`, *n*\ :sub:`10` ].
 
-         Variables: ``lam`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [cm\ :sup:`-3`].
+         Variables: ``lam`` — wavelength (nm), ``T`` — temperature (K), n — injected carriers concentration (cm\ :sup:`-3`).
 
          .. warning::
 
@@ -330,54 +330,54 @@ This section contains specification of custom materials that can be used togethe
 
       .. xml:tag:: <Nv>
 
-         Effective density of states in the valance band *N*\ :sub:`v` [cm\ :sup:`-3`].
+         Effective density of states in the valance band *N*\ :sub:`v` (cm\ :sup:`-3`).
 
-         Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+         Variables: ``T`` — temperature (K), ``e`` — lateral strain (-),
          ``point`` — point in the Brillouin zone ('*' means minimum bandgap).
 
       .. xml:tag:: <Psp>
 
-         Spontaneous polarization [C/m\ :sup:`2`]
+         Spontaneous polarization (C/m\ :sup:`2`)
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <taue>
 
-         Monomolecular electrons lifetime *τ* [ns].
+         Monomolecular electrons lifetime *τ* (ns).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <tauh>
 
-         Monomolecular holes lifetime *τ* [ns].
+         Monomolecular holes lifetime *τ* (ns).
 
-         Variables: ``T`` — temperature [K].
+         Variables: ``T`` — temperature (K).
 
       .. xml:tag:: <thermk>
 
-         Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction *k* [W/(m K)].
+         Thermal conductivity in in-plane (lateral) and cross-plane (vertical) direction *k* (W/(m K)).
 
-         Variables: ``T`` — temperature [K], ``h`` — layer thickness [µm].
+         Variables: ``T`` — temperature (K), ``h`` — layer thickness (µm).
 
       .. xml:tag:: <VB>
 
-         Valance band level offset *VB* [eV].
+         Valance band level offset *VB* (eV).
 
-         Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
+         Variables: ``T`` — temperature (K), ``e`` — lateral strain (-),
          ``point`` — point in the Brillouin zone ('*' means minimum bandgap),
          ``hole`` — hole type (``'H'`` or ``'L'``).
 
       .. xml:tag:: <y1>
 
-         Luttinger parameter *γ*\ :sup:`1` [-].
+         Luttinger parameter *γ*\ :sup:`1` (-).
 
       .. xml:tag:: <y2>
 
-         Luttinger parameter *γ*\ :sup:`2` [-].
+         Luttinger parameter *γ*\ :sup:`2` (-).
 
       .. xml:tag:: <y3>
 
-         Luttinger parameter *γ*\ :sup:`3` [-].
+         Luttinger parameter *γ*\ :sup:`3` (-).
 
 
 .. xml:tag:: <library>

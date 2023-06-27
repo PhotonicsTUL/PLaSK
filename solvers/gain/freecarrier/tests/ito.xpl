@@ -370,8 +370,8 @@ def plot_gain_spectrum(solver, new=False, label='PLaSK'):
         plot(glams, spectrum(glams), label=label)
     else:
         plot(glams, spectrum(glams), label=label)
-    xlabel("Wavelength [nm]")
-    ylabel("Gain [1/cm]")
+    xlabel("Wavelength (nm)")
+    ylabel("Gain (1/cm)")
     gcf().canvas.set_window_title("Gain Spectrum")
 
 
@@ -385,8 +385,8 @@ def plot_bands(levels=None, co=0., vo=0., title="Levels", el_color=colors[0], hh
     VH = [GEO.electrical.get_material(0.,z).VB(hole='H') for z in zz]
     plot(1e3*zz, VH, color=colors[1])
     xlim(1e3*zz[0], 1e3*zz[-1])
-    xlabel("$z$ [nm]")
-    ylabel("Band Edges [eV]")
+    xlabel("$z$ (nm)")
+    ylabel("Band Edges (eV)")
     if levels is not None:
         for l in levels['el']:
             axhline(co+l, color=el_color, ls='--')
@@ -411,7 +411,7 @@ ffc, ffv = map(array, zip(*((f['Fc'], f['Fv']) for f in (GAIN1.determine_levels(
 plot(cc, cbq+ffc, color=colors[0], ls='-', lw=1.5)
 plot(cc, vbq+ffv, color=colors[1], ls='-', lw=1.5)
 axvline(1e19*gN, color='0.75')
-xlabel(u'Carriers concentation [1/cm³]')
+xlabel(u'Carriers concentation (1/cm³)')
 xscale('log')
 xlim(1e16, 1e20)
 # ylim(*yl)
@@ -445,7 +445,7 @@ plot(cc, ffv, color=colors[1], ls='-', lw=1.5)
 axvline(1e19*gN, color='0.75')
 
 # ylim(*yl)
-xlabel(u'Carriers concentation [1/cm³]')
+xlabel(u'Carriers concentation (1/cm³)')
 xscale('log')
 xlim(1e16, 1e20)
 tight_layout(pad=0.2)

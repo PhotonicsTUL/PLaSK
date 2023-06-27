@@ -26,8 +26,8 @@ struct FourierSolver2D;
 
 struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
-    dcomplex beta,                      ///< Longitudinal wavevector [1/µm]
-             ktran;                     ///< Transverse wavevector [1/µm]
+    dcomplex beta,                      ///< Longitudinal wavevector (1/µm)
+             ktran;                     ///< Transverse wavevector (1/µm)
 
     size_t N;                           ///< Number of expansion coefficients
     size_t nN;                          ///< Number of of required coefficients for material parameters

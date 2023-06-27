@@ -269,7 +269,7 @@ We can plot it to the new figure using :func:`plot_profile <plask.pylab.plot_pro
 
     figure()
     plot_profile(-current, comp='y')
-    ylabel("current density [kA/cm$^2$]")
+    ylabel("current density (kA/cm$^2$)")
 
 Note that we had to specify the vector component to plot, using the ``comp`` argument. Also we negate the current, as normally it flows downwards, which would result in the upside-down plot. It is important to note that :func:`plot_profile <plask.pylab.plot_profile>` function works only if the field has been obtained on a rectangular mesh with exactly one axis having different size than 1 (otherwise it would be unable to detect along which axis to plot the profile). It automatically puts this axis name as the horizontal label. So we need only to specify the ``ylabel``. (you can use basic LaTeX for advanced text formatting).
 
@@ -304,7 +304,7 @@ Ensure that the commands to create the last figure are before ``show()``. Save y
 
         figure()
         plot_profile(-current, comp='y')
-        ylabel("current density [kA/cm$^2$]")
+        ylabel("current density (kA/cm$^2$)")
 
         show()
 

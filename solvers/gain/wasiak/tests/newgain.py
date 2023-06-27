@@ -139,7 +139,7 @@ class NewGainValues(unittest.TestCase):
         print("Outgain:")
         outgain = self.solver.outGain(msh,2000.)
         for i in range(9):
-            print("[{}]: {}".format(i, outgain[i],"cm-1"))
+            print("[{}]: {}".format(i, outgain[i], "cm-1"))
 
         self.assertAlmostEqual(outgain[1], 2527.548, 2)
         self.assertAlmostEqual(outgain[4], 2527.548, 2)

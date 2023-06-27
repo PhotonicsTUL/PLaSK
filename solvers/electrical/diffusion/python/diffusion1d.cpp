@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -54,8 +54,8 @@ BOOST_PYTHON_MODULE(diffusion)
         RECEIVER(inWavelength, u8"It is required only for the overthreshold computations.");
         RECEIVER(inLightE, u8"It is required only for the overthreshold computations.");
         PROVIDER(outCarriersConcentration, u8"");
-        METHOD(get_total_burning, burning_integral, u8"Compute total power burned over threshold [mW].");
-        solver.def_readonly("mode_burns", &__Class__::modesP, u8"Power burned over threshold by each mode [mW].");
+        METHOD(get_total_burning, burning_integral, u8"Compute total power burned over threshold (mW).");
+        solver.def_readonly("mode_burns", &__Class__::modesP, u8"Power burned over threshold by each mode (mW).");
 //         RW_FIELD(global_QW_width, "Sum of all QWs' widths" ); // read-write field
 //         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
 //         RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property
@@ -94,8 +94,8 @@ BOOST_PYTHON_MODULE(diffusion)
         RECEIVER(inGain, u8"It is required only for the overthreshold computations.");
         RECEIVER(inLightE, u8"It is required only for the overthreshold computations.");
         PROVIDER(outCarriersConcentration, u8"");
-        METHOD(get_total_burning, burning_integral, u8"Compute total power burned over threshold [mW].");
-        solver.def_readonly("mode_burns", &__Class__::modesP, u8"Power burned over threshold by each mode [mW].");
+        METHOD(get_total_burning, burning_integral, u8"Compute total power burned over threshold (mW).");
+        solver.def_readonly("mode_burns", &__Class__::modesP, u8"Power burned over threshold by each mode (mW).");
 //         RW_FIELD(global_QW_width, "Sum of all QWs' widths" ); // read-write field
 //         RO_PROPERTY(python_property_name, get_method_name, "Short documentation"); // read-only property
 //         RW_PROPERTY(python_property_name, get_method_name, set_method_name, "Short documentation"); // read-write property

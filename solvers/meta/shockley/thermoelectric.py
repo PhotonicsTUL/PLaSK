@@ -220,7 +220,7 @@ class ThermoElectric(plask.Solver):
 
     def get_total_current(self, nact=0):
         """
-        Get total current flowing through active region [mA]
+        Get total current flowing through active region (mA)
         """
         return self.electrical.get_total_current(nact)
 
@@ -378,7 +378,7 @@ class ThermoElectric(plask.Solver):
         field = self.get_temperature()
         plask.plot_field(field, **kwargs)
         cbar = plask.colorbar(use_gridspec=True)
-        cbar.set_label("Temperature [K]")
+        cbar.set_label("Temperature (K)")
         if geometry_color is not None:
             plask.plot_geometry(self.thermal.geometry, color=geometry_color, alpha=geometry_alpha, lw=geometry_lw)
         if mesh_color is not None:
@@ -413,7 +413,7 @@ class ThermoElectric(plask.Solver):
         field = self.get_voltage()
         plask.plot_field(field, **kwargs)
         cbar = plask.colorbar(use_gridspec=True)
-        cbar.set_label("Voltage [V]")
+        cbar.set_label("Voltage (V)")
         if geometry_color is not None:
             plask.plot_geometry(self.electrical.geometry, color=geometry_color, alpha=geometry_alpha, lw=geometry_lw)
         if mesh_color is not None:
@@ -432,8 +432,8 @@ class ThermoElectric(plask.Solver):
         """
         field = self.get_vertical_voltage(at)
         plask.plot(field.mesh.axis1, field, **kwargs)
-        plask.xlabel(u"${}$ [\xb5m]".format(plask.config.axes[-1]))
-        plask.ylabel("Voltage [V]")
+        plask.xlabel(u"${}$ (µm)".format(plask.config.axes[-1]))
+        plask.ylabel("Voltage (V)")
         plask.window_title("Voltage")
 
     def _plot_hbounds(self, solver):
@@ -482,8 +482,8 @@ class ThermoElectric(plask.Solver):
                        label=lab, **kwargs)
         if i > 0:
             plask.legend(loc='best')
-        plask.xlabel(u"${}$ [\xb5m]".format(plask.config.axes[-2]))
-        plask.ylabel(u"Current Density [kA/cm\xb2]")
+        plask.xlabel(u"${}$ (µm)".format(plask.config.axes[-2]))
+        plask.ylabel(u"Current Density (kA/cm\xb2)")
         if bounds:
             self._plot_hbounds(self.electrical)
         plask.window_title("Current Density")
@@ -501,11 +501,11 @@ class ThermoElectric(plask.Solver):
     def _get_info(self):
         info = self._get_defines_info()
         try:
-            info.append("Total current [mA]:            {:8.3f}".format(self.get_total_current()))
+            info.append("Total current (mA):            {:8.3f}".format(self.get_total_current()))
         except:
             pass
         try:
-            info.append("Maximum temperature [K]:       {:8.3f}".format(max(self.get_temperature())))
+            info.append("Maximum temperature (K):       {:8.3f}".format(max(self.get_temperature())))
         except:
             pass
         return info

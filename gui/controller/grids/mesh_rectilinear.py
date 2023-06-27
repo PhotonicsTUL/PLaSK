@@ -54,14 +54,14 @@ class AxisEdit(QGroupBox):
         self.start = QLineEdit()
         self.start.setCompleter(defines)
         self.start.setToolTip(u'&lt;{} <b>start</b>="" stop="" num=""&gt;<br/>'
-                              u'Position of the first point on the axis. (float [µm])'.format(axis))
+                              u'Position of the first point on the axis. (float, µm)'.format(axis))
         self.start.editingFinished.connect(lambda : self.controller._change_attr((axis_path, 'start'), empty_to_none(self.start.text())))
         # range_layout.addWidget(QLabel("Start:"))
         range_layout.addWidget(self.start)
         self.stop = QLineEdit()
         self.stop.setCompleter(defines)
         self.stop.setToolTip(u'&lt;{} start="" <b>stop</b>="" num=""&gt;\n'
-                             u'Position of the last point on the axis. (float [µm])'.format(axis))
+                             u'Position of the last point on the axis. (float, µm)'.format(axis))
         self.stop.editingFinished.connect(lambda : self.controller._change_attr((axis_path, 'stop'), empty_to_none(self.stop.text())))
         range_layout.addWidget(QLabel(" Stop:"))
         range_layout.addWidget(self.stop)

@@ -13,21 +13,21 @@ Containers 3D
    :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
    :attr order: Order of items in the container. If ``normal``, the items lower in the list override the ones previous ones. ``reverse`` means that each item is on top of all the later ones.
-   :attr back: Default value for longitudinal alignment specification: position of the back edge of the bounding box of each element. (float [µm])
-   :attr front: Default value for longitudinal alignment specification: position of the front edge of the bounding box of each element. (float [µm])
-   :attr longcenter: Default value for longitudinal alignment specification: position of the center of the bounding box of each element. (float [µm])
+   :attr back: Default value for longitudinal alignment specification: position of the back edge of the bounding box of each element. (float, µm)
+   :attr front: Default value for longitudinal alignment specification: position of the front edge of the bounding box of each element. (float, µm)
+   :attr longcenter: Default value for longitudinal alignment specification: position of the center of the bounding box of each element. (float, µm)
    :attr {X}center: where **{X}** is the longitudinal axis name: Alias for ``longcenter``.
-   :attr {X}: where **{X}** is the longitudinal axis name: Default value for longitudinal alignment specification: position of the origin of each element. (float [µm])
-   :attr left: Default value for transversal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
-   :attr right: Default value for transversal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
-   :attr trancenter: Default value for transversal alignment specification: position of the center of the bounding box of each element. (float [µm])
+   :attr {X}: where **{X}** is the longitudinal axis name: Default value for longitudinal alignment specification: position of the origin of each element. (float, µm)
+   :attr left: Default value for transversal alignment specification: position of the left edge of the bounding box of each element. (float, µm)
+   :attr right: Default value for transversal alignment specification: position of the right edge of the bounding box of each element. (float, µm)
+   :attr trancenter: Default value for transversal alignment specification: position of the center of the bounding box of each element. (float, µm)
    :attr {Y}center: where **{Y}** is the transverse axis name: Alias for ``trancenter``.
-   :attr {Y}: where **{Y}** is the transverse axis name: Default value for transversal alignment specification: position of the origin of each element. (float [µm])
-   :attr top: Default value for vertical alignment specification: position of the top edge of the bounding box of each element. (float [µm])
-   :attr bottom: Default value for vertical alignment specification: position of the bottom edge of the bounding box of each element. (float [µm])
-   :attr vertcenter: Default value for vertical alignment specification: position of the center of the bounding box of each element. (float [µm])
+   :attr {Y}: where **{Y}** is the transverse axis name: Default value for transversal alignment specification: position of the origin of each element. (float, µm)
+   :attr top: Default value for vertical alignment specification: position of the top edge of the bounding box of each element. (float, µm)
+   :attr bottom: Default value for vertical alignment specification: position of the bottom edge of the bounding box of each element. (float, µm)
+   :attr vertcenter: Default value for vertical alignment specification: position of the center of the bounding box of each element. (float, µm)
    :attr {Z}center: where **{Z}** is the vertical axis name: Alias for ``vertcenter``.
-   :attr {Z}: where **{Z}** is the vertical axis name: Vertical alignment specification: position of the origin of each element. (float [µm])
+   :attr {Z}: where **{Z}** is the vertical axis name: Vertical alignment specification: position of the origin of each element. (float, µm)
 
    Attributes ``back``, ``front``, ``longcenter``, **{X}**\ ``center``, **{X}**, are mutually exclusive. Attributes ``left``, ``right``, ``trancenter``, **{Y}**\ ``center``, **{Y}**, are mutually exclusive. Attributes ``top``, ``bottom``, ``vertcenter``, **{Z}**\ ``center``, and **{Z}** are mutually exclusive. At most one alignment specification for each axis can be given. If alignment specification for some direction is not given, elements will be not alignment in this direction by default.
 
@@ -42,21 +42,21 @@ Containers 3D
       .. xml:tag:: <item> [in container3d]
 
          :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
-         :attr back: Longitudinal alignment specification: position of the back edge of the bounding box of the element. (float [µm])
-         :attr front: Longitudinal alignment specification: position of the front edge of the bounding box of the element. (float [µm])
-         :attr longcenter: Longitudinal alignment specification: position of the center of the bounding box of the element. (float [µm])
+         :attr back: Longitudinal alignment specification: position of the back edge of the bounding box of the element. (float, µm)
+         :attr front: Longitudinal alignment specification: position of the front edge of the bounding box of the element. (float, µm)
+         :attr longcenter: Longitudinal alignment specification: position of the center of the bounding box of the element. (float, µm)
          :attr {X}center: where **{X}** is the longitudinal axis name: Alias for ``longcenter``.
-         :attr {X}: where **{X}** is the longitudinal axis name: Longitudinal alignment specification: position of the origin of the element. (float [µm])
-         :attr left: Transversal alignment specification: position of the left edge of the bounding box of the element. (float [µm])
-         :attr right: Transversal alignment specification: position of the right edge of the bounding box of the element. (float [µm])
-         :attr trancenter: Transversal alignment specification: position of the center of the bounding box of the element. (float [µm])
+         :attr {X}: where **{X}** is the longitudinal axis name: Longitudinal alignment specification: position of the origin of the element. (float, µm)
+         :attr left: Transversal alignment specification: position of the left edge of the bounding box of the element. (float, µm)
+         :attr right: Transversal alignment specification: position of the right edge of the bounding box of the element. (float, µm)
+         :attr trancenter: Transversal alignment specification: position of the center of the bounding box of the element. (float, µm)
          :attr {Y}center: where **{Y}** is the transverse axis name: Alias for ``trancenter``.
-         :attr {Y}: where **{Y}** is the transverse axis name: Transversal alignment specification: position of the origin of the element. (float [µm])
-         :attr top: Vertical alignment specification: position of the top edge of the bounding box of the element. (float [µm])
-         :attr bottom: Vertical alignment specification: position of the bottom edge of the bounding box of the element. (float [µm])
-         :attr vertcenter: Vertical alignment specification: position of the center of the bounding box of each element. (float [µm])
+         :attr {Y}: where **{Y}** is the transverse axis name: Transversal alignment specification: position of the origin of the element. (float, µm)
+         :attr top: Vertical alignment specification: position of the top edge of the bounding box of the element. (float, µm)
+         :attr bottom: Vertical alignment specification: position of the bottom edge of the bounding box of the element. (float, µm)
+         :attr vertcenter: Vertical alignment specification: position of the center of the bounding box of each element. (float, µm)
          :attr {Z}center: where **{Z}** is the vertical axis name: Alias for ``vertcenter``.
-         :attr {Z}: where **{Z}** is the vertical axis name: Vertical alignment specification: position of the origin of the element. (float [µm])
+         :attr {Z}: where **{Z}** is the vertical axis name: Vertical alignment specification: position of the origin of the element. (float, µm)
 
          Attributes ``back``, ``front``, ``longcenter``, **{X}**\ ``center``, **{X}**, are mutually exclusive. Attributes ``left``, ``right``, ``trancenter``, **{Y}**\ ``center``, **{Y}**, are mutually exclusive. Attributes ``top``, ``bottom``, ``vertcenter``, **{Z}**\ ``center``, and **{Z}** are mutually exclusive. At most one alignment specification for each axis can be given. If alignment specification for some direction is not given, default value is used.
 
@@ -85,17 +85,17 @@ Containers 3D
    :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
    :attr role: Object role. Important for some solvers.
    :attr repeat: Number of repetitive occurrences of stack content. This attribute allows to create periodic vertical structures (e. g. DBRs) easily. Defaults to 1. (integer)
-   :attr shift: Vertical position of the stack bottom edge in its local coordinates. Defaults to 0. (float [µm])
-   :attr back: Longitudinal alignment specification: position of the back edge of the bounding box of each element. (float [µm])
-   :attr front: Longitudinal alignment specification: position of the front edge of the bounding box of each element. (float [µm])
-   :attr longcenter: Longitudinal alignment specification: position of the center of the bounding box of each element. (float [µm])
+   :attr shift: Vertical position of the stack bottom edge in its local coordinates. Defaults to 0. (float, µm)
+   :attr back: Longitudinal alignment specification: position of the back edge of the bounding box of each element. (float, µm)
+   :attr front: Longitudinal alignment specification: position of the front edge of the bounding box of each element. (float, µm)
+   :attr longcenter: Longitudinal alignment specification: position of the center of the bounding box of each element. (float, µm)
    :attr {X}center: where **{X}** is the longitudinal axis name: Alias for ``longcenter``.
-   :attr {X}: where **{X}** is the longitudinal axis name: Longitudinal alignment specification: position of the origin of each element. (float [µm])
-   :attr left: Transversal alignment specification: position of the left edge of the bounding box of each element. (float [µm])
-   :attr right: Transversal alignment specification: position of the right edge of the bounding box of each element. (float [µm])
-   :attr trancenter: Transversal alignment specification: position of the center of the bounding box of each element. (float [µm])
+   :attr {X}: where **{X}** is the longitudinal axis name: Longitudinal alignment specification: position of the origin of each element. (float, µm)
+   :attr left: Transversal alignment specification: position of the left edge of the bounding box of each element. (float, µm)
+   :attr right: Transversal alignment specification: position of the right edge of the bounding box of each element. (float, µm)
+   :attr trancenter: Transversal alignment specification: position of the center of the bounding box of each element. (float, µm)
    :attr {Y}center: where **{Y}** is the transverse axis name: Alias for ``trancenter``.
-   :attr {Y}: where **{Y}** is the transverse axis name: Transversal alignment specification: position of the origin of each element. (float [µm])
+   :attr {Y}: where **{Y}** is the transverse axis name: Transversal alignment specification: position of the origin of each element. (float, µm)
 
    Attributes ``back``, ``front``, ``longcenter``, **{X}**\ ``center``, **{X}**, are mutually exclusive. Attributes ``left``, ``right``, ``trancenter``, **{Y}**\ ``center``, **{Y}**, are mutually exclusive. Default alignment is ``left="0"`` and ``back="0"``.
 

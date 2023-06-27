@@ -364,7 +364,7 @@ def read_attr(tn, attr):
     ad = attr.get('default')
     ar = attr.get('required', False)
     if au is not None:
-        al += u' [{}]'.format(au)
+        al += u' ({})'.format(au)
     if at == u'choice':
         ac = tuple(str(ch).strip() for ch in attr['choices'])
         ao = tuple(str(ch).strip() for ch in attr.get('other', ()))
@@ -469,7 +469,7 @@ def load_yaml(filename, categories=CATEGORIES, solvers=SOLVERS):
                                 gl = attr['group']
                                 gu = attr.get('unit')
                                 if gu is not None:
-                                    gl += u' [{}]'.format(gu)
+                                    gl += u' ({})'.format(gu)
                                 group = AttrGroup(gl)
                                 for a in attr.get('attrs', []):
                                     group.append(read_attr(tn, a))

@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -507,15 +507,15 @@ class MaterialPlot(QWidget):
             self.label.show()
             self.label.setText(' ')
             self.axes.set_xlim(start, end)
-            self.axes.set_xlabel(html_to_tex(u"{}{} [{}]".format(self.arg_button.descr[0].upper(),
+            self.axes.set_xlabel(html_to_tex(u"{}{} ({})".format(self.arg_button.descr[0].upper(),
                                                                  self.arg_button.descr[1:],
                                                                  self.arg_button.unit)))
             self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
             for axes in axeses:
-                axes.set_ylabel('[]')
+                axes.set_ylabel('()')
             self.figure.tight_layout(pad=0.2)
             xlabel = html_to_tex(MATERIALS_PROPERTES[param][0]).splitlines()[0] +\
-                    ' [' + html_to_tex(MATERIALS_PROPERTES[param][1]) + ']'
+                    ' (' + html_to_tex(MATERIALS_PROPERTES[param][1]) + ')'
             if self.axes2 is None:
                 self.axes.set_ylabel(xlabel)
             else:
@@ -560,7 +560,7 @@ class MaterialPlot(QWidget):
                     r, c = y.shape
                     y = y.view(float).reshape((r, 2*c))
                 data = numpy.concatenate((x[:,None], y), axis=1)
-                header = "{}\n{}\n{} [{}]  {} [{}]:".format(material_name, other, self.xn, self.xu, self.yn, self.yu)
+                header = "{}\n{}\n{} ({})  {} ({}):".format(material_name, other, self.xn, self.xu, self.yn, self.yu)
                 numpy.savetxt(filename, data, fmt=['%g']*data.shape[1], header=header)
             except Exception as err:
                 QMessageBox.critical(self, 'Cannot export data',

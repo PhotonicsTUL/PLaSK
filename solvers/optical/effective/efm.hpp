@@ -118,7 +118,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
         std::vector<FieldR,aligned_allocator<FieldR>> rfields; ///< Computed horizontal fields
         std::vector<double,aligned_allocator<double>> rweights; /// Computed normalized lateral field integral for each stripe
         dcomplex lam;                       ///< Stored wavelength
-        double power;                       ///< Mode power [mW]
+        double power;                       ///< Mode power (mW)
 
         Mode(EffectiveFrequencyCyl* solver, int m=0):
             solver(solver), m(m), have_fields(false), rfields(solver->rsize), rweights(solver->rsize), power(1.) {}
@@ -285,7 +285,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     /// Allowed relative power integral precision
     double perr;
 
-    /// Current value of reference normalized frequency [1/µm]
+    /// Current value of reference normalized frequency (1/µm)
     dcomplex k0;
 
     /// 'Vertical wavelength' used as a helper for searching vertical modes

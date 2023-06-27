@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -114,10 +114,10 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
         std::vector<double> thicknesses;            ///< Thicknesses of the layers in the active region
         std::vector<size_t> wells;                  ///< Division of the active region into separate quantum wells
 
-        double total;                               ///< Total active region thickness [µm]
-        double totalqw;                             ///< Total accepted quantum wells thickness [µm]
-        double bottom;                              ///< Bottom spacer thickness [µm]
-        double top;                                 ///< Top spacer thickness [µm]
+        double total;                               ///< Total active region thickness (µm)
+        double totalqw;                             ///< Total accepted quantum wells thickness (µm)
+        double bottom;                              ///< Bottom spacer thickness (µm)
+        double top;                                 ///< Top spacer thickness (µm)
 
         enum ConsideredHoles: unsigned {
             NO_HOLES = 0,

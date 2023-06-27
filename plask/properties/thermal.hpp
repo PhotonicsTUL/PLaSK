@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -69,7 +69,7 @@ namespace plask {
  */
 
 /**
- * Temperature [K].
+ * Temperature (K).
  */
 struct PLASK_API Temperature: public ScalarFieldProperty {
     static constexpr const char* NAME = "temperature";
@@ -86,7 +86,7 @@ struct PLASK_API HeatFlux: public VectorFieldProperty<> {
 };
 
 /**
- * Density of heat sources [W/m²] or [W/m³].
+ * Density of heat sources [W/m²] or (W/m³).
  */
 struct PLASK_API Heat: public ScalarFieldProperty {
     static constexpr const char* NAME = "heat sources density";

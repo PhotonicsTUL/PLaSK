@@ -361,7 +361,7 @@ def write_xpl(name, sym, length, axes, materials, regions, heats, boundaries, pn
                 out('\nfigure()')
                 out('plot(actgrid.axis0, abs(acurrent.array[:,0,1]))')
                 out('xlabel(u"{} [\\xb5m]")'.format(axes[0]))
-                out('ylabel("current density [kA/cm$^2$]")')
+                out('ylabel("current density (kA/cm$^2$)")')
                 out('simplemesh = mesh.Rectangular2D.SimpleGenerator()(GEO.main.item)')
                 out('for x in simplemesh.axis0:')
                 out('    axvline(x, ls=":", color="k")')

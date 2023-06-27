@@ -80,7 +80,7 @@ class RectangularRegularGeneratorController(RectangularSimpleGeneratorController
 
         self.form = QGroupBox()
         form_layout = QHBoxLayout()
-        spacing_label = QLabel(u"Spacing [µm]:")
+        spacing_label = QLabel(u"Spacing (µm):")
         form_layout.addWidget(spacing_label)
 
         self.defines = get_defines_completer(

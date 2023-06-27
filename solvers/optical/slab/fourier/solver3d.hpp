@@ -60,7 +60,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         dcomplex k0;                            ///< Stored mode frequency
         dcomplex klong;                         ///< Stored mode effective index
         dcomplex ktran;                         ///< Stored mode transverse wavevector
-        double power;                           ///< Mode power [mW]
+        double power;                           ///< Mode power (mW)
         double tolx;                            ///< Tolerance for mode comparison
 
         Mode(const ExpansionPW3D& expansion, double tolx):
@@ -108,8 +108,8 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
   protected:
 
-    dcomplex klong,                             ///< Longitudinal wavevector [1/µm]
-             ktran;                             ///< Transverse wavevector [1/µm]
+    dcomplex klong,                             ///< Longitudinal wavevector (1/µm)
+             ktran;                             ///< Transverse wavevector (1/µm)
 
     Expansion::Component symmetry_long,         ///< Symmetry along longitudinal axis
                          symmetry_tran;         ///< Symmetry along transverse axis

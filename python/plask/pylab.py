@@ -359,8 +359,8 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
 
     if ax[0] > ax[1] and not axes.yaxis_inverted():
         axes.invert_yaxis()
-    axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ax[0]]))
-    axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ax[1]]))
+    axes.set_xlabel(u"${}$ (µm)".format(plask.config.axes[3 - field.mesh.dim + ax[0]]))
+    axes.set_ylabel(u"${}$ (µm)".format(plask.config.axes[3 - field.mesh.dim + ax[1]]))
 
     if axes == gca(): sci(result)
     return result
@@ -446,10 +446,10 @@ def plot_profile(field, comp=None, swap_axes=False, axes=None, figure=None, **kw
             axes = figure.add_subplot(111)
 
     if swap_axes:
-        axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[ax]))
+        axes.set_ylabel(u"${}$ (µm)".format(plask.config.axes[ax]))
         return axes.plot(data.ravel(), axis, **kwargs)
     else:
-        axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[ax]))
+        axes.set_xlabel(u"${}$ (µm)".format(plask.config.axes[ax]))
         return axes.plot(axis, data.ravel(), **kwargs)
 
 
@@ -516,8 +516,8 @@ def plot_vectors(field, plane=None, axes=None, figure=None, angles='xy', scale_u
 
     if ix > iy and not axes.yaxis_inverted():
         axes.invert_yaxis()
-    axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ix]))
-    axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + iy]))
+    axes.set_xlabel(u"${}$ (µm)".format(plask.config.axes[3 - field.mesh.dim + ix]))
+    axes.set_ylabel(u"${}$ (µm)".format(plask.config.axes[3 - field.mesh.dim + iy]))
 
     # if 'corner_mask' not in kwargs:
     #     kwargs = kwargs.copy()
@@ -600,8 +600,8 @@ def plot_stream(field, plane=None, axes=None, figure=None, scale=8.0, color='k',
 
     if ix > iy and not axes.yaxis_inverted():
         axes.invert_yaxis()
-    axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ix]))
-    axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + iy]))
+    axes.set_xlabel(u"${}$ (µm)".format(plask.config.axes[3 - field.mesh.dim + ix]))
+    axes.set_ylabel(u"${}$ (µm)".format(plask.config.axes[3 - field.mesh.dim + iy]))
 
     # if 'corner_mask' not in kwargs:
     #     kwargs = kwargs.copy()
@@ -698,8 +698,8 @@ def plot_boundary(boundary, mesh, geometry, colors=None, color='0.75', plane=Non
             color = colors[i]
         scatters.append(axes.scatter(x, y, c=color, zorder=zorder, **kwargs))
 
-    xlabel(u"${}$ [µm]".format(plask.config.axes[3 - mesh.dim + ax[0]]))
-    ylabel(u"${}$ [µm]".format(plask.config.axes[3 - mesh.dim + ax[1]]))
+    xlabel(u"${}$ (µm)".format(plask.config.axes[3 - mesh.dim + ax[0]]))
+    ylabel(u"${}$ (µm)".format(plask.config.axes[3 - mesh.dim + ax[1]]))
 
     return scatters
 
@@ -819,8 +819,8 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, fi
     if ix > iy and not axes.yaxis_inverted():
         axes.invert_yaxis()
     dim = max(2, mesh.dim)
-    xlabel(u"${}$ [µm]".format(plask.config.axes[3 - dim + ix]))
-    ylabel(u"${}$ [µm]".format(plask.config.axes[3 - dim + iy]))
+    xlabel(u"${}$ (µm)".format(plask.config.axes[3 - dim + ix]))
+    ylabel(u"${}$ (µm)".format(plask.config.axes[3 - dim + iy]))
 
     return lines
 

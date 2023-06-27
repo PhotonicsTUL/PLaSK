@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -22,10 +22,10 @@ FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverW
     inTemperature = 300.; // temperature receiver has some sensible value
     lifetime = 0.1; // [ps]
     matrixelem = 0.; // [m0*eV]
-    cond_waveguide_depth = 0.00; // [eV]
-    vale_waveguide_depth = 0.00; // [eV]
-    cond_qw_shift = 0.; // [eV]
-    vale_qw_shift = 0.; // [eV]
+    cond_waveguide_depth = 0.00; // (eV)
+    vale_waveguide_depth = 0.00; // (eV)
+    cond_qw_shift = 0.; // (eV)
+    vale_qw_shift = 0.; // (eV)
     differenceQuotient = 0.01;  // [%]
     if_strain = false;
     inTemperature.changedConnectMethod(this, &FermiGainSolver<GeometryType>::onInputChange);
@@ -513,7 +513,7 @@ FermiGainSolver<GeometryType>::determineLevels(double T, double n)
         int j = 0;
         double level;
 
-        std::string levelsstr = "Electron energy levels (from the conduction band edge) [eV]: ";
+        std::string levelsstr = "Electron energy levels (from the conduction band edge) (eV): ";
         do
         {
             level = gainModule.Get_electron_level_depth(j);
@@ -526,7 +526,7 @@ FermiGainSolver<GeometryType>::determineLevels(double T, double n)
         while(level>0);
         writelog(LOG_RESULT, levelsstr.substr(0, levelsstr.length()-2));
 
-        levelsstr = "Heavy hole energy levels (from the valence band edge) [eV]: ";
+        levelsstr = "Heavy hole energy levels (from the valence band edge) (eV): ";
         j=0;
         do
         {
@@ -540,7 +540,7 @@ FermiGainSolver<GeometryType>::determineLevels(double T, double n)
         while(level>0);
         writelog(LOG_RESULT, levelsstr.substr(0, levelsstr.length()-2));
 
-        levelsstr = "Light hole energy levels (from the valence band edge) [eV]: ";
+        levelsstr = "Light hole energy levels (from the valence band edge) (eV): ";
         j=0;
         do
         {

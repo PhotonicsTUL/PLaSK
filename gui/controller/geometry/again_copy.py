@@ -108,7 +108,7 @@ class GNCToBlockController(GNMaterialControllerMixin, GNCopyChildController):
 class GNCSimplifyGradientsController(GNodeController):
     def construct_form(self):
         super().construct_form()
-        self.lam = self.construct_line_edit('Wavelength [nm]:', node_property_name='lam')
+        self.lam = self.construct_line_edit('Wavelength (nm):', node_property_name='lam')
         self.lam.setToolTip(
             '&lt;simplify-gradients <b>lam</b>=""/&gt;<br/>'
             'Wavelength for which simplified gradient is determined. Required.'
@@ -119,13 +119,13 @@ class GNCSimplifyGradientsController(GNodeController):
             'Specifies which parameter is linear: refractive index (<i>nr</i>) or permittivity (<i>eps</i>).'
         )
         self.linear.lineEdit().setPlaceholderText('nr')
-        self.temp = self.construct_line_edit('Temperature [K]:', node_property_name='temp')
+        self.temp = self.construct_line_edit('Temperature (K):', node_property_name='temp')
         self.temp.setToolTip(
             '&lt;simplify-gradients lam="" <b>temp</b>=""/&gt;<br/>'
             'Temperature at which the refractive indices are retrieved.'
         )
         self.temp.setPlaceholderText('300')
-        self.dtemp = self.construct_line_edit('Temperature step [K]:', node_property_name='dtemp')
+        self.dtemp = self.construct_line_edit('Temperature step (K):', node_property_name='dtemp')
         self.dtemp.setToolTip(
             '&lt;simplify-gradients lam="" <b>dtemp</b>=""/&gt;<br/>'
             'Temperature step for approximating temperature dependence of the simplified refractive indices.'

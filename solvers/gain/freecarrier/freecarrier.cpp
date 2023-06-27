@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -587,15 +587,15 @@ void FreeCarrierGainSolver<GeometryType>::estimateLevels()
             {
                 std::stringstream str; std::string sep = "";
                 for (auto l: params.levels[EL]) { str << sep << format("{:.4f}", l.E); sep = ", "; }
-                this->writelog(LOG_DETAIL, "Estimated electron levels for active region {:d} [eV]: {}", ++reg, str.str());
+                this->writelog(LOG_DETAIL, "Estimated electron levels for active region {:d} (eV): {}", ++reg, str.str());
             }{
                 std::stringstream str; std::string sep = "";
                 for (auto l: params.levels[HH]) { str << sep << format("{:.4f}", l.E); sep = ", "; }
-                this->writelog(LOG_DETAIL, "Estimated heavy hole levels for active region {:d} [eV]: {}", reg, str.str());
+                this->writelog(LOG_DETAIL, "Estimated heavy hole levels for active region {:d} (eV): {}", reg, str.str());
             }{
                 std::stringstream str; std::string sep = "";
                 for (auto l: params.levels[LH]) { str << sep << format("{:.4f}", l.E); sep = ", "; }
-                this->writelog(LOG_DETAIL, "Estimated light hole levels for active region {:d} [eV]: {}", reg, str.str());
+                this->writelog(LOG_DETAIL, "Estimated light hole levels for active region {:d} (eV): {}", reg, str.str());
             }
         }
 

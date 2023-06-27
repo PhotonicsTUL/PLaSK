@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -31,14 +31,14 @@ struct PLASK_SOLVER_API BetaSolver : public std::conditional<std::is_same<Geomet
                                       ElectricalFem2DSolver<GeometryT>>::type BaseClass;
 
   protected:
-    std::vector<double> js;    ///< p-n junction parameter [A/m^2]
-    std::vector<double> beta;  ///< p-n junction parameter [1/V]
+    std::vector<double> js;    ///< p-n junction parameter (A/m^2)
+    std::vector<double> beta;  ///< p-n junction parameter (1/V)
 
     /** Compute voltage drop of the active region
      *  \param n active region number
      *  \param U junction voltage
-     *  \param jy vertical current [kA/cm²]
-     *  \param T temperature [K]
+     *  \param jy vertical current (kA/cm²)
+     *  \param T temperature (K)
      */
     Tensor2<double> activeCond(size_t n, double PLASK_UNUSED(U), double jy, double PLASK_UNUSED(T)) override {
         jy = abs(jy);

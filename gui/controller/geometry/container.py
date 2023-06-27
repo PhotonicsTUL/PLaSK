@@ -74,7 +74,7 @@ class GNShelfController(GNObjectController):
         self.shift.setToolTip(
             u'&lt;shelf <b>shift</b>="" ...&gt;<br/>'
             u'Horizontal position of the shelf left edge in its local coordinates.'
-            u' Defaults to 0. (float [µm])'
+            u' Defaults to 0. (float, µm)'
         )
         self.flat = self.construct_combo_box('Flat:', items=['', 'yes', 'no'], node_property_name='flat')
         self.flat.setToolTip(
@@ -137,7 +137,7 @@ class GNStackController(GNObjectController):
         self.shift.setToolTip(
             u'&lt;stack <b>shift</b>="" ...&gt;<br/>'
             u'Vertical position of the stack bottom edge in its local coordinates.'
-            u' Defaults to 0. (float [µm])'
+            u' Defaults to 0. (float, µm)'
         )
         self.pos_layout = self.construct_group("Default Items' Positions")
 

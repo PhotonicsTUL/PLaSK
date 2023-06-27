@@ -53,7 +53,7 @@ struct PLASK_SOLVER_API DynamicThermalFem2DSolver: public FemSolverWithMaskedMes
   public:
 
     // Boundary conditions
-    BoundaryConditions<RectangularMesh<2>::Boundary,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]
+    BoundaryConditions<RectangularMesh<2>::Boundary,double> temperature_boundary;      ///< Boundary condition of constant temperature (K)
 
     typename ProviderFor<Temperature, Geometry2DType>::Delegate outTemperature;
 

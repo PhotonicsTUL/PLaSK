@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -184,7 +184,7 @@ class ThresholdSearch(ThermoElectric):
         Function performing one step of the threshold search.
 
         Args:
-            volt (float): Voltage on a specified boundary condition [V].
+            volt (float): Voltage on a specified boundary condition (V).
 
             save (bool): If `True` the computed fields are saved to the
                 HDF5 file after each computations step.
@@ -215,7 +215,7 @@ class ThresholdSearch(ThermoElectric):
         Function performing one step of the quick threshold search.
 
         Args:
-            arg (array): Array containing voltage on a specified boundary condition [V] and wavelength.
+            arg (array): Array containing voltage on a specified boundary condition (V) and wavelength.
 
         Returns:
             array: Imaginary and real part of a specified mode
@@ -239,7 +239,7 @@ class ThresholdSearch(ThermoElectric):
         Function computing determinant of the optical solver.
 
         Args:
-             lam (float or array): Wavelength to compute the determinant for [nm].
+             lam (float or array): Wavelength to compute the determinant for (nm).
 
         Returns:
             float or array: Optical determinant.
@@ -327,7 +327,7 @@ class ThresholdSearch(ThermoElectric):
             plask.plot(msh.axis0, values, label=lab, **kwargs)
         if i > 1:
             plask.legend(loc='best')
-        plask.xlabel(u"${}$ [\xb5m]".format(plask.config.axes[-2]))
+        plask.xlabel(u"${}$ (µm)".format(plask.config.axes[-2]))
         if bounds:
             self._plot_hbounds(self.optical)
 
@@ -350,7 +350,7 @@ class ThresholdSearch(ThermoElectric):
         """
         self._plot_in_junction(lambda msh: self.diffusion.outCarriersConcentration(msh, interpolation),
                                self.diffusion.mesh, bounds, kwargs, label)
-        plask.ylabel(u"Carriers Concentration [1/cm\xb3]")
+        plask.ylabel(u"Carriers Concentration (1/cm\xb3)")
         plask.window_title("Carriers Concentration")
 
     def plot_junction_gain(self, axis=None, bounds=True, interpolation='linear', label=None, **kwargs):
@@ -377,7 +377,7 @@ class ThresholdSearch(ThermoElectric):
         if lam is None: lam = self._get_lam().real
         self._plot_in_junction(lambda msh: self.gain.outGain(msh, lam, interpolation),
                                axis, bounds, kwargs, label)
-        plask.ylabel(u"Gain [1/cm]")
+        plask.ylabel(u"Gain (1/cm)")
         plask.window_title("Gain Profile")
 
     def plot_gain_spectrum(self, lams, pos=0., junction=0, comp=None, **kwargs):
@@ -410,8 +410,8 @@ class ThresholdSearch(ThermoElectric):
             except (ValueError, TypeError) as err:
                     raise ValueError("Bad spectrum component '{}'".format(_comp)) from err
             plask.plot(lams, np.array(spectrum(lams))[:,comp], **kwargs)
-        plask.xlabel(u"Wavelength [nm]")
-        plask.ylabel(u"Gain [1/cm]")
+        plask.xlabel(u"Wavelength (nm)")
+        plask.ylabel(u"Gain (1/cm)")
         plask.window_title("Gain Spectrum")
 
     def plot_optical_determinant(self, lams, **kwargs):
@@ -419,14 +419,14 @@ class ThresholdSearch(ThermoElectric):
         Function plotting determinant of the optical solver.
 
         Args:
-            lams (array): Wavelengths to plot the determinant for [nm].
+            lams (array): Wavelengths to plot the determinant for (nm).
 
             **kwargs: Keyword arguments passed to the plot function.
         """
         vals = self.get_optical_determinant(lams)
         plask.plot(lams, abs(vals))
         plask.yscale('log')
-        plask.xlabel("Wavelength [nm]")
+        plask.xlabel("Wavelength (nm)")
         plask.ylabel("Determinant [ar.u.]")
 
     def compute(self, save=True, invalidate=False, group='ThresholdSearch', stepsave=False):
@@ -526,16 +526,16 @@ class ThresholdSearch(ThermoElectric):
 
     def _get_info(self):
         result = self._get_defines_info() + [
-            "Threshold voltage [V]:         {:8.3f}".format(self.threshold_voltage),
-            "Threshold current [mA]:        {:8.3f}".format(self.threshold_current),
-            "Maximum temperature [K]:       {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
+            "Threshold voltage (V):         {:8.3f}".format(self.threshold_voltage),
+            "Threshold current (mA):        {:8.3f}".format(self.threshold_current),
+            "Maximum temperature (K):       {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
         ]
         levels = list(self._iter_levels(self.diffusion.geometry, self.diffusion.mesh, 'QW', 'QD', 'gain'))
         max_concentration = []
         for no, mesh in levels:
             value = self.diffusion.outCarriersConcentration(mesh)
             max_concentration.append(max(value))
-        result.append("Maximum concentration [1/cm3]:    {}"
+        result.append("Maximum concentration (1/cm3):    {}"
                       .format(', '.join('{:.3e}'.format(c) for c in max_concentration)))
         lam = getattr(self.optical, self._lam0).real
         if lam is None: lam = self._get_lam().real
@@ -543,7 +543,7 @@ class ThresholdSearch(ThermoElectric):
         for no, mesh in levels:
             value = self.gain.outGain(mesh, lam).array[:,:,0]
             max_gain.append(max(value))
-        result.append("Maximum gain [1/cm]:          {}"
+        result.append("Maximum gain (1/cm):          {}"
                       .format(', '.join('{:9.3f}'.format(g[0]) for g in max_gain)))
         return result
 
@@ -933,7 +933,7 @@ class ThresholdSearchCyl(ThresholdSearch):
 
         Args:
              vlam (float or array): ‘Vertical wavelength’ to compute the vertical
-                                     determinant for [nm].
+                                     determinant for (nm).
 
         Returns:
             float or array: Optical vertical determinant.
@@ -951,19 +951,19 @@ class ThresholdSearchCyl(ThresholdSearch):
         Function plotting ‘vertical determinant’ of the optical solver.
 
         Args:
-            vlams (array): ‘Vertical wavelengths’ to plot the determinant for [nm].
+            vlams (array): ‘Vertical wavelengths’ to plot the determinant for (nm).
 
             **kwargs: Keyword arguments passed to the plot function.
         """
         vals = self.get_vert_optical_determinant(vlams)
         plask.plot(vlams, abs(vals))
         plask.yscale('log')
-        plask.xlabel("Vertical Wavelength [nm]")
+        plask.xlabel("Vertical Wavelength (nm)")
         plask.ylabel("Determinant [ar.u.]")
 
     def _get_info(self):
         return super()._get_info() + [
-            "LP{}{} mode wavelength [nm]:     {:8.3f}".format(self.lpm, self.lpn, self.optical.modes[self.modeno].lam.real)
+            "LP{}{} mode wavelength (nm):     {:8.3f}".format(self.lpm, self.lpn, self.optical.modes[self.modeno].lam.real)
         ]
 
 
@@ -1205,7 +1205,7 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
 
     def _get_info(self):
         return super()._get_info() + [
-            "HE{}{} mode wavelength [nm]:     {:8.3f}".format(self.hem, self.hen, self.optical.modes[self.modeno].lam.real)
+            "HE{}{} mode wavelength (nm):     {:8.3f}".format(self.hem, self.hen, self.optical.modes[self.modeno].lam.real)
         ]
 
 
@@ -1302,7 +1302,7 @@ class ThresholdSearch2D(ThresholdSearch):
     "Maximum number of root finding iterations."
 
     wavelength = None
-    "Emission wavelength [nm]."
+    "Emission wavelength (nm)."
 
     dneff = 0.02
     """
@@ -1553,7 +1553,7 @@ class ThresholdSearchFourier2D(ThresholdSearch):
     "Maximum number of root finding iterations."
 
     wavelength = None
-    "Emission wavelength [nm]."
+    "Emission wavelength (nm)."
 
     dneff = 0.02
     """

@@ -434,7 +434,7 @@ def plot_thermoelectric(save=True, suffix=''):
     if presentation:
         gcf().canvas.set_window_title("Junction Temperature")
     else:
-        title("Junction Temperature [K]")
+        title("Junction Temperature (K)")
     xlim(0., 0.55*mesa)
 
     if presentation:
@@ -493,7 +493,7 @@ def plot_gain(sub=None, suffix=''):
     plot_profile(GAIN.outGain(mesh.Rectangular2D(DIFFUSION.mesh, [zqw]), 1310., 'spline'), color=color_cycle[5])
     gca().ticklabel_format(useOffset=False)
     plot_rs(GEO.main)
-    ylabel("Gain Profile [1/cm]")
+    ylabel("Gain Profile (1/cm)")
     xlim(0., 0.55*mesa)
     tight_layout(pad=0.2)
     subplots_adjust(top=0.89)
@@ -509,8 +509,8 @@ def plot_gain_spectrum(new=False, label='PLaSK'):
         plot(glams, spectrum, '#7A68A6', label=label)
     else:
         plot(glams, spectrum, label=label)
-    xlabel("Wavelength [nm]")
-    ylabel("Gain [1/cm]")
+    xlabel("Wavelength (nm)")
+    ylabel("Gain (1/cm)")
     gcf().canvas.set_window_title("Gain Spectrum")
 
 
@@ -522,7 +522,7 @@ def plot_optical(suffix=''):
     if not presentation:
         subplot(221)
     plot(olams, abs(OPTICAL.get_determinant(lam=olams, m=m)))
-    xlabel("Wavelength [nm]")
+    xlabel("Wavelength (nm)")
     ylabel("Det [a.u.]")
     yscale('log')
     if presentation:
@@ -627,7 +627,7 @@ try:
         except (ComputationError, IndexError):
             figure()
             plot(olams, abs(OPTICAL.get_determinant(lam=olams, m=m)), 'c')
-            xlabel("Wavelength [nm]")
+            xlabel("Wavelength (nm)")
             ylabel("Det [a.u.]")
             yscale('log')
             title("Determinant")
@@ -668,7 +668,7 @@ try:
         min_temps = [T]
 
         with open("{}-u{:.2f}v-h{:.2f}-time-temp.out".format(desc, U, heat_t/(heat_t+cool_t)), 'w') as out:
-            out.write("#  t[ns]     T[K]  J[mA]\n")
+            out.write("#  t(ns)     T(K)  J(mA)\n")
             for hc in xrange(hc_cycles):
                 ELECTRICAL.voltage_boundary[0].value = U
                 ELECTRICAL.compute()
@@ -718,12 +718,12 @@ try:
         plot(max_times, max_temps, '--', color=color_cycle[3], alpha=0.5)
         plot(times, temps, color=color_cycle[3])
         xlim(0, T_DYNAMIC.time)
-        xlabel("Time [ns]")
-        ylabel("Max. Temperature [K]")
+        xlabel("Time (ns)")
+        ylabel("Max. Temperature (K)")
         twinx()
         plot(times, currents, color=color_cycle[4])
         xlim(0, T_DYNAMIC.time)
-        ylabel("Total Current [mA]")
+        ylabel("Total Current (mA)")
         tight_layout(pad=0.2)
         gcf().canvas.set_window_title("Temperature/Current Evolution ({:.1f})".format(heat_t/(heat_t+cool_t)))
         save_figure("u{:.2f}v-h{:.2f}-time-temp".format(U, heat_t/(heat_t+cool_t)))
@@ -763,7 +763,7 @@ try:
             lam = loss = NAN
             figure()
             plot(olams, abs(OPTICAL.get_determinant(lam=olams, m=m)), 'c')
-            xlabel("Wavelength [nm]")
+            xlabel("Wavelength (nm)")
             ylabel("Det [a.u.]")
             yscale('log')
             title("Determinant")
@@ -805,8 +805,8 @@ try:
         plot(1e3*zz, CC, color=color_cycle[0])
         plot(1e3*zz, VV, color=color_cycle[1])
         xlim(1e3*zz[0], 1e3*zz[-1])
-        xlabel("$z$ [nm]")
-        ylabel("Band Edges [eV]")
+        xlabel("$z$ (nm)")
+        ylabel("Band Edges (eV)")
         levels = None
         if levels is not None:
             for l in levels['el']:

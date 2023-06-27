@@ -132,8 +132,8 @@ class TestStructureGain(unittest.TestCase):
         plot(1e3*zz, CC)
         plot(1e3*zz, VV)
         xlim(1e3*zz[0], 1e3*zz[-1])
-        xlabel("$z$ [nm]")
-        ylabel("Band Edges [eV]")
+        xlabel("$z$ (nm)")
+        ylabel("Band Edges (eV)")
         window_title("Band Edges")
         tight_layout(pad=0.5)
 

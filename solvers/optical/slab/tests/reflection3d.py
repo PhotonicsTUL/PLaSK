@@ -70,7 +70,7 @@ class Reflection3D_Test(unittest.TestCase):
         # plot(msh_tran.axis1, prof_tran.array[0,:,0,0].real, '.')
         # plot(msh_tran.axis1, prof_tran.array[0,:,0,1].real, '.')
         # plot(msh_tran.axis1, prof_tran.array[0,:,0,2].real, '.')
-        # xlabel(u'$x$ [µm]')
+        # xlabel(u'$x$ (µm)')
         # ylabel(u'$n_r$')
 
     def testLong(self):
@@ -96,7 +96,7 @@ class Reflection3D_Test(unittest.TestCase):
         # plot(msh_long.axis0, prof_long.array[:,0,0,0].real, '.')
         # plot(msh_long.axis0, prof_long.array[:,0,0,1].real, '.')
         # plot(msh_long.axis0, prof_long.array[:,0,0,2].real, '.')
-        # xlabel(u'$z$ [µm]')
+        # xlabel(u'$z$ (µm)')
         # ylabel(u'$n_r$')
 
 

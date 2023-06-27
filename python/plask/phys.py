@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -17,18 +17,18 @@ Constants
 =========
 
 =============== ============================================================
-:attr:`qe`      Elementary charge [C]
-:attr:`me`      Electron mass [kg]
-:attr:`c`       Speed of light [m/s]
-:attr:`mu0`     Vacuum permeability [V·s/(A·m)]
-:attr:`eps0`    Vacuum permittivity [pF/µm]
-:attr:`eta0`    Free space impedance [Ω]
-:attr:`Z0`      Free space impedance [Ω]
-:attr:`h.J`     Pnav-sidenavlanck constant [J·s]
-:attr:`h.eV`    Planck constant [eV·s]
-:attr:`SB`      Stefan-Boltzmann constant [W/(m\ :sup:`2`\ ·K\ :sup:`4`\ )]
-:attr:`kB.J`    Boltzmann constant [J/K]
-:attr:`kB.eV`   Boltzmann constant [eV/K]
+:attr:`qe`      Elementary charge (C)
+:attr:`me`      Electron mass (kg)
+:attr:`c`       Speed of light (m/s)
+:attr:`mu0`     Vacuum permeability (V·s/(A·m))
+:attr:`eps0`    Vacuum permittivity (pF/µm)
+:attr:`eta0`    Free space impedance (Ω)
+:attr:`Z0`      Free space impedance (Ω)
+:attr:`h.J`     Planck constant (J·s)
+:attr:`h.eV`    Planck constant (eV·s)
+:attr:`SB`      Stefan-Boltzmann constant (W/(m\ :sup:`2`\ ·K\ :sup:`4`\ ))
+:attr:`kB.J`    Boltzmann constant (J/K)
+:attr:`kB.eV`   Boltzmann constant (eV/K)
 =============== ============================================================
 """
 
@@ -73,11 +73,11 @@ def wl(mat, lam, T=300.):
 
     Args:
         mat (material.Material or str): Material to compute physical wavelength in.
-        lam (float): Free-space wavelength to scale for material `mat` [nm].
+        lam (float): Free-space wavelength to scale for material `mat` (nm).
         T (float): Temperature at which material refractive index is retrieved.
 
     Returns:
-        float: Real length of the one wavelength in the material [µm].
+        float: Real length of the one wavelength in the material (µm).
     """
     return 1e-3 * lam / _material.get(mat).Nr(lam, T).real
 
@@ -86,10 +86,10 @@ def eV2nm(eV):
     """Compute wavelength for specified photon energy.
 
     Args:
-        eV (float): Photon energy [eV].
+        eV (float): Photon energy (eV).
 
     Returns:
-        float: Wavelength [nm].
+        float: Wavelength (nm).
     """
     return 1239.84193009 / eV
 
@@ -98,9 +98,9 @@ def nm2eV(nm):
     """Compute photon energy for specified wavelength.
 
     Args:
-        nm (float): Wavelength [eV].
+        nm (float): Wavelength (eV).
 
     Returns:
-        float: Photon energy [nm].
+        float: Photon energy (nm).
     """
     return 1239.84193009 / nm

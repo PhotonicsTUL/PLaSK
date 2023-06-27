@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -353,7 +353,7 @@ void register_geometry_leafs() {
         .add_property("depth", &Block__getdim<3, 0>, &Block__setdim<3, 0>, "Depth of the cuboid.")
         .add_property("width", &Block__getdim<3, 1>, &Block__setdim<3, 1>, "Width of the cuboid.")
         .add_property("height", &Block__getdim<3, 2>, &Block__setdim<3, 2>, "Height of the cuboid.")
-        .add_property("angle", &Cuboid_getAngle, &Cuboid_setAngle, "Rotation angle in the horizontal (long-vert) plane [deg].")
+        .add_property("angle", &Cuboid_getAngle, &Cuboid_setAngle, "Rotation angle in the horizontal (long-vert) plane (deg).")
         .def("__getattr__", &Block__getattr__<3>)
         .def("__setattr__", &Block__setattr__<3>);
     scope.attr("Block3D") = block3D;

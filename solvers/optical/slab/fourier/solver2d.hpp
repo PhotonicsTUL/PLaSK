@@ -50,7 +50,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverWithMesh<Geomet
         dcomplex k0;                            ///< Stored mode frequency
         dcomplex beta;                          ///< Stored mode effective index
         dcomplex ktran;                         ///< Stored mode transverse wavevector
-        double power;                           ///< Mode power [mW]
+        double power;                           ///< Mode power (mW)
         double tolx;                            ///< Tolerance for mode comparison
 
         Mode(const ExpansionPW2D& expansion, double tolx):
@@ -99,8 +99,8 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverWithMesh<Geomet
 
   protected:
 
-    dcomplex beta,                     ///< Longitudinal wavevector [1/µm]
-             ktran;                     ///< Transverse wavevector [1/µm]
+    dcomplex beta,                     ///< Longitudinal wavevector (1/µm)
+             ktran;                     ///< Transverse wavevector (1/µm)
 
     Expansion::Component symmetry;      ///< Indicates symmetry if `symmetric`
     Expansion::Component polarization;  ///< Indicates polarization if `separated`

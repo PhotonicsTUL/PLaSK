@@ -1172,290 +1172,290 @@ void initMaterials() {
         .add_property("alloy", &Material::isAlloy)
 
         .def("lattC", &Material::lattC, (py::arg("T")=300., py::arg("x")="a"),
-             u8"Get lattice constant [A].\n\n"
+             u8"Get lattice constant (Å).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n"
-             u8"    x (char): lattice parameter [-].\n")
+             u8"    T (float): Temperature (K).\n"
+             u8"    x (char): lattice parameter (-).\n")
 
         .def("Eg", &Material::Eg, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
-             u8"Get energy gap Eg [eV].\n\n"
+             u8"Get energy gap Eg (eV).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n"
-             u8"    e (float): Lateral strain [-].\n"
+             u8"    T (float): Temperature (K).\n"
+             u8"    e (float): Lateral strain (-).\n"
              u8"    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
 
         .def("CB", &Material::CB, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
-             u8"Get conduction band level CB [eV].\n\n"
+             u8"Get conduction band level CB (eV).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n"
-             u8"    e (float): Lateral strain [-].\n"
+             u8"    T (float): Temperature (K).\n"
+             u8"    e (float): Lateral strain (-).\n"
              u8"    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
 
         .def("VB", &Material::VB, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*", py::arg("hole")='H'),
-             u8"Get valance band level VB [eV].\n\n"
+             u8"Get valance band level VB (eV).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n"
-             u8"    e (float): Lateral strain [-].\n"
+             u8"    T (float): Temperature (K).\n"
+             u8"    e (float): Lateral strain (-).\n"
              u8"    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n"
              u8"    hole (char): Hole type ('H' or 'L').\n")
 
         .def("Dso", &Material::Dso, (py::arg("T")=300., py::arg("e")=0),
-             u8"Get split-off energy Dso [eV].\n\n"
+             u8"Get split-off energy Dso (eV).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n"
-             u8"    e (float): Lateral strain [-].\n")
+             u8"    T (float): Temperature (K).\n"
+             u8"    e (float): Lateral strain (-).\n")
 
         .def("Mso", &Material::Mso, (py::arg("T")=300., py::arg("e")=0),
-             u8"Get split-off mass Mso [m₀].\n\n"
+             u8"Get split-off mass Mso (m₀).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n"
-             u8"    e (float): Lateral strain [-].\n")
+             u8"    T (float): Temperature (K).\n"
+             u8"    e (float): Lateral strain (-).\n")
 
         .def("Me", &Material::Me, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
-             u8"Get electron effective mass Me [m₀].\n\n"
+             u8"Get electron effective mass Me (m₀).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n"
-             u8"    e (float): Lateral strain [-].\n"
+             u8"    T (float): Temperature (K).\n"
+             u8"    e (float): Lateral strain (-).\n"
              u8"    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
 
         .def("Mhh", &Material::Mhh, (py::arg("T")=300., py::arg("e")=0),
-             u8"Get heavy hole effective mass Mhh [m₀].\n\n"
+             u8"Get heavy hole effective mass Mhh (m₀).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n"
-             u8"    e (float): Lateral strain [-].\n")
+             u8"    T (float): Temperature (K).\n"
+             u8"    e (float): Lateral strain (-).\n")
 
         .def("Mlh", &Material::Mlh, (py::arg("T")=300., py::arg("e")=0),
-             u8"Get light hole effective mass Mlh [m₀].\n\n"
+             u8"Get light hole effective mass Mlh (m₀).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n"
-             u8"    e (float): Lateral strain [-].\n")
+             u8"    T (float): Temperature (K).\n"
+             u8"    e (float): Lateral strain (-).\n")
 
         .def("Mh", &Material::Mh, (py::arg("T")=300., py::arg("e")=0),
-             u8"Get hole effective mass Mh [m₀].\n\n"
+             u8"Get hole effective mass Mh (m₀).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n"
-             u8"    e (float): Lateral strain [-].\n")
+             u8"    T (float): Temperature (K).\n"
+             u8"    e (float): Lateral strain (-).\n")
 
         .def("ac", &Material::ac, (py::arg("T")=300.),
-             u8"Get hydrostatic deformation potential for the conduction band ac [eV].\n\n"
+             u8"Get hydrostatic deformation potential for the conduction band ac (eV).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("av", &Material::av, (py::arg("T")=300.),
-             u8"Get hydrostatic deformation potential for the valence band av [eV].\n\n"
+             u8"Get hydrostatic deformation potential for the valence band av (eV).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("b", &Material::b, (py::arg("T")=300.),
-             u8"Get shear deformation potential b [eV].\n\n"
+             u8"Get shear deformation potential b (eV).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("d", &Material::d, (py::arg("T")=300.),
-             u8"Get shear deformation potential d [eV].\n\n"
+             u8"Get shear deformation potential d (eV).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("c11", &Material::c11, (py::arg("T")=300.),
-             u8"Get elastic constant c₁₁ [GPa].\n\n"
+             u8"Get elastic constant c₁₁ (GPa).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("c12", &Material::c12, (py::arg("T")=300.),
-             u8"Get elastic constant c₁₂ [GPa].\n\n"
+             u8"Get elastic constant c₁₂ (GPa).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("c13", &Material::c13, (py::arg("T")=300.),
-             u8"Get elastic constant c₁₃ [GPa].\n\n"
+             u8"Get elastic constant c₁₃ (GPa).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("c33", &Material::c33, (py::arg("T")=300.),
-             u8"Get elastic constant c₃₃ [GPa].\n\n"
+             u8"Get elastic constant c₃₃ (GPa).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("c44", &Material::c44, (py::arg("T")=300.),
-             u8"Get elastic constant c₄₄ [GPa].\n\n"
+             u8"Get elastic constant c₄₄ (GPa).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("e13", &Material::c44, (py::arg("T")=300.),
-             u8"Get piezoelectric constant e₁₃ [C/m²].\n\n"
+             u8"Get piezoelectric constant e₁₃ (C/m²).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("e15", &Material::c44, (py::arg("T")=300.),
-             u8"Get piezoelectric constant e₁₅ [C/m²].\n\n"
+             u8"Get piezoelectric constant e₁₅ (C/m²).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("e33", &Material::c44, (py::arg("T")=300.),
-             u8"Get piezoelectric constant e₃₃ [C/m²].\n\n"
+             u8"Get piezoelectric constant e₃₃ (C/m²).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("Psp", &Material::Psp, (py::arg("T")=300.),
-             u8"Get Spontaneous polarization P [C/m²].\n\n"
+             u8"Get Spontaneous polarization P (C/m²).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("eps", &Material::eps, (py::arg("T")=300.),
-             u8"Get dielectric constant ε [-].\n\n"
+             u8"Get dielectric constant ε (-).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("chi", &Material::chi, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
-             u8"Get electron affinity Chi [eV].\n\n"
+             u8"Get electron affinity Chi (eV).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n"
-             u8"    e (float): Lateral strain [-].\n"
+             u8"    T (float): Temperature (K).\n"
+             u8"    e (float): Lateral strain (-).\n"
              u8"    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
 
         .def("Na", &Material::Na,
-                 u8"Get acceptor concentration Na [1/m³].\n\n"
+                 u8"Get acceptor concentration Na (1/m³).\n\n"
                  u8"Args:-\n")
 
         .def("Nd", &Material::Nd,
-             u8"Get donor concentration Nd [1/m³].\n\n"
+             u8"Get donor concentration Nd (1/m³).\n\n"
              u8"Args:-\n")
 
         .def("Ni", &Material::Ni, (py::arg("T")=300.),
-             u8"Get intrinsic carrier concentration Ni [1/m³].\n\n"
+             u8"Get intrinsic carrier concentration Ni (1/m³).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("Nf", &Material::Nf, (py::arg("T")=300.),
-             u8"Get free carrier concentration N [1/m³].\n\n"
+             u8"Get free carrier concentration N (1/m³).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("EactD", &Material::EactD, (py::arg("T")=300.),
-             u8"Get donor ionisation energy EactD [eV].\n\n"
+             u8"Get donor ionisation energy EactD (eV).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("EactA", &Material::EactA, (py::arg("T")=300.),
-             u8"Get acceptor ionisation energy EactA [eV].\n\n"
+             u8"Get acceptor ionisation energy EactA (eV).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("mob", &Material::mob, (py::arg("T")=300.),
-             u8"Get majority carriers mobility [cm²/(V s)].\n\n"
+             u8"Get majority carriers mobility (cm²/Vs).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("mobe", &Material::mobe, (py::arg("T")=300.),
-             u8"Get electron mobility [cm²/(V s)].\n\n"
+             u8"Get electron mobility (cm²/Vs).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("mobh", &Material::mobh, (py::arg("T")=300.),
-             u8"Get hole mobility [cm²/(V s)].\n\n"
+             u8"Get hole mobility (cm²/Vs).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("cond", &Material::cond, (py::arg("T")=300.),
-             u8"Get electrical conductivity Sigma [S/m].\n\n"
+             u8"Get electrical conductivity Sigma (S/m).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .add_property("condtype", &Material::condtype,
              u8"Electrical conductivity type.")
 
         .def("A", &Material::A, (py::arg("T")=300.),
-             u8"Get monomolecular recombination coefficient A [1/s].\n\n"
+             u8"Get monomolecular recombination coefficient A (1/s).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("taue", &Material::taue, (py::arg("T")=300.),
-             u8"Get monomolecular electrons lifetime [ns].\n\n"
+             u8"Get monomolecular electrons lifetime (ns).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("tauh", &Material::tauh, (py::arg("T")=300.),
-             u8"Get monomolecular holes lifetime [ns].\n\n"
+             u8"Get monomolecular holes lifetime (ns).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("B", &Material::B, (py::arg("T")=300.),
-             u8"Get radiative recombination coefficient B [cm³/s].\n\n"
+             u8"Get radiative recombination coefficient B (cm³/s).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("C", &Material::C, (py::arg("T")=300.),
-             u8"Get Auger recombination coefficient C [cm⁶/s].\n\n"
+             u8"Get Auger recombination coefficient C (cm⁶/s).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("Ce", &Material::Ce, (py::arg("T")=300.),
-             u8"Get Auger recombination coefficient C [cm⁶/s] for electrons.\n\n"
+             u8"Get Auger recombination coefficient C (cm⁶/s) for electrons.\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("Ch", &Material::Ch, (py::arg("T")=300.),
-             u8"Get Auger recombination coefficient C [cm⁶/s] for holes.\n\n"
+             u8"Get Auger recombination coefficient C (cm⁶/s) for holes.\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("D", &Material::D, (py::arg("T")=300.),
-             u8"Get ambipolar diffusion coefficient D [cm²/s].\n\n"
+             u8"Get ambipolar diffusion coefficient D (cm²/s).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("thermk", &Material::thermk, (py::arg("T")=300., py::arg("h")=INFINITY),
              u8"Get thermal conductivity [W/(m K)].\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n"
-             u8"    h (float): Layer thickness [µm] [-].\n")
+             u8"    T (float): Temperature (K).\n"
+             u8"    h (float): Layer thickness (µm) (-).\n")
 
         .def("dens", &Material::dens, (py::arg("T")=300.),
-             u8"Get density [kg/m³].\n\n"
+             u8"Get density (kg/m³).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("cp", &Material::cp, (py::arg("T")=300.),
-             u8"Get specific heat at constant pressure [J/(kg K)].\n\n"
+             u8"Get specific heat at constant pressure (J/(kg K)).\n\n"
              u8"Args:\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    T (float): Temperature (K).\n")
 
         .def("nr", &Material::nr, (py::arg("lam"), py::arg("T")=300., py::arg("n")=0.),
-             u8"Get refractive index nr [-].\n\n"
+             u8"Get refractive index nr (-).\n\n"
              u8"Args:\n"
-             u8"    lam (float): Wavelength [nm].\n"
-             u8"    T (float): Temperature [K].\n"
-             u8"    n (float): Injected carriers concentration [1/cm³].\n")
+             u8"    lam (float): Wavelength (nm).\n"
+             u8"    T (float): Temperature (K).\n"
+             u8"    n (float): Injected carriers concentration (1/cm³).\n")
 
         .def("absp", &Material::absp, (py::arg("lam"), py::arg("T")=300.),
-             u8"Get absorption coefficient alpha [1/cm].\n\n"
+             u8"Get absorption coefficient alpha (1/cm).\n\n"
              u8"Args:\n"
-             u8"    lam (float): Wavelength [nm].\n"
-             u8"    T (float): Temperature [K].\n")
+             u8"    lam (float): Wavelength (nm).\n"
+             u8"    T (float): Temperature (K).\n")
 
         .def("Nr", &Material::Nr, (py::arg("lam"), py::arg("T")=300., py::arg("n")=0.),
-             u8"Get complex refractive index Nr [-].\n\n"
+             u8"Get complex refractive index Nr (-).\n\n"
              u8"Args:\n"
-             u8"    lam (float): Wavelength [nm].\n"
-             u8"    T (float): Temperature [K].\n"
-             u8"    n (float): Injected carriers concentration [1/cm³].\n")
+             u8"    lam (float): Wavelength (nm).\n"
+             u8"    T (float): Temperature (K).\n"
+             u8"    n (float): Injected carriers concentration (1/cm³).\n")
 
         .def("NR", &Material::NR, (py::arg("lam"), py::arg("T")=300., py::arg("n")=0.),
-             u8"Get complex refractive index tensor Nr [-].\n\n"
+             u8"Get complex refractive index tensor Nr (-).\n\n"
              u8"Args:\n"
-             u8"    lam (float): Wavelength [nm].\n"
-             u8"    T (float): Temperature [K].\n"
-             u8"    n (float): Injected carriers concentration [1/cm³].\n\n"
+             u8"    lam (float): Wavelength (nm).\n"
+             u8"    T (float): Temperature (K).\n"
+             u8"    n (float): Injected carriers concentration (1/cm³).\n\n"
              u8".. warning::\n"
              u8"   This parameter is used only by solvers that can consider refractive index\n"
              u8"   anisotropy properly. It is stronly advised to also define\n"
              u8"   :meth:`~plask.material.Material.Nr`.\n")
 
-        .def("y1", &Material::y1, u8"Get Luttinger parameter γ₁ [-].\n")
+        .def("y1", &Material::y1, u8"Get Luttinger parameter γ₁ (-).\n")
 
-        .def("y2", &Material::y2, u8"Get Luttinger parameter γ₂ [-].\n")
+        .def("y2", &Material::y2, u8"Get Luttinger parameter γ₂ (-).\n")
 
-        .def("y3", &Material::y3, u8"Get Luttinger parameter γ₃ [-].\n")
+        .def("y3", &Material::y3, u8"Get Luttinger parameter γ₃ (-).\n")
     ;
 
     MaterialFromPythonString();

@@ -73,7 +73,7 @@ current = electr.outCurrentDensity(junction_mesh)
 
 figure()
 plot_profile(-current, comp='y')
-ylabel("current density [kA/cm$^2$]")
+ylabel("current density (kA/cm$^2$)")
 
 show()
 
