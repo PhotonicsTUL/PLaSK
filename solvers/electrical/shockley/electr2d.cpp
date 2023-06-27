@@ -57,7 +57,7 @@ void ElectricalFem2DSolver<Geometry2DType>::parseConfiguration(XMLReader& source
                 } else {
                     if (source.hasAttribute("start-cond-inplane"))
                         throw XMLException(
-                            source, "tag attribute 'start-cond' has two values, but attribute 'start-cond-vert' is also provided");
+                            source, "tag attribute 'start-cond' has two values, but attribute 'start-cond-inplane' is also provided");
                     auto values = splitString2(*vert, ',');
                     c0 = boost::lexical_cast<double>(values.first);
                     c1 = boost::lexical_cast<double>(values.second);
