@@ -61,7 +61,6 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public FemSolverWithMaskedMesh<G
 
     DataVector<Tensor2<double>> conds;    ///< Cached element conductivities
     DataVector<double> potentials;        ///< Computed potentials
-    DataVector<Vec<2, double>> currents;  ///< Computed current densities
     DataVector<double> heats;             ///< Computed and cached heat source densities
 
     std::vector<Active> active;  ///< Active regions information
@@ -90,12 +89,12 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public FemSolverWithMaskedMesh<G
     virtual Tensor2<double> activeCond(size_t n, double U, double jy, double T) = 0;
 
     /** Load conductivities
-     *  \return current temperature
+     *  \param current temperature
      */
-    LazyData<double> loadConductivities();
+    void loadConductivities(const LazyData<double>& temperature);
 
     /// Save conductivities of active region
-    void saveConductivities();
+    void saveJunctionConductivities();
 
     /// Create 2D-vector with calculated heat densities
     void saveHeatDensities();

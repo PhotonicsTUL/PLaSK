@@ -67,9 +67,9 @@ void ElectricalFem2DSolver<Geometry2DType>::parseConfiguration(XMLReader& source
             this->setCondJunc(Tensor2<double>(c0, c1));
         }
         convergence = source.enumAttribute<Convergence>("convergence")
-                        .value("fast", CONVERGENCE_FAST)
-                        .value("stable", CONVERGENCE_STABLE)
-                        .get(convergence);
+                          .value("fast", CONVERGENCE_FAST)
+                          .value("stable", CONVERGENCE_STABLE)
+                          .get(convergence);
         maxerr = source.getAttribute<double>("maxerr", maxerr);
         source.requireTagEnd();
     }
@@ -80,9 +80,9 @@ void ElectricalFem2DSolver<Geometry2DType>::parseConfiguration(XMLReader& source
         source.requireTagEnd();
     }
 
-        else if (!this->parseFemConfiguration(source, manager)) {
-            this->parseStandardConfiguration(source, manager);
-        }
+    else if (!this->parseFemConfiguration(source, manager)) {
+        this->parseStandardConfiguration(source, manager);
+    }
 }
 
 template <typename Geometry2DType> ElectricalFem2DSolver<Geometry2DType>::~ElectricalFem2DSolver() {}
@@ -174,14 +174,12 @@ template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::o
     setupActiveRegions();
     loopno = 0;
     potentials.reset(this->maskedMesh->size(), 0.);
-    currents.reset(this->maskedMesh->getElementsCount(), vec(0., 0.));
     conds.reset(this->maskedMesh->getElementsCount());
 }
 
 template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::onInvalidate() {
     conds.reset();
     potentials.reset();
-    currents.reset();
     heats.reset();
     junction_conductivity.reset(1, default_junction_conductivity);
 }
@@ -255,10 +253,8 @@ void ElectricalFem2DSolver<Geometry2DType>::setMatrix(
                 size_t ti = this->maskedMesh->element(e.getIndex0(), (act.top + act.bottom) / 2).getIndex();
                 Tensor2<double> cond = activeCond(nact - 1, U, jy, temperature[ti]);
                 switch (convergence) {
-                    case CONVERGENCE_STABLE:
-                        cond = 0.5 * (conds[i] + cond);
-                    case CONVERGENCE_FAST:
-                        conds[i] = cond;
+                    case CONVERGENCE_STABLE: cond = 0.5 * (conds[i] + cond);
+                    case CONVERGENCE_FAST: conds[i] = cond;
                 }
                 if (isnan(conds[i].c11) || abs(conds[i].c11) < 1e-16) conds[i].c11 = 1e-16;
             }
@@ -328,10 +324,8 @@ void ElectricalFem2DSolver<Geometry2DType>::setMatrix(
 #endif
 }
 
-template <typename Geometry2DType> LazyData<double> ElectricalFem2DSolver<Geometry2DType>::loadConductivities() {
-    auto midmesh = this->maskedMesh->getElementMesh();
-    auto temperature = inTemperature(midmesh);
-
+template <typename Geometry2DType>
+void ElectricalFem2DSolver<Geometry2DType>::loadConductivities(const LazyData<double>& temperature) {
     for (auto e : this->maskedMesh->elements()) {
         size_t i = e.getIndex();
         Vec<2, double> midpoint = e.getMidpoint();
@@ -348,11 +342,9 @@ template <typename Geometry2DType> LazyData<double> ElectricalFem2DSolver<Geomet
         } else
             conds[i] = this->geometry->getMaterial(midpoint)->cond(temperature[i]);
     }
-
-    return temperature;
 }
 
-template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::saveConductivities() {
+template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::saveJunctionConductivities() {
     for (size_t n = 0; n < active.size(); ++n) {
         const auto& act = active[n];
         for (size_t i = act.left, r = (act.top + act.bottom) / 2; i != act.right; ++i)
@@ -385,7 +377,23 @@ template <typename Geometry2DType> double ElectricalFem2DSolver<Geometry2DType>:
 
     DataVector<double> rhs(potentials.size());
 
-    auto temperature = loadConductivities();
+    auto temperature = inTemperature(this->maskedMesh->getElementMesh());
+
+    loadConductivities(temperature);
+
+    DataVector<Vec<2>> currents(this->maskedMesh->getElementsCount());
+    for (auto el : this->maskedMesh->elements()) {
+        size_t i = el.getIndex();
+        size_t loleftno = el.getLoLoIndex();
+        size_t lorghtno = el.getUpLoIndex();
+        size_t upleftno = el.getLoUpIndex();
+        size_t uprghtno = el.getUpUpIndex();
+        double dvx = -0.05 * (-potentials[loleftno] + potentials[lorghtno] - potentials[upleftno] + potentials[uprghtno]) /
+                     (el.getUpper0() - el.getLower0());  // [j] = kA/cm²
+        double dvy = -0.05 * (-potentials[loleftno] - potentials[lorghtno] + potentials[upleftno] + potentials[uprghtno]) /
+                     (el.getUpper1() - el.getLower1());  // [j] = kA/cm²
+        currents[i] = vec(conds[i].c00 * dvx, conds[i].c11 * dvy);
+    }
 
     bool noactive = (active.size() == 0);
     double minj = 100e-7;  // assume no significant heating below this current
@@ -430,7 +438,7 @@ template <typename Geometry2DType> double ElectricalFem2DSolver<Geometry2DType>:
 
     } while ((!this->iter_params.converged || err > maxerr) && (loops == 0 || loop < loops));
 
-    saveConductivities();
+    saveJunctionConductivities();
 
     outVoltage.fireChanged();
     outCurrentDensity.fireChanged();
@@ -471,7 +479,13 @@ template <> double ElectricalFem2DSolver<Geometry2DCartesian>::integrateCurrent(
         auto element = maskedMesh->element(i, vindex);
         if (!onlyactive || isActive(element.getMidpoint())) {
             size_t index = element.getIndex();
-            if (index != RectangularMaskedMesh2D::Element::UNKNOWN_ELEMENT_INDEX) result += currents[index].c1 * element.getSize0();
+            if (index != RectangularMaskedMesh2D::Element::UNKNOWN_ELEMENT_INDEX) size_t loleftno = element.getLoLoIndex();
+            size_t lorghtno = element.getUpLoIndex();
+            size_t upleftno = element.getLoUpIndex();
+            size_t uprghtno = element.getUpUpIndex();
+            double dvy = -0.05 * (-potentials[loleftno] - potentials[lorghtno] + potentials[upleftno] + potentials[uprghtno]) /
+                         (element.getUpper1() - element.getLower1());  // [j] = kA/cm²
+            result += dvy * conds[i].c11 * element.getSize0();
         }
     }
     if (this->getGeometry()->isSymmetric(Geometry::DIRECTION_TRAN)) result *= 2.;
@@ -487,12 +501,21 @@ template <> double ElectricalFem2DSolver<Geometry2DCylindrical>::integrateCurren
         if (!onlyactive || isActive(element.getMidpoint())) {
             size_t index = element.getIndex();
             if (index != RectangularMaskedMesh2D::Element::UNKNOWN_ELEMENT_INDEX) {
-                double rin = element.getLower0(), rout = element.getUpper0();
-                result += currents[index].c1 * (rout * rout - rin * rin);
+                size_t loleftno = element.getLoLoIndex();
+                size_t lorghtno = element.getUpLoIndex();
+                size_t upleftno = element.getLoUpIndex();
+                size_t uprghtno = element.getUpUpIndex();
+                double h = (element.getUpper1() - element.getLower1());
+                double j1 = -0.1 * (-potentials[loleftno] + potentials[upleftno]) / h;  // [j] = kA/cm²
+                double j2 = -0.1 * (-potentials[lorghtno] + potentials[uprghtno]) / h;  // [j] = kA/cm²
+                double r1 = element.getLower0(), r2 = element.getUpper0();
+                result +=
+                    // conds[i].c11 * ((j1 * r2 - j2 * r1) * 0.5 * (r1 + r2) + 1. / 3. * (j2 - j1) * (r1 * r1 + r1 * r2 + r2 * r2));
+                    conds[i].c11 * (j1 * (2. * r1 + r2) + j2 * (r1 + 2. * r2)) / 6. * (r2 - r1);
             }
         }
     }
-    return result * plask::PI * 0.01;  // kA/cm² µm² -->  mA
+    return result * 0.02 * plask::PI;  // kA/cm² µm² -->  mA
 }
 
 template <typename Geometry2DType> double ElectricalFem2DSolver<Geometry2DType>::getTotalCurrent(size_t nact) {
@@ -566,7 +589,7 @@ const LazyData<Tensor2<double>> ElectricalFem2DSolver<Geometry2DType>::getConduc
                                                                                        InterpolationMethod) {
     this->initCalculation();
     this->writelog(LOG_DEBUG, "Getting conductivities");
-    loadConductivities();
+    loadConductivities(inTemperature(this->maskedMesh->getElementMesh()));
     InterpolationFlags flags(this->geometry);
     return interpolate(this->maskedMesh->getElementMesh(), conds, dest_mesh, INTERPOLATION_NEAREST, flags);
 }
