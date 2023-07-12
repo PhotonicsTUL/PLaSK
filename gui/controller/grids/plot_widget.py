@@ -14,6 +14,7 @@
 from matplotlib.ticker import MaxNLocator
 
 from ...qt.QtCore import *
+from ...qt.QtWidgets import *
 
 import plask
 from ...utils.config import CONFIG
@@ -51,7 +52,7 @@ class PlotWidget(PlotWidgetBase):
         def select_geometry(self, *args):
             if self.controller._current_controller is not None:
                 geometry_name = self.widgets['select_geometry'].currentText()
-                # self.controller._current_controller.geometry_name = self.widgets['select_geometry'].currentText()
+                self.controller._current_controller.model.geometry_name = None  # to force update
                 try:
                     dim = max(self.controller._current_controller.model.dim, 2)
                 except AttributeError:
@@ -61,23 +62,32 @@ class PlotWidget(PlotWidgetBase):
                         self.enable_planes(self.controller.geometry_axes_names.get(geometry_name, ('long', 'tran', 'vert')))
                     else:
                         self.disable_planes(self.controller.geometry_axes_names.get(geometry_name, ('long', 'tran', 'vert')))
+            self.controller.update_current_mesh()
             if self.controller.plot_auto_refresh:
                 self.controller.plot()
             else:
                 self.controller.show_update_required()
 
         def home(self):
-            if self.controller.plotted_geometry is not None:
-                box = self.controller.plotted_geometry.bbox
+            if self.controller.current_geometry is not None:
+                box = self.controller.current_geometry.bbox
                 self.parent().zoom_bbox(box)
 
         def select_plane(self, index):
             super().select_plane(index)
+            self.controller.need_reset_plot = True
             if self.controller.plot_auto_refresh: self.controller.plot()
             else: self.controller.show_update_required()
 
     def __init__(self, controller=None, parent=None):
         super().__init__(controller, parent)
+
+        self.info = QLabel()
+        self.info.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed))
+        layout = self.layout()
+        layout.addWidget(self.info)
+        self.info.setVisible(False)
+
         colors = CONFIG['geometry/material_colors'].copy()
         self.get_color = BwColor(colors, self.axes)
         # self.layout().setContentsMargins(0, 9, 6, 2)

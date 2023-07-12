@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -171,7 +171,7 @@ void register_mesh_triangular() {
         .add_property("min_angle", py::make_getter(&TriangleGenerator::minTriangleAngle),
                       &TriangleGenerator_setMinTriangleAngle, "Minimum angle in each element triangle")
         .add_property("full", py::make_getter(&TriangleGenerator::full), &TriangleGenerator::setFull,
-                      "Include whole bounding box of the geomery?");
+                      "Include whole bounding box of the geometry?");
     py::implicitly_convertible<shared_ptr<TriangleGenerator>, shared_ptr<const TriangleGenerator>>();
 }
 

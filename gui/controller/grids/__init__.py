@@ -43,8 +43,11 @@ try:
 except ImportError:
     plask = None
 else:
+    import plask.mesh
     from ...utils.matplotlib import BwColor
 
+def msize(x):
+    return '{:,}'.format(len(x)).replace(',', ' ')
 
 class GridsController(Controller):
 
@@ -57,6 +60,8 @@ class GridsController(Controller):
         self._current_index = None
         self._last_index = None
         self._current_controller = None
+        self._geometry_name = None
+        self._lims = None
 
         self.manager = None
 
@@ -118,9 +123,9 @@ class GridsController(Controller):
         self.model.changed.connect(self.on_model_change)
 
         self.selected_geometry = None
-        self.plotted_geometry = None
+        self.current_geometry = None
         self.checked_plane = '12'
-        self.plotted_model = self.plotted_mesh = None
+        self.current_model = self.current_mesh = None
         self.plot_auto_refresh = False
         self.geometry_axes_names = {}
 
@@ -164,8 +169,21 @@ class GridsController(Controller):
         if self._last_index is not None:
             self.grids_table.selectRow(self._last_index)
             self.update_geometries()
-            if plask is not None and self.plot_auto_refresh:
-                self.plot()
+            if plask is not None:
+                model = self._current_controller.model
+                if self._geometry_name in self.geometry_axes_names.keys():
+                    with BlockQtSignals(self.mesh_preview.toolbar.widgets['select_geometry']):
+                        self.mesh_preview.toolbar.widgets['select_geometry'].setCurrentText(self._geometry_name)
+                    model.geometry_name = self._geometry_name
+                self.update_current_mesh()
+                if self._lims is not None:
+                    self.mesh_preview.axes.set_xlim(self._lims[0])
+                    self.mesh_preview.axes.set_ylim(self._lims[1])
+                if self.current_mesh and self.current_geometry:
+                    if self.plot_auto_refresh:
+                        self.plot()
+                    else:
+                        self.show_update_required()
         elif plask is not None:
             self.show_update_required()
         self.grids_table.setFocus()
@@ -175,6 +193,8 @@ class GridsController(Controller):
         if self._current_controller is not None:
             self._last_index = self._current_index
             self.grids_table.selectionModel().clear()
+            self._geometry_name = self.mesh_preview.toolbar.widgets['select_geometry'].currentText()
+            self._lims = self.mesh_preview.axes.get_xlim(), self.mesh_preview.axes.get_ylim()
         return True
 
     def get_table_edit_actions(self):
@@ -220,20 +240,19 @@ class GridsController(Controller):
             self._current_controller.on_edit_enter()
             self.update_geometries()
             if plask is not None:
-                if self.plot_auto_refresh:
-                    self.plot_mesh(self._current_controller.model, set_limits=True, ignore_no_geometry=True)
-                else:
-                    self.mesh_preview.clear()
-                    self.show_update_required()
+                self.update_current_mesh()
+                if self.current_mesh and self.current_geometry:
+                    if self.plot_auto_refresh:
+                        self.plot_mesh(set_limits=True, ignore_no_geometry=True)
+                    else:
+                        self.mesh_preview.clear()
+                        self.show_update_required()
                 self.generate_mesh_action.setEnabled(self._current_controller.model.is_generator and
-                                                     self.plotted_geometry is not None)
+                                                     self.current_geometry is not None)
         self.vertical_splitter.setSizes([100000,1])
         return True
 
     def show_update_required(self):
-        self.plotted_mesh = None
-        self.plotted_geometry = None
-        self.generate_mesh_action.setEnabled(False)
         if self._current_controller is not None:
             self.model.clear_info_messages()
             self.model.add_info_message("Mesh changed: click here to update the plot", Info.INFO, action='plot')
@@ -243,20 +262,32 @@ class GridsController(Controller):
         self.save_data_in_model()
         if plask is not None:
             if self._current_controller is not None:
+                self.update_current_mesh()
                 if self.plot_auto_refresh:
-                    self.plot_mesh(self._current_controller.model, set_limits=False, ignore_no_geometry=True)
+                    self.plot_mesh(set_limits=False, ignore_no_geometry=True)
                 else:
                     self.show_update_required()
 
-    def plot_mesh(self, model, set_limits, ignore_no_geometry=False):
+    def update_current_mesh(self, model=None):
+        geometry_changed = False
+        if model is None:
+            model = self._current_controller.model
         self.model.clear_info_messages()
         self.mesh_preview.clear()
         if plask is None: return
         if model is not None:
-            if hasattr(model, 'geometry_name') and model.geometry_name and model.geometry_name in self.geometry_axes_names.keys():
-                self.mesh_preview.toolbar.widgets['select_geometry'].setCurrentText(model.geometry_name)
+            geometry_name = self.mesh_preview.toolbar.widgets['select_geometry'].currentText()
+            if getattr(model, 'geometry_name', None) in self.geometry_axes_names.keys():
+                if geometry_name != model.geometry_name:
+                    geometry_name = model.geometry_name
+                    with BlockQtSignals(self.mesh_preview.toolbar.widgets['select_geometry']):
+                        self.mesh_preview.toolbar.widgets['select_geometry'].setCurrentText(geometry_name)
             else:
-                model.geometry_name = self.mesh_preview.toolbar.widgets['select_geometry'].currentText()
+                if getattr(model, 'geometry_name', None) != geometry_name:
+                    model.geometry_name = geometry_name
+                    geometry_changed = True
+            if geometry_name is None:
+                geometry_changed = True
         try:
             if self.manager is None:
                 manager = get_manager()
@@ -268,58 +299,94 @@ class GridsController(Controller):
             manager.load(self.document.get_contents(sections=('grids',)))
             self.manager = manager
             try:
-                self.selected_geometry = str(self.mesh_preview.toolbar.widgets['select_geometry'].currentText())
+                self.selected_geometry = str(model.geometry_name)
                 if self.selected_geometry:
-                    self.plotted_geometry = manager.geo[self.selected_geometry]
+                    self.current_geometry = manager.geo[self.selected_geometry]
                 else:
-                    self.plotted_geometry = None
+                    self.current_geometry = None
             except KeyError:
-                self.plotted_geometry = None
+                self.current_geometry = None
                 self.selected_geometry = None
             if model.is_mesh:
                 mesh = manager.msh[model.name]
             elif model.is_generator:
-                if self.plotted_geometry is None:
+                if self.current_geometry is None:
                     self.generate_mesh_action.setEnabled(False)
-                    if ignore_no_geometry:
-                        mesh = None
-                    else:
-                        raise ValueError("You must select geometry to preview generators")
+                    mesh = None
                 else:
                     self.generate_mesh_action.setEnabled(True)
-                    mesh = manager.msh[model.name](self.plotted_geometry)
+                    mesh = manager.msh[model.name](self.current_geometry)
             else:
                 mesh = None
-            if model != self.plotted_model:
-                try:
-                    self.clear = self.mesh_preview.toolbar._nav_stack.clear()
-                except AttributeError:
-                    self.clear = self.mesh_preview.toolbar._views.clear()
-            self.mesh_preview.update_plot(mesh, self.plotted_geometry, set_limits=set_limits,
-                                          plane=self.checked_plane)
+            self.need_reset_plot = model != self.current_model or geometry_changed
+
         except Exception as e:
-            self.model.add_info_message("Could not update mesh preview:: {}".format(str(e)), Info.ERROR)
+            # self.model.add_info_message("Could not update mesh preview: {}".format(str(e)), Info.ERROR)
+            self.model.add_info_message(str(e), Info.ERROR)
             from ... import _DEBUG
             if _DEBUG:
                 import traceback
                 traceback.print_exc()
+            self.mesh_preview.info.setVisible(False)
+            self.current_mesh = None
             res = False
+
         else:
-            self.plotted_model = model
-            self.plotted_mesh = mesh
-            # if mesh.dim == 3:
-            #     self.preview.toolbar.enable_planes(tree_element.get_axes_conf())
-            # else:
-            #     self.preview.toolbar.disable_planes(tree_element.get_axes_conf())
+            self.current_model = model
+            self.current_mesh = mesh
+
+            if mesh is None:
+                self.mesh_preview.info.setVisible(False)
+            else:
+                self.mesh_preview.info.setVisible(True)
+                info = f"  Mesh size:   {msize(mesh)}  nodes"
+
+                if isinstance(mesh, plask.mesh.Rectangular2D):
+                    info += f"   [{msize(mesh.axis0)} x {msize(mesh.axis1)}]    "
+                elif isinstance(mesh, plask.mesh.Rectangular3D):
+                    info += f"   [{msize(mesh.axis0)} x {msize(mesh.axis1)} x {msize(mesh.axis2)}]   "
+                else:
+                    info += ",   "
+
+                try:
+                    info += f"{msize(mesh.elements)} elements"
+                except AttributeError:
+                    pass
+                self.mesh_preview.info.setText(info)
+
             res = True
+
         for err in manager.errors:
             self.model.add_info_message(err, Info.WARNING)
         self.model.refresh_info()
+
         return res
+
+    def plot_mesh(self, set_limits, ignore_no_geometry=False):
+        if self.need_reset_plot:
+            try:
+                self.mesh_preview.toolbar._nav_stack.clear()
+            except AttributeError:
+                self.mesh_preview.toolbar._views.clear()
+            self.need_reset_plot = False
+
+        if self.current_geometry is None:
+            if ignore_no_geometry:
+                return
+            else:
+                raise ValueError("You must select geometry to preview generators")
+
+        self.mesh_preview.update_plot(self.current_mesh, self.current_geometry, set_limits=set_limits,
+                                        plane=self.checked_plane)
+
+        self.model.clear_info_messages()
+        self.model.refresh_info()
 
     def plot(self):
         if self._current_controller is not None:
-            self.plot_mesh(self._current_controller.model, set_limits=self.plotted_geometry is None)
+            if self.current_mesh is None or self.current_geometry is None:
+                self.update_current_mesh()
+            self.plot_mesh(set_limits=self.need_reset_plot)
 
     def reconfig(self):
         if plask is not None:
@@ -329,7 +396,9 @@ class GridsController(Controller):
             self.mesh_preview.axes.grid(True, color=CONFIG['plots/grid_color'])
             if self._current_controller is not None and \
                (self.plot_auto_refresh or hasattr(self._current_controller.model, 'geometry_name')):
-                self.plot_mesh(self._current_controller.model, set_limits=True, ignore_no_geometry=True)
+                if self.current_mesh is None or self.current_geometry is None:
+                    self.update_current_mesh()
+                self.plot_mesh(set_limits=True, ignore_no_geometry=True)
             else:
                 self.mesh_preview.canvas.draw()
 

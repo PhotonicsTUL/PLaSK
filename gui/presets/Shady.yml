@@ -77,7 +77,7 @@ syntax:
   python_plask: 'color=#2aa198'
   python_provider: 'color=#d33682'
   python_pylab: 'color=#cb4b16'
-  python_receiver: 'color=#fdf6e3'
+  python_receiver: 'color=#d33682'
   python_solver: 'color=#eee8d5'
   python_special: 'color=#6c71c4'
   python_string: 'color=#268bd2'

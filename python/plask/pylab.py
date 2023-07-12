@@ -57,11 +57,14 @@ elif backend == 'Qt5Agg' and _os.name == 'nt':
     _QtWidgets.QApplication.addLibraryPath(_os.path.join(_sys.prefix, 'Library', 'plugins'))
     _QtWidgets.QApplication.addLibraryPath(_os.path.join(_os.path.dirname(_QtWidgets.__file__), 'plugins'))
 
+# Save Python builtin functions
+python_min, python_max, python_abs = min, max, abs
+
 import matplotlib.pylab
 from matplotlib.pylab import *
 # __doc__ += matplotlib.pylab.__doc__
 
-π = pi  # why not use Greeek letters?
+π = pi  # why not use Greek letters?
 
 def aspect(aspect, adjustable=None, anchor=None):
     gca().set_aspect(aspect, adjustable, anchor)
@@ -224,9 +227,9 @@ def _get_component(comp, total):
                 try:
                     a = plask.config.axes
                     values = (a[0]+a[0], a[1]+a[1], a[2]+a[2], a[0]+a[1], a[1]+a[0])
-                    comp = min(values.index(comp), 3)
+                    comp = python_min(values.index(comp), 3)
                 except ValueError:
-                    comp = min(('ll', 'tt', 'vv', 'lt', 'tl').index(comp), 3)
+                    comp = python_min(('ll', 'tt', 'vv', 'lt', 'tl').index(comp), 3)
             else:
                 if comp in ('long', 'tran', 'vert'):
                     comp = comp[0]
@@ -239,7 +242,7 @@ def _get_component(comp, total):
         except ValueError:
             raise ValueError("Bad component '{}' (current axes are '{}')".format(comp, plask.config.axes))
     if total == 2:
-        comp = max(comp-1, 0)
+        comp = python_max(comp-1, 0)
     return comp
 
 
@@ -594,7 +597,7 @@ def plot_stream(field, plane=None, axes=None, figure=None, scale=8.0, color='k',
     m0, m1 = meshgrid(array(xaxis), array(yaxis))
     if scale or color == 'norm':
         norm = sum(data**2, 2)
-        norm /= norm.max()
+        norm /= norm._max()
     if color == 'norm':
         color = norm
 
@@ -707,10 +710,10 @@ def plot_boundary(boundary, mesh, geometry, colors=None, color='0.75', plane=Non
 # ### plot_mesh ###
 
 def _plot_triangular(mesh, lines, color, lw, zorder, alpha, ix=0, iy=1):
-    x_max = max(node[ix] for node in mesh)
-    x_min = min(node[ix] for node in mesh)
-    y_max = max(node[iy] for node in mesh)
-    y_min = min(node[iy] for node in mesh)
+    x_max = python_max(node[ix] for node in mesh)
+    x_min = python_min(node[ix] for node in mesh)
+    y_max = python_max(node[iy] for node in mesh)
+    y_min = python_min(node[iy] for node in mesh)
     for triangle in mesh.elements:
         nodes = triangle.nodes
         x = [p[ix] for p in nodes]
@@ -818,7 +821,7 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, fi
 
     if ix > iy and not axes.yaxis_inverted():
         axes.invert_yaxis()
-    dim = max(2, mesh.dim)
+    dim = python_max(2, mesh.dim)
     xlabel(u"${}$ (µm)".format(plask.config.axes[3 - dim + ix]))
     ylabel(u"${}$ (µm)".format(plask.config.axes[3 - dim + iy]))
 

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -80,7 +80,7 @@ shared_ptr<MeshD<2>> TriangleGenerator::generate(const shared_ptr<GeometryObject
     for (auto pi : pointmap) {
         in_points[2 * pi.second] = pi.first.c0;
         in_points[2 * pi.second + 1] = pi.first.c1;
-        std::cerr << format("{}: {:5.3f}, {:5.3f}\n", pi.second, pi.first.c0, pi.first.c1);
+        // std::cerr << format("{}: {:5.3f}, {:5.3f}\n", pi.second, pi.first.c0, pi.first.c1);
     }
 
     in.numberofsegments = segmentsset.size();
@@ -91,7 +91,7 @@ shared_ptr<MeshD<2>> TriangleGenerator::generate(const shared_ptr<GeometryObject
         in_segments[n] = s.first;
         in_segments[n + 1] = s.second;
         n += 2;
-        std::cerr << s.first << "-" << s.second << "\n";
+        // std::cerr << s.first << "-" << s.second << "\n";
     }
 
     triangulate(const_cast<char*>(getSwitches().c_str()), &in, &out, nullptr);

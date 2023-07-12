@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -71,6 +71,10 @@ class InfoListModel(QAbstractListModel):
     (None section model is allowed and than the list is empty)
     """
 
+    def __init__(self, model, parent=None, *args):
+        QAbstractListModel.__init__(self, parent, *args)
+        self._set_model(model)
+
     def _set_model(self, model):
         if hasattr(self, 'model'):
             m = self.model()
@@ -82,10 +86,6 @@ class InfoListModel(QAbstractListModel):
             self.model = weakref.ref(model)
             self.entries = model.get_info()
             model.infoChanged += self.infoChanged
-
-    def __init__(self, model, parent=None, *args):
-        QAbstractListModel.__init__(self, parent, *args)
-        self._set_model(model)
 
     def infoChanged(self, model, *args, **kwargs):
         """Read info from model, inform observers."""
@@ -137,7 +137,7 @@ class InfoSource:
             :param info_cb: call when list of errors has been changed with parameters: section name, list of errors
         """
         object.__init__(self)
-        self._info = []      # model Infos: Errors, Warnings and Informations
+        self._info = []      # model Infos: Errors, Warnings and Information
         self.infoChanged = Signal()
         if info_cb: self.infoChanged.connect(info_cb)
 
@@ -169,10 +169,6 @@ class InfoSource:
             return tuple(m for m in self._info if m.level == level)
         else:
             return self._info
-
-    #@property
-    #def info(self):
-    #    return self.get_info()
 
     def get_list_model(self):
         return InfoListModel(self)
