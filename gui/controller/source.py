@@ -101,6 +101,7 @@ class SourceEditController(Controller):
         self.load_data_from_model()
         try: self.source_widget.editor.line_numbers.offset = self.model.line_in_file
         except AttributeError: pass
+        self.source_widget.cursor_position_changed()
         try: self.model.changed += self.update_editor
         except AttributeError: pass
         self.source_widget.editor.document().setModified(self.document.is_changed())

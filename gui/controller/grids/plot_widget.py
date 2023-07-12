@@ -18,10 +18,10 @@ from ...qt.QtWidgets import *
 
 import plask
 from ...utils.config import CONFIG
-from ...utils.matplotlib import PlotWidgetBase, BwColor
+from ...utils.matplotlib import PlotWidgetBase, PlotWidgetWithInfoBase, BwColor
 
 
-class PlotWidget(PlotWidgetBase):
+class PlotWidget(PlotWidgetWithInfoBase):
     class NavigationToolbar(PlotWidgetBase.NavigationToolbar):
 
         toolitems = (

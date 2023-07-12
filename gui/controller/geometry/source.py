@@ -71,6 +71,9 @@ class SourceWithPreviewWidget(QSplitter):
     def editor(self):
         return self.controller.source.editor
 
+    def cursor_position_changed(self):
+        self.controller.source.cursor_position_changed()
+
 
 class GeometrySourceController(SourceEditController):
 

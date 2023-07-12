@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -357,14 +357,20 @@ class EditorWidget(QWidget):
         self.add_action('&Find...', 'edit-find', 'editor_find', self.show_find)
         self.add_action('&Replace...', 'edit-find-replace', 'editor_replace', self.show_replace)
 
+        self.statusbar = QStatusBar(self)
+        self.statusbar.setSizeGripEnabled(False)
+        self.position_label = QLabel(self)
+        self.statusbar.addPermanentWidget(self.position_label)
+        self.editor.cursorPositionChanged.connect(self.cursor_position_changed)
+
         self.make_find_replace_widget()
 
         layout = QVBoxLayout()
         layout.addWidget(self.toolbar)
         layout.addWidget(self.editor)
-        layout.addWidget(self.message_toolbar)
         layout.addWidget(self.find_toolbar)
         layout.addWidget(self.replace_toolbar)
+        layout.addWidget(self.statusbar)
 
         layout.setContentsMargins(0, 1, 0, 0)
         layout.setSpacing(0)
@@ -374,15 +380,8 @@ class EditorWidget(QWidget):
     def make_find_replace_widget(self):
         self.find_toolbar = QToolBar(self)
         self.replace_toolbar = QToolBar(self)
-        self.message_toolbar = QToolBar(self)
         self.find_toolbar.setStyleSheet("QToolBar { border: 0px }")
         self.replace_toolbar.setStyleSheet("QToolBar { border: 0px }")
-        if dark_style():
-            self.message_toolbar.setStyleSheet("QToolBar { border: 1px solid palette(dark);"
-                                               "           background-color: #000; color: #ccc; }")
-        else:
-            self.message_toolbar.setStyleSheet("QToolBar { border: 1px solid palette(dark);"
-                                               "           background-color: #ffffcc; color: black; }")
         find_label = QLabel()
         find_label.setText("Search: ")
         find_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
@@ -400,17 +399,18 @@ class EditorWidget(QWidget):
         self.replace_toolbar.addWidget(replace_label)
         self.replace_toolbar.addWidget(self.replace_edit)
 
-        self.replace_message = QLabel()
-        self.message_toolbar.addWidget(self.replace_message)
-
         self.find_matchcase = QAction('&Match Case', self.find_edit)
         self.find_matchcase.setCheckable(True)
-        self.find_matchcase.setChecked(True)
+        self.find_matchcase.setChecked(CONFIG['editor/find_case_sensitive'])
+        self.find_matchcase.triggered.connect(lambda: self.trigger_setting('editor/find_case_sensitive', self.find_matchcase))
         self.find_wholewords = QAction('&Whole Words', self.find_edit)
         self.find_wholewords.setCheckable(True)
+        self.find_wholewords.setChecked(CONFIG['editor/find_whole_words'])
+        self.find_wholewords.triggered.connect(lambda: self.trigger_setting('editor/find_whole_words', self.find_wholewords))
         self.find_regex = QAction('&Regular Expression', self.find_edit)
         self.find_regex.setCheckable(True)
-        self.find_regex.triggered.connect(self.trigger_regex)
+        self.find_regex.setChecked(CONFIG['editor/find_regex'])
+        self.find_regex.triggered.connect(lambda: self.trigger_setting('editor/find_regex', self.find_regex))
         self.find_selection = QAction('&Selection Only', self.find_edit)
         self.find_selection.setCheckable(True)
         self.find_edit.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
@@ -419,6 +419,7 @@ class EditorWidget(QWidget):
         self.find_options.addAction(self.find_matchcase)
         self.find_options.addAction(self.find_wholewords)
         self.find_options.addAction(self.find_regex)
+        self.find_options.addSeparator()
         self.find_options.addAction(self.find_selection)
         options_button = QPushButton(self)
         options_button.setText("&Options")
@@ -451,7 +452,6 @@ class EditorWidget(QWidget):
         self.replace_toolbar.addWidget(replace_all_button)
         self.find_toolbar.hide()
         self.replace_toolbar.hide()
-        self.message_toolbar.hide()
         hide_action = QAction(self)
         hide_action.setShortcut(QKeySequence(Qt.Key.Key_Escape))
         hide_action.triggered.connect(self.hide_toolbars)
@@ -463,6 +463,11 @@ class EditorWidget(QWidget):
         self.find_edit.returnPressed.connect(self.find_next)
         self.replace_edit.returnPressed.connect(self.replace_next)
         self._replaced_selections = []
+
+    def cursor_position_changed(self):
+        line_in_file = self.editor.line_numbers.offset or 0
+        cursor = self.editor.textCursor()
+        self.position_label.setText('{}:{}  '.format(cursor.blockNumber() + line_in_file + 1, cursor.columnNumber() + 1))
 
     def _find_context_menu(self, pos):
         menu = self.find_edit.createStandardContextMenu()
@@ -530,7 +535,7 @@ class EditorWidget(QWidget):
         self.replace_edit.commit_history()
         self.find_toolbar.hide()
         self.replace_toolbar.hide()
-        self.message_toolbar.hide()
+        self.statusbar.clearMessage()
         self.clear_matches()
         self.editor.setFocus()
 
@@ -613,7 +618,9 @@ class EditorWidget(QWidget):
         if not self.find_selection.isChecked():
             self._find(cont=True)
 
-    def trigger_regex(self):
+    def trigger_setting(self, setting, caller):
+        CONFIG[setting] = caller.isChecked()
+        CONFIG.save()
         if self.find_toolbar.isVisible():
             self.find_type()
 
@@ -654,7 +661,7 @@ class EditorWidget(QWidget):
     def replace_next(self):
         self.find_edit.commit_history()
         self.replace_edit.commit_history()
-        self.message_toolbar.hide()
+        self.statusbar.clearMessage()
         self.clear_matches()
         self._replace_next()
 
@@ -698,7 +705,7 @@ class EditorWidget(QWidget):
     def replace_all(self):
         self.find_edit.commit_history()
         self.replace_edit.commit_history()
-        self.message_toolbar.hide()
+        self.statusbar.clearMessage()
         self._replaced_selections = []
         cursor = self.editor.textCursor()
         if self.find_selection.isChecked() and cursor.hasSelection():
@@ -727,6 +734,5 @@ class EditorWidget(QWidget):
             # QToolTip.showText(self.replace_edit.mapToGlobal(QPoint(0, -32)),
             #                         "{} replacement{} made".format(self._replace_count,
             #                                                        's' if self._replace_count != 1 else ''))
-            self.replace_message.setText("{} replacement{} made".format(self._replace_count,
-                                                                        's' if self._replace_count != 1 else ''))
-            self.message_toolbar.show()
+            self.statusbar.showMessage("{} replacement{} made".format(self._replace_count,
+                                                                     's' if self._replace_count != 1 else ''))

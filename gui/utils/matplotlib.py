@@ -33,12 +33,15 @@ from matplotlib.backend_bases import NavigationToolbar2
 import matplotlib.colors
 from matplotlib.backend_tools import cursors
 
+from ..model.info import SimpleInfoListModel, Info
+
 from ..utils.widgets import set_icon_size, ComboBox
 
 from .config import CONFIG
 
 
 class BwColor:
+
     def __init__(self, colors, axes, compress=0.5):
         self.colors = plask.ColorFromDict(colors, axes)
         self.compress = compress
@@ -50,16 +53,55 @@ class BwColor:
             color = self.colors(material)
             if isinstance(color, str):
                 if color.startswith('#'): color = color[1:]
-                r, g, b = tuple(ord(c)/255. for c in color.decode('hex'))
+                r, g, b = tuple(ord(c) / 255. for c in color.decode('hex'))
             else:
                 r, g, b = color
         except:
             r, b, b = 0.5, 0.5, 0.5
-        bw = self.compress * (0.2126*r + 0.7152*b + 0.0722*b)
+        bw = self.compress * (0.2126 * r + 0.7152 * b + 0.0722 * b)
         return tuple(bw + c for c in self.background)
 
 
+class FigureCanvasWithInfo(FigureCanvas):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.info_model = SimpleInfoListModel()
+        self.info_model.layoutChanged.connect(self._on_info_layout_changed)
+        self.info_model.entries = []
+        self.info_table = QListView(self)
+        self.info_table.setSelectionMode(QListView.SelectionMode.NoSelection)
+        self.info_table.hide()
+        self.info_table.setModel(self.info_model)
+        info_selection_model = self.info_table.selectionModel()
+        info_selection_model.currentChanged.connect(self._on_select_info)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.info_table.setFixedWidth(event.size().width())
+
+    def _on_info_layout_changed(self):
+        rows = self.info_model.rowCount()
+        if rows == 0:
+            self.info_table.setVisible(False)
+        else:
+            self.info_table.setFixedHeight(self.info_table.sizeHintForRow(0) * rows + 4)
+            self.info_table.setVisible(True)
+
+    def _on_select_info(self, current, _):
+        row = current.row()
+        if row >= 0:
+            info = self.info_model.entries[row]
+            if hasattr(info, 'action'):
+                info.action()
+        self.info_table.setCurrentIndex(QModelIndex())
+
+
+
 class PlotWidgetBase(QWidget):
+
+    CanvasClass = FigureCanvas
 
     class NavigationToolbar(NavigationToolbar2QT):
 
@@ -78,8 +120,10 @@ class PlotWidgetBase(QWidget):
             (None, None, None, None, None, None),
             ('Aspect', 'Set equal aspect ratio for both axes', 'system-lock-screen', 'aspect', False, 'plot_aspect'),
             (None, None, None, None, None, None),
-            ('Plane:', 'Select longitudinal-transverse plane', None, 'select_plane',
-             (('tran-long', 'long-vert', 'tran-vert'), 2), 'plot_plane'),
+            (
+                'Plane:', 'Select longitudinal-transverse plane', None, 'select_plane', (('tran-long', 'long-vert', 'tran-vert'),
+                                                                                         2), 'plot_plane'
+            ),
         )
 
         def __init__(self, canvas, parent, controller=None, coordinates=True):
@@ -97,17 +141,17 @@ class PlotWidgetBase(QWidget):
 
             self.controller = weakref.proxy(controller)
             if 'select_plane' in self._actions:
-                self.disable_planes(('long','tran','vert'))
+                self.disable_planes(('long', 'tran', 'vert'))
 
         def _icon(self, name):
             if name is not None:
                 return QIcon.fromTheme(name)
 
         def _init_toolbar(self):
-            pass    # this may be called by an old Matplotlib
+            pass  # this may be called by an old Matplotlib
 
         def _create_toolbar(self):
-            self.layout().setContentsMargins(0,0,0,0)
+            self.layout().setContentsMargins(0, 0, 0, 0)
             for text, tooltip_text, icon, callback, checked, shortcut in self.toolitems:
                 if text is None:
                     self.addSeparator()
@@ -144,6 +188,7 @@ class PlotWidgetBase(QWidget):
                             if checked: action.setChecked(True)
                         if tooltip_text is not None:
                             action.setToolTip(tooltip_text)
+                        self.widgets[callback] = self.widgetForAction(action)
                     if shortcut is not None:
                         CONFIG.set_shortcut(action, shortcut)
                     self._actions[callback] = action
@@ -183,8 +228,7 @@ class PlotWidgetBase(QWidget):
                 if self._current_mode == 'ZOOM':
                     if getattr(self, self._last_cursor_attr) != cursors.SELECT_REGION:
                         self._set_cursor(cursors.SELECT_REGION)
-                elif (self._current_mode == 'PAN' and
-                      getattr(self, self._last_cursor_attr) != cursors.MOVE):
+                elif (self._current_mode == 'PAN' and getattr(self, self._last_cursor_attr) != cursors.MOVE):
                     self._set_cursor(cursors.MOVE)
 
             if event.xdata is not None and event.ydata is not None:
@@ -242,7 +286,9 @@ class PlotWidgetBase(QWidget):
                 indx = self.widgets['select_plane'].currentIndex()
                 with BlockQtSignals(self.widgets['select_plane']):
                     self.widgets['select_plane'].clear()
-                    self.widgets['select_plane'].addItems((axes[1]+'-'+axes[0], axes[0]+'-'+axes[2], axes[1]+'-'+axes[2]))
+                    self.widgets['select_plane'].addItems(
+                        (axes[1] + '-' + axes[0], axes[0] + '-' + axes[2], axes[1] + '-' + axes[2])
+                    )
                 self._axes_names = axes
                 self._axes = axes[int(self.controller.checked_plane[0])], axes[int(self.controller.checked_plane[1])]
                 with BlockQtSignals(self.widgets['select_plane']):
@@ -267,7 +313,7 @@ class PlotWidgetBase(QWidget):
             elif stack._pos == 0:
                 self._actions['back'].setEnabled(False)
                 self._actions['forward'].setEnabled(True)
-            elif stack._pos == len(stack)-1:
+            elif stack._pos == len(stack) - 1:
                 self._actions['back'].setEnabled(True)
                 self._actions['forward'].setEnabled(False)
             else:
@@ -281,7 +327,7 @@ class PlotWidgetBase(QWidget):
         self.guidelines = {}
         self.controller = weakref.proxy(controller)
         self.figure = Figure()
-        self.canvas = FigureCanvas(self.figure)
+        self.canvas = self.CanvasClass(self.figure)
         self.canvas.setParent(self)
         #self.canvas.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.figure.set_facecolor(self.palette().color(QPalette.ColorRole.Window).name())
@@ -363,3 +409,20 @@ class PlotWidgetBase(QWidget):
         self.axes.set_xlim(xlim)
         self.axes.set_ylim(ylim)
         self.canvas.draw()
+
+
+class PlotWidgetWithInfoBase(PlotWidgetBase):
+
+    CanvasClass = FigureCanvasWithInfo
+
+    def set_info_message(self, info=None, *args, **kwargs):
+        if info is None:
+            if kwargs:
+                info = [Info(**kwargs)]
+            else:
+                info = []
+        elif isinstance(info, Info):
+            info = [info]
+        elif not isinstance(info, (list, tuple)):
+            info = [Info(info, *args, **kwargs)]
+        self.canvas.info_model.update(info)

@@ -41,7 +41,6 @@ class ScriptController(SourceEditController):
     def create_source_widget(self, parent):
         window = PythonEditorWidget(parent, self.document, self.model.is_read_only())
         self.model.editor = window.editor
-        window.editor.cursorPositionChanged.connect(self.model.refresh_info)
 
         try:
             loglevel = self.document.loglevel

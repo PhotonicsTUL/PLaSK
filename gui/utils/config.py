@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -73,6 +73,9 @@ DEFAULTS = {
     'editor/select_after_paste': False,
     'editor/selection_color': '#ffff7f',
     'editor/remove_trailing_spaces': False,
+    'editor/find_case_sensitive': True,
+    'editor/find_whole_words': False,
+    'editor/find_regex': False,
     'geometry/extra_alpha': 0.7,
     'geometry/extra_color': '#00aaff',
     'geometry/extra_width': 1,

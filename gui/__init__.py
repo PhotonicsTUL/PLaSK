@@ -61,14 +61,14 @@ try:
 except ImportError:
     matplotlib = None
 
-from .utils.config import CONFIG, dark_style
+from .utils.config import CONFIG
 
 if not CONFIG.get('workarounds/system_jedi'):
     sys.path.insert(1, os.path.join(__path__[0], 'lib', 'jedi'))
 
 from .xpldocument import XPLDocument
 from .textdocument import TextDocument, PyDocument, XmlDocument
-from .model.info import InfoListModel, Info
+from .model.info import Info
 from .launch import launch_plask
 from .controller.materials.plot import show_material_plot
 from .controller.multi import GUIAndSourceController
@@ -77,7 +77,7 @@ from .utils.config import ConfigProxy, dark_style
 from .utils.settings import SettingsDialog
 from .utils.texteditor import update_textedit
 from .utils.texteditor.python.completer import prepare_completions
-from .utils.widgets import fire_edit_end, InfoListView
+from .utils.widgets import fire_edit_end
 from .utils.help import open_help
 
 
@@ -213,20 +213,6 @@ class MainWindow(QMainWindow):
         self.showsource_action.setEnabled(False)
 
         self.setWindowIcon(QIcon.fromTheme('plaskgui'))
-
-        self.info_model = InfoListModel(None)
-        self.info_table = InfoListView(self.info_model, self)
-        self.info_table.setModel(self.info_model)
-        self.info_table.setSelectionMode(QListView.SelectionMode.NoSelection)
-        self.info_model.entries = [Info('', Info.NONE)]
-        self.info_table.setFixedHeight(self.info_table.sizeHintForRow(0))
-        self.info_model.entries = []
-        info_selection_model = self.info_table.selectionModel()
-        info_selection_model.currentChanged.connect(self._on_select_info)
-
-        self.info_table.setFrameShape(QFrame.Shape.NoFrame)
-        layout.addWidget(self.info_table)
-        self.info_model.layoutChanged.connect(self._update_info_color)
 
         if filename is None or not self._try_load_from_file(filename):  # try to load only if filename is not None
             self.document = Document(self)
@@ -439,19 +425,6 @@ class MainWindow(QMainWindow):
         super().showEvent(event)
         self.shown.emit()
 
-    def _update_info_color(self):
-        pal = self.info_table.palette()
-        if any(info.level != Info.NONE for info in self.info_model.entries):
-            pal.setColor(QPalette.ColorRole.Base, QColor("#6f4402" if dark_style() else "#ffc"))
-        else:
-            pal.setColor(QPalette.ColorRole.Base, pal.color(QPalette.ColorRole.Window))
-        self.info_table.setPalette(pal)
-
-    def _on_select_info(self, current, _):
-        if not current.isValid(): return
-        self.current_controller.select_info(self.info_model.entries[current.row()])
-        self.info_table.setCurrentIndex(QModelIndex())
-
     @property
     def current_controller(self):
         if self.current_tab_index == -1: return None
@@ -654,7 +627,6 @@ class MainWindow(QMainWindow):
         """"Should be called just after setting the current section."""
         if self.current_tab_index != -1:
             c = self.document.controller_by_index(self.current_tab_index)
-            self.info_model.setModel(c.model)
             c.on_edit_enter()
         else:
             self.info_model.setModel(None)

@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -18,12 +18,12 @@ from matplotlib.colors import ColorConverter
 import plask
 from plask._plot_geometry import plane_to_axes
 from ...utils.config import CONFIG
-from ...utils.matplotlib import PlotWidgetBase
+from ...utils.matplotlib import PlotWidgetBase, PlotWidgetWithInfoBase
 
 to_rgba = ColorConverter().to_rgba
 
 
-class PlotWidget(PlotWidgetBase):
+class PlotWidget(PlotWidgetWithInfoBase):
 
     class NavigationToolbar(PlotWidgetBase.NavigationToolbar):
 

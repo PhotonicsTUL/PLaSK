@@ -12,11 +12,11 @@
 
 from lxml import etree
 
-from ...qt.QtCore import *
-from ...qt import QtSignal
-from ...utils.xml import require_no_children, require_no_attributes
-from .. import SectionModel
-from ..info import Info
+from ..qt.QtCore import *
+from ..qt import QtSignal
+from ..utils.xml import require_no_children, require_no_attributes
+from . import SectionModel
+from .info import Info
 
 
 class _UndoStack(QObject):
@@ -57,18 +57,6 @@ class SourceModel(SectionModel):
     def set_text(self, text):
         self._source = text.expandtabs()
         self.fire_changed()
-
-    def create_info(self):
-        if self.editor is None: return []
-        line_in_file = 0 if self.line_in_file is None else self.line_in_file
-        cursor = self.editor.textCursor()
-        return [
-            Info(
-                '{}:{}   '.format(cursor.blockNumber() + line_in_file + 1,
-                                  cursor.columnNumber() + 1),
-                align=Qt.AlignmentFlag.AlignRight
-            )
-        ]
 
 
 class ScriptModel(SourceModel):

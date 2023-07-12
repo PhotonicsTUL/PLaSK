@@ -62,6 +62,7 @@ class GridsController(Controller):
         self._current_controller = None
         self._geometry_name = None
         self._lims = None
+        self._plot_error = None
 
         self.manager = None
 
@@ -201,9 +202,15 @@ class GridsController(Controller):
         return self.tableActions.get(self.document.window)
 
     def select_info(self, info):
-        try: action = info.action
-        except AttributeError: pass
-        else: getattr(self, action)()
+        try:
+            action = info.action
+        except AttributeError:
+            pass
+        else:
+            if isinstance(action, str):
+                getattr(self, action)()
+            else:
+                action()
         if select_index_from_info(info, self.model, self.grids_table):
             self._current_controller.select_info(info) # try to select property
 
@@ -252,11 +259,13 @@ class GridsController(Controller):
         self.vertical_splitter.setSizes([100000,1])
         return True
 
-    def show_update_required(self):
-        if self._current_controller is not None:
-            self.model.clear_info_messages()
-            self.model.add_info_message("Mesh changed: click here to update the plot", Info.INFO, action='plot')
-            self.model.refresh_info()
+    def show_update_required(self, required=True):
+        if required and self._current_controller is not None and self.mesh_preview is not None:
+            self.mesh_preview.set_info_message("Mesh changed: click here to update the plot", Info.INFO, action=self.plot)
+        elif self._plot_error is not None:
+            self.mesh_preview.set_info_message("Could not update mesh preview: {}".format(str(self._plot_error)), Info.ERROR)
+        else:
+            self.mesh_preview.set_info_message()
 
     def on_model_change(self, *args, **kwargs):
         self.save_data_in_model()
@@ -273,7 +282,6 @@ class GridsController(Controller):
         if model is None:
             model = self._current_controller.model
         self.model.clear_info_messages()
-        self.mesh_preview.clear()
         if plask is None: return
         if model is not None:
             geometry_name = self.mesh_preview.toolbar.widgets['select_geometry'].currentText()
@@ -321,19 +329,19 @@ class GridsController(Controller):
             self.need_reset_plot = model != self.current_model or geometry_changed
 
         except Exception as e:
-            # self.model.add_info_message("Could not update mesh preview: {}".format(str(e)), Info.ERROR)
-            self.model.add_info_message(str(e), Info.ERROR)
+            self._plot_error = e
             from ... import _DEBUG
             if _DEBUG:
                 import traceback
                 traceback.print_exc()
-            self.mesh_preview.info.setVisible(False)
             self.current_mesh = None
             res = False
 
         else:
             self.current_model = model
             self.current_mesh = mesh
+
+            self._plot_error = None
 
             if mesh is None:
                 self.mesh_preview.info.setVisible(False)
@@ -363,21 +371,25 @@ class GridsController(Controller):
         return res
 
     def plot_mesh(self, set_limits, ignore_no_geometry=False):
-        if self.need_reset_plot:
-            try:
-                self.mesh_preview.toolbar._nav_stack.clear()
-            except AttributeError:
-                self.mesh_preview.toolbar._views.clear()
-            self.need_reset_plot = False
+        self.mesh_preview.clear()
+        self.show_update_required(False)
 
-        if self.current_geometry is None:
-            if ignore_no_geometry:
-                return
-            else:
-                raise ValueError("You must select geometry to preview generators")
+        if self._plot_error is None:
+            if self.need_reset_plot:
+                try:
+                    self.mesh_preview.toolbar._nav_stack.clear()
+                except AttributeError:
+                    self.mesh_preview.toolbar._views.clear()
+                self.need_reset_plot = False
 
-        self.mesh_preview.update_plot(self.current_mesh, self.current_geometry, set_limits=set_limits,
-                                        plane=self.checked_plane)
+            if self.current_geometry is None:
+                if ignore_no_geometry:
+                    return
+                else:
+                    raise ValueError("You must select geometry to preview generators")
+
+            self.mesh_preview.update_plot(self.current_mesh, self.current_geometry, set_limits=set_limits,
+                                            plane=self.checked_plane)
 
         self.model.clear_info_messages()
         self.model.refresh_info()

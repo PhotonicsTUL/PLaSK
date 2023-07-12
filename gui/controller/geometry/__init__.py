@@ -185,11 +185,9 @@ class GeometryController(Controller):
         if PlotWidget is not None:
             self.geometry_view = PlotWidget(self, picker=True)
             self.geometry_view.canvas.mpl_connect('pick_event', self.on_pick_object)
-            # self.status_bar = QLabel()
-            # self.status_bar.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-            # self.status_bar.setStyleSheet("border: 1px solid palette(dark)")
-            # self.geometry_view.layout().addWidget(self.status_bar)
             self.main_splitter.addWidget(self.geometry_view)
+        else:
+            self.geometry_view = None
 
         self.document.window.config_changed.connect(self.reconfig)
 
@@ -342,9 +340,7 @@ class GeometryController(Controller):
                     self.geometry_view.toolbar._views.clear()
             self.geometry_view.update_plot(plotted_object, set_limits=set_limits, plane=self.checked_plane)
         except Exception as e:
-            self.model.add_info_message("Could not update geometry view: {}".format(str(e)), Info.ERROR)
-            # self.status_bar.setText(str(e))
-            # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ff8888;")
+            self.geometry_view.set_info_message("Could not update geometry view: {}".format(str(e)), Info.ERROR)
             from ... import _DEBUG
             if _DEBUG:
                 import traceback
@@ -352,6 +348,7 @@ class GeometryController(Controller):
                 sys.stderr.flush()
             res = False
         else:
+            self.geometry_view.set_info_message()
             self.plotted_tree_element = tree_element
             self.plotted_object = plotted_object
             if tree_element.dim == 3:
@@ -394,11 +391,11 @@ class GeometryController(Controller):
             if self.plot_auto_refresh:
                 self.plot_refresh()
             else:
-                self.model.add_info_message("Geometry changed: click here to refresh the plot", Info.INFO,
-                                             action='plot_refresh')
-                self.model.refresh_info()
+                self.show_update_required()
 
-
+    def show_update_required(self):
+        if self._current_controller is not None and self.geometry_view is not None:
+            self.geometry_view.set_info_message("Geometry changed: click here to update the plot", Info.INFO, action=self.plot)
 
     def _construct_toolbar(self):
         weakself = weakref.proxy(self)
@@ -686,7 +683,10 @@ class GeometryController(Controller):
 
     def select_info(self, info):
         if hasattr(info, 'action'):
-           return getattr(self, info.action)()
+            if isinstance(action, str):
+                getattr(self, action)()
+            else:
+                action()
 
         if hasattr(info, 'line'):
             self.document.window.goto_line(info.line)

@@ -65,54 +65,22 @@ def info_level_icon(level):
     return None
 
 
-class InfoListModel(QAbstractListModel):
-    """
-    Qt list model of info (warning, errors, etc.) of section model
-    (None section model is allowed and than the list is empty)
-    """
+class SimpleInfoListModel(QAbstractListModel):
 
-    def __init__(self, model, parent=None, *args):
-        QAbstractListModel.__init__(self, parent, *args)
-        self._set_model(model)
-
-    def _set_model(self, model):
-        if hasattr(self, 'model'):
-            m = self.model()
-            if m: m.infoChanged -= self.infoChanged
-        if model is None:
-            if hasattr(self, 'model'): del self.model
-            self.entries = []
-        else:
-            self.model = weakref.ref(model)
-            self.entries = model.get_info()
-            model.infoChanged += self.infoChanged
-
-    def infoChanged(self, model, *args, **kwargs):
+    def update(self, entries):
         """Read info from model, inform observers."""
         self.layoutAboutToBeChanged.emit()
-        self.entries = model.get_info()
+        self.entries = entries
         self.layoutChanged.emit()
-
-    def setModel(self, model):
-        self._set_model(model)
-        if model is not None: self.infoChanged(model)
 
     def rowCount(self, parent=QModelIndex()):
         if parent.isValid(): return 0
         return len(self.entries)
 
-    #def columnCount(self, parent=QModelIndex()):
-    #    return 1
-
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if not index.isValid(): return None
         if role == Qt.ItemDataRole.DisplayRole:
-            row = index.row()
-            n = len(self.entries)
-            if row == 0 and n > 1:
-                return self.entries[row].text + "  (+{} message{})".format(n-1, "" if n == 2 else "s")
-            else:
-                return self.entries[row].text
+            return self.entries[index.row()].text
         if role == Qt.ItemDataRole.DecorationRole:
             return info_level_icon(self.entries[index.row()].level)
         if role == Qt.ItemDataRole.TextAlignmentRole:
@@ -128,6 +96,37 @@ class InfoListModel(QAbstractListModel):
         if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return 'text'
         return None
+
+
+class InfoListModel(SimpleInfoListModel):
+    """
+    Qt list model of info (warning, errors, etc.) of section model
+    (None section model is allowed and than the list is empty)
+    """
+
+    def __init__(self, model, parent=None, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+        self._set_model(model)
+
+    def _set_model(self, model):
+        if hasattr(self, 'model'):
+            m = self.model()
+            if m: m.infoChanged -= self.infoChanged
+        if model is None:
+            if hasattr(self, 'model'): del self.model
+            self.entries = []
+        else:
+            self.model = weakref.ref(model)
+            self.entries = model.get_info()
+            model.infoChanged += self.infoChanged
+
+    def setModel(self, model):
+        self._set_model(model)
+        if model is not None: self.infoChanged(model)
+
+    def infoChanged(self, model, *args, **kwargs):
+        """Read info from model, inform observers."""
+        self.update(model.get_info())
 
 
 class InfoSource:

@@ -322,28 +322,6 @@ class EditComboBox(ComboBox):
         if event.key() in (Qt.Key.Key_Enter, Qt.Key.Key_Return) and not self.signalsBlocked():
             self.editingFinished.emit()
 
-class InfoListView(QListView):
-
-    def __init__(self, model, parent):
-        super().__init__(parent)
-        self.model = model
-        self.setMouseTracking(True)
-        self._orig_height = None
-
-    def enterEvent(self, event):
-        super().enterEvent(event)
-        rows = self.model.rowCount()
-        if rows > 0:
-            self._orig_height = self.height()
-            self.setFixedHeight(self.sizeHintForRow(0) * rows)
-
-    def leaveEvent(self, event):
-        super().leaveEvent(event)
-        if self._orig_height is not None:
-            self.setFixedHeight(self._orig_height)
-            self._orig_height = None
-
-
 class TextEdit(QTextEdit):
     editingFinished = QtSignal()
 
