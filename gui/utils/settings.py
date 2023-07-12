@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -313,8 +313,13 @@ CONFIG_WIDGETS = {
              SpinBox('help/fontsize', 1, 512,
                      "Default font size in the help window.")),
         ],
+        "Defaults": [
+            ("Default Align ordering",
+             Combo('geometry/default_align_ordering', ['', 'normal', 'reverse'],
+                   "Default ordering in Align geometry container. Affects only newly created items.")),
+        ],
         "Experimental Features": [
-            "Here you can turn on experimental features. Please expect that they do not work 100% reliable.\n"
+            "Here you can turn on experimental features. Please expect that they are not 100% reliable.\n"
             "Turning them on may cause GUI to crash or the correct files may not load properly.\n\n"
             "You have been warned, use at your own risk!\n",
             ("Preserve XML comments",

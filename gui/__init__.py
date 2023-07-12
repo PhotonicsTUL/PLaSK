@@ -628,8 +628,6 @@ class MainWindow(QMainWindow):
         if self.current_tab_index != -1:
             c = self.document.controller_by_index(self.current_tab_index)
             c.on_edit_enter()
-        else:
-            self.info_model.setModel(None)
 
     def tab_change(self, index):
         if index == self.current_tab_index: return

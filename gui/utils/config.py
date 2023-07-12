@@ -93,6 +93,7 @@ DEFAULTS = {
     'geometry/show_origin': True,
     'geometry/show_edges': True,
     'geometry/edges_alpha': 0.2,
+    'geometry/default_align_ordering': '',
     'help/fontsize': 13,
     'help/online': False,
     'launcher/default': 'local',

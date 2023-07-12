@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -20,8 +20,8 @@ from .constructor import construct_geometry_object
 from ...utils import get_manager
 from ...utils.validators import can_be_float, can_be_int, can_be_bool, can_be_one_of
 from ...utils.xml import AttributeReader, OrderedTagReader, xml_to_attr, attr_to_xml
-from ...utils.compat import next
-
+from ...utils.config import CONFIG
+from ...utils.str import empty_to_none
 
 class GNZero(GNode):
 
@@ -421,7 +421,7 @@ class GNAlignContainer(GNContainerBase):
 
     def __init__(self, parent=None, dim=None):
         super().__init__(parent=parent, dim=dim, children_dim=dim)
-        self.order = None
+        self.order = empty_to_none(CONFIG['geometry/default_align_ordering'])
         self.aligners = [GNAligner(None, None) for _ in range(0, self.children_dim)]
         self._document = None
 

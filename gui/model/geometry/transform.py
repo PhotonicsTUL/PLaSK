@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -18,7 +18,6 @@ from .constructor import construct_geometry_object
 from ...utils.str import none_to_empty
 from ...utils.validators import can_be_float, can_be_int
 from ...utils.xml import xml_to_attr, attr_to_xml, require_no_children, get_text
-from ...utils.compat import next
 
 
 basestring = str, bytes
