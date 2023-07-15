@@ -81,7 +81,7 @@ foreach(CONF ${CMAKE_CONFIGURATION_TYPES})   # used by MSVC
 endforeach()
 set(PLASK_PATH "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask")
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+list(INSERT CMAKE_MODULE_PATH 0 ${CMAKE_SOURCE_DIR}/cmake)
 
 if("$ENV{PLASK_VERSION}" STREQUAL "")
     execute_process(COMMAND git show -s --pretty=format:%ad.%h --date=short WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
