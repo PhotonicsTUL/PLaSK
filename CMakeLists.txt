@@ -31,7 +31,10 @@ if(MSVC)    # flags needed by Visual Studio:
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")     # follow C++ standard for exception handling
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DHAVE_SNPRINTF")   # snprintf is not defined in MSVC
     add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS) # hide many warnings which are caused by boost and fmt under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true
-    add_definitions(-DBOOST_ALL_DYN_LINK)   # MSVC+cmake require this to properly detect dynamic boost libraries
+    if (DEFINED Boost_USE_STATIC_LIBS AND NOT Boost_USE_STATIC_LIBS)
+        add_definitions(-DBOOST_ALL_DYN_LINK)   # MSVC+cmake require this to properly detect dynamic boost libraries
+    endif()
+    add_definitions(-DBOOST_ALL_NO_LIB) # disable automatic linking with boost libraries, we link them manually
     #add_definitions(-DFMT_HEADER_ONLY)      # don't compile fmt, workaround for many linker errors
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++14")   # nothing is needed for C++11
 else()
