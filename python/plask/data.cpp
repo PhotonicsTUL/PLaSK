@@ -466,7 +466,7 @@ static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type 
     if (PyArray_NDIM(arr) == 1) {
         size = PyArray_DIMS(arr)[0] / type_dim<T>();
         if (PyArray_STRIDES(arr)[0] != sizeof(T)) {
-            writelog(LOG_DEBUG, u8"Copying numpy array to make is contiguous");
+            writelog(LOG_DEBUG, u8"Copying numpy array to make it contiguous");
             npy_intp sizes[] = {PyArray_DIMS(arr)[0]};
             npy_intp strides[] = {sizeof(T)};
             newarr = py::handle<PyArrayObject>(
@@ -478,7 +478,7 @@ static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type 
                PyArray_DIMS(arr)[1] == type_dim<T>()) {
         size = mesh->size();
         if (PyArray_STRIDES(arr)[0] != sizeof(T)) {
-            writelog(LOG_DEBUG, u8"Copying numpy array to make is contiguous");
+            writelog(LOG_DEBUG, u8"Copying numpy array to make it contiguous");
             npy_intp sizes[] = {static_cast<npy_intp>(size), type_dim<T>()};
             npy_intp strides[] = {static_cast<npy_intp>(sizeof(T)), static_cast<npy_intp>(sizeof(T) / type_dim<T>())};
             newarr = py::handle<PyArrayObject>(

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -82,7 +82,7 @@ void CoeffsArray::construct(PyObject* obj, boost::python::converter::rvalue_from
     size_t size = PyArray_DIMS(arr)[0];
 
     if (PyArray_TYPE(arr) != NPY_CDOUBLE || PyArray_STRIDES(arr)[0] != sizeof(dcomplex)) {
-    writelog(LOG_DEBUG, u8"Copying numpy array to make is contiguous");
+    writelog(LOG_DEBUG, u8"Copying numpy array to make it contiguous");
         npy_intp sizes[] = { (npy_int)size };
         npy_intp strides[] = { sizeof(dcomplex) };
         PyObject* newarr = PyArray_New(&PyArray_Type, 1, sizes,

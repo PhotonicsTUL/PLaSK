@@ -707,7 +707,7 @@ def loss_on_voltage(voltage):
         verr = ELECTRICAL.compute(8)
         terr = THERMAL.compute(1)
         iters += 1
-    DIFFUSION.compute_threshold()
+    DIFFUSION.compute()
     det_lams = linspace(OPTICAL.lam0-2, OPTICAL.lam0+2, 401)+0.2j*(voltage-0.5)/1.5
     det_vals = abs(OPTICAL.get_determinant(det_lams, m=0))
     det_mins = np.r_[False, det_vals[1:] < det_vals[:-1]] & \

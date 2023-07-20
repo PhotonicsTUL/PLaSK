@@ -38,8 +38,10 @@ template <typename Geometry2DType> void Diffusion2DSolver<Geometry2DType>::parse
 
     else if (param == "mesh") {
         auto name = source.getAttribute("ref");
-        if (!name) name.reset(source.requireTextInCurrentTag());
-        else source.requireTagEnd();
+        if (!name)
+            name.reset(source.requireTextInCurrentTag());
+        else
+            source.requireTagEnd();
         auto found = manager.meshes.find(*name);
         if (found != manager.meshes.end()) {
             if (shared_ptr<RectangularMesh<2>> mesh = dynamic_pointer_cast<RectangularMesh<2>>(found->second)) {
@@ -53,7 +55,6 @@ template <typename Geometry2DType> void Diffusion2DSolver<Geometry2DType>::parse
             }
         }
     }
-
 
     else if (!this->parseFemConfiguration(source, manager)) {
         this->parseStandardConfiguration(source, manager);
@@ -379,12 +380,33 @@ Diffusion2DSolver<Geometry2DType>::ConcentrationDataImpl::ConcentrationDataImpl(
                                                                                 InterpolationMethod interp)
     : solver(solver), destination_mesh(dest_mesh), interpolationFlags(InterpolationFlags(solver->geometry)) {
     concentrations.reserve(solver->active.size());
-    for (const auto& active : solver->active) {
-        shared_ptr<RectangularMesh<2>> mesh(
-            new RectangularMesh<2>(active.mesh(), shared_ptr<OnePointAxis>(new OnePointAxis(active.vert()))));
-        // TODO make custom interpolation using the polynomials, we compute on
-        concentrations.emplace_back(
-            interpolate(mesh, active.conc, dest_mesh, getInterpolationMethod<INTERPOLATION_SPLINE>(interp), interpolationFlags));
+    if (interp == InterpolationMethod::INTERPOLATION_DEFAULT || interp == InterpolationMethod::INTERPOLATION_SPLINE) {
+        for (const auto& active : solver->active) {
+            auto src_mesh = active.mesh();
+            concentrations.emplace_back(LazyData<double>(dest_mesh->size(), [this, active, src_mesh](size_t i) -> double {
+                double x = interpolationFlags.wrap(0, destination_mesh->at(i).c0);
+                assert(src_mesh->at(0) <= x && x <= src_mesh->at(src_mesh->size() - 1));
+                size_t idx = src_mesh->findIndex(x);
+                if (idx == 0) return active.conc[0];
+                const double x0 = src_mesh->at(idx - 1);
+                const double L = src_mesh->at(idx) - x0;
+                x -= x0;
+                double L2 = L * L;
+                double L3 = L2 * L;
+                double x2 = x * x;
+                double x3 = x2 * x;
+                return (1 - 3 * x2 / L2 + 2 * x3 / L3) * active.conc[idx - 1] + (3 * x2 / L2 - 2 * x3 / L3) * active.conc[idx] +
+                       (x - 2 * x2 / L + x3 / L2) * active.dconc[idx - 1] + (-x2 / L + x3 / L2) * active.dconc[idx];
+            }));
+        }
+
+    } else {
+        for (const auto& active : solver->active) {
+            shared_ptr<RectangularMesh<2>> mesh(
+                new RectangularMesh<2>(active.mesh(), shared_ptr<OnePointAxis>(new OnePointAxis(active.vert()))));
+            concentrations.emplace_back(interpolate(mesh, active.conc, dest_mesh,
+                                                    getInterpolationMethod<INTERPOLATION_SPLINE>(interp), interpolationFlags));
+        }
     }
 }
 
