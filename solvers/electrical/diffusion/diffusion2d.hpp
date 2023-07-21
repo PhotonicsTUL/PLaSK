@@ -39,14 +39,13 @@ struct ActiveRegion {
     size_t left, right, bottom, top;
     double QWheight;
 
-    shared_ptr<RectangularMesh<2>> mesh2d;
+    shared_ptr<RectangularMesh<2>> mesh2, emesh2, mesh1, emesh1;
+    // shared_ptr<RectangularMesh<2>> fmesh2, fmesh1;
     std::vector<std::pair<double, double>> QWs;
 
-    shared_ptr<RectangularMesh<2>> emesh;
-    shared_ptr<RectangularMesh<2>> jmesh;
+    DataVector<double> U;
 
-    DataVector<double> conc;
-    DataVector<double> dconc;
+    std::vector<double> modesP;
 
     template <typename SolverT>
     ActiveRegion(const SolverT* solver,
@@ -62,23 +61,50 @@ struct ActiveRegion {
           bottom(b),
           top(t),
           QWheight(h),
-          mesh2d(
-              new RectangularMesh<2>(shared_ptr<OrderedAxis>(new OrderedAxis()), shared_ptr<OrderedAxis>(new OrderedAxis(QWz)))) {
-        auto begin = solver->getMesh()->axis[0]->begin();
-        dynamic_pointer_cast<OrderedAxis>(mesh2d->axis[0])->addOrderedPoints(begin + left, begin + right + 1);
+          mesh2(new RectangularMesh<2>(shared_ptr<OrderedAxis>(new OrderedAxis()),
+                                       shared_ptr<OrderedAxis>(new OrderedAxis(QWz)),
+                                       RectangularMesh<2>::ORDER_01)) {
+        auto begin = solver->getMesh()->tran()->begin();
+        dynamic_pointer_cast<OrderedAxis>(mesh2->tran())->addOrderedPoints(begin + left, begin + right + 1);
 
         QWs.reserve(QWbt.size());
-        for (auto& bt : QWbt) QWs.emplace_back(solver->getMesh()->axis[1]->at(bt.first), solver->getMesh()->axis[1]->at(bt.second));
+        for (auto& bt : QWbt) QWs.emplace_back(solver->getMesh()->vert()->at(bt.first), solver->getMesh()->vert()->at(bt.second));
 
-        shared_ptr<OnePointAxis> vert(new OnePointAxis(this->vert()));
         shared_ptr<OrderedAxis> mesh = this->mesh();
-        emesh.reset(new RectangularMesh<2>(mesh->getMidpointAxis(), vert));
-        jmesh.reset(new RectangularMesh<2>(mesh, vert));
+        emesh2.reset(new RectangularMesh<2>(mesh->getMidpointAxis(), mesh2->vert(), RectangularMesh<2>::ORDER_01));
+        mesh1.reset(new RectangularMesh<2>(mesh, make_shared<OnePointAxis>(this->vert())));
+        emesh1.reset(new RectangularMesh<2>(emesh2->tran(), mesh1->vert()));
+
+        // OrderedAxis faxis0;
+        // faxis0.addOrderedPoints(mesh->begin(), mesh->end(), mesh->size(), 0.);
+        // faxis0.addOrderedPoints(emesh2->tran()->begin(), emesh2->tran()->end(), emesh2->tran()->size(), 0.);
+        // fmesh2.reset(new RectangularMesh<2>(faxis0.getMidpointAxis(), mesh2->vert(), RectangularMesh<2>::ORDER_01));
+        // fmesh1.reset(new RectangularMesh<2>(fmesh2->tran(), emesh1->vert()));
+        // assert(fmesh1->size() == 2 * emesh1->size());
     }
 
-    shared_ptr<OrderedAxis> mesh() const { return dynamic_pointer_cast<OrderedAxis>(mesh2d->axis[0]); }
+    shared_ptr<OrderedAxis> mesh() const {
+        assert(dynamic_pointer_cast<OrderedAxis>(mesh2->tran()));
+        return static_pointer_cast<OrderedAxis>(mesh2->tran());
+    }
 
-    double vert() const { return mesh2d->axis[1]->at((mesh2d->axis[1]->size() + 1) / 2 - 1); }
+    double vert() const { return mesh2->vert()->at((mesh2->vert()->size() + 1) / 2 - 1); }
+
+    template <typename ReceiverType>
+    LazyData<typename ReceiverType::ValueType> verticallyAverage(
+        const ReceiverType& receiver,
+        const shared_ptr<const RectangularMesh<2>>& mesh,
+        InterpolationMethod interp = InterpolationMethod::INTERPOLATION_SPLINE) const {
+        assert(mesh->getIterationOrder() == RectangularMesh<2>::ORDER_01);
+        auto data = receiver(mesh, interp);
+        const size_t n = mesh->vert()->size();
+        return LazyData<typename ReceiverType::ValueType>(
+            mesh->tran()->size(), [this, data, n](size_t i) -> typename ReceiverType::ValueType {
+                typename ReceiverType::ValueType val(Zero<typename ReceiverType::ValueType>());
+                for (size_t j = n * i, end = n * (i + 1); j < end; ++j) val += data[j];
+                return val / n;
+            });
+    }
 };
 
 /**
@@ -103,29 +129,61 @@ struct PLASK_SOLVER_API Diffusion2DSolver : public FemSolverWithMesh<Geometry2DT
 
     std::vector<ActiveRegion> active;  ///< Active regions information
 
-    /// Make stiffness matrix
-    void setLocalMatrix(const double R,
-                        const double L,
-                        const double A,
-                        const double B,
-                        const double C,
-                        const double D,
-                        const double* U,
-                        const double* J,
-                        double& K00,
-                        double& K01,
-                        double& K02,
-                        double& K03,
-                        double& K11,
-                        double& K12,
-                        double& K13,
-                        double& K22,
-                        double& K23,
-                        double& K33,
-                        double& F0,
-                        double& F1,
-                        double& F2,
-                        double& F3);
+    /// Make local stiffness matrix and load vector
+    inline void setLocalMatrix(const double R,
+                               const double L,
+                               const double L2,
+                               const double L3,
+                               const double L4,
+                               const double L5,
+                               const double L6,
+                               const double A,
+                               const double B,
+                               const double C,
+                               const double D,
+                               const double* U,
+                               const double* J,
+                               double& K00,
+                               double& K01,
+                               double& K02,
+                               double& K03,
+                               double& K11,
+                               double& K12,
+                               double& K13,
+                               double& K22,
+                               double& K23,
+                               double& K33,
+                               double& F0,
+                               double& F1,
+                               double& F2,
+                               double& F3);
+
+    /// Add local stiffness matrix and load vector for SHB
+    inline void addLocalBurningMatrix(const double R,
+                                      const double L,
+                                      const double L2,
+                                      const double L3,
+                                      const double* P,
+                                      const double* g,
+                                      const double* dg,
+                                      const double ug,
+                                      double& K00,
+                                      double& K01,
+                                      double& K02,
+                                      double& K03,
+                                      double& K11,
+                                      double& K12,
+                                      double& K13,
+                                      double& K22,
+                                      double& K23,
+                                      double& K33,
+                                      double& F0,
+                                      double& F1,
+                                      double& F2,
+                                      double& F3);
+
+    /// Integrate linearly changing function over an element
+    template <typename T> inline T integrateLinear(const double R, const double L, const T* P);
 
     /// Initialize the solver
     void onInitialize() override;
@@ -135,15 +193,6 @@ struct PLASK_SOLVER_API Diffusion2DSolver : public FemSolverWithMesh<Geometry2DT
 
     /// Get info on active region
     void setActiveRegions();
-
-    /// Set stiffness matrix + load vector
-    void setMatrix(FemMatrix& K,
-                   DataVector<double>& F,
-                   const DataVector<double>& U0,
-                   const shared_ptr<OrderedAxis> mesh,
-                   double z,
-                   const LazyData<double>& temp,
-                   const DataVector<double>& J);
 
     // void computeInitial(ActiveRegion& active);
 
@@ -188,7 +237,7 @@ struct PLASK_SOLVER_API Diffusion2DSolver : public FemSolverWithMesh<Geometry2DT
             auto simple_mesh = makeGeometryGrid(geometry);
             auto mesh1d = (*generator)(geometry);
             if (shared_ptr<MeshAxis> axis = dynamic_pointer_cast<MeshAxis>(mesh1d))
-                return make_shared<RectangularMesh<2>>(axis, simple_mesh->axis[1]);
+                return make_shared<RectangularMesh<2>>(axis, simple_mesh->vert());
             throw BadInput("Generator1D", "1D mesh must be MeshAxis");
         }
     };
@@ -217,19 +266,21 @@ struct PLASK_SOLVER_API Diffusion2DSolver : public FemSolverWithMesh<Geometry2DT
      * Run calculations for specified active region
      * \param loops maximum number of loops to run
      * \param act active region number to calculate
+     * \param shb \c true if spatial hole burning should be taken into account
      * \return max correction of potential against the last call
      **/
-    double compute(unsigned loops, size_t act);
+    double compute(unsigned loops, bool shb, size_t act);
 
     /**
      * Run calculations for all active regions
      * \param loops maximum number of loops to run
+     * \param shb \c true if spatial hole burning should be taken into account
      * \return max correction of potential against the last call
      **/
-    double compute(unsigned loops = 0) {
+    double compute(unsigned loops = 0, bool shb = false) {
         this->initCalculation();
         double maxerr = 0.;
-        for (size_t i = 0; i < active.size(); ++i) maxerr = max(maxerr, compute(loops, i));
+        for (size_t i = 0; i < active.size(); ++i) maxerr = max(maxerr, compute(loops, shb, i));
         return maxerr;
     }
 
@@ -246,15 +297,13 @@ struct PLASK_SOLVER_API Diffusion2DSolver : public FemSolverWithMesh<Geometry2DT
     void setMesh(shared_ptr<MeshD<1>> mesh) {
         auto simple_mesh = makeGeometryGrid(this->geometry);
         if (shared_ptr<MeshAxis> axis = dynamic_pointer_cast<MeshAxis>(mesh)) {
-            shared_ptr<RectangularMesh<2>> mesh2d(new RectangularMesh<2>(axis, simple_mesh->axis[1]));
+            shared_ptr<RectangularMesh<2>> mesh2d(new RectangularMesh<2>(axis, simple_mesh->vert()));
             this->setMesh(mesh2d);
         } else
             throw BadInput(this->getId(), "1D mesh must be MeshAxis");
     }
 
-    void setMesh(shared_ptr<MeshGeneratorD<1>> generator) {
-        this->setMesh(make_shared<From1DGenerator>(generator));
-    }
+    void setMesh(shared_ptr<MeshGeneratorD<1>> generator) { this->setMesh(make_shared<From1DGenerator>(generator)); }
 
     size_t activeRegionsCount() const { return active.size(); }
 
