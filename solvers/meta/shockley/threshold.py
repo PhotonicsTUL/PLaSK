@@ -913,6 +913,7 @@ class ThresholdSearchCyl(ThresholdSearch):
             self._read_attr(tag, 'lam0', self.optical, float)
             self._read_attr(tag, 'vlam', self.optical, float)
             self._read_attr(tag, 'vat', self.optical, float)
+            self._read_attr(tag, 'emission', self.optical)
             maxlam = tag.get('maxlam')
             if maxlam is not None:
                 try:
@@ -1167,6 +1168,7 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
             self._read_attr(tag, 'k-method', self.optical, pyattr='kmethod')
             self._read_attr(tag, 'k-scale', self.optical, float, 'kscale')
             self._read_attr(tag, 'transfer', self.optical)
+            self._read_attr(tag, 'emission', self.optical)
             maxlam = tag.get('maxlam')
             if maxlam is not None:
                 try:
@@ -1378,6 +1380,7 @@ class ThresholdSearch2D(ThresholdSearch):
             self._read_attr(tag, 'polarization', self.optical, float)
             self._read_attr(tag, 'vneff', self.optical, float)
             self._read_attr(tag, 'vat', self.optical, float)
+            self._read_attr(tag, 'emission', self.optical)
             self.dneff = float(tag.get('dneff', self.dneff))
             self.mn = int(tag.get('mn', self.mn))
         else:

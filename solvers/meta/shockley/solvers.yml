@@ -526,6 +526,14 @@
       unit: µm
       help: >
         Horizontal position of at which the vertical part of the field is calculated.
+    - attr: emission
+      label: Direction of emission
+      type: choice
+      default: top
+      choices: [ top, bottom ]
+      help: >
+        Direction of the useful light emission. Necessary for the over-threshold model to correctly
+        compute the output power.
 
   - &threshold-root
     tag: root
@@ -1230,6 +1238,14 @@
       unit: µm
       help: >
         Horizontal position of at which the vertical part of the field is calculated.
+    - attr: emission
+      label: Direction of emission
+      type: choice
+      default: front
+      choices: [ front, back ]
+      help: >
+        Direction of the useful light emission. Necessary for the over-threshold model to correctly
+        compute the output power.
 
   - *threshold-root
 
@@ -1403,6 +1419,17 @@
     - *lam
     - *mn
     - *dneff
+    - attr: emission
+      label: Direction of emission
+      type: choice
+      default: undefined
+      choices:
+      - undefined
+      - top
+      - bottom
+      help: >
+        Direction of the useful light emission. Necessary for the over-threshold model to correctly
+        compute the output power. In this solver only top and bottom emission is possible.
 
   - *threshold-root
 
