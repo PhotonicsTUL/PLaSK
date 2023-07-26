@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -329,7 +329,7 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
             u8"{0} \n\n"
 
             u8"This field holds a list of boundary conditions for the solver. You may access\n"
-            u8"and alter is elements a normal Python list. Each element is a special class\n"
+            u8"and alter its elements a normal Python list. Each element is a special class\n"
             u8"that has two attributes:\n\n"
 
             u8"============= ==================================================================\n"

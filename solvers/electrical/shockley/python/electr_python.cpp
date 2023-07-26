@@ -266,11 +266,15 @@ template <typename GeoT> inline static void register_cond_solver(const char* nam
     ExportSolver<__Class__> solver = register_electrical_solver<__Class__>(name, geoname);
     solver.add_property("cond", &__Class__::getCond0, &__Class__::setCond0,
                         u8"Junction conductivity function [S/m].\n\n"
-                        u8"This function should take current density (kA/cm²) and temperature (K)\n"
-                        u8"as arguments and return a conductivity [S/m]. In case,there is more than\n"
-                        u8"one junction you may set such function for any of them by using ``cond#``\n"
-                        u8"property, where # is the junction number (specified by a role ``junction#``\n"
-                        u8" or ``active#``).\n\n"
+                        u8"This function should take junction voltage (V), current density (kA/cm²)\n"
+                        u8"and temperature (K) as arguments and return a conductivity [S/m]. In case,\n"
+                        u8"there is more than one junction you may set such function for any of them\n"
+                        u8"by using ``cond#`` property, where # is the junction number (specified by\n"
+                        u8"a role ``junction#`` or ``active#``).\n\n"
+                        u8"Example:\n\n"
+                        u8"    >>> def cond(U, j, T):\n"
+                        u8"    ...     return 1e-3 * j**2 + 1e-4 * T**2\n"
+                        u8"    >>> solver.cond = cond\n\n"
                         u8"``cond`` is an alias for ``cond0``.\n");
     solver.def("__getattr__", &__Class__::__getattr__);
     solver.def("__setattr__", &__Class__::__setattr__);
