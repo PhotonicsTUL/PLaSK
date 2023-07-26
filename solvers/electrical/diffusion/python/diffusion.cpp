@@ -13,11 +13,11 @@ using namespace plask::electrical::diffusion;
 template <typename SolverT>
 static double DiffusionSolver_compute(SolverT* solver, unsigned loops, bool shb, const py::object& pact) {
     if (pact.is_none()) {
-        return solver->compute(loops);
+        return solver->compute(loops, shb);
     } else {
         int act = py::extract<int>(pact);
         if (act < 0) act = solver->activeRegionsCount() + act;
-        return solver->compute(loops, act);
+        return solver->compute(loops, shb, act);
     }
 }
 
@@ -29,7 +29,7 @@ static void DiffusionSolver2D_compute_threshold(Diffusion2DSolver<Geometry2DCart
 static void DiffusionSolver2D_compute_overthreshold(Diffusion2DSolver<Geometry2DCartesian>* solver) {
     writelog(LOG_WARNING,
              u8"DiffusionSolver2D.compute_overthreshold() is deprecated. Use DiffusionSolver2D.compute(shb=True) instead.");
-    solver->compute(0, false);
+    solver->compute(0, true);
 }
 
 static void DiffusionSolverCyl_compute_threshold(Diffusion2DSolver<Geometry2DCylindrical>* solver) {
@@ -40,7 +40,12 @@ static void DiffusionSolverCyl_compute_threshold(Diffusion2DSolver<Geometry2DCyl
 static void DiffusionSolverCyl_compute_overthreshold(Diffusion2DSolver<Geometry2DCylindrical>* solver) {
     writelog(LOG_WARNING,
              u8"DiffusionSolverCyl.compute_overthreshold() is deprecated. Use DiffusionSolverCyl.compute(shb=True) instead.");
-    solver->compute(0, false);
+    solver->compute(0, true);
+}
+
+template <typename SolverT> static double DiffusionSolver_get_burning_for_mode(SolverT* solver, int mode) {
+    if (mode < 0) mode = solver->inLightE.size() + mode;
+    return solver->get_burning_integral_for_mode(mode);
 }
 
 template <typename GeometryT> struct ExportedDiffusion2DSolverDefaultDefs {
@@ -131,13 +136,14 @@ BOOST_PYTHON_MODULE(diffusion) {
         RECEIVER(inWavelength, u8"It is required only for the SHB computations.");
         RECEIVER(inLightE, u8"It is required only for the SHB computations.");
         PROVIDER(outCarriersConcentration, u8"");
-        // METHOD(get_total_burning, burning_integral, u8"Compute total power burned over threshold [mW].");
-        // solver.def_readonly("mode_burns", &__Class__::modesP, u8"Power burned over threshold by each mode [mW].");
+        METHOD(get_total_burning, get_burning_integral, u8"Get total power burned over threshold [mW].");
+        solver.def("get_burning_for_mode", DiffusionSolver_get_burning_for_mode<__Class__>,
+                   u8"Get power burned over threshold by specified mode [mW].", py::arg("mode"));
         registerFemSolver(solver);
 
         // TODO remove some day
         solver.def("compute_threshold", &DiffusionSolverCyl_compute_threshold, u8"Deprecated method. Use compute() instead.");
-        solver.def("compute_overthreshold", &DiffusionSolverCyl_compute_threshold,
+        solver.def("compute_overthreshold", &DiffusionSolverCyl_compute_overthreshold,
                    u8"Deprecated method. Use compute(shb=True) instead.");
     }
 
@@ -161,13 +167,14 @@ BOOST_PYTHON_MODULE(diffusion) {
         RECEIVER(inWavelength, u8"It is required only for the SHB computations.");
         RECEIVER(inLightE, u8"It is required only for the SHB computations.");
         PROVIDER(outCarriersConcentration, u8"");
-        // METHOD(get_total_burning, burning_integral, u8"Compute total power burned over threshold [mW].");
-        // solver.def_readonly("mode_burns", &__Class__::modesP, u8"Power burned over threshold by each mode [mW].");
+        METHOD(get_total_burning, get_burning_integral, u8"Get total power burned over threshold [mW].");
+        solver.def("get_burning_for_mode", DiffusionSolver_get_burning_for_mode<__Class__>,
+                   u8"Get power burned over threshold by specified mode [mW].", py::arg("mode"));
         registerFemSolver(solver);
 
         // TODO remove some day
         solver.def("compute_threshold", &DiffusionSolver2D_compute_threshold, u8"Deprecated method. Use compute() instead.");
-        solver.def("compute_overthreshold", &DiffusionSolver2D_compute_threshold,
+        solver.def("compute_overthreshold", &DiffusionSolver2D_compute_overthreshold,
                    u8"Deprecated method. Use compute(shb=True) instead.");
     }
 }

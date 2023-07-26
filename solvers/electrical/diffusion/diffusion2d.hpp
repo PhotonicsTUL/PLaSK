@@ -94,7 +94,7 @@ struct ActiveRegion {
     LazyData<typename ReceiverType::ValueType> verticallyAverage(
         const ReceiverType& receiver,
         const shared_ptr<const RectangularMesh<2>>& mesh,
-        InterpolationMethod interp = InterpolationMethod::INTERPOLATION_SPLINE) const {
+        InterpolationMethod interp = InterpolationMethod::INTERPOLATION_DEFAULT) const {
         assert(mesh->getIterationOrder() == RectangularMesh<2>::ORDER_01);
         auto data = receiver(mesh, interp);
         const size_t n = mesh->vert()->size();
@@ -306,6 +306,10 @@ struct PLASK_SOLVER_API Diffusion2DSolver : public FemSolverWithMesh<Geometry2DT
     void setMesh(shared_ptr<MeshGeneratorD<1>> generator) { this->setMesh(make_shared<From1DGenerator>(generator)); }
 
     size_t activeRegionsCount() const { return active.size(); }
+
+    double get_burning_integral_for_mode(size_t mode) const;
+
+    double get_burning_integral() const;
 
   protected:
     const LazyData<double> getConcentration(CarriersConcentration::EnumType what,

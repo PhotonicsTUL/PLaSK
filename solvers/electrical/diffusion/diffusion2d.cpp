@@ -15,7 +15,7 @@
 
 namespace plask { namespace electrical { namespace diffusion {
 
-constexpr double inv_hc = 1.0e-9 / (phys::c * phys::h_J);
+constexpr double inv_hc = 1.0e-13 / (phys::c * phys::h_J);
 using phys::Z0;
 
 template <typename Geometry2DType>
@@ -287,7 +287,7 @@ inline T Diffusion2DSolver<Geometry2DCartesian>::integrateLinear(const double R,
 template <>
 template <typename T>
 inline T Diffusion2DSolver<Geometry2DCylindrical>::integrateLinear(const double R, const double L, const T* P) {
-    return (PI / 6.) * L * (L * (P[0] + 2 * P[1]) + 3 * R * (P[0] + P[1]));
+    return (PI / 3.) * L * (L * (P[0] + 2 * P[1]) + 3 * R * (P[0] + P[1]));
 }
 
 template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::compute(unsigned loops, bool shb, size_t act) {
@@ -355,7 +355,7 @@ template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::com
         for (size_t n = 0; n != nmodes; ++n) {
             double wavelength = real(inWavelength(n));
             writelog(LOG_DEBUG, "Mode {} wavelength: {} nm", n, wavelength);
-            auto P = active.verticallyAverage(inLightE, active.mesh2, InterpolationMethod::INTERPOLATION_SPLINE);
+            auto P = active.verticallyAverage(inLightE, active.mesh2);
             for (size_t i = 0; i != nn; ++i) {
                 Ps[n][i].c00 = (0.5 / Z0) * real(P[i].c0 * conj(P[i].c0) + P[i].c1 * conj(P[i].c1));
                 Ps[n][i].c11 = (0.5 / Z0) * real(P[i].c2 * conj(P[i].c2));
@@ -398,12 +398,14 @@ template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::com
             // clang-format on
         }
 
+        write_debug("{}: Iteration {}", this->getId(), loop);
+
         // Add SHB
         if (shb) {
             std::fill(active.modesP.begin(), active.modesP.end(), 0.);
             for (size_t n = 0; n != nmodes; ++n) {
                 double wavelength = real(inWavelength(n));
-                double factor = 1e-4 * inv_hc * wavelength;
+                double factor = inv_hc * wavelength;
                 auto gain = inGain(active.emesh1, wavelength, InterpolationMethod::INTERPOLATION_SPLINE);
                 auto dgdn = inGain(Gain::DGDN, active.emesh1, wavelength, InterpolationMethod::INTERPOLATION_SPLINE);
                 const Tensor2<double>* Pdata = Ps[n].data();
@@ -427,8 +429,9 @@ template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::com
                                           F[i], F[i+1], F[i+2], F[i+3]);
                     // clang-format ons
                 }
-                active.modesP[n] *= 1e-1 * active.QWheight;
-                // 10⁻¹ from µm to cm conversion and conversion to mW (r dr), (...) - photon energy
+                active.modesP[n] *= 1e-13 * active.QWheight;
+                // 10⁻¹³ from µm to cm conversion and conversion to mW (r dr), (...) — photon energy
+                writelog(LOG_DEBUG, "{}: Mode {} burned power: {} mW", this->getId(), n, active.modesP[n]);
             }
         }
 
@@ -474,6 +477,27 @@ template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::com
 
     return toterr;
 }
+
+template <typename Geometry2DType>
+double Diffusion2DSolver<Geometry2DType>::get_burning_integral_for_mode(size_t mode) const {
+    if (mode >= inLightE.size()) throw BadInput(this->getId(), "Mode index out of range");
+    size_t i = 0;
+    double res = 0.;
+    for (const auto& active: this->active) {
+        if (mode >= active.modesP.size()) throw Exception("{}: SHB not computed for active region {}", this->getId(), i);
+        res += active.modesP[mode];
+        ++i;
+    }
+    return res;
+}
+
+template <typename Geometry2DType>
+double Diffusion2DSolver<Geometry2DType>::get_burning_integral() const {
+    double res = 0.;
+    for (size_t i = 0; i != inLightE.size(); ++i) res += get_burning_integral_for_mode(i);
+    return res;
+}
+
 
 template <typename Geometry2DType>
 Diffusion2DSolver<Geometry2DType>::ConcentrationDataImpl::ConcentrationDataImpl(const Diffusion2DSolver* solver,
