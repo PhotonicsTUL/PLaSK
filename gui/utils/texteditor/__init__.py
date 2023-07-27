@@ -465,7 +465,10 @@ class EditorWidget(QWidget):
         self._replaced_selections = []
 
     def cursor_position_changed(self):
-        line_in_file = self.editor.line_numbers.offset or 0
+        try:
+            line_in_file = self.editor.line_numbers.offset or 0
+        except AttributeError:
+            line_in_file = 0
         cursor = self.editor.textCursor()
         self.position_label.setText('{}:{}  '.format(cursor.blockNumber() + line_in_file + 1, cursor.columnNumber() + 1))
 
@@ -653,7 +656,10 @@ class EditorWidget(QWidget):
                 if escape:
                     result += text[part:i]
                     part = i + 1
-                    result += ("\\"+c).encode('raw_unicode_escape').decode('unicode_escape')
+                    try:
+                        result += ("\\"+c).encode('raw_unicode_escape').decode('unicode_escape')
+                    except (UnicodeEncodeError, UnicodeDecodeError):
+                        result += "\\"+c
                 escape = False
         result += text[part:]
         return result
