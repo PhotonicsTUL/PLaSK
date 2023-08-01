@@ -10,7 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.14)
 # cmake_policy(SET CMP0017 OLD)   # ensure our CMake modules are loaded first
 
 project(plask-doc NONE)

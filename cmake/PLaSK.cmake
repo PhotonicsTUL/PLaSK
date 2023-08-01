@@ -1,7 +1,7 @@
 #
 # Helpers for cmake files in solvers subdirectories
 #
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.14)
 
 if(POLICY CMP0046)
     cmake_policy(SET CMP0046 NEW)       # ensure add_dependencies raises error if target does not exist
@@ -86,8 +86,8 @@ macro(make_default)
         set(PLaSK_LIBRARIES plask)
     endif()
 
-    if(NOT PLaSK_PYTHON_LIBRARIES)
-        set(PLaSK_PYTHON_LIBRARIES plask_python)
+    if(NOT PLaSK_Python3_LIBRARIES)
+        set(PLaSK_Python3_LIBRARIES plask_python)
     endif()
 
     # Build solver library
@@ -124,7 +124,7 @@ macro(make_default)
         else()
             add_library(${SOLVER_PYTHON_MODULE} MODULE ${interface_src})
         endif()
-        target_link_libraries(${SOLVER_PYTHON_MODULE} ${SOLVER_LIBRARY} ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} ${PLaSK_PYTHON_LIBRARIES} ${PLaSK_LIBRARIES} ${SOLVER_PYTHON_LINK_LIBRARIES})
+        target_link_libraries(${SOLVER_PYTHON_MODULE} ${SOLVER_LIBRARY} ${Boost_Python3_LIBRARIES} ${Python3_LIBRARIES} ${PLaSK_Python3_LIBRARIES} ${PLaSK_LIBRARIES} ${SOLVER_PYTHON_LINK_LIBRARIES})
         set_target_properties(${SOLVER_PYTHON_MODULE} PROPERTIES
                               LIBRARY_OUTPUT_DIRECTORY ${PLASK_SOLVER_PATH}
                               OUTPUT_NAME ${SOLVER_NAME}

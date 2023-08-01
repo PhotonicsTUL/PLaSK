@@ -10,10 +10,12 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.14)
 
-if(${CMAKE_VERSION} VERSION_GREATER "3.0.9")
-    cmake_policy(SET CMP0054 NEW)       # silence unnesessary warning
+# Silence unnesessary warning
+cmake_policy(SET CMP0054 NEW)
+if(POLICY CMP0148)
+    cmake_policy(SET CMP0148 NEW)
 endif()
 
 project(plask)
@@ -182,14 +184,10 @@ if(BUILD_PYTHON)
     set(PLASK_PYTHON_PATH "${PLASK_PATH}/python/plask")
 
     if(NOT PYTHON_VERSION)
-        find_package(PythonInterp "3.5")
+        find_package(Python3 "3.8" COMPONENTS Interpreter Development NumPy REQUIRED)
     else()
-        find_package(PythonInterp ${PYTHON_VERSION} REQUIRED)
+        find_package(Python3 ${PYTHON_VERSION} EXACT COMPONENTS Interpreter Development NumPy REQUIRED)
     endif()
-
-    find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
-    find_package(numpy REQUIRED)
-
 endif(BUILD_PYTHON)
 
 find_package(EXPAT REQUIRED)
@@ -210,15 +208,15 @@ if(USE_STATIC_BOOST)
 endif(USE_STATIC_BOOST)
 
 if(BUILD_PYTHON)
-    foreach(boost_python "python-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}"
-                         "python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}"
-                         "python${PYTHON_VERSION_MAJOR}")
+    foreach(boost_python "python-py${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}"
+                         "python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}"
+                         "python${Python3_VERSION_MAJOR}")
         find_package(Boost QUIET COMPONENTS "${boost_python}")
         unset(Boost_LIBRARIES)
         string(TOUPPER "${boost_python}" boost_python_libraries_name)
         if(Boost_${boost_python_libraries_name}_FOUND)
             list(APPEND boost_components "${boost_python}")
-            set(Boost_PYTHON_LIBRARIES ${Boost_${boost_python_libraries_name}_LIBRARIES})
+            set(Boost_Python3_LIBRARIES ${Boost_${boost_python_libraries_name}_LIBRARIES})
             break()
         endif()
     endforeach()
@@ -369,7 +367,7 @@ if(INSTALL_DEV)
 endif()
 
 set(PLaSK_LIBRARIES libplask)
-set(PLaSK_PYTHON_LIBRARIES libplask_python)
+set(PLaSK_Python3_LIBRARIES libplask_python)
 
 # ---------- Default materials --------------------------------------------
 
@@ -398,14 +396,9 @@ if(BUILD_PYTHON)
                                COMMAND ${CMAKE_COMMAND} ARGS -E copy ${py_file} ${PLASK_PYTHON_PATH}${py_dir}/${py_file_name}
                                DEPENDS ${py_file})
             if(WIN32)
-                if(${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
-                    list(APPEND python_plask_pyc ${PLASK_PYTHON_PATH}${py_dir}/${py_file_name}c)
-                    list(APPEND python_plask_pyo ${PLASK_PYTHON_PATH}${py_dir}/${py_file_name}o)
-                else()
-                    get_filename_component(py_file_base ${py_file} NAME_WE)
-                    list(APPEND python_plask_pyc ${PLASK_PYTHON_PATH}${py_dir}/__pycache__/${py_file_base}.cpython-${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.pyc)
-                    list(APPEND python_plask_pyo ${PLASK_PYTHON_PATH}${py_dir}/__pycache__/${py_file_base}.cpython-${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.opt-1.pyc)
-                endif()
+                get_filename_component(py_file_base ${py_file} NAME_WE)
+                list(APPEND python_plask_pyc ${PLASK_PYTHON_PATH}${py_dir}/__pycache__/${py_file_base}.cpython-${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.pyc)
+                list(APPEND python_plask_pyo ${PLASK_PYTHON_PATH}${py_dir}/__pycache__/${py_file_base}.cpython-${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.opt-1.pyc)
             endif()
         endforeach()
 
@@ -418,20 +411,15 @@ if(BUILD_PYTHON)
         add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${PLASK_PYTHON_PATH})
         add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PYTHON_PATH})
         foreach(py_dir "" "/util")
-            if(${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
-                install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask${py_dir} COMPONENT core)
-                install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask${py_dir} COMPONENT core)
-            else()
-                install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask${py_dir}/__pycache__ COMPONENT core)
-                install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask${py_dir}/__pycache__ COMPONENT core)
-            endif()
+            install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask${py_dir}/__pycache__ COMPONENT core)
+            install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask${py_dir}/__pycache__ COMPONENT core)
         endforeach()
     endif()
 
-    include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
+    include_directories(${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
 
     add_library(libplask_python SHARED ${python_plask_src})
-    target_link_libraries(libplask_python ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
+    target_link_libraries(libplask_python ${Python3_LIBRARIES} ${Boost_Python3_LIBRARIES} libplask)
     set_target_properties(libplask_python PROPERTIES OUTPUT_NAME plask_python)
     if(DEFINED no_strict_aliasing_flag)
         set_target_properties(libplask_python PROPERTIES COMPILE_FLAGS "${no_strict_aliasing_flag} -DPLASK_PYTHON_EXPORTS")
@@ -456,7 +444,7 @@ if(BUILD_PYTHON)
         else()
             add_library(plask_module MODULE ${python_plask_src})
         endif()
-        target_link_libraries(plask_module ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
+        target_link_libraries(plask_module ${Python3_LIBRARIES} ${Boost_Python3_LIBRARIES} libplask)
         set_target_properties(plask_module PROPERTIES OUTPUT_NAME plask_python)
         if(DEFINED no_strict_aliasing_flag)
             set_target_properties(plask_module PROPERTIES COMPILE_FLAGS "${no_strict_aliasing_flag} -DPLASK_PYTHON_EXPORTS")
@@ -494,7 +482,7 @@ if(BUILD_PYTHON)
         add_executable(plask python/exe_main.cpp)
         set(plask_binary plask)
     endif()
-    target_link_libraries(plask ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask_python libplask)
+    target_link_libraries(plask ${Boost_Python3_LIBRARIES} ${Python3_LIBRARIES} libplask_python libplask)
     add_dependencies(plask python-scripts)
 
     if(DEFINED no_strict_aliasing_flag OR DEFINED EXE_FLAGS)
@@ -570,7 +558,7 @@ if(BUILD_PYTHON)
                 add_executable(plaskgui python/exe_gui.cpp)
             endif()
         endif()
-        target_link_libraries(plaskgui ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask_python libplask)
+        target_link_libraries(plaskgui ${Boost_Python3_LIBRARIES} ${Python3_LIBRARIES} libplask_python libplask)
         if(DEFINED no_strict_aliasing_flag OR DEFINED EXE_FLAGS)
             set_target_properties(plaskgui PROPERTIES COMPILE_FLAGS "${no_strict_aliasing_flags} ${EXE_FLAGS}") # necessary for all code which includes "Python.h"
         endif()
@@ -585,15 +573,10 @@ if(BUILD_PYTHON)
                                    COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/${gui_file} ${PLASK_PATH}/${gui_file}
                                    DEPENDS ${CMAKE_SOURCE_DIR}/${gui_file})
                 list(APPEND gui_files_copied ${PLASK_PATH}/${gui_file})
-                if(${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
-                    list(APPEND gui_files_pyc ${PLASK_PATH}/${gui_file}c)
-                    list(APPEND gui_files_pyo ${PLASK_PATH}/${gui_file}o)
-                else()
-                    get_filename_component(gui_file_base ${gui_file} NAME_WE)
-                    get_filename_component(gui_file_dir ${gui_file} DIRECTORY)
-                    list(APPEND gui_files_pyc ${PLASK_PATH}/${gui_file_dir}/__pycache__/${gui_file_base}.cpython-${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.pyc)
-                    list(APPEND gui_files_pyo ${PLASK_PATH}/${gui_file_dir}/__pycache__/${gui_file_base}.cpython-${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.opt-1.pyc)
-                endif()
+                get_filename_component(gui_file_base ${gui_file} NAME_WE)
+                get_filename_component(gui_file_dir ${gui_file} DIRECTORY)
+                list(APPEND gui_files_pyc ${PLASK_PATH}/${gui_file_dir}/__pycache__/${gui_file_base}.cpython-${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.pyc)
+                list(APPEND gui_files_pyo ${PLASK_PATH}/${gui_file_dir}/__pycache__/${gui_file_base}.cpython-${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.opt-1.pyc)
             endforeach()
             add_custom_command(OUTPUT ${gui_files_pyc} COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${PLASK_PATH}/gui DEPENDS ${gui_files_copied})
             add_custom_command(OUTPUT ${gui_files_pyo} COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PATH}/gui DEPENDS ${gui_files_copied})
@@ -806,9 +789,9 @@ if(BUILD_TESTING)
         endif()
         set_target_properties(plask-test-python PROPERTIES OUTPUT_NAME plasktest PREFIX "")
         if (WIN32)
-            target_link_libraries(plask-test-python ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} libplask libplask_python)
+            target_link_libraries(plask-test-python ${Python3_LIBRARIES} ${Boost_LIBRARIES} libplask libplask_python)
         else()
-            target_link_libraries(plask-test-python ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} libplask)
+            target_link_libraries(plask-test-python ${Python3_LIBRARIES} ${Boost_LIBRARIES} libplask)
         endif()
         set(plask_test_depends ${plask_test_depends} plask-test-python)
 
@@ -911,7 +894,7 @@ if(WIN32)
         add_executable(${script} toolset/run_python.cpp ${script_rc})
         set_source_files_properties(${script_rc} PROPERTIES OBJECT_DEPENDS ${script_pyc})
         set_source_files_properties(toolset/run_python.cpp PROPERTIES COMPILE_FLAGS "-fno-strict-aliasing")
-        target_link_libraries(${script} ${PYTHON_LIBRARIES})
+        target_link_libraries(${script} ${Python3_LIBRARIES})
         set_target_properties(${script} PROPERTIES LINK_FLAGS "-m${exe_type} ${EXE_FLAGS}")
         install(TARGETS ${script} DESTINATION bin COMPONENT utils)
     endfunction()
@@ -1008,13 +991,13 @@ if(WIN32)
         !insertmacro APP_ASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\" \\\"PLaSK structure data\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe,1\\\" \\\"Open in PLaSK GUI\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe \\\$\\\\\\\"%1\\\$\\\\\\\"\\\"
         WriteRegStr HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plask.exe\\\" \\\"\\\" \\\"$INSTDIR\\\\bin\\\\plask.exe\\\"
         WriteRegStr HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plaskgui.exe\\\" \\\"\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe\\\"
-        ReadRegStr $PYROOTU HKCU \\\"SOFTWARE\\\\Python\\\\PythonCore\\\\${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}\\\\InstallPath\\\" \\\"\\\"
+        ReadRegStr $PYROOTU HKCU \\\"SOFTWARE\\\\Python\\\\PythonCore\\\\${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}\\\\InstallPath\\\" \\\"\\\"
         StrCmp $PYROOTU \\\"\\\" plask_global_python
         FileOpen $9 \\\"$PYROOTU\\\\Lib\\\\site-packages\\\\plask.pth\\\" w
         FileWrite $9 \\\"$INSTDIR\\\\lib\\\\plask\\\\python$\\\\r$\\\\n\\\"
         FileClose $9
         plask_global_python:
-        ReadRegStr $PYROOTM HKLM \\\"SOFTWARE\\\\Python\\\\PythonCore\\\\${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}\\\\InstallPath\\\" \\\"\\\"
+        ReadRegStr $PYROOTM HKLM \\\"SOFTWARE\\\\Python\\\\PythonCore\\\\${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}\\\\InstallPath\\\" \\\"\\\"
         StrCmp $PYROOTM \\\"\\\" plask_no_python
         FileOpen $9 \\\"$PYROOTM\\\\Lib\\\\site-packages\\\\plask.pth\\\" w
         FileWrite $9 \\\"$INSTDIR\\\\lib\\\\plask\\\\python$\\\\r$\\\\n\\\"
@@ -1043,9 +1026,9 @@ if(WIN32)
         SetRegView 64
         DeleteRegKey HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plask.exe\\\"
         DeleteRegKey HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plaskgui.exe\\\"
-        ReadRegStr $1 HKCU \\\"SOFTWARE\\\\Python\\\\PythonCore\\\\${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}\\\\InstallPath\\\" \\\"\\\"
+        ReadRegStr $1 HKCU \\\"SOFTWARE\\\\Python\\\\PythonCore\\\\${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}\\\\InstallPath\\\" \\\"\\\"
         Delete \\\"$1\\\\Lib\\\\site-packages\\\\plask.pth\\\"
-        ReadRegStr $1 HKLM \\\"SOFTWARE\\\\Python\\\\PythonCore\\\\${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}\\\\InstallPath\\\" \\\"\\\"
+        ReadRegStr $1 HKLM \\\"SOFTWARE\\\\Python\\\\PythonCore\\\\${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}\\\\InstallPath\\\" \\\"\\\"
         Delete \\\"$1\\\\Lib\\\\site-packages\\\\plask.pth\\\"
         !insertmacro APP_UNASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\"
         !insertmacro UPDATEFILEASSOC
@@ -1101,7 +1084,7 @@ if(UNIX)
     else()
         set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libblas.so.3, liblapack.so.3")
     endif()
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, python3 (>= 3.${PYTHON_VERSION_MINOR}.0), python3-numpy, python3-matplotlib, python3-h5py, python3-scipy")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, python3 (>= 3.${Python3_VERSION_MINOR}.0), python3-numpy, python3-matplotlib, python3-h5py, python3-scipy")
     set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "ipython3 (>= 0.13)")
     if(BUILD_GUI)
         set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, python3-pyqt5 | python3-pyside2.qthelp, python3-lxml, python3-yaml")
