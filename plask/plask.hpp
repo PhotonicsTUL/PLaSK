@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -50,7 +50,7 @@ structure analyzed. Such approach is also hardly documented and not tested.
 
 \section plask_tutorials Tutorials
 
-Here you can find the tutorials expalinig how you can extend PLaSK by writing new solver, creating providers and receivers for data exchange between solvers or implement a new mesh.
+Here you can find the tutorials explaining how you can extend PLaSK by writing new solver, creating providers and receivers for data exchange between solvers or implement a new mesh.
 You should start reading from section \ref solvers "How to implement an own solver" as it explains the most basic particulars of the internal PLaSK architecture.
 
 - \subpage style "Coding style guide" — please read it first!
