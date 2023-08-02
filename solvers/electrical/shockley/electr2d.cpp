@@ -87,7 +87,7 @@ void ElectricalFem2DSolver<Geometry2DType>::parseConfiguration(XMLReader& source
 
 template <typename Geometry2DType> ElectricalFem2DSolver<Geometry2DType>::~ElectricalFem2DSolver() {}
 
-template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::setActiveRegions() {
+template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::setupActiveRegions() {
     this->invalidate();
 
     if (!this->geometry || !this->mesh) {
@@ -171,16 +171,11 @@ template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::s
 template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::onInitialize() {
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
+    setupActiveRegions();
     loopno = 0;
     potentials.reset(this->maskedMesh->size(), 0.);
     currents.reset(this->maskedMesh->getElementsCount(), vec(0., 0.));
     conds.reset(this->maskedMesh->getElementsCount());
-    if (junction_conductivity.size() == 1) {
-        size_t condsize = 0;
-        for (const auto& act : active) condsize += act.right - act.left;
-        condsize = max(condsize, size_t(1));
-        junction_conductivity.reset(condsize, junction_conductivity[0]);
-    }
 }
 
 template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::onInvalidate() {
@@ -501,6 +496,7 @@ template <> double ElectricalFem2DSolver<Geometry2DCylindrical>::integrateCurren
 }
 
 template <typename Geometry2DType> double ElectricalFem2DSolver<Geometry2DType>::getTotalCurrent(size_t nact) {
+    if (!potentials) throw NoValue("Current");
     if (nact >= active.size()) throw BadInput(this->getId(), "Wrong active region number");
     const auto& act = active[nact];
     // Find the average of the active region

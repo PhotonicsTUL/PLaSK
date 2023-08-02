@@ -86,9 +86,7 @@ void ElectricalFem3DSolver::parseConfiguration(XMLReader& source, Manager& manag
         }
 }
 
-void ElectricalFem3DSolver::setActiveRegions() {
-    this->invalidate();
-
+void ElectricalFem3DSolver::setupActiveRegions() {
     if (!geometry || !mesh) {
         if (junction_conductivity.size() != 1) {
             Tensor2<double> condy(0., 0.);
@@ -187,16 +185,11 @@ void ElectricalFem3DSolver::setActiveRegions() {
 void ElectricalFem3DSolver::onInitialize() {
     if (!geometry) throw NoGeometryException(getId());
     if (!mesh) throw NoMeshException(getId());
+    setupActiveRegions();
     loopno = 0;
     potential.reset(maskedMesh->size(), 0.);
     current.reset(maskedMesh->getElementsCount(), vec(0., 0., 0.));
     conds.reset(maskedMesh->getElementsCount());
-    if (junction_conductivity.size() == 1) {
-        size_t condsize = 0;
-        for (const auto& act : active) condsize += (act.right - act.left) * act.ld;
-        condsize = max(condsize, size_t(1));
-        junction_conductivity.reset(condsize, junction_conductivity[0]);
-    }
 }
 
 void ElectricalFem3DSolver::onInvalidate() {

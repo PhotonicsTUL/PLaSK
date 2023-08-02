@@ -107,17 +107,17 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public FemSolverWithMaskedMesh<G
     void onInvalidate() override;
 
     /// Get info on active region
-    void setActiveRegions();
+    void setupActiveRegions();
 
-    void onMeshChange(const typename RectangularMesh<2>::Event& evt) override {
-        SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onMeshChange(evt);
-        setActiveRegions();
-    }
+    // void onMeshChange(const typename RectangularMesh<2>::Event& evt) override {
+    //     SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onMeshChange(evt);
+    //     setupActiveRegions();
+    // }
 
-    void onGeometryChange(const Geometry::Event& evt) override {
-        SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onGeometryChange(evt);
-        setActiveRegions();
-    }
+    // void onGeometryChange(const Geometry::Event& evt) override {
+    //     SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onGeometryChange(evt);
+    //     setupActiveRegions();
+    // }
 
     /// Set stiffness matrix + load vector
     void setMatrix(FemMatrix& A,

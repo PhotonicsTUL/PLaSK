@@ -131,18 +131,18 @@ struct PLASK_SOLVER_API ElectricalFem3DSolver : public FemSolverWithMaskedMesh<G
     /// Invalidate the data
     void onInvalidate() override;
 
-    void onMeshChange(const typename RectangularMesh<3>::Event& evt) override {
-        SolverWithMesh<Geometry3D, RectangularMesh<3>>::onMeshChange(evt);
-        setActiveRegions();
-    }
+    // void onMeshChange(const typename RectangularMesh<3>::Event& evt) override {
+    //     SolverWithMesh<Geometry3D, RectangularMesh<3>>::onMeshChange(evt);
+    //     setupActiveRegions();
+    // }
 
-    void onGeometryChange(const Geometry::Event& evt) override {
-        SolverWithMesh<Geometry3D, RectangularMesh<3>>::onGeometryChange(evt);
-        setActiveRegions();
-    }
+    // void onGeometryChange(const Geometry::Event& evt) override {
+    //     SolverWithMesh<Geometry3D, RectangularMesh<3>>::onGeometryChange(evt);
+    //     setupActiveRegions();
+    // }
 
     /// Get info on active region
-    void setActiveRegions();
+    void setupActiveRegions();
 
     /// Return \c true if the specified point is at junction
     size_t isActive(const Vec<3>& point) const {

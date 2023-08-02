@@ -144,7 +144,7 @@ template <typename SpaceT, typename MeshT> struct FemSolverWithMaskedMesh : publ
 
   protected:
     plask::shared_ptr<RectangularMaskedMesh<MeshT::DIM>> maskedMesh = plask::make_shared<RectangularMaskedMesh<MeshT::DIM>>();
-    bool use_full_mesh;  ///< Should we use full mesh?
+    bool use_full_mesh = false;  ///< Should we use full mesh?
 
   public:
     /// Are we using full mesh?
