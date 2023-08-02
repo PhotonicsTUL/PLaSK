@@ -24,7 +24,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/_cmake)
 
 find_package(Sphinx)
 if(SPHINX_FOUND)
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sphinx" RESULT_VARIABLE sphinx_status ERROR_QUIET)
+    execute_process(COMMAND ${Python3_EXECUTABLE} -c "import sphinx" RESULT_VARIABLE sphinx_status ERROR_QUIET)
     if(NOT sphinx_status EQUAL 0)
         set(SPHINX_FOUND NOTFOUND)
     endif()
@@ -91,7 +91,7 @@ if(SPHINX_FOUND)
         file(GLOB_RECURSE solvers_yml ${CMAKE_SOURCE_DIR}/solvers/*/solvers.yml)
         set(solvers_xpl_timestamp ${CMAKE_CURRENT_BINARY_DIR}/solvers_xpl.timestamp)
         add_custom_command(OUTPUT ${solvers_xpl_timestamp}
-            COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/toolset/make_solvers_xpl_doc.py
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/toolset/make_solvers_xpl_doc.py
             COMMAND ${CMAKE_COMMAND} -E touch ${solvers_xpl_timestamp}
             DEPENDS ${solvers_xml}
         )

@@ -33,7 +33,7 @@
 #     <td>Non-cached alias for @c Sphinx-build_EXECUTABLE.</td>
 #   </tr>
 #   <tr>
-#     @tp @b Sphinx_PYTHON_EXECUTABLE @endtp
+#     @tp @b Sphinx_Python3_EXECUTABLE @endtp
 #     <td>Python executable used to run sphinx-build. This is either the
 #         by default found Python interpreter or a specific version as
 #         specified by the shebang (#!) of the sphinx-build script.</td>
@@ -126,24 +126,24 @@ endforeach ()
 if (Sphinx-build_EXECUTABLE)
   # extract python executable from shebang of sphinx-build
   find_package (Python3 QUIET)
-  set (Sphinx_PYTHON_EXECUTABLE "${PYTHON_EXECUTABLE}")
+  set (Sphinx_Python3_EXECUTABLE "${Python3_EXECUTABLE}")
   set (Sphinx_PYTHON_OPTIONS)
   file (STRINGS "${Sphinx-build_EXECUTABLE}" FIRST_LINE LIMIT_COUNT 1)
   if (FIRST_LINE MATCHES "^#!(.*/python.*)") # does not match "#!/usr/bin/env python3" !
-    string (REGEX REPLACE "^ +| +$" "" Sphinx_PYTHON_EXECUTABLE "${CMAKE_MATCH_1}")
-    if (Sphinx_PYTHON_EXECUTABLE MATCHES "([^ ]+) (.*)")
-      set (Sphinx_PYTHON_EXECUTABLE "${CMAKE_MATCH_1}")
+    string (REGEX REPLACE "^ +| +$" "" Sphinx_Python3_EXECUTABLE "${CMAKE_MATCH_1}")
+    if (Sphinx_Python3_EXECUTABLE MATCHES "([^ ]+) (.*)")
+      set (Sphinx_Python3_EXECUTABLE "${CMAKE_MATCH_1}")
       string (REGEX REPLACE " +" ";" Sphinx_PYTHON_OPTIONS "${CMAKE_MATCH_2}")
     endif ()
   endif ()
   # this is done to avoid problems with multiple Python versions being installed
   # remember: CMake command if(STR EQUAL STR) is bad and may cause many troubles !
-  string (REGEX REPLACE "([.+*?^$])" "\\\\\\1" _Sphinx_PYTHON_EXECUTABLE_RE "${PYTHON_EXECUTABLE}")
+  string (REGEX REPLACE "([.+*?^$])" "\\\\\\1" _Sphinx_Python3_EXECUTABLE_RE "${Python3_EXECUTABLE}")
   list (FIND Sphinx_PYTHON_OPTIONS -E IDX)
-  if (IDX EQUAL -1 AND NOT Sphinx_PYTHON_EXECUTABLE MATCHES "^${_Sphinx_PYTHON_EXECUTABLE_RE}$")
+  if (IDX EQUAL -1 AND NOT Sphinx_Python3_EXECUTABLE MATCHES "^${_Sphinx_Python3_EXECUTABLE_RE}$")
     list (INSERT Sphinx_PYTHON_OPTIONS 0 -E)
   endif ()
-  unset (_Sphinx_PYTHON_EXECUTABLE_RE)
+  unset (_Sphinx_Python3_EXECUTABLE_RE)
 endif ()
 
 # ----------------------------------------------------------------------------
@@ -151,9 +151,9 @@ endif ()
 if (Sphinx-build_EXECUTABLE)
   # intentionally use invalid -h option here as the help that is shown then
   # will include the Sphinx version information
-  if (Sphinx_PYTHON_EXECUTABLE)
+  if (Sphinx_Python3_EXECUTABLE)
     execute_process (
-      COMMAND "${Sphinx_PYTHON_EXECUTABLE}" ${Sphinx_PYTHON_OPTIONS} "${Sphinx-build_EXECUTABLE}" -h
+      COMMAND "${Sphinx_Python3_EXECUTABLE}" ${Sphinx_PYTHON_OPTIONS} "${Sphinx-build_EXECUTABLE}" -h
       OUTPUT_VARIABLE _Sphinx_VERSION
       ERROR_VARIABLE  _Sphinx_VERSION
     )

@@ -226,6 +226,16 @@ find_package(Boost 1.54.0 REQUIRED COMPONENTS ${boost_components})
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
+# ---------- External libraries built by us -----------------------------------------
+
+# libf2c for Windows
+if(WIN32)
+    add_subdirectory(extlib/libf2c)
+endif()
+
+# NSPCG
+add_subdirectory(extlib/nspcg)
+
 ## ---------- OpenMP -----------------------------------------------------------
 
 if(USE_OMP OR USE_GLIBCXX_PARALLEL) # compile with OpenMP
@@ -297,7 +307,6 @@ endif()
 find_package(BLAS)
 find_package(LAPACK)
 
-
 # ----------===== Build and Install =====--------------------------------------------
 
 file(GLOB_RECURSE plask_headers FOLLOW_SYMLINKS plask/*.h plask/*.hpp solvers/providers/*.h solvers/providers/*.hpp)
@@ -307,12 +316,7 @@ file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp solvers/providers/*.cpp)
 # Python sources
 file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp python/plask/*.hpp)
 
-# ---------- External libraries built by us -----------------------------------------
-
-# libf2c for Windows
-if(WIN32)
-    add_subdirectory(extlib/libf2c)
-endif()
+# ---------- Other external libraries build by us -----------------------------
 
 # CAMOS
 add_subdirectory(extlib/camos)
@@ -322,9 +326,6 @@ add_subdirectory(extlib/fftpacx)
 
 # Triangle
 add_subdirectory(extlib/triangle)
-
-# NSPCG
-add_subdirectory(extlib/nspcg)
 
 # fmt
 if(PLASK_EXPORTS_FMT)
@@ -408,8 +409,8 @@ if(BUILD_PYTHON)
     add_custom_target(python-scripts ALL DEPENDS ${python_plask_py_copied_all})
 
     if(WIN32)
-        add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${PLASK_PYTHON_PATH})
-        add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PYTHON_PATH})
+        add_custom_command(TARGET python-scripts COMMAND ${Python3_EXECUTABLE} -m compileall -q ${PLASK_PYTHON_PATH})
+        add_custom_command(TARGET python-scripts COMMAND ${Python3_EXECUTABLE} -O -m compileall -q ${PLASK_PYTHON_PATH})
         foreach(py_dir "" "/util")
             install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask${py_dir}/__pycache__ COMPONENT core)
             install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask${py_dir}/__pycache__ COMPONENT core)
@@ -463,7 +464,7 @@ if(BUILD_PYTHON)
         else()
             if(INSTALL_PYTHON_PTH)
                 execute_process(
-                    COMMAND "${PYTHON_EXECUTABLE}" -c
+                    COMMAND "${Python3_EXECUTABLE}" -c
                     "from distutils.sysconfig import get_python_lib; print(get_python_lib(plat_specific=False,standard_lib=False))"
                     OUTPUT_VARIABLE PYTHON_SITE OUTPUT_STRIP_TRAILING_WHITESPACE)
                 file(WRITE "${CMAKE_BINARY_DIR}/CMakeFiles/plask.pth" "${CMAKE_INSTALL_PREFIX}/lib/plask/python\n")
@@ -531,7 +532,7 @@ if(BUILD_PYTHON)
         if(WIN32)
             foreach(bs 620 868 1116)
                 add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash${bs}.bmp
-                                   COMMAND ${PYTHON_EXECUTABLE} ARGS -c "from PIL import Image; Image.open('${CMAKE_SOURCE_DIR}/gui/splash${bs}.png').save('${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash${bs}.bmp')"
+                                   COMMAND ${Python3_EXECUTABLE} ARGS -c "from PIL import Image; Image.open('${CMAKE_SOURCE_DIR}/gui/splash${bs}.png').save('${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash${bs}.bmp')"
                                    DEPENDS ${CMAKE_SOURCE_DIR}/gui/splash${bs}.png)
             endforeach()
             add_library(plaskgui SHARED python/exe_gui.cpp)
@@ -545,7 +546,7 @@ if(BUILD_PYTHON)
             if(SHOW_SPLASH)
                 foreach(bs 620 868 1116)
                     add_custom_command(OUTPUT include/plask/splash${bs}.h
-                                    COMMAND ${PYTHON_EXECUTABLE} ARGS
+                                    COMMAND ${Python3_EXECUTABLE} ARGS
                                         "${CMAKE_SOURCE_DIR}/toolset/make_splash_header.py"
                                         "${CMAKE_SOURCE_DIR}/gui/splash${bs}.png"
                                         "${CMAKE_BINARY_DIR}/include/plask"
@@ -578,8 +579,8 @@ if(BUILD_PYTHON)
                 list(APPEND gui_files_pyc ${PLASK_PATH}/${gui_file_dir}/__pycache__/${gui_file_base}.cpython-${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.pyc)
                 list(APPEND gui_files_pyo ${PLASK_PATH}/${gui_file_dir}/__pycache__/${gui_file_base}.cpython-${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.opt-1.pyc)
             endforeach()
-            add_custom_command(OUTPUT ${gui_files_pyc} COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${PLASK_PATH}/gui DEPENDS ${gui_files_copied})
-            add_custom_command(OUTPUT ${gui_files_pyo} COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PATH}/gui DEPENDS ${gui_files_copied})
+            add_custom_command(OUTPUT ${gui_files_pyc} COMMAND ${Python3_EXECUTABLE} -m compileall -q ${PLASK_PATH}/gui DEPENDS ${gui_files_copied})
+            add_custom_command(OUTPUT ${gui_files_pyo} COMMAND ${Python3_EXECUTABLE} -O -m compileall -q ${PLASK_PATH}/gui DEPENDS ${gui_files_copied})
             add_custom_target(gui-files ALL DEPENDS ${gui_files_pyc} ${gui_files_pyo})
             install(DIRECTORY ${PLASK_PATH}/gui DESTINATION lib/plask COMPONENT gui)
             install(DIRECTORY gui DESTINATION lib/plask COMPONENT gui
@@ -705,7 +706,7 @@ if(BUILD_PYTHON)
         file(GLOB lst ${CMAKE_SOURCE_DIR}/solvers/${cat}/*/solvers.yml)
         file(MAKE_DIRECTORY ${PLASK_PATH}/solvers/${cat})
         add_custom_command(OUTPUT ${PLASK_PATH}/solvers/${cat}/__init__.py
-                           COMMAND ${PYTHON_EXECUTABLE} ARGS ${CMAKE_SOURCE_DIR}/toolset/make_category_package.py ${CMAKE_SOURCE_DIR}/solvers/${cat} ${PLASK_PATH}/solvers/${cat}
+                           COMMAND ${Python3_EXECUTABLE} ARGS ${CMAKE_SOURCE_DIR}/toolset/make_category_package.py ${CMAKE_SOURCE_DIR}/solvers/${cat} ${PLASK_PATH}/solvers/${cat}
                            DEPENDS ${lst})
         install(FILES ${PLASK_PATH}/solvers/${cat}/__init__.py DESTINATION lib/plask/solvers/${cat} COMPONENT solvers)
         list(APPEND solvers_packages ${PLASK_PATH}/solvers/${cat}/__init__.py)
@@ -890,12 +891,12 @@ if(WIN32)
         if(CMAKE_HOST_UNIX)
             add_custom_command(OUTPUT ${script_pyc}
                                COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/utils/${script_path}.py ${UTILS_BINARY_DIR}
-                               COMMAND ${PYTHON_EXECUTABLE} -c "import compileall\\; compileall.compile_file\\(\\'${UTILS_BINARY_DIR}/${script}.py\\', \\'\\', quiet=True\\)"
+                               COMMAND ${Python3_EXECUTABLE} -c "import compileall\\; compileall.compile_file\\(\\'${UTILS_BINARY_DIR}/${script}.py\\', \\'\\', quiet=True\\)"
                                DEPENDS ${CMAKE_SOURCE_DIR}/utils/${script_path}.py)
         else()
             add_custom_command(OUTPUT ${script_pyc}
                                COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/utils/${script_path}.py ${UTILS_BINARY_DIR}
-                               COMMAND ${PYTHON_EXECUTABLE} -c "import compileall; compileall.compile_file('${UTILS_BINARY_DIR}/${script}.py', '', quiet=True)"
+                               COMMAND ${Python3_EXECUTABLE} -c "import compileall; compileall.compile_file('${UTILS_BINARY_DIR}/${script}.py', '', quiet=True)"
                                DEPENDS ${CMAKE_SOURCE_DIR}/utils/${script_path}.py)
         endif()
         add_executable(${script} toolset/run_python.cpp ${script_rc})
@@ -1068,7 +1069,7 @@ if(UNIX)
 
     install(FILES "${CMAKE_SOURCE_DIR}/utils/binfmts/plask" DESTINATION "share/binfmts")
 
-    # execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; v=${Boost_VERSION}; sys.stdout.write('.'.join(str(s) for s in (v//100000,v//100%1000,v%100)))" OUTPUT_VARIABLE boostver)
+    # execute_process(COMMAND ${Python3_EXECUTABLE} -c "import sys; v=${Boost_VERSION}; sys.stdout.write('.'.join(str(s) for s in (v//100000,v//100%1000,v%100)))" OUTPUT_VARIABLE boostver)
     set(boostver "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Maciej Dems <maciej.dems@p.lodz.pl>")
