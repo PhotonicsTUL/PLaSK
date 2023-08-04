@@ -8,6 +8,7 @@ using namespace plask;
 using namespace plask::python;
 
 #include "../diffusion2d.hpp"
+#include "../diffusion3d.hpp"
 using namespace plask::electrical::diffusion;
 
 template <typename SolverT>
@@ -118,7 +119,7 @@ struct ExportedSolverDefaultDefs<Diffusion2DSolver<Geometry2DCartesian>, void, v
 BOOST_PYTHON_MODULE(diffusion) {
     {
         CLASS(Diffusion2DSolver<Geometry2DCylindrical>, "DiffusionCyl",
-              u8"Calculates carrier pairs concentration in active region using FEM in one-dimensional cylindrical space")
+              u8"Calculates carrier pairs concentration in active region using FEM in two-dimensional cylindrical space")
         solver.def("compute", &DiffusionSolver_compute<__Class__>,
                    u8"Run diffusion calculations\n\n"
                    u8"Args:\n"
@@ -149,7 +150,7 @@ BOOST_PYTHON_MODULE(diffusion) {
 
     {
         CLASS(Diffusion2DSolver<Geometry2DCartesian>, "Diffusion2D",
-              u8"Calculates carrier pairs concentration in active region using FEM in one-dimensional cartesian space")
+              u8"Calculates carrier pairs concentration in active region using FEM in two-dimensional Cartesian space")
         solver.def("compute", &DiffusionSolver_compute<__Class__>,
                    u8"Run diffusion calculations\n\n"
                    u8"Args:\n"
@@ -176,5 +177,31 @@ BOOST_PYTHON_MODULE(diffusion) {
         solver.def("compute_threshold", &DiffusionSolver2D_compute_threshold, u8"Deprecated method. Use compute() instead.");
         solver.def("compute_overthreshold", &DiffusionSolver2D_compute_overthreshold,
                    u8"Deprecated method. Use compute(shb=True) instead.");
+    }
+
+    {
+        CLASS(Diffusion3DSolver, "Diffusion3D",
+              u8"Calculates carrier pairs concentration in active region using FEM in three-dimensional space")
+        solver.def("compute", &DiffusionSolver_compute<__Class__>,
+                   u8"Run diffusion calculations\n\n"
+                   u8"Args:\n"
+                   u8"    loops (int): Number of iterations to perform. If 0, the solver will run\n"
+                   u8"                 until the convergence.\n"
+                   u8"    shb (bool): If True, the solver will use take into account the spatial hole\n"
+                   u8"                burning effect.\n"
+                   u8"    reg (int or None): Index of the active region to compute. If None, perform\n"
+                   u8"                       computations for all the active regions.",
+                   (py::arg("loops") = 0, py::arg("shb") = false, py::arg("reg") = py::object()));
+        RW_FIELD(maxerr, u8"Maximum relative residual error (%)");
+        RECEIVER(inCurrentDensity, u8"");
+        RECEIVER(inTemperature, u8"");
+        RECEIVER(inGain, u8"It is required only for the SHB computations.");
+        RECEIVER(inWavelength, u8"It is required only for the SHB computations.");
+        RECEIVER(inLightE, u8"It is required only for the SHB computations.");
+        PROVIDER(outCarriersConcentration, u8"");
+        METHOD(get_total_burning, get_burning_integral, u8"Get total power burned over threshold [mW].");
+        solver.def("get_burning_for_mode", DiffusionSolver_get_burning_for_mode<__Class__>,
+                   u8"Get power burned over threshold by specified mode [mW].", py::arg("mode"));
+        registerFemSolver(solver);
     }
 }

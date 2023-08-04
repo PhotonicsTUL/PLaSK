@@ -59,6 +59,12 @@ template <typename Geometry2DType> void Diffusion2DSolver<Geometry2DType>::parse
         }
     }
 
+    else if (param == "config") {
+        this->writelog(LOG_WARNING, "Tag <config> is not used in this solver. Update your file!");
+        source.ignoreAllAttributes();
+        source.requireTagEnd();
+    }
+
     else if (!this->parseFemConfiguration(source, manager)) {
         this->parseStandardConfiguration(source, manager);
     }
@@ -66,12 +72,12 @@ template <typename Geometry2DType> void Diffusion2DSolver<Geometry2DType>::parse
 
 template <typename Geometry2DType> Diffusion2DSolver<Geometry2DType>::~Diffusion2DSolver() {}
 
-template <typename Geometry2DType> void Diffusion2DSolver<Geometry2DType>::setActiveRegions() {
+template <typename Geometry2DType> void Diffusion2DSolver<Geometry2DType>::setupActiveRegion2Ds() {
     if (!this->geometry || !this->mesh) return;
 
     auto points = this->mesh->getElementMesh();
 
-    std::vector<typename ActiveRegion::Region> regions;
+    std::vector<typename ActiveRegion2D::Region> regions;
 
     for (size_t r = 0; r < points->vert()->size(); ++r) {
         size_t prev = 0;
@@ -117,10 +123,12 @@ template <typename Geometry2DType> void Diffusion2DSolver<Geometry2DType>::setAc
     }
 
     active.clear();
-    active.reserve(regions.size());
     size_t act = 0;
     for (auto& reg : regions) {
-        if (reg.bottom == size_t(-1)) continue;
+        if (reg.bottom == std::numeric_limits<size_t>::max()) {
+            ++act;
+            continue;
+        }
         // Detect quantum wells in the active region
         std::vector<double> QWz;
         std::vector<std::pair<size_t, size_t>> QWbt;
@@ -158,8 +166,11 @@ template <typename Geometry2DType> void Diffusion2DSolver<Geometry2DType>::setAc
         if (QWz.empty()) {
             throw Exception("{}: Active region {} does not contain quantum wells", this->getId(), act);
         }
-        active.emplace_back(this, reg.left, reg.right, reg.bottom, reg.top, QWheight, std::move(QWz), std::move(QWbt));
-        this->writelog(LOG_DETAIL, "Total QWs thickness in active region {}: {}nm", act++, 1e3 * active.back().QWheight);
+        active.emplace(
+            std::piecewise_construct, std::forward_as_tuple(act),
+            std::forward_as_tuple(this, reg.left, reg.right, reg.bottom, reg.top, QWheight, std::move(QWz), std::move(QWbt)));
+        this->writelog(LOG_DETAIL, "Total QWs thickness in active region {}: {}nm", act, 1e3 * QWheight);
+        ++act;
     }
 }
 
@@ -170,7 +181,7 @@ template <typename Geometry2DType> void Diffusion2DSolver<Geometry2DType>::onIni
         this->mesh = make_shared<RectangularMesh<2>>(refineAxis(mesh1->tran(), DEFAULT_MESH_SPACING), mesh1->vert());
         writelog(LOG_DETAIL, "{}: Setting up default mesh [{}]", this->getId(), this->mesh->tran()->size());
     }
-    setActiveRegions();
+    setupActiveRegion2Ds();
     loopno = 0;
 }
 
@@ -293,7 +304,10 @@ inline T Diffusion2DSolver<Geometry2DCylindrical>::integrateLinear(const double 
 template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::compute(unsigned loops, bool shb, size_t act) {
     this->initCalculation();
 
-    auto& active = this->active[act];
+    auto found = this->active.find(act);
+    if (found == this->active.end()) throw Exception("{}: Active region {} does not exist", this->getId(), act);
+    auto& active = found->second;
+
     double z = active.vert();
 
     auto mesh = active.mesh();
@@ -422,7 +436,7 @@ template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::com
                     active.modesP[n] += p.c00 * g.c00 + p.c11 * g.c11;
                     g *= factor;
                     dg *= factor;
-                    double ug = 0.5 * active.U[i] + 0.125 * active.U[i+1] + 0.5 * active.U[i+2] - 0.125 * active.U[i+3];
+                    double ug = 0.5 * (active.U[i] + active.U[i+2] + 0.25 * L * (active.U[i+1] - active.U[i+3]));
                     addLocalBurningMatrix(x0, L, L2, L3, reinterpret_cast<const double*>(Pdata + ie), &g.c00, &dg.c00, ug,
                                           (*K)(i,i), (*K)(i,i+1), (*K)(i,i+2), (*K)(i,i+3), (*K)(i+1,i+1),
                                           (*K)(i+1,i+2), (*K)(i+1,i+3), (*K)(i+2,i+2), (*K)(i+2,i+3), (*K)(i+3,i+3),
@@ -481,12 +495,11 @@ template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::com
 template <typename Geometry2DType>
 double Diffusion2DSolver<Geometry2DType>::get_burning_integral_for_mode(size_t mode) const {
     if (mode >= inLightE.size()) throw BadInput(this->getId(), "Mode index out of range");
-    size_t i = 0;
     double res = 0.;
-    for (const auto& active: this->active) {
-        if (mode >= active.modesP.size()) throw Exception("{}: SHB not computed for active region {}", this->getId(), i);
+    for (const auto& iactive: this->active) {
+        const auto& active = iactive.second;
+        if (mode >= active.modesP.size()) throw Exception("{}: SHB not computed for active region {}", this->getId(), iactive.first);
         res += active.modesP[mode];
-        ++i;
     }
     return res;
 }
@@ -507,7 +520,8 @@ Diffusion2DSolver<Geometry2DType>::ConcentrationDataImpl::ConcentrationDataImpl(
     concentrations.reserve(solver->active.size());
 
     if (interp == InterpolationMethod::INTERPOLATION_DEFAULT || interp == InterpolationMethod::INTERPOLATION_SPLINE) {
-        for (const auto& active : solver->active) {
+        for (const auto& iactive : solver->active) {
+            const auto& active = iactive.second;
             auto src_mesh = active.mesh();
             if (!active.U) throw NoValue("Carriers concentration");
             assert(src_mesh->size() == active.U.size() / 2);
@@ -534,7 +548,8 @@ Diffusion2DSolver<Geometry2DType>::ConcentrationDataImpl::ConcentrationDataImpl(
         }
 
     } else {
-        for (const auto& active : solver->active) {
+        for (const auto& iactive : solver->active) {
+            const auto& active = iactive.second;
             if (!active.U) throw NoValue("Carriers concentration");
             shared_ptr<RectangularMesh<2>> mesh(
                 new RectangularMesh<2>(active.mesh(), shared_ptr<OnePointAxis>(new OnePointAxis(active.vert()))));
@@ -549,8 +564,9 @@ Diffusion2DSolver<Geometry2DType>::ConcentrationDataImpl::ConcentrationDataImpl(
 template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::ConcentrationDataImpl::at(size_t i) const {
     auto point = interpolationFlags.wrap(destination_mesh->at(i));
     bool found = false;
-    size_t an = 0;
-    for (const auto& active : solver->active) {
+    size_t an;
+    for (const auto& iactive : solver->active) {
+        const auto& active = iactive.second;
         if (solver->mesh->vert()->at(active.bottom) <= point.c1 && point.c1 <= solver->mesh->vert()->at(active.top)) {
             // Make sure we have concentration only in the quantum wells
             // TODO maybe more optimal approach would be reasonable?
@@ -558,11 +574,11 @@ template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::Con
                 for (auto qw : active.QWs)
                     if (qw.first <= point.c1 && point.c1 < qw.second) {
                         found = true;
+                        an = iactive.first;
                         break;
                     }
             break;
         }
-        ++an;
     }
     if (!found) return 0.;
     return concentrations[an][i];

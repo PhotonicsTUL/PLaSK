@@ -56,10 +56,10 @@ def _print_Indexed(self, expr):
     indices = expr.indices
     if len(indices) == 1:
         # return f"{self._print(expr.base.label)}[idx(e,{self._print(indices[0])})]"
-        return f"{self._print(expr.base.label)}_{self._print(indices[0])}"
+        return f"{self._print(expr.base.label)}{self._print(indices[0])}"
     else:
         # return f"{self._print(expr.base.label)}[idx(e,{','.join(self._print(i) for i in indices)})]"
-        return f"{self._print(expr.base.label)}_{'_'.join(self._print(i) for i in indices)}"
+        return f"{self._print(expr.base.label)}{''.join(self._print(i) for i in indices)}"
 CXX11CodePrinter._print_Indexed = _print_Indexed
 
 
@@ -67,22 +67,24 @@ def cpp(v):
     s = cxxcode(sym.simplify(v), standard='C++11')
     #for i in range(1, 5):
     #    s = s.replace(f"a[{i}]", f"a{i}")
-    s = re.sub(r'std::pow\(L, (\d+)\)', r'L\1', s)
     s = re.sub(r'std::pow\(([^)]+), (\d+)\)', r'std::pow(\1,\2)', s)
     s = re.sub(r'std::pow\(([^)]+),2\)', r'\1*\1', s)
     s = re.sub(r'std::pow\(([^)]+),3\)', r'\1*\1*\1', s)
-    return s#.replace('_', '')
+    s = re.sub(r'\b(X|Y)\b', r'e.\1', s)
+    s = re.sub(r'\bU(\d\d)\b', r'U[e.i\1]', s)
+    s = re.sub(r'\bJ(\d\d)\b', r'J[e.n\1]', s)
+    s = re.sub(r'\bP(\d\d)(\d)\b', r'P[e.n\1].c\2\2', s)
+    s = re.sub(r'(d?G)(\d)\b', r'\1.c\2\2', s)
+    return s
 
 
-sidx = lambda i: "idx(e,{},{})".format(*idx[i])
+sidx = lambda i: "e.i{}{}".format(*idx[i])
 
 def _print_cpp(kij, kvals, fvals, file=sys.stdout):
-    print('{', file=file)
     for (i,j), kval in zip(kij, kvals):
-        print(f"    K({sidx(i)}, {sidx(j)}) += {kval};", file=file)
+        print(f"K({sidx(i)}, {sidx(j)}) += {kval};", file=file)
     for i, fval in enumerate(fvals):
-        print(f"    F[{sidx(i)}] += {fval};", file=file)
-    print('}', file=file)
+        print(f"F[{sidx(i)}] += {fval};", file=file)
 
 
 def print_cpp(K, F, fname=None):
@@ -200,17 +202,17 @@ else:
     F = None
 F = mpi.bcast(F, root=0)
 
-print_cpp(K, F, 'diffusion3d-eval.hpp')
+print_cpp(K, F, 'diffusion3d-eval.ipp')
 
 
 # Wypalanie nośników
 
-P = sym.IndexedBase('P', shape=(2,2))
+P = sym.IndexedBase('P', shape=(2,2,2))
 G = sym.IndexedBase('G', shape=(2,))
 dG = sym.IndexedBase('dG', shape=(2,))
-ug = sym.symbols('uG')
+ug = sym.symbols('Ug')
 
-Pxy = [sym.simplify(sum(P[i, j] * La(i, x, zx) * La(j, y, zy) for i in range(len(zx)) for j in range(len(zy)))) for j in range(2)]
+Pxy = [sym.simplify(sum(P[i, j] * La(i, x, zx) * La(j, y, zy) for i in range(len(zx)) for j in range(len(zy)))) for c in range(2)]
 
 KL = evaluate_matrix(lambda i,j:
     sym.simplify(sym.integrate(sym.integrate(sum(Pxy[i] * dG[i] for i in range(2)) * φ[i] * φ[j], (x, 0, X)), (y, 0, Y)))
@@ -225,4 +227,4 @@ if mrank == 0: print('FL = sym.', FL, end='\n\n')
 KL = mpi.bcast(KL, root=0)
 FL = mpi.bcast(FL, root=0)
 
-print_cpp(KL, FL, 'diffusion3d-eval-shb.hpp')
+print_cpp(KL, FL, 'diffusion3d-eval-shb.ipp')

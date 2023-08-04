@@ -21,7 +21,7 @@ namespace plask { namespace electrical { namespace diffusion {
 
 #define DEFAULT_MESH_SPACING 0.005  // µm
 
-struct ActiveRegion {
+struct ActiveRegion2D {
     struct Region {
         size_t left, right, bottom, top;
         size_t rowl, rowr;
@@ -40,7 +40,6 @@ struct ActiveRegion {
     double QWheight;
 
     shared_ptr<RectangularMesh<2>> mesh2, emesh2, mesh1, emesh1;
-    // shared_ptr<RectangularMesh<2>> fmesh2, fmesh1;
     std::vector<std::pair<double, double>> QWs;
 
     DataVector<double> U;
@@ -48,7 +47,7 @@ struct ActiveRegion {
     std::vector<double> modesP;
 
     template <typename SolverT>
-    ActiveRegion(const SolverT* solver,
+    ActiveRegion2D(const SolverT* solver,
                  size_t l,
                  size_t r,
                  size_t b,
@@ -77,9 +76,9 @@ struct ActiveRegion {
 
         // OrderedAxis faxis0;
         // faxis0.addOrderedPoints(mesh->begin(), mesh->end(), mesh->size(), 0.);
-        // faxis0.addOrderedPoints(emesh2->tran()->begin(), emesh2->tran()->end(), emesh2->tran()->size(), 0.);
-        // fmesh2.reset(new RectangularMesh<2>(faxis0.getMidpointAxis(), mesh2->vert(), RectangularMesh<2>::ORDER_01));
-        // fmesh1.reset(new RectangularMesh<2>(fmesh2->tran(), emesh1->vert()));
+        // faxis0.addOrderedPoints(emesh1->tran()->begin(), emesh1->tran()->end(), emesh1->tran()->size(), 0.);
+        // fmesh1.reset(new RectangularMesh<2>(faxis0.getMidpointAxis(), mesh1->vert(), RectangularMesh<2>::ORDER_01));
+        // fmesh1.reset(new RectangularMesh<2>(fmesh1->tran(), emesh1->vert()));
         // assert(fmesh1->size() == 2 * emesh1->size());
     }
 
@@ -127,7 +126,7 @@ struct PLASK_SOLVER_API Diffusion2DSolver : public FemSolverWithMesh<Geometry2DT
         size_t size() const override { return destination_mesh->size(); }
     };
 
-    std::vector<ActiveRegion> active;  ///< Active regions information
+    std::map<size_t, ActiveRegion2D> active;  ///< Active regions information
 
     /// Make local stiffness matrix and load vector
     inline void setLocalMatrix(const double R,
@@ -192,9 +191,9 @@ struct PLASK_SOLVER_API Diffusion2DSolver : public FemSolverWithMesh<Geometry2DT
     void onInvalidate() override;
 
     /// Get info on active region
-    void setActiveRegions();
+    void setupActiveRegion2Ds();
 
-    // void computeInitial(ActiveRegion& active);
+    // void computeInitial(ActiveRegion2D& active);
 
     /** Return \c true if the specified point is at junction
      * \param point point to test
@@ -280,7 +279,7 @@ struct PLASK_SOLVER_API Diffusion2DSolver : public FemSolverWithMesh<Geometry2DT
     double compute(unsigned loops = 0, bool shb = false) {
         this->initCalculation();
         double maxerr = 0.;
-        for (size_t i = 0; i < active.size(); ++i) maxerr = max(maxerr, compute(loops, shb, i));
+        for (const auto& act: active) maxerr = max(maxerr, compute(loops, shb, act.first));
         return maxerr;
     }
 

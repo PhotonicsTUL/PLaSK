@@ -153,7 +153,7 @@ template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::s
     active.reserve(regions.size());
     size_t i = 0;
     for (auto& reg : regions) {
-        if (reg.bottom == size_t(-1)) reg.bottom = reg.top = 0;
+        if (reg.bottom == std::numeric_limits<size_t>::max()) reg.bottom = reg.top = 0;
         active.emplace_back(condsize, reg.left, reg.right, reg.bottom, reg.top,
                             this->mesh->axis[1]->at(reg.top) - this->mesh->axis[1]->at(reg.bottom));
         condsize += reg.right - reg.left;
