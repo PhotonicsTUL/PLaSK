@@ -13,6 +13,13 @@ body {
     background-color: #ffffff;
 }
 
+.wrap {
+    height: auto !important;
+    min-height: 100vh;
+    padding-bottom: 4.0em;
+    margin-bottom: -4.0em;
+}
+
 .pagecontent p {
     text-align: justify;
 }
@@ -29,7 +36,8 @@ h1 code {
 a,
 a:hover,
 a:focus,
-a:active {
+a:active,
+a:visited {
     color: #7f1111;
     text-decoration: none;
 }
@@ -189,7 +197,8 @@ a code {
 .footer {
     background-color: #e8e8e8;
     width: 100%;
-    padding: 10px 10px 2em 10px;
+    height: 1.9em;
+    padding: 10px 10px 1.9em 10px;
 }
 
 .header .rel {

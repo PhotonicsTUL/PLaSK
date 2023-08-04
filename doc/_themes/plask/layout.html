@@ -2,6 +2,7 @@
 
 {%- block scripts %}
     {{ super() }}
+    <!-- <script type="text/javascript" src="{{ pathto('_static/jquery.min.js', 1) }}"></script> -->
     <script type="text/javascript" src="{{ pathto('_static/bootstrap.min.js', 1) }}"></script>
 {%- endblock %}
 
@@ -75,6 +76,7 @@
 
 
 {%- block header %}
+<div class="wrap">
     <div class="header">
         <h1><a href="{{ pathto(master_doc, 1) }}.html">{{ project }} User Manual</a></h1>
     </div>
@@ -128,7 +130,7 @@
                             </div>
                         </div>
                         <div class="col-9 col-sm-9 col-sm-pull-3 col-md-pull-3 col-lg-pull-3 section">
-                            <div class="sphinxbody">
+                            <div class="body sphinxbody" role="main">
                                 {% block body %} {% endblock %}
                             </div>
                         </div>
@@ -137,6 +139,7 @@
             </div>
         </div>
     </div>
+</div> <!-- .wrap -->
 {%- endblock %}
 
 
