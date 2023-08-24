@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -21,8 +21,8 @@ namespace plask {
 /**
  * Rectangular mesh which uses (and indexes) only chosen elements and all nodes in their corners.
  *
- * Objects of this class can be constructed from instences of full rectangular mesh (RectangularMaskedMesh3D)
- * and they can use the same boundary conditions (BoundaryConditions instance for full mesh accepts also objets of this class).
+ * Objects of this class can be constructed from instances of full rectangular mesh (RectangularMaskedMesh3D)
+ * and they can use the same boundary conditions (BoundaryConditions instance for full mesh accepts also objects of this class).
  * Interpolation methods return NaN-s for all elements which have not been chosen.
  */
 struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
@@ -69,7 +69,7 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
 
         const RectangularMaskedMesh3D& maskedMesh;
 
-        //std::uint32_t elementNumber;    ///< index of element in oryginal mesh
+        //std::uint32_t elementNumber;    ///< index of element in original mesh
         std::size_t index0, index1, index2; // probably this form allows to do most operation fastest in average, low indexes of element corner or just element indexes
 
         /// Index of element. If it equals to UNKNOWN_ELEMENT_INDEX, it will be calculated on-demand from index0 and index1.

@@ -45,69 +45,100 @@ void Diffusion3DSolver::parseConfiguration(XMLReader& source, Manager& manager) 
 
 Diffusion3DSolver::~Diffusion3DSolver() {}
 
-void Diffusion3DSolver::setupActiveRegion3Ds() {
+void Diffusion3DSolver::summarizeActiveRegion(std::map<size_t, ActiveRegion3D::Region>& regions,
+                                              size_t num,
+                                              size_t bottom,
+                                              size_t top,
+                                              size_t lon,
+                                              size_t tra,
+                                              const std::vector<bool>& isQW,
+                                              const shared_ptr<RectangularMesh3D::ElementMesh>& points) {
+    if (!num) return;
+
+    auto found = regions.find(num);
+    ActiveRegion3D::Region& region = (found == regions.end()) ? regions
+                                                                    .emplace(std::piecewise_construct, std::forward_as_tuple(num),
+                                                                             std::forward_as_tuple(bottom, top, lon, tra, isQW))
+                                                                    .first->second
+                                                              : found->second;
+
+    if (bottom != region.bottom || top != region.top)
+        throw Exception("{0}: Active region {1} does not have top and bottom edges at constant heights", this->getId(), num - 1);
+
+    shared_ptr<Material> material;
+    for (size_t i = region.bottom; i < region.top; ++i) {
+        bool QW = isQW[i];
+        if (QW != region.isQW[i])
+            throw Exception("{0}: Active region {1} does not have QWs at constant heights", this->getId(), num - 1);
+        if (QW) {
+            auto point = points->at(lon, tra, i);
+            if (!material)
+                material = this->geometry->getMaterial(point);
+            else if (*material != *this->geometry->getMaterial(point)) {
+                throw Exception("{}: Quantum wells in active region {} are not identical", this->getId(), num - 1);
+            }
+        }
+    }
+}
+
+void Diffusion3DSolver::setupActiveRegions() {
     if (!this->geometry || !this->mesh) return;
 
     auto points = this->mesh->getElementMesh();
 
     std::map<size_t, ActiveRegion3D::Region> regions;
-    size_t nreg = 0;
+    std::vector<bool> isQW(points->axis[2]->size());
 
     for (size_t lon = 0; lon < points->axis[0]->size(); ++lon) {
         for (size_t tra = 0; tra < points->axis[1]->size(); ++tra) {
+            std::fill(isQW.begin(), isQW.end(), false);
             size_t num = 0;
             size_t start = 0;
             for (size_t ver = 0; ver < points->axis[2]->size(); ++ver) {
                 auto point = points->at(lon, tra, ver);
-                size_t cur = isActive(point);
-                if (cur != num) {
-                    if (num) {  // summarize current region
-                        auto found = regions.find(num);
-                        if (found == regions.end()) {  // `num` is a new region
-                            regions[num] = ActiveRegion3D::Region(start, ver, lon, tra);
-                            if (nreg < num) nreg = num;
-                        } else {
-                            ActiveRegion3D::Region& region = found->second;
-                            if (start != region.bottom || ver != region.top)
-                                throw Exception("{0}: Junction {1} does not have top and bottom edges at constant heights",
-                                                this->getId(), num - 1);
-                            if (tra < region.left) region.left = tra;
-                            if (tra >= region.right) region.right = tra + 1;
-                            if (lon < region.back) region.back = lon;
-                            if (lon >= region.front) region.front = lon + 1;
+                auto roles = this->geometry->getRolesAt(point);
+                size_t cur = 0;
+                for (auto role : roles) {  // find the active region, point belongs to
+                    size_t l = 0;
+                    if (role.substr(0, 6) == "active")
+                        l = 6;
+                    else if (role.substr(0, 8) == "junction")
+                        l = 8;
+                    else
+                        continue;
+                    if (cur != 0) throw BadInput(this->getId(), "Multiple 'active'/'junction' roles specified");
+                    if (role.size() == l)
+                        cur = 1;
+                    else {
+                        try {
+                            cur = boost::lexical_cast<size_t>(role.substr(l)) + 1;
+                        } catch (boost::bad_lexical_cast&) {
+                            throw BadInput(this->getId(), "Bad active region number in role '{0}'", role);
                         }
                     }
+                }
+                if (cur != num) {
+                    summarizeActiveRegion(regions, num, start, ver, lon, tra, isQW, points);
                     num = cur;
                     start = ver;
                 }
                 if (cur) {
+                    isQW[ver] =
+                        roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("carriers") != roles.end();
                     auto found = regions.find(cur);
                     if (found != regions.end()) {
                         ActiveRegion3D::Region& region = found->second;
                         if (region.warn && lon != region.lon && tra != region.tra &&
                             *this->geometry->getMaterial(points->at(lon, tra, ver)) !=
                                 *this->geometry->getMaterial(points->at(region.lon, region.tra, ver))) {
-                            writelog(LOG_WARNING, "Junction {} is laterally non-uniform", num - 1);
+                            writelog(LOG_WARNING, "Active region {} is laterally non-uniform", num - 1);
                             region.warn = false;
                         }
                     }
                 }
             }
-            if (num) {  // summarize current region
-                auto found = regions.find(num);
-                if (found == regions.end()) {  // `current` is a new region
-                    regions[num] = ActiveRegion3D::Region(start, points->axis[2]->size(), lon, tra);
-                } else {
-                    ActiveRegion3D::Region& region = found->second;
-                    if (start != region.bottom || points->axis[2]->size() != region.top)
-                        throw Exception("{0}: Junction {1} does not have top and bottom edges at constant heights", this->getId(),
-                                        num - 1);
-                    if (tra < region.left) region.left = tra;
-                    if (tra >= region.right) region.right = tra + 1;
-                    if (lon < region.back) region.back = lon;
-                    if (lon >= region.front) region.front = lon + 1;
-                }
-            }
+            // Summarize the last region
+            summarizeActiveRegion(regions, num, start, points->axis[2]->size(), lon, tra, isQW, points);
         }
     }
 
@@ -119,47 +150,26 @@ void Diffusion3DSolver::setupActiveRegion3Ds() {
         std::vector<double> QWz;
         std::vector<std::pair<size_t, size_t>> QWbt;
         double QWheight = 0.;
-        std::vector<bool> isQW;
-        isQW.reserve(reg.top - reg.bottom);
-        for (size_t il = reg.back; il < reg.front; ++il) {
-            for (size_t it = reg.left; it < reg.right; ++it) {
-                shared_ptr<Material> material;
-                for (size_t iv = reg.bottom, j = 0; iv < reg.top; ++iv, ++j) {
-                    auto point = points->at(il, it, iv);
-                    auto tags = this->geometry->getRolesAt(point);
-                    bool QW = tags.find("QW") != tags.end() || tags.find("QD") != tags.end();
-                    if (it == reg.left) {
-                        isQW.push_back(QW);
-                        if (QW) {
-                            if (QWbt.empty() || QWbt.back().second != iv)
-                                QWbt.emplace_back(iv, iv + 1);
-                            else
-                                QWbt.back().second = iv + 1;
-                            QWz.push_back(point.c1);
-                            QWheight += this->mesh->vert()->at(iv + 1) - this->mesh->vert()->at(iv);
-                        }
-                    } else if (isQW[j] != QW) {
-                        throw Exception("{}: Quantum wells in active region {} are not identical", this->getId(), act);
-                    }
-                    if (QW) {
-                        if (!material)
-                            material = this->geometry->getMaterial(point);
-                        else if (*material != *this->geometry->getMaterial(point)) {
-                            throw Exception("{}: Quantum wells in active region {} are not identical", this->getId(), act);
-                        }
-                    }
-                }
+        shared_ptr<Material> material;
+        for (size_t i = reg.bottom; i < reg.top; ++i) {
+            if (reg.isQW[i]) {
+                if (QWbt.empty() || QWbt.back().second != i)
+                    QWbt.emplace_back(i, i + 1);
+                else
+                    QWbt.back().second = i + 1;
+                QWz.push_back(points->axis[2]->at(i));
+                QWheight += this->mesh->vert()->at(i + 1) - this->mesh->vert()->at(i);
             }
         }
         if (QWz.empty()) {
             throw Exception("{}: Active region {} does not contain quantum wells", this->getId(), act);
         }
+
         active.emplace(std::piecewise_construct, std::forward_as_tuple(act),
-                       std::forward_as_tuple(this, reg.back, reg.front, reg.left, reg.right, reg.bottom, reg.top, QWheight,
-                                             std::move(QWz), std::move(QWbt)));
+                       std::forward_as_tuple(this, reg.bottom, reg.top, QWheight, std::move(QWz), std::move(QWbt)));
+
         this->writelog(LOG_DETAIL, "Total QWs thickness in active region {}: {}nm", act, 1e3 * QWheight);
-        this->writelog(LOG_DEBUG, "Junction {0} span: [{1},{3},{5}]-[{2},{4},{6}]", act, reg.back, reg.front, reg.left, reg.right,
-                       reg.bottom, reg.top);
+        this->writelog(LOG_DEBUG, "Active region {0} vertical span: {1}-{2}", act, reg.bottom, reg.top);
     }
 }
 
@@ -171,7 +181,7 @@ void Diffusion3DSolver::onInitialize() {
                                                      refineAxis(mesh1->tran(), DEFAULT_MESH_SPACING), mesh1->vert());
         writelog(LOG_DETAIL, "{}: Setting up default mesh [{}]", this->getId(), this->mesh->tran()->size());
     }
-    setupActiveRegion3Ds();
+    setupActiveRegions();
     loopno = 0;
 }
 
@@ -200,6 +210,7 @@ double Diffusion3DSolver::compute(unsigned loops, bool shb, size_t act) {
 
     size_t nn = active.mesh2->size(), ne = active.emesh2->size();
     size_t N = 3 * nn;
+    size_t nm = active.mesh2->lateral->fullMesh.minorAxis()->size();
 
     size_t nmodes = 0;
 
@@ -221,7 +232,7 @@ double Diffusion3DSolver::compute(unsigned loops, bool shb, size_t act) {
     double js = 1e7 / (phys::qe * active.QWheight);
     size_t i = 0;
     for (auto j : inCurrentDensity(active.mesh2, InterpolationMethod::INTERPOLATION_SPLINE)) {
-        J[i] = abs(js * j.c1);
+        J[i] = abs(js * j.c2);
         ++i;
     }
 
@@ -272,9 +283,12 @@ double Diffusion3DSolver::compute(unsigned loops, bool shb, size_t act) {
     DataVector<double> resid(N);
 
     switch (this->algorithm) {
-        case ALGORITHM_CHOLESKY: K.reset(new DpbMatrix(this, N, 3)); break;
-        case ALGORITHM_GAUSS: K.reset(new DgbMatrix(this, N, 3)); break;
-        case ALGORITHM_ITERATIVE: K.reset(new SparseBandMatrix(this, N, 3)); break;
+        case ALGORITHM_CHOLESKY: K.reset(new DpbMatrix(this, N, 3 * nm + 5)); break;
+        case ALGORITHM_GAUSS: K.reset(new DgbMatrix(this, N, 3 * nm + 5)); break;
+        case ALGORITHM_ITERATIVE:
+            throw NotImplemented(format("{}: iterative algorithm for diffusion calculation"));
+            // K.reset(new SparseBandMatrix(this, N, 3));
+            break;
     }
 
     while (true) {
@@ -318,16 +332,16 @@ double Diffusion3DSolver::compute(unsigned loops, bool shb, size_t act) {
             }
         }
 
-        // Set derivatives to 0 at the edges
-        size_t nl = active.emesh2->lon()->size(), nt = active.emesh2->tran()->size();
-        for (size_t i = 0; i <= nt; ++i) {
-            K->setBC(F, active.mesh2->index(0, i, 0) + 1, 0.);
-            K->setBC(F, active.mesh2->index(nl, i, 0) + 1, 0.);
-        }
-        for (size_t i = 0; i <= nl; ++i) {
-            K->setBC(F, active.mesh2->index(i, 0, 0) + 2, 0.);
-            K->setBC(F, active.mesh2->index(i, nt, 0) + 2, 0.);
-        }
+        // // Set derivatives to 0 at the edges
+        // size_t nl = active.emesh2->lon()->size(), nt = active.emesh2->tran()->size();
+        // for (size_t i = 0; i <= nt; ++i) {
+        //     K->setBC(F, active.mesh2->index(0, i, 0) + 1, 0.);
+        //     K->setBC(F, active.mesh2->index(nl, i, 0) + 1, 0.);
+        // }
+        // for (size_t i = 0; i <= nl; ++i) {
+        //     K->setBC(F, active.mesh2->index(i, 0, 0) + 2, 0.);
+        //     K->setBC(F, active.mesh2->index(i, nt, 0) + 2, 0.);
+        // }
 
 #ifndef NDEBUG
         double* kend = K->data + K->size * K->kd;
@@ -400,19 +414,17 @@ Diffusion3DSolver::ConcentrationDataImpl::ConcentrationDataImpl(const Diffusion3
             concentrations.emplace_back(LazyData<double>(dest_mesh->size(), [this, active](size_t i) -> double {
                 auto point = destination_mesh->at(i);
 
-                double x = interpolationFlags.wrap(0, point.c0);
-                assert(active.mesh2->lon()->at(0) <= x && x <= active.mesh2->lon()->at(active.mesh2->lon()->size() - 1));
-                size_t il = active.mesh2->lon()->findIndex(x);
-                if (il != 0) --il;
-                x -= active.mesh2->lon()->at(il);
+                Vec<2> wrapped_point;
+                size_t index0_lo, index0_hi, index1_lo, index1_hi;
 
-                double y = interpolationFlags.wrap(1, point.c1);
-                assert(active.mesh2->tran()->at(0) <= x && x <= active.mesh2->tran()->at(active.mesh2->tran()->size() - 1));
-                size_t it = active.mesh2->tran()->findIndex(x);
-                if (it != 0) --it;
-                y -= active.mesh2->tran()->at(it);
+                if (!active.mesh2->lateral->prepareInterpolation(vec(point.c0, point.c1), wrapped_point, index0_lo, index0_hi,
+                                                                 index1_lo, index1_hi, interpolationFlags))
+                    return 0.;  // point is outside the active region
 
-                ElementParams3D e(active, il, it);
+                double x = wrapped_point.c0 - active.mesh2->lateral->fullMesh.getAxis0()->at(index0_lo);
+                double y = wrapped_point.c1 - active.mesh2->lateral->fullMesh.getAxis1()->at(index1_lo);
+
+                ElementParams3D e(active, active.emesh2->lateral->index(index0_lo, index1_lo));
 
                 const double x2 = x * x, y2 = y * y;
                 const double x3 = x2 * x, y3 = y2 * y;
@@ -457,15 +469,12 @@ double Diffusion3DSolver::ConcentrationDataImpl::at(size_t i) const {
         if (solver->mesh->vert()->at(active.bottom) <= point.c2 && point.c2 <= solver->mesh->vert()->at(active.top)) {
             // Make sure we have concentration only in the quantum wells
             // TODO maybe more optimal approach would be reasonable?
-            if (solver->mesh->lon()->at(active.back) <= point.c0 && point.c0 <= solver->mesh->lon()->at(active.front) &&
-                solver->mesh->tran()->at(active.left) <= point.c1 && point.c1 <= solver->mesh->tran()->at(active.right)) {
-                for (auto qw : active.QWs)
-                    if (qw.first <= point.c2 && point.c2 < qw.second) {
-                        found = true;
-                        an = iactive.first;
-                        break;
-                    }
-            }
+            for (auto qw : active.QWs)
+                if (qw.first <= point.c2 && point.c2 < qw.second) {
+                    found = true;
+                    an = iactive.first;
+                    break;
+                }
             break;
         }
     }

@@ -389,12 +389,12 @@ struct SparseBandMatrix : FemMatrix {
         if (X.data() != U.data()) X = U;
     }
 
-    void mult(const DataVector<const double>& vector, DataVector<double>& result) {
+    void mult(const DataVector<const double>& vector, DataVector<double>& result) override {
         std::fill(result.begin(), result.end(), 0.);
         SparseBandMatrix::addmult(vector, result);
     }
 
-    void addmult(const DataVector<const double>& vector, DataVector<double>& result) {
+    void addmult(const DataVector<const double>& vector, DataVector<double>& result) override {
         for (size_t r = 0; r < size; ++r) {
             result[r] += data[r] * vector[r];
         }

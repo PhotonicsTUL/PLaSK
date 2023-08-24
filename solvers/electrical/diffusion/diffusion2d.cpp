@@ -140,7 +140,7 @@ template <typename Geometry2DType> void Diffusion2DSolver<Geometry2DType>::setup
             for (size_t r = reg.bottom, j = 0; r < reg.top; ++r, ++j) {
                 auto point = points->at(c, r);
                 auto tags = this->geometry->getRolesAt(point);
-                bool QW = tags.find("QW") != tags.end() || tags.find("QD") != tags.end();
+                bool QW = tags.find("QW") != tags.end() || tags.find("QD") != tags.end() || tags.find("carriers") != tags.end();
                 if (c == reg.left) {
                     isQW.push_back(QW);
                     if (QW) {
@@ -389,7 +389,10 @@ template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::com
     switch (this->algorithm) {
         case ALGORITHM_CHOLESKY: K.reset(new DpbMatrix(this, N, 3)); break;
         case ALGORITHM_GAUSS: K.reset(new DgbMatrix(this, N, 3)); break;
-        case ALGORITHM_ITERATIVE: K.reset(new SparseBandMatrix(this, N, 3)); break;
+        case ALGORITHM_ITERATIVE:
+            throw NotImplemented(format("{}: iterative algorithm for diffusion calculation"));
+                // K.reset(new SparseBandMatrix(this, N, 3));
+                break;
     }
 
     while (true) {

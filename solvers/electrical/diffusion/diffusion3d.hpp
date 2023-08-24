@@ -21,29 +21,63 @@ namespace plask { namespace electrical { namespace diffusion {
 
 #define DEFAULT_MESH_SPACING 0.005  // µm
 
+template <typename T> struct LateralMesh3D : MeshD<3> {
+    shared_ptr<T> lateral;
+    double z;
+
+    LateralMesh3D(const shared_ptr<T>& lateral, double z) : lateral(lateral), z(z) {}
+
+    std::size_t size() const override { return lateral->size(); }
+
+    plask::Vec<3> at(std::size_t index) const override {
+        Vec<2> p = lateral->at(index);
+        return Vec<3>(p.c0, p.c1, z);
+    }
+
+    shared_ptr<LateralMesh3D<typename T::ElementMesh>> getElementMesh() const {
+        return make_shared<LateralMesh3D<typename T::ElementMesh>>(lateral->getElementMesh(), z);
+    }
+};
+
+template <typename T> struct ExtendedLateralMesh3D : MeshD<3> {
+    shared_ptr<T> lateral;
+    std::vector<double> zz;
+
+    ExtendedLateralMesh3D(const shared_ptr<T>& lateral, std::vector<double> zz) : lateral(lateral), zz(std::move(zz)) {}
+
+    std::size_t size() const override { return lateral->size() * zz.size(); }
+
+    plask::Vec<3> at(std::size_t index) const override {
+        size_t i = index / zz.size(), j = index % zz.size();
+        Vec<2> p = lateral->at(i);
+        return Vec<3>(p.c0, p.c1, zz[j]);
+    }
+
+    shared_ptr<ExtendedLateralMesh3D<typename T::ElementMesh>> getElementMesh() const {
+        return shared_ptr<ExtendedLateralMesh3D<typename T::ElementMesh>>(
+            new ExtendedLateralMesh3D<typename T::ElementMesh>(lateral->getElementMesh(), zz));
+    }
+};
+
 struct ActiveRegion3D {
     struct Region {
-        size_t bottom, top, left, right, back, front, lon, tra;
+        size_t bottom, top, lon, tra;
         bool warn;
+        std::vector<bool> isQW;
         Region() {}
-        Region(size_t b, size_t t, size_t x, size_t y)
-            : bottom(b),
-              top(t),
-              left(std::numeric_limits<size_t>::max()),
-              right(0),
-              back(std::numeric_limits<size_t>::max()),
-              front(0),
-              lon(x),
-              tra(y),
-              warn(true) {}
+        Region(size_t b, size_t t, size_t x, size_t y, const std::vector<bool>& isQW)
+            : bottom(b), top(t), lon(x), tra(y), warn(true), isQW(isQW) {}
     };
 
-    size_t bottom, top, left, right, back, front;
+    size_t bottom, top;
 
     double QWheight;
 
-    shared_ptr<RectangularMesh<3>> mesh3, emesh3, mesh2, emesh2;
-    // shared_ptr<RectangularMesh<3>> fmesh3, fmesh2;
+    shared_ptr<LateralMesh3D<RectangularMaskedMesh2D>> mesh2;
+    shared_ptr<LateralMesh3D<RectangularMaskedMesh2D::ElementMesh>> emesh2;
+    shared_ptr<ExtendedLateralMesh3D<RectangularMaskedMesh2D>> mesh3;
+    shared_ptr<ExtendedLateralMesh3D<RectangularMaskedMesh2D::ElementMesh>> emesh3;
+
     std::vector<std::pair<double, double>> QWs;
 
     DataVector<double> U;
@@ -52,55 +86,42 @@ struct ActiveRegion3D {
 
     template <typename SolverT>
     ActiveRegion3D(const SolverT* solver,
-                   size_t l0,
-                   size_t l1,
-                   size_t t0,
-                   size_t t1,
-                   size_t v0,
-                   size_t v1,
+                   size_t bottom,
+                   size_t top,
                    double h,
                    std::vector<double> QWz,
                    std::vector<std::pair<size_t, size_t>> QWbt)
-        : bottom(v0),
-          top(v1),
-          left(t0),
-          right(t1),
-          back(l0),
-          front(l1),
-          QWheight(h),
-          mesh3(new RectangularMesh<3>(
-              shared_ptr<OrderedAxis>(new OrderedAxis()),
-              shared_ptr<OrderedAxis>(new OrderedAxis()),
-              shared_ptr<OrderedAxis>(new OrderedAxis(QWz)),
-              (right - left <= front - back) ? RectangularMesh<3>::ORDER_012 : RectangularMesh<3>::ORDER_102)) {
-        auto lbegin = solver->getMesh()->lon()->begin();
-        dynamic_pointer_cast<OrderedAxis>(mesh3->lon())->addOrderedPoints(lbegin + back, lbegin + front + 1);
-        auto tbegin = solver->getMesh()->tran()->begin();
-        dynamic_pointer_cast<OrderedAxis>(mesh3->tran())->addOrderedPoints(tbegin + left, tbegin + right + 1);
-
+        : bottom(bottom), top(top), QWheight(h) {
         QWs.reserve(QWbt.size());
         for (auto& bt : QWbt) QWs.emplace_back(solver->getMesh()->vert()->at(bt.first), solver->getMesh()->vert()->at(bt.second));
 
-        emesh3.reset(new RectangularMesh<3>(mesh3->lon()->getMidpointAxis(), mesh3->tran()->getMidpointAxis(), mesh3->vert(),
-                                            mesh3->getIterationOrder()));
-        mesh2.reset(new RectangularMesh<3>(mesh3->lon(), mesh3->tran(), make_shared<OnePointAxis>(this->vert()),
-                                           mesh3->getIterationOrder()));
-        emesh2.reset(new RectangularMesh<3>(emesh3->lon(), emesh3->tran(), mesh2->vert(), mesh3->getIterationOrder()));
+        double z = QWz[(QWz.size() + 1) / 2 - 1];
+        auto lateral_mesh_unmasked = make_shared<RectangularMesh2D>(solver->getMesh()->lon(), solver->getMesh()->tran());
+        auto lateral_mesh = make_shared<RectangularMaskedMesh2D>(
+            *lateral_mesh_unmasked, [solver, z](const RectangularMesh2D::Element& element) -> bool {
+                auto point = element.getMidpoint();
+                auto roles = solver->getGeometry()->getRolesAt(Vec<3>(point.c0, point.c1, z));
+                return roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("carriers") != roles.end();
+            });
+
+        mesh2 = make_shared<LateralMesh3D<RectangularMaskedMesh2D>>(lateral_mesh, z);
+        emesh2 = mesh2->getElementMesh();
+        // mesh3 = make_shared<ExtendedLateralMesh3D<RectangularMaskedMesh2D>>(lateral_mesh, std::move(QWz));
+        mesh3.reset(new ExtendedLateralMesh3D<RectangularMaskedMesh2D>(lateral_mesh, std::move(QWz)));
+        emesh3 = mesh3->getElementMesh();
     }
 
-    double vert() const { return mesh3->vert()->at((mesh3->vert()->size() + 1) / 2 - 1); }
+    double vert() const { return mesh2->z; }
 
-    template <typename ReceiverType>
+    template <typename ReceiverType, typename MeshType>
     LazyData<typename ReceiverType::ValueType> verticallyAverage(
         const ReceiverType& receiver,
-        const shared_ptr<const RectangularMesh<3>>& mesh,
+        const shared_ptr<ExtendedLateralMesh3D<MeshType>>& mesh,
         InterpolationMethod interp = InterpolationMethod::INTERPOLATION_DEFAULT) const {
-        assert(mesh->getIterationOrder() == RectangularMesh<3>::ORDER_012 ||
-               mesh->getIterationOrder() == RectangularMesh<3>::ORDER_102);
         auto data = receiver(mesh, interp);
-        const size_t n = mesh->vert()->size();
+        const size_t n = mesh->zz.size();
         return LazyData<typename ReceiverType::ValueType>(
-            mesh->tran()->size(), [this, data, n](size_t i) -> typename ReceiverType::ValueType {
+            mesh->lateral->size(), [this, data, n](size_t i) -> typename ReceiverType::ValueType {
                 typename ReceiverType::ValueType val(Zero<typename ReceiverType::ValueType>());
                 for (size_t j = n * i, end = n * (i + 1); j < end; ++j) val += data[j];
                 return val / n;
@@ -130,15 +151,14 @@ struct ElementParams3D {
           i32(i22 + 2),
           X(X),
           Y(Y) {}
-    ElementParams3D(const ActiveRegion3D& active, size_t il, size_t it)
-        : ElementParams3D(active.mesh2->lon()->at(il + 1) - active.mesh2->lon()->at(il),
-                          active.mesh2->tran()->at(it + 1) - active.mesh2->tran()->at(it),
-                          active.mesh2->index(il, it, 0),
-                          active.mesh2->index(il, it + 1, 0),
-                          active.mesh2->index(il + 1, it, 0),
-                          active.mesh2->index(il + 1, it + 1, 0)) {}
-    ElementParams3D(const ActiveRegion3D& active, size_t ie)
-        : ElementParams3D(active, active.emesh2->index0(ie), active.emesh2->index1(ie)) {}
+    ElementParams3D(const RectangularMaskedMesh2D::Element& element)
+        : ElementParams3D(element.getSize0(),
+                          element.getSize1(),
+                          element.getLoLoIndex(),
+                          element.getLoUpIndex(),
+                          element.getUpLoIndex(),
+                          element.getUpUpIndex()) {}
+    ElementParams3D(const ActiveRegion3D& active, size_t ie) : ElementParams3D(active.mesh2->lateral->element(ie)) {}
 };
 
 /**
@@ -194,41 +214,19 @@ struct PLASK_SOLVER_API Diffusion3DSolver : public FemSolverWithMesh<Geometry3D,
     void onInvalidate() override;
 
     /// Get info on active region
-    void setupActiveRegion3Ds();
+    void setupActiveRegions();
 
     // void computeInitial(ActiveRegion3D& active);
 
-    /** Return \c true if the specified point is at junction
-     * \param point point to test
-     * \returns number of active region + 1 (0 for none)
-     */
-    size_t isActive(const Vec<3>& point) const {
-        size_t no(0);
-        auto roles = this->geometry->getRolesAt(point);
-        for (auto role : roles) {
-            size_t l = 0;
-            if (role.substr(0, 6) == "active")
-                l = 6;
-            else if (role.substr(0, 8) == "junction")
-                l = 8;
-            else
-                continue;
-            if (no != 0) throw BadInput(this->getId(), "Multiple 'active'/'junction' roles specified");
-            if (role.size() == l)
-                no = 1;
-            else {
-                try {
-                    no = boost::lexical_cast<size_t>(role.substr(l)) + 1;
-                } catch (boost::bad_lexical_cast&) {
-                    throw BadInput(this->getId(), "Bad junction number in role '{0}'", role);
-                }
-            }
-        }
-        return no;
-    }
-
-    /// Return \c true if the specified element is a junction
-    size_t isActive(const RectangularMesh3D::Element& element) const { return isActive(element.getMidpoint()); }
+  private:
+    void summarizeActiveRegion(std::map<size_t, ActiveRegion3D::Region>& regions,
+                               size_t num,
+                               size_t start,
+                               size_t ver,
+                               size_t lon,
+                               size_t tra,
+                               const std::vector<bool>& isQW,
+                               const shared_ptr<RectangularMesh3D::ElementMesh>& points);
 
   public:
     double maxerr;  ///< Maximum relative current density correction accepted as convergence

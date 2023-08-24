@@ -1,4 +1,4 @@
-# module oryginally from: https://github.com/Grive/grive/blob/master/cmake/Modules/FindBFD.cmake
+# module originally from: https://github.com/Grive/grive/blob/master/cmake/Modules/FindBFD.cmake
 
 find_library( BFD_LIBRARY	NAMES bfd	PATH /usr/lib /usr/lib64 )
 
