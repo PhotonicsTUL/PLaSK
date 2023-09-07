@@ -214,9 +214,9 @@ class MaterialPlot(QWidget):
 
     def resizeEvent(self, event):
         if self.error.isVisible():
-            self.error.setFixedHeight(self.error.document().size().height())
+            self.error.setFixedHeight(int(self.error.document().size().height()))
         if self.info.isVisible():
-            self.info.setMaximumHeight(self.info.document().size().height())
+            self.info.setMaximumHeight(int(self.info.document().size().height()))
         if self.axes is not None:
             try:
                 self.figure.tight_layout(pad=0.2)
@@ -304,7 +304,7 @@ class MaterialPlot(QWidget):
                 value = value.rstrip().replace("\n", "<br/>\n")
                 text += "<tr><td><b>{}: </b></td><td>{}</td></tr>".format(key, value)
             self.info.setText(text + "</table>")
-            self.info.resize(self.info.document().idealWidth(), self.info.document().size().height())
+            self.info.resize(int(self.info.document().idealWidth()), int(self.info.document().size().height()))
             self.info.show()
             self.info.setMaximumHeight(self.info.document().size().height())
         else:
@@ -483,7 +483,7 @@ class MaterialPlot(QWidget):
             self.error.setText('<div style="color:red;">{}</div>'.format(str(err)))
             self.error.show()
             self.label.hide()
-            self.error.setFixedHeight(self.error.document().size().height())
+            self.error.setFixedHeight(int(self.error.document().size().height()))
             self.axes.xaxis.set_major_locator(NullLocator())
             self.axes.yaxis.set_major_locator(NullLocator())
             if self.axes2 is not None:
@@ -533,7 +533,7 @@ class MaterialPlot(QWidget):
                 # if self.error.text(): self.error.append("\n")
                 self.error.append("\n".join(warns))
                 self.error.show()
-                self.error.setFixedHeight(self.error.document().size().height())
+                self.error.setFixedHeight(int(self.error.document().size().height()))
 
     def save_data(self):
         if self.data is None:

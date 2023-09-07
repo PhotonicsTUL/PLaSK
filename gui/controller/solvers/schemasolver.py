@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -289,7 +289,7 @@ class SolverWidget(QWidget):
         else:
             if attr.name[-1] == '#':
                 edit = MultiLineEdit(movable=True, document=self.controller.document)
-                # edit.setFixedHeight(3 * edit.fontMetrics().lineSpacing())
+                # edit.setFixedHeight(int(3 * edit.fontMetrics().lineSpacing()))
                 # edit.textChanged.connect(self.controller.fire_changed)
                 edit.change_cb = lambda edit=edit, group=group, name=attr.name, attr=attr: \
                     weakself._change_multi_attr(group, name, edit.get_values(), attr)

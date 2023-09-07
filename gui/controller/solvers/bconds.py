@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -437,7 +437,7 @@ class BoundaryConditionsDialog(QDialog):
         if msg:
             self.info.setText(msg)
             self.info.show()
-            self.info.setFixedHeight(self.info.document().size().height())
+            self.info.setFixedHeight(int(self.info.document().size().height()))
         else:
             self.info.clear()
             self.info.hide()
@@ -455,11 +455,11 @@ class BoundaryConditionsDialog(QDialog):
     def showEvent(self, event):
         super().showEvent(event)
         if self.info is not None and self.info.isVisible():
-            self.info.setFixedHeight(self.info.document().size().height())
+            self.info.setFixedHeight(int(self.info.document().size().height()))
 
     def resizeEvent(self, event):
         if self.info is not None and self.info.isVisible():
-            self.info.setFixedHeight(self.info.document().size().height())
+            self.info.setFixedHeight(int(self.info.document().size().height()))
 
     def update_plot(self, index1=None, index2=None):
         if self.plot_auto_refresh and (index1 is None or index1.column() < 2):

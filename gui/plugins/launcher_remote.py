@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -333,7 +333,7 @@ else:
 
             def show_advanced(self, show):
                 self._set_rows_visibility(self._advanced_widgets, show)
-                self.setFixedHeight(self.sizeHint().height())
+                self.setFixedHeight(int(self.sizeHint().height()))
                 self.adjustSize()
 
             def name_edited(self):

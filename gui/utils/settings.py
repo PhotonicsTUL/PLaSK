@@ -656,7 +656,7 @@ class SettingsDialog(QDialog):
             layout.addWidget(self.italic)
             if help is not None: self.setWhatsThis(help)
             self.needs_restart = needs_restart
-            self.setFixedHeight(self.minimumSizeHint().height())
+            self.setFixedHeight(int(self.minimumSizeHint().height()))
             self.load(CONFIG[self.entry])
         def on_color_press(self):
             if QApplication.keyboardModifiers() == Qt.Modifier.CTRL:
@@ -751,7 +751,7 @@ class SettingsDialog(QDialog):
             if help is not None:
                 self.setWhatsThis(help)
             self.needs_restart = needs_restart
-            self.setFixedHeight(self.minimumSizeHint().height())
+            self.setFixedHeight(int(self.minimumSizeHint().height()))
             self.load(CONFIG[self.entry])
         def pushed(self):
             dirname = os.path.dirname(self.edit.text())
@@ -837,7 +837,7 @@ class SettingsDialog(QDialog):
             self.entry = entry
             if help is not None: self.setWhatsThis(help)
             self.needs_restart = needs_restart
-            self.setFixedHeight(self.minimumSizeHint().height())
+            self.setFixedHeight(int(self.minimumSizeHint().height()))
             self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             self.load(CONFIG[self.entry])
         @property

@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -116,7 +116,7 @@ class MaterialLineEdit(QLineEdit):
 
         frw = self.style().pixelMetric(QStyle.PixelMetric.PM_DefaultFrameWidth)
         self.setStyleSheet("QLineEdit {{ padding-right: {}px; }} ".format(self.button.sizeHint().width() + frw + 1))
-        msh = self.minimumSizeHint().height()
+        msh = int(self.minimumSizeHint().height())
         self.button.setMaximumHeight(msh)
 
     def resizeEvent(self, event):
@@ -247,7 +247,7 @@ class ExternalLineEdit(QLineEdit):
 
         frw = self.style().pixelMetric(QStyle.PixelMetric.PM_DefaultFrameWidth)
         self.setStyleSheet("QLineEdit {{ padding-right: {}px; }} ".format(self.button.sizeHint().width() + frw + 1))
-        msh = self.minimumSizeHint().height()
+        msh = int(self.minimumSizeHint().height())
         self.button.setMaximumHeight(msh)
 
         self.keep = False
