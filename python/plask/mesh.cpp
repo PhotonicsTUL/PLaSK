@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -26,6 +26,8 @@ namespace plask { namespace python {
 
 void register_mesh_rectangular();
 void register_mesh_triangular();
+void register_mesh_extruded_triangular();
+
 
 template <typename T>
 static bool __nonempty__(const T& self) { return !self.empty(); }
@@ -209,6 +211,7 @@ void register_mesh()
 
     register_mesh_rectangular();
     register_mesh_triangular();
+    register_mesh_extruded_triangular();
 
     register_vector_of<OrderedAxis>("Ordered");
 
