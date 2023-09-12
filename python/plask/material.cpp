@@ -597,7 +597,7 @@ namespace detail {
     MAKE_CACHED_VALUE_GETTER(double, y3)
 }
 
-#if PY_VERSION_HEX >= 0x030b0000
+#if PY_VERSION_HEX >= 0x030B0000
     #define IF_CO_VARNAMES \
         PyObject* co_varnames = PyCode_GetVarnames(code); \
         bool __co_varnames = co_varnames && PyTuple_GET_SIZE(co_varnames) == 0; \

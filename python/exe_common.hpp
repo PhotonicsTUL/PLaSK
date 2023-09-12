@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -58,7 +58,11 @@ inline std::string system_to_utf8(const std::wstring& str) {
 typedef wchar_t system_char;
 typedef std::wstring system_string;
 constexpr auto system_fopen = &_wfopen;
+#if PY_VERSION_HEX >= 0x030B0000
+	extern "C" FILE* _Py_wfopen(const wchar_t *path, const wchar_t *mode);
+#endif
 constexpr auto system_Py_fopen = &_Py_wfopen;
+
 
 static PyObject* system_Py_CompileString(const char *str, const system_char *filename, int start) {
 	PyObject* fname = PyUnicode_FromWideChar(filename, -1);
