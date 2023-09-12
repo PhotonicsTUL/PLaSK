@@ -33,9 +33,6 @@ if(MSVC)    # flags needed by Visual Studio:
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")     # follow C++ standard for exception handling
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DHAVE_SNPRINTF")   # snprintf is not defined in MSVC
     add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS) # hide many warnings which are caused by boost and fmt under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true
-    if (DEFINED Boost_USE_STATIC_LIBS AND NOT Boost_USE_STATIC_LIBS)
-        add_definitions(-DBOOST_ALL_DYN_LINK)   # MSVC+cmake require this to properly detect dynamic boost libraries
-    endif()
     add_definitions(-DBOOST_ALL_NO_LIB) # disable automatic linking with boost libraries, we link them manually
     #add_definitions(-DFMT_HEADER_ONLY)      # don't compile fmt, workaround for many linker errors
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++14")   # nothing is needed for C++11
@@ -196,34 +193,41 @@ include_directories(${EXPAT_INCLUDE_DIR})
 # ---------- Boost components --------------------------------------------
 # Add any boost component here that any part of the project can use ever
 
-set(boost_components system filesystem) # thread
-if(BUILD_TESTING)
-    set(boost_components ${boost_components} unit_test_framework)
-endif(BUILD_TESTING)
+set(BOOST_MIN_VER 1.54.0)
 
-option(USE_STATIC_BOOST "use static boost (not recommended)" OFF)
-if(USE_STATIC_BOOST)
-    add_definitions("-DBOOST_PYTHON_STATIC_LIB")  # fix linker errors to boost python
+if(WIN32)
     set(Boost_USE_STATIC_LIBS ON)
-endif(USE_STATIC_BOOST)
+endif()
+find_package(Boost ${BOOST_MIN_VER} REQUIRED COMPONENTS filesystem)
+
+include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
+
+if(WIN32)
+    set(Boost_USE_STATIC_LIBS OFF)
+endif()
 
 if(BUILD_PYTHON)
     foreach(boost_python "python-py${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}"
                          "python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}"
                          "python${Python3_VERSION_MAJOR}")
-        find_package(Boost QUIET COMPONENTS "${boost_python}")
+        find_package(Boost ${BOOST_MIN_VER} QUIET COMPONENTS "${boost_python}")
         unset(Boost_LIBRARIES)
-        string(TOUPPER "${boost_python}" boost_python_libraries_name)
-        if(Boost_${boost_python_libraries_name}_FOUND)
-            list(APPEND boost_components "${boost_python}")
-            set(Boost_Python3_LIBRARIES ${Boost_${boost_python_libraries_name}_LIBRARIES})
+        string(TOUPPER "${boost_python}" boost_python_name)
+        if(Boost_${boost_python_name}_FOUND)
+            set(Boost_Python3 Boost::${boost_python})
+            string(REPLACE "-" "_" boost_python_define ${boost_python_name})
+            add_definitions(-DBOOST_${boost_python_define}_DYN_LINK)
             break()
         endif()
     endforeach()
 endif()
 
-find_package(Boost 1.54.0 REQUIRED COMPONENTS ${boost_components})
-include_directories(${Boost_INCLUDE_DIRS})
+if(BUILD_TESTING)
+    find_package(Boost ${BOOST_MIN_VER} REQUIRED COMPONENTS unit_test_framework)
+    add_definitions(-DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK)
+endif(BUILD_TESTING)
+
 link_directories(${Boost_LIBRARY_DIRS})
 
 # ---------- External libraries built by us -----------------------------------------
@@ -272,10 +276,6 @@ if(DETECT_FORTRAN_NAME_MANGLING)
 endif(DETECT_FORTRAN_NAME_MANGLING)
 
 ## ---------- Libraries for better stack printing ------------------------------
-
-#if(MSVC)  #TODO: Make it work...
-#  set(PRINT_STACKTRACE_ON_EXCEPTION OFF)
-#endif()
 
 if(PRINT_STACKTRACE_ON_EXCEPTION)
     if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
@@ -335,7 +335,7 @@ endif()
 # ---------- PLaSK library --------------------------------------------
 
 add_library(libplask SHARED ${plask_src} ${plask_headers})
-target_link_libraries(libplask ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${EXPAT_LIBRARIES} ${PRINT_STACKTRACE_LIBRARY} triangle) # ${Boost_THREAD_LIBRARY}
+target_link_libraries(libplask Boost::filesystem ${EXPAT_LIBRARIES} ${PRINT_STACKTRACE_LIBRARY} triangle) # ${Boost_THREAD_LIBRARY}
 if(WIN32)
     target_link_libraries(libplask kernel32 iphlpapi)
     if(INSTALL_DEV)
@@ -420,7 +420,7 @@ if(BUILD_PYTHON)
     include_directories(${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
 
     add_library(libplask_python SHARED ${python_plask_src})
-    target_link_libraries(libplask_python ${Python3_LIBRARIES} ${Boost_Python3_LIBRARIES} libplask)
+    target_link_libraries(libplask_python ${Python3_LIBRARIES} ${Boost_Python3} libplask)
     set_target_properties(libplask_python PROPERTIES OUTPUT_NAME plask_python)
     if(DEFINED no_strict_aliasing_flag)
         set_target_properties(libplask_python PROPERTIES COMPILE_FLAGS "${no_strict_aliasing_flag} -DPLASK_PYTHON_EXPORTS")
@@ -445,7 +445,7 @@ if(BUILD_PYTHON)
         else()
             add_library(plask_module MODULE ${python_plask_src})
         endif()
-        target_link_libraries(plask_module ${Python3_LIBRARIES} ${Boost_Python3_LIBRARIES} libplask)
+        target_link_libraries(plask_module ${Python3_LIBRARIES} ${Boost_Python3} libplask)
         set_target_properties(plask_module PROPERTIES OUTPUT_NAME plask_python)
         if(DEFINED no_strict_aliasing_flag)
             set_target_properties(plask_module PROPERTIES COMPILE_FLAGS "${no_strict_aliasing_flag} -DPLASK_PYTHON_EXPORTS")
@@ -483,7 +483,7 @@ if(BUILD_PYTHON)
         add_executable(plask python/exe_main.cpp)
         set(plask_binary plask)
     endif()
-    target_link_libraries(plask ${Boost_Python3_LIBRARIES} ${Python3_LIBRARIES} libplask_python libplask)
+    target_link_libraries(plask ${Boost_Python3} ${Python3_LIBRARIES} libplask_python libplask)
     add_dependencies(plask python-scripts)
 
     if(DEFINED no_strict_aliasing_flag OR DEFINED EXE_FLAGS)
@@ -559,7 +559,7 @@ if(BUILD_PYTHON)
                 add_executable(plaskgui python/exe_gui.cpp)
             endif()
         endif()
-        target_link_libraries(plaskgui ${Boost_Python3_LIBRARIES} ${Python3_LIBRARIES} libplask_python libplask)
+        target_link_libraries(plaskgui ${Boost_Python3} ${Python3_LIBRARIES} libplask_python libplask)
         if(DEFINED no_strict_aliasing_flag OR DEFINED EXE_FLAGS)
             set_target_properties(plaskgui PROPERTIES COMPILE_FLAGS "${no_strict_aliasing_flags} ${EXE_FLAGS}") # necessary for all code which includes "Python.h"
         endif()
@@ -1076,7 +1076,7 @@ if(UNIX)
     set(CPACK_DEBIAN_PACKAGE_SECTION "Science")
     file(READ ${CMAKE_SOURCE_DIR}/ABOUT CPACK_DEBIAN_PACKAGE_DESCRIPTION)
     set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Photonic LAser Simulation Kit\n${CPACK_DEBIAN_PACKAGE_DESCRIPTION}")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libexpat1, libboost-python${boostver}, libboost-system${boostver}, libboost-filesystem${boostver}, binfmt-support")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libexpat1, libboost-python${boostver}, libboost-filesystem${boostver}, binfmt-support")
     if("${OpenMP_CXX_FLAGS}" MATCHES ".*libiomp5*")
         set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libomp5")
     endif()
@@ -1101,7 +1101,7 @@ if(UNIX)
     set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/postinst;${CMAKE_BINARY_DIR}/prerm")
     # set(CPACK_DEB_COMPONENT_INSTALL ON) # no postinst/prerm scripts are added if this is turned on
     set(CPACK_RPM_PACKAGE_GROUP Applications/Engineering)
-    set(CPACK_RPM_PACKAGE_REQUIRES "expat boost-system boost-filesystem openblas boost-python3 python3-numpy python3-pip")
+    set(CPACK_RPM_PACKAGE_REQUIRES "expat boost-filesystem openblas boost-python3 python3-numpy python3-pip")
     # set(CPACK_RPM_PACKAGE_REQUIRES "scipy python-matplotlib h5py")
     if(BUILD_GUI)
         set(CPACK_RPM_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE_REQUIRES} python3-pyqt5-sip python3-pyyaml")

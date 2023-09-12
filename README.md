@@ -180,15 +180,20 @@ the PATH (replace `C:\ProgramData\Anaconda3` with the folder you installed Anaco
 
 Eventually your Path environment variable must contain the following folders:
 
+- `C:\Libraries\bin` (this should come first)
 - `C:\ProgramData\Anaconda3`
 - `C:\ProgramData\Anaconda3\Library\bin`
 - `C:\ProgramData\Anaconda3\Library\usr\bin`
 - `C:\ProgramData\Anaconda3\Scripts`
-- `C:\Libraries\bin`
 
 Next open an `Anaconda Prompt` as administrator and type two commands:
 
     conda install mkl-devel
+
+The last step is to create the file `%APPDATA%\Python\Python310\site-packages\usercustomize.py` and to put into it:
+
+    import os
+    os.add_dll_directory('C:\\Libraries\\bin')
 
 
 #### Compile PLaSK under Visual Studio

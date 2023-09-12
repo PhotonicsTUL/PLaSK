@@ -124,7 +124,7 @@ macro(make_default)
         else()
             add_library(${SOLVER_PYTHON_MODULE} MODULE ${interface_src})
         endif()
-        target_link_libraries(${SOLVER_PYTHON_MODULE} ${SOLVER_LIBRARY} ${Boost_Python3_LIBRARIES} ${Python3_LIBRARIES} ${PLaSK_Python3_LIBRARIES} ${PLaSK_LIBRARIES} ${SOLVER_PYTHON_LINK_LIBRARIES})
+        target_link_libraries(${SOLVER_PYTHON_MODULE} ${SOLVER_LIBRARY} ${Boost_Python3} ${Python3_LIBRARIES} ${PLaSK_Python3_LIBRARIES} ${PLaSK_LIBRARIES} ${SOLVER_PYTHON_LINK_LIBRARIES})
         set_target_properties(${SOLVER_PYTHON_MODULE} PROPERTIES
                               LIBRARY_OUTPUT_DIRECTORY ${PLASK_SOLVER_PATH}
                               OUTPUT_NAME ${SOLVER_NAME}
