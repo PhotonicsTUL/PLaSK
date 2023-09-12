@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -133,6 +133,8 @@ DynamicLibrary::handle_t DynamicLibrary::release() {
      handle = 0;
      return r;
 }
+
+constexpr const char* DynamicLibrary::DEFAULT_EXTENSION;
 
 
 }   // namespace plask
