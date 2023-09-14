@@ -391,8 +391,8 @@ template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::com
         case ALGORITHM_GAUSS: K.reset(new DgbMatrix(this, N, 3)); break;
         case ALGORITHM_ITERATIVE:
             throw NotImplemented(format("{}: iterative algorithm for diffusion calculation"));
-                // K.reset(new SparseBandMatrix(this, N, 3));
-                break;
+            // K.reset(new SparseBandMatrix(this, N, 3));
+            break;
     }
 
     while (true) {

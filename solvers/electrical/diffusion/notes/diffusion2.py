@@ -68,8 +68,8 @@ def cpp(v):
     #for i in range(1, 5):
     #    s = s.replace(f"a[{i}]", f"a{i}")
     s = re.sub(r'std::pow\(([^)]+), (\d+)\)', r'std::pow(\1,\2)', s)
-    s = re.sub(r'std::pow\(([^)]+),2\)', r'\1*\1', s)
-    s = re.sub(r'std::pow\(([^)]+),3\)', r'\1*\1*\1', s)
+    s = re.sub(r'std::pow\(([^)]+),2\)', r'(\1*\1)', s)
+    s = re.sub(r'std::pow\(([^)]+),3\)', r'(\1*\1*\1)', s)
     s = re.sub(r'\b(X|Y)\b', r'e.\1', s)
     s = re.sub(r'\bU(\d\d)\b', r'U[e.i\1]', s)
     s = re.sub(r'\bJ(\d\d)\b', r'J[e.n\1]', s)
@@ -124,11 +124,11 @@ X, Y = sym.symbols('X Y')
 φ = np.array([[φx[0] * φy[0], φx[1] * φy[0], φx[2] * φy[0], φx[3] * φy[0]], [φx[0] * φy[1], 0, φx[2] * φy[1], 0],
               [φx[0] * φy[2], φx[1] * φy[2], φx[2] * φy[2], φx[3] * φy[2]], [φx[0] * φy[3], 0, φx[2] * φy[3], 0]])
 
-idx = [(0, 0), (0, 1), (0, 2), (0, 3), (1, 0), (1, 2), (2, 0), (2, 1), (2, 2), (2, 3), (3, 0), (3, 2)]
+idx = [(0,0), (0,1), (1,0), (0,2), (0,3), (1,2), (2,0), (2,1), (3,0), (2,2), (2,3), (3,2)]
 φ = np.array([φ[idx[i]] for i in range(12)])
 
 dφx = np.array([sym.expand(sym.diff(a, x)) for a in φ])
-dφy = np.array([sym.expand(sym.diff(a, x)) for a in φ])
+dφy = np.array([sym.expand(sym.diff(a, y)) for a in φ])
 
 U = sym.IndexedBase('U', shape=(4, 4))
 u0 = sum(U[idx[k]] * φ[k] for k in range(12))
@@ -212,7 +212,7 @@ G = sym.IndexedBase('G', shape=(2,))
 dG = sym.IndexedBase('dG', shape=(2,))
 ug = sym.symbols('Ug')
 
-Pxy = [sym.simplify(sum(P[i, j] * La(i, x, zx) * La(j, y, zy) for i in range(len(zx)) for j in range(len(zy)))) for c in range(2)]
+Pxy = [sym.simplify(sum(P[i, j, c] * La(i, x, zx) * La(j, y, zy) for i in range(len(zx)) for j in range(len(zy)))) for c in range(2)]
 
 KL = evaluate_matrix(lambda i,j:
     sym.simplify(sym.integrate(sym.integrate(sum(Pxy[i] * dG[i] for i in range(2)) * φ[i] * φ[j], (x, 0, X)), (y, 0, Y)))

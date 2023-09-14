@@ -13,7 +13,35 @@
  */
 #include "diffusion3d.hpp"
 
-namespace plask { namespace electrical { namespace diffusion {
+namespace plask {
+
+template <typename SrcT, typename DstT>
+struct InterpolationAlgorithm<electrical::diffusion::LateralMesh3D<RectangularMaskedMesh2D>, SrcT, DstT, INTERPOLATION_LINEAR> {
+    static LazyData<DstT> interpolate(
+        const shared_ptr<const electrical::diffusion::LateralMesh3D<RectangularMaskedMesh2D>>& src_mesh,
+        const DataVector<const SrcT>& src_vec,
+        const shared_ptr<const MeshD<3>>& dst_mesh,
+        const InterpolationFlags& flags) {
+        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        return new LinearInterpolatedLazyDataImpl<DstT, electrical::diffusion::LateralMesh3D<RectangularMaskedMesh2D>, SrcT>(
+            src_mesh, src_vec, dst_mesh, flags);
+    }
+};
+
+template <typename SrcT, typename DstT>
+struct InterpolationAlgorithm<electrical::diffusion::LateralMesh3D<RectangularMaskedMesh2D>, SrcT, DstT, INTERPOLATION_NEAREST> {
+    static LazyData<DstT> interpolate(
+        const shared_ptr<const electrical::diffusion::LateralMesh3D<RectangularMaskedMesh2D>>& src_mesh,
+        const DataVector<const SrcT>& src_vec,
+        const shared_ptr<const MeshD<3>>& dst_mesh,
+        const InterpolationFlags& flags) {
+        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        return new NearestNeighborInterpolatedLazyDataImpl<DstT, electrical::diffusion::LateralMesh3D<RectangularMaskedMesh2D>,
+                                                           SrcT>(src_mesh, src_vec, dst_mesh, flags);
+    }
+};
+
+namespace electrical { namespace diffusion {
 
 constexpr double inv_hc = 1.0e-13 / (phys::c * phys::h_J);
 using phys::Z0;
@@ -298,7 +326,7 @@ double Diffusion3DSolver::compute(unsigned loops, bool shb, size_t act) {
         F.fill(0.);
 
         for (size_t ie = 0; ie < ne; ++ie)
-            setLocalMatrix(*K, F, ElementParams3D(active, ie), A, B, C, D, active.U.data(), J.data());
+            setLocalMatrix(*K, F, ElementParams3D(active, ie), A[ie], B[ie], C[ie], D[ie], active.U.data(), J.data());
 
         write_debug("{}: Iteration {}", this->getId(), loop);
 
@@ -419,7 +447,7 @@ Diffusion3DSolver::ConcentrationDataImpl::ConcentrationDataImpl(const Diffusion3
 
                 if (!active.mesh2->lateral->prepareInterpolation(vec(point.c0, point.c1), wrapped_point, index0_lo, index0_hi,
                                                                  index1_lo, index1_hi, interpolationFlags))
-                    return 0.;  // point is outside the active region
+                    return NAN;  // point is outside the active region
 
                 double x = wrapped_point.c0 - active.mesh2->lateral->fullMesh.getAxis0()->at(index0_lo);
                 double y = wrapped_point.c1 - active.mesh2->lateral->fullMesh.getAxis1()->at(index1_lo);
@@ -452,10 +480,16 @@ Diffusion3DSolver::ConcentrationDataImpl::ConcentrationDataImpl(const Diffusion3
         for (const auto& iactive : solver->active) {
             const auto& active = iactive.second;
             if (!active.U) throw NoValue("Carriers concentration");
-            DataVector<double> conc(active.U.size() / 2);
+            DataVector<double> conc(active.U.size() / 3);
             DataVector<double>::iterator c = conc.begin();
-            for (auto u = active.U.begin(); u < active.U.end(); u += 2, ++c) *c = *u;
-            concentrations.emplace_back(interpolate(active.mesh2, conc, dest_mesh, interp, interpolationFlags));
+            for (auto u = active.U.begin(); u < active.U.end(); u += 3, ++c) *c = *u;
+            assert(active.mesh2->size() == conc.size());
+            LazyData<double> interpolation = interpolate(active.mesh2, conc, dest_mesh, interp, interpolationFlags);
+            concentrations.emplace_back(LazyData<double>(dest_mesh->size(), [interpolation](size_t i) -> double {
+                auto res = interpolation.at(i);
+                if (isnan(res)) return 0.;
+                return res;
+            }));
         }
     }
 }
@@ -478,7 +512,7 @@ double Diffusion3DSolver::ConcentrationDataImpl::at(size_t i) const {
             break;
         }
     }
-    if (!found) return 0.;
+    if (!found) return NAN;
     return concentrations[an][i];
 }
 
@@ -491,4 +525,5 @@ const LazyData<double> Diffusion3DSolver::getConcentration(CarriersConcentration
     return LazyData<double>(new Diffusion3DSolver::ConcentrationDataImpl(this, dest_mesh, interpolation));
 }
 
-}}}  // namespace plask::electrical::diffusion
+}}  // namespace electrical::diffusion
+}  // namespace plask

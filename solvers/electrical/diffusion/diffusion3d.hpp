@@ -19,11 +19,13 @@
 
 namespace plask { namespace electrical { namespace diffusion {
 
-#define DEFAULT_MESH_SPACING 0.005  // µm
+#define DEFAULT_MESH_SPACING 0.01  // µm
 
 template <typename T> struct LateralMesh3D : MeshD<3> {
     shared_ptr<T> lateral;
     double z;
+
+    using MeshD<3>::DIM;
 
     LateralMesh3D(const shared_ptr<T>& lateral, double z) : lateral(lateral), z(z) {}
 
@@ -36,6 +38,16 @@ template <typename T> struct LateralMesh3D : MeshD<3> {
 
     shared_ptr<LateralMesh3D<typename T::ElementMesh>> getElementMesh() const {
         return make_shared<LateralMesh3D<typename T::ElementMesh>>(lateral->getElementMesh(), z);
+    }
+
+    template <typename RandomAccessContainer>
+    auto interpolateLinear(const RandomAccessContainer& data, const Vec<3>& point, const InterpolationFlags& flags) const {
+        return lateral->interpolateLinear(data, Vec<2>(point.c0, point.c1), flags);
+    }
+
+    template <typename RandomAccessContainer>
+    auto interpolateNearestNeighbor(const RandomAccessContainer& data, const Vec<3>& point, const InterpolationFlags& flags) const {
+        return lateral->interpolateNearestNeighbor(data, Vec<2>(point.c0, point.c1), flags);
     }
 };
 
