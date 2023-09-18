@@ -275,7 +275,8 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
 
         comp (int or str): If the vector field is plotted, this argument must
                            specify the component to plot. It can be either
-                           a component number or its name.
+                           a component number or its name. If you specify `norm` or
+                           `abs`, the norm of the vector is plotted.
 
         axes (Axes): Matplotlib axes to which the geometry is drawn. If *None*
                 (the default), new axes are created.
@@ -322,7 +323,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
         if len(data.shape) == 4:
             if comp is None:
                 raise TypeError("Specify {} component to plot".format('tensor' if field.dtype == tuple else 'vector'))
-            elif comp == 'abs' or comp == 'mag' or comp == 'magnitude':
+            elif comp == 'norm' or comp == 'abs' or comp == 'mag' or comp == 'magnitude':
                 data = sqrt(sum(data*conj(data), -1))
             else:
                 comp = _get_component(comp, data.shape[-1])

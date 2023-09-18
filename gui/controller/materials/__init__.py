@@ -255,11 +255,10 @@ class ExternalLineEdit(QLineEdit):
     def resizeEvent(self, event):
         sz = self.button.sizeHint()
         frw = self.style().pixelMetric(QStyle.PixelMetric.PM_DefaultFrameWidth)
-        self.button.move(self.rect().right() - frw - sz.width(), (self.rect().bottom() + 1 - sz.height()) / 2)
+        self.button.move(int(self.rect().right() - frw - sz.width()), int(self.rect().bottom() + 1 - sz.height()) // 2)
 
     def show_file_dialog(self):
-        ext = '.py' if self.what == 'module' else \
-         '.dll' if os.name == '.nt' else '.so'
+        ext = '.py' if self.what == 'module' else '.dll' if os.name == 'nt' else '.so'
         what = self.what.title()
         try:
             self.keep = True
