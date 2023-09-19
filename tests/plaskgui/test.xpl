@@ -40,6 +40,7 @@
     <nr>3 * self.Al</nr>
   </material>
   <material name="InGaAsQW" base="In(0.2)GaAs"/>
+  <material name="AlGaAs_2" base="Al(0.2)GaAs_xxx"/>
   <material name="InGaAs_QW:Si" base="InGaAs:Si" alloy="yes">
     <nr>3.621</nr>
     <thermk>1.5 * self.In</thermk>
