@@ -447,7 +447,7 @@ Diffusion3DSolver::ConcentrationDataImpl::ConcentrationDataImpl(const Diffusion3
 
                 if (!active.mesh2->lateral->prepareInterpolation(vec(point.c0, point.c1), wrapped_point, index0_lo, index0_hi,
                                                                  index1_lo, index1_hi, interpolationFlags))
-                    return NAN;  // point is outside the active region
+                    return 0.;  // point is outside the active region
 
                 double x = wrapped_point.c0 - active.mesh2->lateral->fullMesh.getAxis0()->at(index0_lo);
                 double y = wrapped_point.c1 - active.mesh2->lateral->fullMesh.getAxis1()->at(index1_lo);
@@ -512,7 +512,7 @@ double Diffusion3DSolver::ConcentrationDataImpl::at(size_t i) const {
             break;
         }
     }
-    if (!found) return NAN;
+    if (!found) return 0.;
     return concentrations[an][i];
 }
 

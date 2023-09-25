@@ -22,11 +22,13 @@ from plask.flow import CurrentDensityProvider2D, CurrentDensityProviderCyl
 
 from electrical.diffusion import Diffusion2D, DiffusionCyl
 
+A = 3e7  # [1/s]
+B = 1.7e-10  # [cm³/s]
+C = 6e-27  # [cm⁶/s]
+D = 10.  # [cm²/s]
 
-A = 3e7         # [1/s]
-B = 1.7e-10     # [cm³/s]
-C = 6e-27       # [cm⁶/s]
-D = 10          # [cm²/s]
+L = 4.0
+
 
 @material.simple('GaAs')
 class GaAsQW(material.Material):
@@ -54,7 +56,6 @@ class DiffusionTest:
 
     def setUp(self):
         config.axes = self.axes
-        L = 4.000
         clad = geometry.Rectangle(L, 0.100, 'GaAs')
         qw = geometry.Rectangle(L, 0.002, 'GaAsQW')
         qw.role = 'QW'
@@ -81,12 +82,12 @@ class DiffusionTest:
         return 1e19 * (exp(-x**2) + 0.5)
 
     def d2n(self, x):
-        return 2e27 * (2 * x**2 - 1) * exp(-x**2)
+        return 2e19 * (2 * x**2 - 1) * exp(-x**2)
 
     def j(self, x):
         n = self.n(x)
-        nj = D * self.d2n(x) - A * n - B * n**2 - C * n**3
-        return -1e-7 *  (phys.qe * 0.006) * nj
+        nj = 1e8 * D * self.d2n(x) - A * n - B * n**2 - C * n**3
+        return -1e-7 * (phys.qe * 0.006) * nj
 
     def test_diffusion(self):
         self.solver.compute()
@@ -111,7 +112,7 @@ class DiffusionCyl(DiffusionTest, unittest.TestCase):
     axes = 'rz'
 
     def d2n(self, x):
-        return 4e27 * (x**2 - 1) * exp(-x**2)
+        return 4e19 * (x**2 - 1) * exp(-x**2)
 
 
 if __name__ == '__main__':
@@ -129,8 +130,12 @@ if __name__ == '__main__':
             twinx()
             plot(x, test.n(x), 'C1', label='concentration (analytic)')
             test.solver.compute()
-            plot_profile(test.solver.outCarriersConcentration(mesh.Rectangular2D(x, [0.104])), color='C2', ls='--',
-                        label='concentration (numeric)')
+            plot_profile(
+                test.solver.outCarriersConcentration(mesh.Rectangular2D(x, [0.104])),
+                color='C2',
+                ls='--',
+                label='concentration (numeric)'
+            )
             xlabel(f"${config.axes[1]}$ [µm]")
             ylabel("$n$ [cm$^{-3}$]")
             legend(loc='upper right')
