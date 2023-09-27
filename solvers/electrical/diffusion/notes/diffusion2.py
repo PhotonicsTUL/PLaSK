@@ -121,17 +121,18 @@ X, Y = sym.symbols('X Y')
 φy[3] *= Y
 φy = np.array([sym.expand(a) for a in φy])
 
-φ = np.array([[φx[0] * φy[0], φx[1] * φy[0], φx[2] * φy[0], φx[3] * φy[0]], [φx[0] * φy[1], 0, φx[2] * φy[1], 0],
-              [φx[0] * φy[2], φx[1] * φy[2], φx[2] * φy[2], φx[3] * φy[2]], [φx[0] * φy[3], 0, φx[2] * φy[3], 0]])
-
 idx = [(0,0), (0,1), (1,0), (0,2), (0,3), (1,2), (2,0), (2,1), (3,0), (2,2), (2,3), (3,2)]
-φ = np.array([φ[idx[i]] for i in range(12)])
+φ = np.array([φx[idx[i][0]] * φy[idx[i][1]] for i in range(12)])
 
 dφx = np.array([sym.expand(sym.diff(a, x)) for a in φ])
 dφy = np.array([sym.expand(sym.diff(a, y)) for a in φ])
 
 U = sym.IndexedBase('U', shape=(4, 4))
 u0 = sum(U[idx[k]] * φ[k] for k in range(12))
+
+if mrank == 0:
+    print("U:")
+    print("    return ", cpp(u0).replace('U', 'active.U'), ';', sep='')
 
 zx = np.array([0, X])
 zy = np.array([0, Y])

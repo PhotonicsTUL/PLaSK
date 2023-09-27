@@ -460,19 +460,22 @@ Diffusion3DSolver::ConcentrationDataImpl::ConcentrationDataImpl(const Diffusion3
                 const double X3 = X2 * e.X, Y3 = Y2 * e.Y;
 
                 return (e.X * x *
-                            (-x * y2 * (e.X - x) * (3 * e.Y - 2 * y) * active.U[e.i23] -
-                             x * (e.X - x) * (Y3 - 3 * e.Y * y2 + 2 * y3) * active.U[e.i03] +
-                             y2 * (3 * e.Y - 2 * y) * (X2 - 2 * e.X * x + x2) * active.U[e.i21] +
-                             (X2 - 2 * e.X * x + x2) * (Y3 - 3 * e.Y * y2 + 2 * y3) * active.U[e.i01]) +
+                            (-x * y2 * (e.X - x) * (3 * e.Y - 2 * y) * active.U[e.i32] -
+                             x * (e.X - x) * (Y3 - 3 * e.Y * y2 + 2 * y3) * active.U[e.i30] +
+                             y2 * (3 * e.Y - 2 * y) * (X2 - 2 * e.X * x + x2) * active.U[e.i12] +
+                             (X2 - 2 * e.X * x + x2) * (Y3 - 3 * e.Y * y2 + 2 * y3) *
+                                 active.U[e.i10]) +
                         e.Y * y *
-                            (-x2 * y * (3 * e.X - 2 * x) * (e.Y - y) * active.U[e.i32] +
-                             x2 * (3 * e.X - 2 * x) * (Y2 - 2 * e.Y * y + y2) * active.U[e.i12] -
-                             y * (e.Y - y) * (X3 - 3 * e.X * x2 + 2 * x3) * active.U[e.i30] +
-                             (X3 - 3 * e.X * x2 + 2 * x3) * (Y2 - 2 * e.Y * y + y2) * active.U[e.i10]) +
+                            (-x2 * y * (3 * e.X - 2 * x) * (e.Y - y) * active.U[e.i23] +
+                             x2 * (3 * e.X - 2 * x) * (Y2 - 2 * e.Y * y + y2) * active.U[e.i21] -
+                             y * (e.Y - y) * (X3 - 3 * e.X * x2 + 2 * x3) * active.U[e.i03] +
+                             (X3 - 3 * e.X * x2 + 2 * x3) * (Y2 - 2 * e.Y * y + y2) *
+                                 active.U[e.i01]) +
                         x2 * y2 * (3 * e.X - 2 * x) * (3 * e.Y - 2 * y) * active.U[e.i22] +
-                        x2 * (3 * e.X - 2 * x) * (Y3 - 3 * e.Y * y2 + 2 * y3) * active.U[e.i02] +
-                        y2 * (3 * e.Y - 2 * y) * (X3 - 3 * e.X * x2 + 2 * x3) * active.U[e.i20] +
-                        (X3 - 3 * e.X * x2 + 2 * x3) * (Y3 - 3 * e.Y * y2 + 2 * y3) * active.U[e.i00]) /
+                        x2 * (3 * e.X - 2 * x) * (Y3 - 3 * e.Y * y2 + 2 * y3) * active.U[e.i20] +
+                        y2 * (3 * e.Y - 2 * y) * (X3 - 3 * e.X * x2 + 2 * x3) * active.U[e.i02] +
+                        (X3 - 3 * e.X * x2 + 2 * x3) *
+                            (Y3 - 3 * e.Y * y2 + 2 * y3) * active.U[e.i00]) /
                        (X3 * Y3);
             }));
         }

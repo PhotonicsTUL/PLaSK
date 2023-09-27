@@ -97,15 +97,15 @@ class DiffusionTest(unittest.TestCase):
 
     def n(self, p):
         x, y, z = p.T
-        return self.filter(1e19 * (exp(-x**2) + 0.5), x, y)
+        return self.filter(1e19 * (exp(-x**2) * exp(-y**2) + 0.5), x, y)
 
     def d2nx(self, p):
         x, y, z = p.T
-        return self.filter(2e19 * (2 * x**2 - 1) * exp(-x**2), x, y)
+        return self.filter(2e19 * (2 * x**2 - 1) * exp(-x**2) * exp(-y**2), x, y)
 
     def d2ny(self, p):
         x, y, z = p.T
-        return 0.
+        return self.filter(2e19 * exp(-x**2) * (2 * y**2 - 1) * exp(-y**2), x, y)
 
     def j(self, p):
         x, y, z = p.T
@@ -119,8 +119,7 @@ class DiffusionTest(unittest.TestCase):
         )
         self.solver.compute()
         n = array(self.solver.outCarriersConcentration(self.test_mesh))
-
-        assert_allclose(n, self.n(array(self.test_mesh)), 1e-3)
+        assert_allclose(n, self.n(array(self.test_mesh)), 0.5e-3)
 
 
 if __name__ == '__main__':
@@ -128,7 +127,7 @@ if __name__ == '__main__':
     test.setUp()
 
     x = linspace(-1.1 * L, 1.1 * L, 5001)
-    xm = mesh.Rectangular3D(x, [0.], [0.104])
+    xm = mesh.Rectangular3D(x, [0.25 * L], [0.104])
 
     axhline(0., lw=0.7, color='k')
     plot(x, test.j(array(xm)), color='C0', label='current')
