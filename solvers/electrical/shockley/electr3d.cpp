@@ -240,7 +240,7 @@ void ElectricalFem3DSolver::setMatrix(FemMatrix& A,
                                       DataVector<double>& B,
                                       const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary, double>& bvoltage,
                                       const LazyData<double>& temperature) {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd + 1, A.ld + 1);
+    this->writelog(LOG_DETAIL, "Setting up matrix system ({})", A.describe());
 
     // Update junction conductivities
     if (loopno != 0) {
@@ -344,7 +344,7 @@ void ElectricalFem3DSolver::setMatrix(FemMatrix& A,
     A.applyBC(bvoltage, B);
 
 #ifndef NDEBUG
-    double* aend = A.data + A.size * A.kd;
+    double* aend = A.data + A.size;
     for (double* pa = A.data; pa != aend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
             throw ComputationError(getId(), "Error in stiffness matrix at position {0} ({1})", pa - A.data,

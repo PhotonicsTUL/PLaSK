@@ -127,7 +127,7 @@ void DynamicThermalFem3DSolver::onInvalidate() {
 void DynamicThermalFem3DSolver::setMatrix(FemMatrix& A, FemMatrix& B, DataVector<double>& F,
         const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature)
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
+    this->writelog(LOG_DETAIL, "Setting up matrix system ({})", A.describe());
 
     auto heats = inHeat(maskedMesh->getElementMesh()/*, INTERPOLATION_NEAREST*/);
 
@@ -237,7 +237,7 @@ void DynamicThermalFem3DSolver::setMatrix(FemMatrix& A, FemMatrix& B, DataVector
     A.factorize();
 
 #ifndef NDEBUG
-    double* aend = A.data + A.size * A.kd;
+    double* aend = A.data + A.size;
     for (double* pa = A.data; pa != aend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
             throw ComputationError(this->getId(), "Error in stiffness matrix at position {0}", pa-A.data);

@@ -19,8 +19,6 @@
 
 namespace plask { namespace electrical { namespace diffusion {
 
-#define DEFAULT_MESH_SPACING 0.01  // µm
-
 template <typename T> struct LateralMesh3D : MeshD<3> {
     shared_ptr<T> lateral;
     double z;

@@ -19,8 +19,6 @@
 
 namespace plask { namespace electrical { namespace diffusion {
 
-#define DEFAULT_MESH_SPACING 0.005  // µm
-
 struct ActiveRegion2D {
     struct Region {
         size_t left, right, bottom, top;

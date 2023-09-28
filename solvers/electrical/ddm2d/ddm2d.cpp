@@ -288,7 +288,7 @@ template <CalcType calctype>
 void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(FemMatrix& A, DataVector<double>& B,
                                                             const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double> &bvoltage)
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
+    this->writelog(LOG_DETAIL, "Setting up matrix system ({})", A.describe());
 
     //auto iMesh = (this->mesh)->getElementMesh();
     //auto temperatures = inTemperature(iMesh);
@@ -297,7 +297,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(FemMatrix& A, DataVe
 
 //TODO    2e-6*pow((Me(T,e,point).c00*plask::phys::me*plask::phys::kB_eV*300.)/(2.*PI*plask::phys::hb_eV*plask::phys::hb_J),1.5);
 
-    std::fill_n(A.data, A.size*(A.ld+1), 0.); // zero the matrix
+    std::fill_n(A.data, A.size, 0.); // zero the matrix
     B.fill(0.);
 
     // Set stiffness matrix and load vector
@@ -567,7 +567,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(FemMatrix& A, DataVe
     A.applyBC(bvoltage, B);
 
 #ifndef NDEBUG
-    double* aend = A.data + A.size * A.kd;
+    double* aend = A.data + A.size;
     for (double* pa = A.data; pa != aend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
             throw ComputationError(this->getId(), "Error in stiffness matrix at position {0} ({1})", pa-A.data, isnan(*pa)?"nan":"inf");

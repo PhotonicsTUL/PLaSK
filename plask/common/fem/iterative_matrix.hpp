@@ -93,10 +93,12 @@ struct IterativeMatrixParams {
     double err = 0;         ///< Residual error of the solution
 };
 
-struct SparseBandMatrix : FemMatrix {
-    int* bno;  ///< Vector of non-zero band numbers (shift from diagonal)
+struct SparseMatrix : FemMatrix {
+    typedef void (*NspcgFunc)(...);
 
   protected:
+    int* icords;  ///< Vector of non-zero band numbers (shift from diagonal) or non-zero elements
+
     IterativeMatrixParams* params;
 
     int ifact = 1;
@@ -105,69 +107,18 @@ struct SparseBandMatrix : FemMatrix {
     int* iwksp = nullptr;
     int kblsz = -1, nbl2d = -1;
 
+    virtual NspcgFunc get_preconditioner() = 0;
+
+    virtual int get_maxnz() const = 0;
+
   public:
-    /**
-     * Create 2D matrix.
-     * \param size size of the matrix
-     * \param major shift of nodes to the next row (mesh[x,y+1])
-     */
     template <typename SolverT>
-    SparseBandMatrix(SolverT* solver, size_t size, size_t major)
-        : FemMatrix(solver, size, 4, 4), bno(aligned_malloc<int>(5)), params(&solver->iter_params) {
-        bno[0] = 0;
-        bno[1] = 1;
-        bno[2] = major - 1;
-        bno[3] = major;
-        bno[4] = major + 1;
-        kblsz = major - 1;
-        nbl2d = major - 1;
-    }
+    SparseMatrix(SolverT* solver, size_t rank, size_t size, size_t isiz)
+        : FemMatrix(solver, rank, size), icords(aligned_malloc<int>(isiz)), params(&solver->iter_params) {}
 
-    /**
-     * Create 3D matrix.
-     * \param size size of the matrix
-     * \param major shift of nodes to the next major row (mesh[x,y,z+1])
-     * \param minor shift of nodes to the next minor row (mesh[x,y+1,z])
-     */
-    template <typename SolverT>
-    SparseBandMatrix(SolverT* solver, size_t size, size_t major, size_t minor)
-        : FemMatrix(solver, size, 13, 13), bno(aligned_malloc<int>(14)), params(&solver->iter_params) {
-        bno[0] = 0;
-        bno[1] = 1;
-        bno[2] = minor - 1;
-        bno[3] = minor;
-        bno[4] = minor + 1;
-        bno[5] = major - minor - 1;
-        bno[6] = major - minor;
-        bno[7] = major - minor + 1;
-        bno[8] = major - 1;
-        bno[9] = major;
-        bno[10] = major + 1;
-        bno[11] = major + minor - 1;
-        bno[12] = major + minor;
-        bno[13] = major + minor + 1;
-        kblsz = minor - 1;
-        nbl2d = major - minor - 1;
-    }
-
-    ~SparseBandMatrix() {
-        aligned_free<int>(bno);
+    ~SparseMatrix() {
         aligned_free<double>(wksp);
         aligned_free<int>(iwksp);
-    }
-
-    /**
-     * Return reference to array element.
-     * \param r index of the element row
-     * \param c index of the element column
-     * \return reference to array element
-     **/
-    size_t index(size_t r, size_t c) override {
-        if (r == c) return r;
-        if (r < c) std::swap(r, c);
-        size_t i = std::find(bno, bno + ld + 1, r - c) - bno;
-        assert(i != ld + 1);
-        return c + size * i;
     }
 
     void solverhs(DataVector<double>& B, DataVector<double>& X) override {
@@ -203,28 +154,27 @@ struct SparseBandMatrix : FemMatrix {
         iparm.level = 3;
 #endif
 
-        int n = size, maxnz = ld + 1;
+        int maxnz = get_maxnz();
+        size_t default_nw = 3 * rank + 2 * params->maxit + rank * maxnz + std::max(kblsz, 1);
+        size_t default_inw = maxnz + std::max(2 * int(rank), maxnz * maxnz + maxnz);
 
-        int NW = 3 * size + 2 * iparm.itmax + size * maxnz + iparm.kblsz;
-        int INW = maxnz + std::max(2 * n, maxnz * maxnz + maxnz);
-
-        if (nw < NW) {
-            nw = NW;
+        if (nw < default_nw) {
+            nw = default_nw;
             aligned_free<double>(wksp);
             wksp = aligned_malloc<double>(nw);
             iparm.ifact = 1;  // we need to do factorization with new workspace
         }
 
-        if (inw < INW) {
-            inw = INW;
+        if (inw < default_inw) {
+            inw = default_inw;
             aligned_free<int>(iwksp);
             iwksp = aligned_malloc<int>(inw);
             iparm.ifact = 1;  // we need to do factorization with new workspace
         }
 
-        // for (size_t r = 0; r < size; ++r) {
-        //     for (size_t c = 0; c < size; ++c) {
-        //         if (std::find(bno, A.bno+(ld+1), std::abs(int(r)-int(c))) == bno+(ld+1) )
+        // for (size_t r = 0; r < rank; ++r) {
+        //     for (size_t c = 0; c < rank; ++c) {
+        //         if (std::find(icords, A.icords+(ld+1), std::abs(int(r)-int(c))) == icords+(ld+1) )
         //             std::cout << "    .    ";
         //         else
         //             std::cout << str((*this))(r, c), "{:8.3f}") << " ";
@@ -232,7 +182,7 @@ struct SparseBandMatrix : FemMatrix {
         //     std::cout << "         " << str(B[r], "{:8.3f}") << std::endl;
         // }
 
-        assert(B.size() == size);
+        assert(B.size() == rank);
 
         DataVector<double> U;
         if (X.data() == nullptr || X.data() == B.data())
@@ -245,7 +195,7 @@ struct SparseBandMatrix : FemMatrix {
 
         // TODO add choice of algorithms and predonditioners
 
-        void (*precond_func)(...), (*accel_func)(...);
+        NspcgFunc precond_func, accel_func;
 
         if ((params->accelerator == IterativeMatrixParams::ACCEL_SOR) !=
             (params->preconditioner == IterativeMatrixParams::PRECOND_SOR ||
@@ -263,26 +213,8 @@ struct SparseBandMatrix : FemMatrix {
             throw BadInput(solver->getId(), "SRSI accelerator must be used with SSOR or LSSOR preconditioner");
         }
         // clang-format off
-        switch (params->preconditioner) {
-            case IterativeMatrixParams::PRECOND_RICH: precond_func = nspcg_rich2; break;
-            case IterativeMatrixParams::PRECOND_JAC: precond_func = nspcg_jac2; break;
-            case IterativeMatrixParams::PRECOND_LJAC: precond_func = nspcg_ljac2; break;
-            case IterativeMatrixParams::PRECOND_LJACX: precond_func = nspcg_ljacx2; break;
-            case IterativeMatrixParams::PRECOND_SOR: precond_func = nspcg_sor2; break;
-            case IterativeMatrixParams::PRECOND_SSOR: precond_func = nspcg_ssor2; break;
-            case IterativeMatrixParams::PRECOND_IC: precond_func = nspcg_ic2; break;
-            case IterativeMatrixParams::PRECOND_MIC: precond_func = nspcg_mic2; break;
-            case IterativeMatrixParams::PRECOND_LSP: precond_func = nspcg_lsp2; break;
-            case IterativeMatrixParams::PRECOND_NEU: precond_func = nspcg_neu2; break;
-            case IterativeMatrixParams::PRECOND_LSOR: precond_func = nspcg_lsor2; break;
-            case IterativeMatrixParams::PRECOND_LSSOR: precond_func = nspcg_lssor2; break;
-            case IterativeMatrixParams::PRECOND_LLSP: precond_func = nspcg_llsp2; break;
-            case IterativeMatrixParams::PRECOND_LNEU: precond_func = nspcg_lneu2; break;
-            case IterativeMatrixParams::PRECOND_BIC: precond_func = nspcg_bic2; break;
-            case IterativeMatrixParams::PRECOND_BICX: precond_func = nspcg_bicx2; break;
-            case IterativeMatrixParams::PRECOND_MBIC: precond_func = nspcg_mbic2; break;
-            case IterativeMatrixParams::PRECOND_MBICX: precond_func = nspcg_mbicx2; break;
-        };
+        precond_func = this->get_preconditioner();
+
         switch (params->accelerator) {
             case IterativeMatrixParams::ACCEL_CG: accel_func = nspcg_cg; break;
             case IterativeMatrixParams::ACCEL_SI: accel_func = nspcg_si; break;
@@ -308,8 +240,8 @@ struct SparseBandMatrix : FemMatrix {
         // clang-format on
 
         while (true) {
-            nspcg(precond_func, accel_func, n, ld + 1, n, maxnz, data, bno, nullptr, nullptr, U.data(), nullptr, B.data(), wksp,
-                  iwksp, nw, inw, iparm, rparm, ier);
+            nspcg(precond_func, accel_func, rank, maxnz, rank, maxnz, data, icords, nullptr, nullptr, U.data(), nullptr, B.data(),
+                  wksp, iwksp, nw, inw, iparm, rparm, ier);
 
             // Increase workspace if needed
             if (ier == -2 && nw) {
@@ -326,7 +258,7 @@ struct SparseBandMatrix : FemMatrix {
 
         if (ier != 0) {
             switch (ier) {
-                case -1: throw ComputationError(solver->getId(), "Nonpositive matrix size {}", size);
+                case -1: throw ComputationError(solver->getId(), "Nonpositive matrix rank {}", rank);
                 case -2: throw ComputationError(solver->getId(), "Insufficient real workspace ({} required)", nw);
                 case -3: throw ComputationError(solver->getId(), "Insufficient integer workspace ({} required)", inw);
                 case -4: throw ComputationError(solver->getId(), "Nonpositive diagonal element in stiffness matrix");
@@ -361,9 +293,7 @@ struct SparseBandMatrix : FemMatrix {
                             break;
                     }
                     break;
-                case 2:
-                    solver->writelog(LOG_WARNING, "`maxerr` was too small, reset to {}", 3.55e-12);
-                    break;
+                case 2: solver->writelog(LOG_WARNING, "`maxerr` was too small, reset to {}", 3.55e-12); break;
                 case 3:
                     solver->writelog(LOG_DEBUG,
                                      "NSPGS: `zbrent` failed to converge in the maximum number of {} iterations (signifies "
@@ -391,43 +321,149 @@ struct SparseBandMatrix : FemMatrix {
 
     void mult(const DataVector<const double>& vector, DataVector<double>& result) override {
         std::fill(result.begin(), result.end(), 0.);
-        SparseBandMatrix::addmult(vector, result);
+        addmult(vector, result);
+    }
+};
+
+struct SparseBandMatrix : SparseMatrix {
+    const size_t kd;  ///< Size of the band reduced by one
+
+    /**
+     * Create 2D matrix
+     * \param solver solver
+     * \param rank rank of the matrix
+     * \param major shift of nodes to the next row (mesh[x,y+1])
+     */
+    template <typename SolverT>
+    SparseBandMatrix(SolverT* solver, size_t rank, size_t major) : SparseMatrix(solver, rank, 5 * rank, 5), kd(4) {
+        icords[0] = 0;
+        icords[1] = 1;
+        icords[2] = major - 1;
+        icords[3] = major;
+        icords[4] = major + 1;
+        kblsz = major - 1;
+        nbl2d = major - 1;
+    }
+
+    /**
+     * Create 3D matrix
+     * \param solver solver
+     * \param rank rank of the matrix
+     * \param major shift of nodes to the next major row (mesh[x,y,z+1])
+     * \param minor shift of nodes to the next minor row (mesh[x,y+1,z])
+     */
+    template <typename SolverT>
+    SparseBandMatrix(SolverT* solver, size_t rank, size_t major, size_t minor) : SparseMatrix(solver, rank, 14 * rank, 14), kd(13) {
+        icords[0] = 0;
+        icords[1] = 1;
+        icords[2] = minor - 1;
+        icords[3] = minor;
+        icords[4] = minor + 1;
+        icords[5] = major - minor - 1;
+        icords[6] = major - minor;
+        icords[7] = major - minor + 1;
+        icords[8] = major - 1;
+        icords[9] = major;
+        icords[10] = major + 1;
+        icords[11] = major + minor - 1;
+        icords[12] = major + minor;
+        icords[13] = major + minor + 1;
+        kblsz = minor - 1;
+        nbl2d = major - minor - 1;
+    }
+
+    /**
+     * Create band matrix
+     * \param solver solver
+     * \param rank rank of the matrix
+     * \param bands list of non-zero bands (shift from diagonal)
+     */
+    template <typename SolverT>
+    SparseBandMatrix(SolverT* solver, size_t rank, std::initializer_list<int> bands)
+        : SparseMatrix(solver, rank, bands.size() * rank, bands.size()), kd(bands.size()) {
+        size_t i = 0;
+        for (int band : bands) icords[i++] = band;
+        assert(icords[0] == 0);
+    }
+
+    ~SparseBandMatrix() { aligned_free<int>(icords); }
+
+    /**
+     * Return reference to array element.
+     * \param r index of the element row
+     * \param c index of the element column
+     * \return reference to array element
+     **/
+    size_t index(size_t r, size_t c) override {
+        if (r == c) return r;
+        if (r < c) std::swap(r, c);
+        size_t i = std::find(icords, icords + kd + 1, r - c) - icords;
+        assert(i != kd + 1);
+        return c + rank * i;
     }
 
     void addmult(const DataVector<const double>& vector, DataVector<double>& result) override {
-        for (size_t r = 0; r < size; ++r) {
+        for (size_t r = 0; r < rank; ++r) {
             result[r] += data[r] * vector[r];
         }
-        for (size_t d = 1; d <= ld; ++d) {
-            size_t sd = size * d;
-            for (size_t r = 0; r < size; ++r) {
-                size_t c = r + bno[d];
-                if (c >= size) break;
+        for (size_t d = 1; d <= kd; ++d) {
+            size_t sd = rank * d;
+            for (size_t r = 0; r < rank; ++r) {
+                size_t c = r + icords[d];
+                if (c >= rank) break;
                 result[r] += data[r + sd] * vector[c];
                 result[c] += data[r + sd] * vector[r];
             }
         }
     }
 
+  protected:
+    NspcgFunc get_preconditioner() override {
+        switch (params->preconditioner) {
+            case IterativeMatrixParams::PRECOND_RICH: return nspcg_rich2;
+            case IterativeMatrixParams::PRECOND_JAC: return nspcg_jac2;
+            case IterativeMatrixParams::PRECOND_LJAC: return nspcg_ljac2;
+            case IterativeMatrixParams::PRECOND_LJACX: return nspcg_ljacx2;
+            case IterativeMatrixParams::PRECOND_SOR: return nspcg_sor2;
+            case IterativeMatrixParams::PRECOND_SSOR: return nspcg_ssor2;
+            case IterativeMatrixParams::PRECOND_IC: return nspcg_ic2;
+            case IterativeMatrixParams::PRECOND_MIC: return nspcg_mic2;
+            case IterativeMatrixParams::PRECOND_LSP: return nspcg_lsp2;
+            case IterativeMatrixParams::PRECOND_NEU: return nspcg_neu2;
+            case IterativeMatrixParams::PRECOND_LSOR: return nspcg_lsor2;
+            case IterativeMatrixParams::PRECOND_LSSOR: return nspcg_lssor2;
+            case IterativeMatrixParams::PRECOND_LLSP: return nspcg_llsp2;
+            case IterativeMatrixParams::PRECOND_LNEU: return nspcg_lneu2;
+            case IterativeMatrixParams::PRECOND_BIC: return nspcg_bic2;
+            case IterativeMatrixParams::PRECOND_BICX: return nspcg_bicx2;
+            case IterativeMatrixParams::PRECOND_MBIC: return nspcg_mbic2;
+            case IterativeMatrixParams::PRECOND_MBICX: return nspcg_mbicx2;
+        };
+        assert(NULL);
+    }
+
+    int get_maxnz() const override { return kd + 1; }
+
+  public:
     void setBC(DataVector<double>& B, size_t r, double val) override {
         data[r] = 1.;
         B[r] = val;
         // above diagonal
         for (ptrdiff_t i = kd; i > 0; --i) {
-            ptrdiff_t c = r - bno[i];
+            ptrdiff_t c = r - icords[i];
             if (c >= 0) {
-                ptrdiff_t ii = c + size * i;
-                assert(ii < size * (ld + 1));
+                ptrdiff_t ii = c + rank * i;
+                assert(ii < size);
                 B[c] -= data[ii] * val;
                 data[ii] = 0.;
             }
         }
         // below diagonal
-        for (ptrdiff_t i = 1; i <= ld; ++i) {
-            ptrdiff_t c = r + bno[i];
-            if (c < size) {
-                size_t ii = r + size * i;
-                assert(ii < size * (ld + 1));
+        for (ptrdiff_t i = 1; i <= kd; ++i) {
+            ptrdiff_t c = r + icords[i];
+            if (c < rank) {
+                size_t ii = r + rank * i;
+                assert(ii < size);
                 B[c] -= data[ii] * val;
                 data[ii] = 0.;
             }

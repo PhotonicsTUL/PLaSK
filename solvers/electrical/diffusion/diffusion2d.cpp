@@ -13,6 +13,8 @@
  */
 #include "diffusion2d.hpp"
 
+#define DEFAULT_MESH_SPACING 0.005  // µm
+
 namespace plask { namespace electrical { namespace diffusion {
 
 constexpr double inv_hc = 1.0e-13 / (phys::c * phys::h_J);
@@ -397,7 +399,7 @@ template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::com
 
     while (true) {
         // Set stiffness matrix and load vector
-        this->writelog(LOG_DETAIL, "Setting up matrix system (size={})", K->size);
+        this->writelog(LOG_DETAIL, "Setting up matrix system ({})", K->describe());
         K->clear();
         F.fill(0.);
         for (size_t ie = 0; ie < ne; ++ie) {
@@ -454,10 +456,10 @@ template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::com
 
         // Set derivatives to 0 at the edges
         K->setBC(F, 1, 0.);
-        K->setBC(F, K->size - 1, 0.);
+        K->setBC(F, K->rank - 1, 0.);
 
 #ifndef NDEBUG
-        double* kend = K->data + K->size * K->kd;
+        double* kend = K->data + K->size;
         for (double* pk = K->data; pk != kend; ++pk) {
             if (isnan(*pk) || isinf(*pk))
                 throw ComputationError(this->getId(), "Error in stiffness matrix at position {0} ({1})", pk - K->data,

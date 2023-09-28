@@ -174,7 +174,7 @@ void ThermalFem3DSolver::setMatrix(FemMatrix& A, DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,Radiation>& bradiation
                   )
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
+    this->writelog(LOG_DETAIL, "Setting up matrix system ({})", A.describe());
 
     auto heats = inHeat(maskedMesh->getElementMesh()/*, INTERPOLATION_NEAREST*/);
 

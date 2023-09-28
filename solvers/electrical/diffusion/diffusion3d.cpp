@@ -13,6 +13,8 @@
  */
 #include "diffusion3d.hpp"
 
+#define DEFAULT_MESH_SPACING 0.01  // µm
+
 namespace plask {
 
 template <typename SrcT, typename DstT>
@@ -321,7 +323,7 @@ double Diffusion3DSolver::compute(unsigned loops, bool shb, size_t act) {
 
     while (true) {
         // Set stiffness matrix and load vector
-        this->writelog(LOG_DETAIL, "Setting up matrix system (size={})", K->size);
+        this->writelog(LOG_DETAIL, "Setting up matrix system ({})", K->describe());
         K->clear();
         F.fill(0.);
 
@@ -372,7 +374,7 @@ double Diffusion3DSolver::compute(unsigned loops, bool shb, size_t act) {
         // }
 
 #ifndef NDEBUG
-        double* kend = K->data + K->size * K->kd;
+        double* kend = K->data + K->size;
         for (double* pk = K->data; pk != kend; ++pk) {
             if (isnan(*pk) || isinf(*pk))
                 throw ComputationError(this->getId(), "Error in stiffness matrix at position {0} ({1})", pk - K->data,
