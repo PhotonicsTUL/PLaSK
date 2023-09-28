@@ -68,6 +68,10 @@ class Shockley3D_Test(unittest.TestCase):
         heat = correct_current * 1.
         self.assertAlmostEqual(self.solver.get_total_heat(), heat, 3)
 
+    def testComputationsExcluded(self):
+        self.solver.empty_elements = 'exclude'
+        self.testComputations()
+
     def testComputationsTemp(self):
         self.solver.beta = lambda T: log(T * 70)
         self.solver.compute(1000)

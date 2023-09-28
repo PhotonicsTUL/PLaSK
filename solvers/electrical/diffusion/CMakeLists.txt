@@ -59,6 +59,7 @@ enable_testing()
 #add_solver_test(bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
 add_solver_test(uniform ${CMAKE_CURRENT_SOURCE_DIR}/tests/uniform.py)
 add_solver_test(gaussian ${CMAKE_CURRENT_SOURCE_DIR}/tests/gaussian.py)
+add_solver_test(diffusion3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/diffusion3d.py)
 
 
 # Build everything the default way.

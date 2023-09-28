@@ -414,7 +414,7 @@
   <thermal name="THERMAL" solver="StaticCyl" lib="static">
     <geometry ref="GeoT"/>
     <!--mesh-->
-    <mesh ref="default" include-empty="yes"/>
+    <mesh ref="default" empty-elements="include"/>
     <!--A-->
     <temperature>
       <!--B-->

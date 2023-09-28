@@ -203,7 +203,7 @@ void DynamicThermalFem3DSolver::setMatrix(FemMatrix& A, FemMatrix& B, DataVector
         }
 
         // updating A, B matrices with C elements
-        // Wheter lumping the mass matrces A, B?
+        // depending on lumping the mass matrices A, B?
         if (lumping)
         {
             for (int i = 0; i < 8; ++i) {

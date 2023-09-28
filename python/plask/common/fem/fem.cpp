@@ -111,6 +111,13 @@ void registerFemCommon() {
         .value("GAUSS", ALGORITHM_GAUSS)
         .value("ITERATIVE", ALGORITHM_ITERATIVE);
 
+    py_enum<EmptyElementsHandling>()
+        .value("DEFAULT", EMPTY_ELEMENTS_DEFAULT)
+        .value("EXCLUDE", EMPTY_ELEMENTS_EXCLUDED)
+        .value("INCLUDE", EMPTY_ELEMENTS_INCLUDED)
+        .value("EXCLUDED", EMPTY_ELEMENTS_EXCLUDED)
+        .value("INCLUDED", EMPTY_ELEMENTS_INCLUDED);
+
     py_enum<IterativeMatrixParams::Accelelator>()
         .value("CG", IterativeMatrixParams::ACCEL_CG)
         .value("SI", IterativeMatrixParams::ACCEL_SI)

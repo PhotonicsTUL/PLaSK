@@ -73,7 +73,7 @@ struct DgbMatrix : BandMatrix {
 
     DgbMatrix(const DgbMatrix&) = delete;
 
-    size_t index(size_t r, size_t c) override {
+    size_t index(size_t r, size_t c) {
         assert(r < rank && c < rank);
         if (r < c) {
             assert(c - r <= kd);
@@ -84,6 +84,8 @@ struct DgbMatrix : BandMatrix {
             return shift + c + ld * r;
         }
     }
+
+    double& operator()(size_t r, size_t c) override { return data[index(r, c)]; }
 
     void factorize() override {
         solver->writelog(LOG_DETAIL, "Factorizing system");

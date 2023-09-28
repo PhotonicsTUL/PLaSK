@@ -36,7 +36,7 @@ template <typename SolverT> inline static void registerFemSolver(SolverT& solver
 
 template <typename SolverT> inline static void registerFemSolverWithMaskedMesh(SolverT& solver) {
     registerFemSolver(solver);
-    solver.add_property("include_empty", &SolverT::Class::usingFullMesh, &SolverT::Class::useFullMesh,
+    solver.add_property("empty_elements", &SolverT::Class::getEmptyElements, &SolverT::Class::setEmptyElements,
                         "Should empty regions (e.g. air) be included into computation domain?");
 }
 

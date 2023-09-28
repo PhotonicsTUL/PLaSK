@@ -64,7 +64,7 @@ struct DpbMatrix : BandMatrix {
     DpbMatrix(const Solver* solver, size_t rank, size_t band)
         : BandMatrix(solver, rank, band, ((band + 1 + (15 / sizeof(double))) & ~size_t(15 / sizeof(double))) - 1) {}
 
-    size_t index(size_t r, size_t c) override {
+    size_t index(size_t r, size_t c) {
         assert(r < rank && c < rank);
         if (r < c) {
             assert(c - r <= kd);
@@ -84,6 +84,8 @@ struct DpbMatrix : BandMatrix {
 #endif
         }
     }
+
+    double& operator()(size_t r, size_t c) override { return data[index(r, c)]; }
 
     void factorize() override {
         int info = 0;

@@ -121,9 +121,6 @@ struct PLASK_SOLVER_API ThermalFem3DSolver: public FemSolverWithMaskedMesh<Geome
 
   protected:
 
-    size_t band;                                ///< Maximum band size
-    bool use_full_mesh;                         ///< Should we use full mesh?
-
     struct ThermalConductivityData: public LazyDataImpl<Tensor2<double>> {
         const ThermalFem3DSolver* solver;
         shared_ptr<const MeshD<3>> dest_mesh;

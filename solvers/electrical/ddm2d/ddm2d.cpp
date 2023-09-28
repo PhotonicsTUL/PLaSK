@@ -297,7 +297,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(FemMatrix& A, DataVe
 
 //TODO    2e-6*pow((Me(T,e,point).c00*plask::phys::me*plask::phys::kB_eV*300.)/(2.*PI*plask::phys::hb_eV*plask::phys::hb_J),1.5);
 
-    std::fill_n(A.data, A.size, 0.); // zero the matrix
+    A.clear();
     B.fill(0.);
 
     // Set stiffness matrix and load vector

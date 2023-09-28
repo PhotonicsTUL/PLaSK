@@ -38,17 +38,10 @@ struct FemMatrix {
      * \param r index of the element row
      * \param c index of the element column
      **/
-    double& operator()(size_t r, size_t c) { return data[index(r, c)]; }
-
-    /**
-     * Return index in data array
-     * \param r index of the element row
-     * \param c index of the element column
-     */
-    virtual size_t index(size_t r, size_t c) = 0;
+    virtual double& operator()(size_t r, size_t c) = 0;
 
     /// Clear the matrix
-    void clear() {
+    virtual void clear() {
         std::fill_n(data, size, 0.);
     }
 

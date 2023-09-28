@@ -265,8 +265,8 @@ void DynamicThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(
     auto heatdensities = inHeat(this->maskedMesh->getElementMesh());
 
     // zero the matrices A, B and the load vector F
-    std::fill_n(A.data, A.size, 0.);
-    std::fill_n(B.data, B.size, 0.);
+    A.clear();
+    B.clear();
     F.fill(0.);
 
     // Set stiffness matrix and load vector
@@ -312,8 +312,7 @@ void DynamicThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(
         k32 = k41 = (kx - 2. * ky) / 6.;
 
         //Wheter lumping the mass matrces A, B?
-        if (lumping)
-        {
+        if (lumping) {
             A(loleftno, loleftno) += methodparam*k11 + c;
             A(lorghtno, lorghtno) += methodparam*k22 + c;
             A(uprghtno, uprghtno) += methodparam*k33 + c;
@@ -337,9 +336,7 @@ void DynamicThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(
             B(uprghtno, lorghtno) += -(1-methodparam)*k32;
             B(upleftno, lorghtno) += -(1-methodparam)*k42;
             B(upleftno, uprghtno) += -(1-methodparam)*k43;
-        }
-        else
-        {
+        } else {
             A(loleftno, loleftno) += methodparam*k11 + 4./9.*c;
             A(lorghtno, lorghtno) += methodparam*k22 + 4./9.*c;
             A(uprghtno, uprghtno) += methodparam*k33 + 4./9.*c;
