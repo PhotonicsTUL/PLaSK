@@ -53,6 +53,7 @@ Diffusion3DSolver::Diffusion3DSolver(const std::string& name)
       loopno(0),
       maxerr(0.05),
       outCarriersConcentration(this, &Diffusion3DSolver::getConcentration) {
+    this->algorithm = ALGORITHM_ITERATIVE;
     inTemperature = 300.;
 }
 
@@ -315,10 +316,7 @@ double Diffusion3DSolver::compute(unsigned loops, bool shb, size_t act) {
     switch (this->algorithm) {
         case ALGORITHM_CHOLESKY: K.reset(new DpbMatrix(this, N, 3 * nm + 5)); break;
         case ALGORITHM_GAUSS: K.reset(new DgbMatrix(this, N, 3 * nm + 5)); break;
-        case ALGORITHM_ITERATIVE:
-            throw NotImplemented(format("{}: iterative algorithm for diffusion calculation"));
-            // K.reset(new SparseBandMatrix(this, N, 3));
-            break;
+        case ALGORITHM_ITERATIVE: K.reset(new SparseFreeMatrix(this, N, 78 * ne)); break;
     }
 
     while (true) {

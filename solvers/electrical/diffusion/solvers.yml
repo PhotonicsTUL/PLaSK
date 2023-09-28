@@ -3,11 +3,9 @@
   category: electrical
   help: >
     Two-dimensional diffusion solver in Cartesian geometry.
-
   geometry: Cartesian2D
   mesh: [Rectangular2D, Ordered, Regular]
   need mesh: false
-
   tags:
     - &loop
       tag: loop
@@ -21,20 +19,46 @@
           default: 0.05
           help: Maximum allowed current density error.
     - !include &matrix { $file: fem.yml }
+  providers: &providers
+    - outCarriersConcentration
+  receivers: &receivers
+    - inTemperature
+    - inCurrentDensity
+    - inGain
+    - inLightE
+    - inWavelength
 
 - solver: DiffusionCyl
   lib: diffusion
   category: electrical
   help: >
     Two-dimensional diffusion solver in cylindrical geometry.
-
   geometry: Cylindrical
   mesh: [Rectangular2D, Ordered, Regular]
   need mesh: false
-
   tags:
     - *loop
     - *matrix
+  providers: *providers
+  receivers: *receivers
+
+- solver: Diffusion3D
+  lib: diffusion
+  category: electrical
+  help: >
+    Two-dimensional diffusion solver in cylindrical geometry.
+  geometry: Cartesian3D
+  mesh: Rectangular3D
+  need mesh: false
+  tags:
+    - *loop
+    - !include
+      $file: fem.yml
+      $update:
+        - $path: [attrs, 0, default]
+          $value: iterative
+  providers: *providers
+  receivers: *receivers
 
 ###############################################################################
 
@@ -43,39 +67,25 @@
   category: electrical
   help: >
     Two-dimensional diffusion solver in Cartesian geometry (old version).
-
   geometry: Cartesian2D
   mesh: Regular
   need mesh: false
-
   tags:
     - *loop
     - *matrix
-
-  providers: &providers
-    - outCarriersConcentration
-
-  receivers: &receivers
-    - inTemperature
-    - inCurrentDensity
-    - inGain
-    - inLightE
-    - inWavelength
+  providers: *providers
+  receivers: *receivers
 
 - solver: OldDiffusionCyl
   lib: olddiffusion
   category: electrical
   help: >
     Two-dimensional diffusion solver in cylindrical geometry (old version).
-
   geometry: Cylindrical
   mesh: Regular
   need mesh: false
-
   tags:
     - *loop
     - *matrix
-
   providers: *providers
-
   receivers: *receivers

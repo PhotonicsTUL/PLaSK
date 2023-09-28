@@ -74,6 +74,7 @@ class DiffusionTest(unittest.TestCase):
         clip = geometry.Clip3D(stack, left=0., back=0.)
         self.geometry = geometry.Cartesian3D(clip, left='mirror', right='air', back='mirror', front='air')
         self.solver = Diffusion3D("diffusion3d")
+        # self.solver.algorithm = 'iterative'
         self.solver.geometry = self.geometry
         self.solver.mesh = mesh.Rectangular3D.RegularGenerator(0.01 * L, 0.01 * L, 0.01)
         self.solver.maxerr = 0.0001
