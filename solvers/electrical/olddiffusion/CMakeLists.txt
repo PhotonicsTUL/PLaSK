@@ -1,10 +1,22 @@
+# This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
+# Copyright (c) 2022 Lodz University of Technology
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
 #/// \file
 #///  This is a default solver CMake file.
 #///
 #/// In most cases you should be able to use it only setting the project name
 
 # Set the project name in the style: plask/solvergroup/solverlib
-project(plask/electrical/diffusion)
+project(plask/electrical/olddiffusion)
 
 
 # Do not change thew following two lines
@@ -20,7 +32,7 @@ include(PLaSK)
 #  BLAS, LAPACK, Matlab, ARPACK, FFTW3, GSL, ZLIB
 #
 find_package(LAPACK)
-set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES} nspcg)
+set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 
 
 # Uncomment and edit the line below if you need some special include directories.
@@ -57,9 +69,8 @@ enable_testing()
 #set(SOLVER_TEST_DEPENDS mytest)
 #add_solvers_test(foo ${PLASK_SOLVER_PATH}/mytest)
 #add_solver_test(bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
-add_solver_test(uniform ${CMAKE_CURRENT_SOURCE_DIR}/tests/uniform.py)
-add_solver_test(gaussian ${CMAKE_CURRENT_SOURCE_DIR}/tests/gaussian.py)
-add_solver_test(diffusion3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/diffusion3d.py)
+# add_solver_test(uniform ${CMAKE_CURRENT_SOURCE_DIR}/tests/uniform.py)
+# add_solver_test(gaussian ${CMAKE_CURRENT_SOURCE_DIR}/tests/gaussian.py)
 
 
 # Build everything the default way.

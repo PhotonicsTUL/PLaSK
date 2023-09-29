@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -126,18 +126,10 @@ class PLASK_SOLVER_API DiffusionFem2DSolver: public SolverWithMesh<Geometry2DTyp
         void createMatrices(DataVector<double> A_matrix, DataVector<double> B_vector);
 
         double K(int i);
-//        double KInitial(size_t i, double T, double n0);	// K dla rozkladu poczatkowego
-//        double KThreshold(size_t i, double T, double n0);    // K postaci D(T)
         double E(int i);        // E dla rozkladu poczatkowego i progowego
         double F(int i);        // F dla rozkladu poczatkowego i progowego
 
-//        double Enprog(size_t i, double T, double n0);   // E dla rozkladu nadprogowego
-//        double Fnprog(size_t i, double T, double n0);	// F dla rozkladu nadprogowego
-
         double leftSide(std::size_t i);		// lewa strona rownania dla rozkladu poczatkowego
-//        double leftSideInitial(size_t i, double T, double n);		// lewa strona rownania dla rozkladu poczatkowego
-//        double leftSideThreshold(size_t i, double T, double n);		// lewa strona rownania dla rozkladu progowego
-//        double Lnprog(size_t i, double T, double n);	// lewa strona rownania dla rozkladu nadprogowego
         double rightSide(std::size_t i);         // prawa strona rownania dla rozkladu poczatkowego i progowego
         double nSecondDeriv(std::size_t i);                          // druga pochodna n po r
 

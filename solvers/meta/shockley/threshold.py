@@ -177,7 +177,7 @@ class ThresholdSearch(ThermoElectric):
             while terr > self.thermal.maxerr or verr > self.electrical.maxerr:
                 verr = self.electrical.compute(self.tfreq)
                 terr = self.thermal.compute(1)
-        self.diffusion.compute_threshold()
+        self.diffusion.compute()
 
     def step(self, volt, save=False):
         """
@@ -665,7 +665,7 @@ class ThresholdSearch(ThermoElectric):
         field = self.get_optical_field(resolution)
         plask.plot_field(field, **kwargs)
         plask.plot_geometry(self.optical.geometry, color=geometry_color, lw=geometry_lw)
-        plask.gcf().canvas.set_window_title("Light Intensity")
+        plask.window_title("Light Intensity")
 
     def plot_optical_field_horizontal(self, resolution=None, bounds=True, interpolation='linear', **kwargs):
         """
@@ -694,7 +694,7 @@ class ThresholdSearch(ThermoElectric):
         if bounds:
             self._plot_hbounds(self.optical)
         plask.ylabel("Light Intensity [arb.u.]")
-        plask.gcf().canvas.set_window_title("Radial Light Intensity")
+        plask.window_title("Radial Light Intensity")
 
     def plot_optical_field_vertical(self, pos=0.01, offset=0.5, resolution=None, interpolation='linear', **kwargs):
         """
@@ -734,7 +734,7 @@ class ThresholdSearch(ThermoElectric):
         ax1.patch.set_visible(False)
         ax2.patch.set_visible(True)
         plask.xlim(field.mesh.axis1[0], field.mesh.axis1[-1])
-        plask.gcf().canvas.set_window_title("Vertical Light Intensity")
+        plask.window_title("Vertical Light Intensity")
 
 
 class ThresholdSearchCyl(ThresholdSearch):

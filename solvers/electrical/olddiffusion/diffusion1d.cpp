@@ -870,13 +870,13 @@ plask::DataVector<const Tensor2<double>> DiffusionFem2DSolver<Geometry2DType>::a
             current_Li +=
                 Tensor2<double>(real(Le[k].c0 * conj(Le[k].c0) + Le[k].c1 * conj(Le[k].c1)), real(Le[k].c2 * conj(Le[k].c2)));
         }
-        Li[i] = current_Li / double(detected_QW.size()) * (0.5 / Z0);
+        Li[i] = 0.5 / Z0 * current_Li / double(detected_QW.size());
     }
     return Li;
 }
 
-template <> std::string DiffusionFem2DSolver<Geometry2DCartesian>::getClassName() const { return "electrical.Diffusion2D"; }
-template <> std::string DiffusionFem2DSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.DiffusionCyl"; }
+template <> std::string DiffusionFem2DSolver<Geometry2DCartesian>::getClassName() const { return "electrical.OldDiffusion2D"; }
+template <> std::string DiffusionFem2DSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.OldDiffusionCyl"; }
 
 template class PLASK_SOLVER_API DiffusionFem2DSolver<Geometry2DCartesian>;
 template class PLASK_SOLVER_API DiffusionFem2DSolver<Geometry2DCylindrical>;

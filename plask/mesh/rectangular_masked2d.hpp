@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -429,11 +429,11 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
     }
 
   public:
-    /** Prepare point for inteprolation
+    /** Prepare point for interpolation
      * \param point point to check
      * \param[out] wrapped_point point after wrapping with interpolation flags
-     * \param[out] index0_lo,index0_hi surrounding indices in the rectantular mesh for axis0
-     * \param[out] index1_lo,index1_hi surrounding indices in the rectantular mesh for axis1
+     * \param[out] index0_lo,index0_hi surrounding indices in the rectangular mesh for axis0
+     * \param[out] index1_lo,index1_hi surrounding indices in the rectangular mesh for axis1
      * \param flags interpolation flags
      * \returns \c false if the point falls in the hole or outside of the mesh, \c true if it can be interpolated
      */

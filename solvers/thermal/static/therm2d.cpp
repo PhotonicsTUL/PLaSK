@@ -181,7 +181,7 @@ void ThermalFem2DSolver<Geometry2DCartesian>::setMatrix(FemMatrix& A, DataVector
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,Radiation>& bradiation
                   )
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
+    this->writelog(LOG_DETAIL, "Setting up matrix system ({})", A.describe());
 
     auto iMesh = (this->maskedMesh)->getElementMesh();
     auto heatdensities = inHeat(iMesh);
@@ -288,7 +288,7 @@ void ThermalFem2DSolver<Geometry2DCartesian>::setMatrix(FemMatrix& A, DataVector
     A.applyBC(btemperature, B);
 
 #ifndef NDEBUG
-    double* aend = A.data + A.size * A.kd;
+    double* aend = A.data + A.size;
     for (double* pa = A.data; pa != aend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
             throw ComputationError(this->getId(), "Error in stiffness matrix at position {0}", pa-A.data);
@@ -306,12 +306,12 @@ void ThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(FemMatrix& A, DataVect
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,Radiation>& bradiation
                   )
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
+    this->writelog(LOG_DETAIL, "Setting up matrix system ({})", A.describe());
 
     auto iMesh = (this->maskedMesh)->getElementMesh();
     auto heatdensities = inHeat(iMesh);
 
-    std::fill_n(A.data, A.size*(A.ld+1), 0.); // zero the matrix
+    A.clear();
     B.fill(0.);
 
     // Set stiffness matrix and load vector
@@ -430,7 +430,7 @@ void ThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(FemMatrix& A, DataVect
     A.applyBC(btemperature, B);
 
 #ifndef NDEBUG
-    double* aend = A.data + A.size * A.kd;
+    double* aend = A.data + A.size;
     for (double* pa = A.data; pa != aend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
             throw ComputationError(this->getId(), "Error in stiffness matrix at position {0}", pa-A.data);

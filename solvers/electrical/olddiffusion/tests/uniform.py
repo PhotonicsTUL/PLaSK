@@ -1,5 +1,6 @@
+#!/usr/bin/env python3
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
-# Copyright (c) 2023 Lodz University of Technology
+# Copyright (c) 2022 Lodz University of Technology
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -7,7 +8,7 @@
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
 import unittest
@@ -19,9 +20,7 @@ from plask import *
 from plask import material, geometry, mesh
 from plask.geometry import Cartesian2D, Cylindrical
 
-from electrical.diffusion import Diffusion2D, DiffusionCyl
-
-config.loglevel = 'debug'
+from electrical.olddiffusion import OldDiffusion2D, OldDiffusionCyl
 
 
 @material.simple('GaAs')
@@ -65,7 +64,8 @@ class DiffusionTest:
         self.geometry = self.Geometry(stack, **self.geometry_kwargs)
         self.solver = self.Solver(self.name)
         self.solver.geometry = self.geometry
-        self.solver.maxerr = 0.0001
+        self.solver.accuracy = 0.0001
+        # self.solver.fem_method = 'linear'
         self.test_mesh = mesh.Rectangular2D(linspace(-0.4, 0.4, 9), [0.104])
 
         self.n = 1.0e19
@@ -73,7 +73,7 @@ class DiffusionTest:
 
     def test_diffusion(self):
         self.solver.inCurrentDensity = vec(0., self.j)
-        self.solver.compute()
+        self.solver.compute_threshold()
         n = array(self.solver.outCarriersConcentration(self.test_mesh))
         assert_allclose(n, 9 * [self.n])
 
@@ -81,15 +81,11 @@ class DiffusionTest:
 class Diffusion2D(DiffusionTest, unittest.TestCase):
     name = "diffusion2d"
     Geometry = Cartesian2D
-    Solver = Diffusion2D
+    Solver = OldDiffusion2D
     geometry_kwargs = {'left': 'mirror', 'right': 'air'}
 
 
 class DiffusionCyl(DiffusionTest, unittest.TestCase):
     name = "diffusioncyl"
     Geometry = Cylindrical
-    Solver = DiffusionCyl
-
-
-if __name__ == '__main__':
-    unittest.main()
+    Solver = OldDiffusionCyl

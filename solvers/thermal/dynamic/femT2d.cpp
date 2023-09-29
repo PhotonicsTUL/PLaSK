@@ -130,7 +130,7 @@ void DynamicThermalFem2DSolver<Geometry2DCartesian>::setMatrix(
         FemMatrix& A, FemMatrix& B, DataVector<double>& F,
         const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature)
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
+    this->writelog(LOG_DETAIL, "Setting up matrix system ({})", A.describe());
 
     auto heatdensities = inHeat(this->maskedMesh->getElementMesh());
 
@@ -246,7 +246,7 @@ void DynamicThermalFem2DSolver<Geometry2DCartesian>::setMatrix(
     A.factorize();
 
 #ifndef NDEBUG
-    double* aend = A.data + A.size * A.kd;
+    double* aend = A.data + A.size;
     for (double* pa = A.data; pa != aend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
             throw ComputationError(this->getId(), "Error in stiffness matrix at position {0}", pa-A.data);
@@ -260,13 +260,13 @@ void DynamicThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(
         FemMatrix& A, FemMatrix& B, DataVector<double>& F,
         const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature)
 {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
+    this->writelog(LOG_DETAIL, "Setting up matrix system ({})", A.describe());
 
     auto heatdensities = inHeat(this->maskedMesh->getElementMesh());
 
     // zero the matrices A, B and the load vector F
-    std::fill_n(A.data, A.size*(A.ld+1), 0.);
-    std::fill_n(B.data, B.size*(B.ld+1), 0.);
+    A.clear();
+    B.clear();
     F.fill(0.);
 
     // Set stiffness matrix and load vector
@@ -312,8 +312,7 @@ void DynamicThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(
         k32 = k41 = (kx - 2. * ky) / 6.;
 
         //Wheter lumping the mass matrces A, B?
-        if (lumping)
-        {
+        if (lumping) {
             A(loleftno, loleftno) += methodparam*k11 + c;
             A(lorghtno, lorghtno) += methodparam*k22 + c;
             A(uprghtno, uprghtno) += methodparam*k33 + c;
@@ -337,9 +336,7 @@ void DynamicThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(
             B(uprghtno, lorghtno) += -(1-methodparam)*k32;
             B(upleftno, lorghtno) += -(1-methodparam)*k42;
             B(upleftno, uprghtno) += -(1-methodparam)*k43;
-        }
-        else
-        {
+        } else {
             A(loleftno, loleftno) += methodparam*k11 + 4./9.*c;
             A(lorghtno, lorghtno) += methodparam*k22 + 4./9.*c;
             A(uprghtno, uprghtno) += methodparam*k33 + 4./9.*c;
@@ -377,7 +374,7 @@ void DynamicThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(
     A.factorize();
 
 #ifndef NDEBUG
-    double* aend = A.data + A.size * A.kd;
+    double* aend = A.data + A.size;
     for (double* pa = A.data; pa != aend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
             throw ComputationError(this->getId(), "Error in stiffness matrix at position {0}", pa-A.data);

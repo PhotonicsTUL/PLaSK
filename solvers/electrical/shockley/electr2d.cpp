@@ -130,7 +130,7 @@ template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::s
                     if (reg.bottom >= r)
                         reg.bottom = r;  // first row
                     else if (reg.rowr <= c)
-                        throw Exception("{0}: Active region {1} is disjoint", this->getId(), num - 1);
+                        throw Exception("{0}: Junction {1} is disjoint", this->getId(), num - 1);
                     reg.top = r + 1;
                     reg.rowl = c;
                     if (reg.left > reg.rowl) reg.left = reg.rowl;
@@ -153,7 +153,7 @@ template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::s
     active.reserve(regions.size());
     size_t i = 0;
     for (auto& reg : regions) {
-        if (reg.bottom == size_t(-1)) reg.bottom = reg.top = 0;
+        if (reg.bottom == std::numeric_limits<size_t>::max()) reg.bottom = reg.top = 0;
         active.emplace_back(condsize, reg.left, reg.right, reg.bottom, reg.top,
                             this->mesh->axis[1]->at(reg.top) - this->mesh->axis[1]->at(reg.bottom));
         condsize += reg.right - reg.left;
@@ -237,7 +237,7 @@ void ElectricalFem2DSolver<Geometry2DType>::setMatrix(
     DataVector<double>& B,
     const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary, double>& bvoltage,
     const LazyData<double>& temperature) {
-    this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd + 1, A.ld + 1);
+    this->writelog(LOG_DETAIL, "Setting up matrix system ({})", A.describe());
 
     // Update junction conductivities
     if (loopno != 0) {
@@ -319,7 +319,7 @@ void ElectricalFem2DSolver<Geometry2DType>::setMatrix(
     A.applyBC(bvoltage, B);
 
 #ifndef NDEBUG
-    double* aend = A.data + A.size * A.kd;
+    double* aend = A.data + A.size;
     for (double* pa = A.data; pa != aend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
             throw ComputationError(this->getId(), "Error in stiffness matrix at position {0} ({1})", pa - A.data,

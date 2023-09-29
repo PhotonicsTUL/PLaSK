@@ -55,17 +55,17 @@ namespace plask {
  * Symmetric band matrix structure.
  * Data is stored in LAPACK format.
  */
-struct DpbMatrix : FemMatrix {
+struct DpbMatrix : BandMatrix {
     /**
      * Create matrix
-     * \param rank size of the matrix
+     * \param rank rank of the matrix
      * \param band maximum band size
      */
     DpbMatrix(const Solver* solver, size_t rank, size_t band)
-        : FemMatrix(solver, rank, band, ((band + 1 + (15 / sizeof(double))) & ~size_t(15 / sizeof(double))) - 1) {}
+        : BandMatrix(solver, rank, band, ((band + 1 + (15 / sizeof(double))) & ~size_t(15 / sizeof(double))) - 1) {}
 
-    size_t index(size_t r, size_t c) override {
-        assert(r < size && c < size);
+    size_t index(size_t r, size_t c) {
+        assert(r < rank && c < rank);
         if (r < c) {
             assert(c - r <= kd);
 //          if UPLO = 'U', AB(kd+i-j,j) = A(i,j) for max(0,j-kd)<=i<=j;
@@ -85,12 +85,14 @@ struct DpbMatrix : FemMatrix {
         }
     }
 
+    double& operator()(size_t r, size_t c) override { return data[index(r, c)]; }
+
     void factorize() override {
         int info = 0;
 
         solver->writelog(LOG_DETAIL, "Factorizing system");
 
-        dpbtrf(UPLO, int(size), int(kd), data, int(ld + 1), info);
+        dpbtrf(UPLO, int(rank), int(kd), data, int(ld + 1), info);
         if (info < 0)
             throw CriticalException("{0}: Argument {1} of `dpbtrf` has illegal value", solver->getId(), -info);
         else if (info > 0)
@@ -102,18 +104,18 @@ struct DpbMatrix : FemMatrix {
         solver->writelog(LOG_DETAIL, "Solving matrix system");
 
         int info = 0;
-        dpbtrs(UPLO, int(size), int(kd), 1, data, int(ld + 1), B.data(), int(B.size()), info);
+        dpbtrs(UPLO, int(rank), int(kd), 1, data, int(ld + 1), B.data(), int(B.size()), info);
         if (info < 0) throw CriticalException("{0}: Argument {1} of `dpbtrs` has illegal value", solver->getId(), -info);
 
         std::swap(B, X);
     }
 
     void mult(const DataVector<const double>& vector, DataVector<double>& result) override {
-        dsbmv(UPLO, int(size), int(kd), 1.0, data, int(ld) + 1, vector.data(), 1, 0.0, result.data(), 1);
+        dsbmv(UPLO, int(rank), int(kd), 1.0, data, int(ld) + 1, vector.data(), 1, 0.0, result.data(), 1);
     }
 
     void addmult(const DataVector<const double>& vector, DataVector<double>& result) override {
-        dsbmv(UPLO, int(size), int(kd), 1.0, data, int(ld) + 1, vector.data(), 1, 1.0, result.data(), 1);
+        dsbmv(UPLO, int(rank), int(kd), 1.0, data, int(ld) + 1, vector.data(), 1, 1.0, result.data(), 1);
     }
 };
 

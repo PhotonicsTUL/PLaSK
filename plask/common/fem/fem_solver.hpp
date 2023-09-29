@@ -88,10 +88,10 @@ template <typename SpaceT, typename MeshT> struct FemSolverWithMesh : public Sol
                                                  .value("mbicx", IterativeMatrixParams::PRECOND_MBICX)
                                                  .get(iter_params.preconditioner);
                 iter_params.no_convergence_behavior = reader.enumAttribute<IterativeMatrixParams::NoConvergenceBehavior>("noconv")
-                                                 .value("error", IterativeMatrixParams::NO_CONVERGENCE_ERROR)
-                                                 .value("warning", IterativeMatrixParams::NO_CONVERGENCE_WARNING)
-                                                 .value("continue", IterativeMatrixParams::NO_CONVERGENCE_CONTINUE)
-                                                 .get(iter_params.no_convergence_behavior);
+                                                          .value("error", IterativeMatrixParams::NO_CONVERGENCE_ERROR)
+                                                          .value("warning", IterativeMatrixParams::NO_CONVERGENCE_WARNING)
+                                                          .value("continue", IterativeMatrixParams::NO_CONVERGENCE_CONTINUE)
+                                                          .get(iter_params.no_convergence_behavior);
                 iter_params.maxit = reader.getAttribute<int>("maxit", iter_params.maxit);
                 iter_params.maxerr = reader.getAttribute<double>("maxerr", iter_params.maxerr);
                 iter_params.nfact = reader.getAttribute<int>("nfact", iter_params.nfact);
@@ -101,8 +101,8 @@ template <typename SpaceT, typename MeshT> struct FemSolverWithMesh : public Sol
                 iter_params.ltrunc = reader.getAttribute<int>("ltrunc", iter_params.ltrunc);
                 iter_params.ns1 = reader.getAttribute<int>("nsave", iter_params.ns1);
                 iter_params.ns2 = reader.getAttribute<int>("nrestart", iter_params.ns2);
-                reader.requireTagEnd(); // </iterative>
-                reader.requireTagEnd(); // </matrix>
+                reader.requireTagEnd();  // </iterative>
+                reader.requireTagEnd();  // </matrix>
             }
 
             return true;
@@ -136,6 +136,12 @@ template <> inline FemMatrix* FemSolverWithMesh<Geometry3D, RectangularMesh<3>>:
 
 //////////////////////// Solver with masked mesh ////////////////////////
 
+enum EmptyElementsHandling {
+    EMPTY_ELEMENTS_DEFAULT,   ///< Use default handling (exclude for Cholesky, include for iterative)
+    EMPTY_ELEMENTS_EXCLUDED,  ///< Exclude empty elements from matrix
+    EMPTY_ELEMENTS_INCLUDED   ///< Include empty elements in matrix
+};
+
 template <typename SpaceT, typename MeshT> struct FemSolverWithMaskedMesh : public FemSolverWithMesh<SpaceT, MeshT> {
     static_assert(std::is_base_of<RectangularMesh<MeshT::DIM>, MeshT>::value,
                   "FemSolverWithMaskedMesh only works with RectangularMesh");
@@ -144,28 +150,38 @@ template <typename SpaceT, typename MeshT> struct FemSolverWithMaskedMesh : publ
 
   protected:
     plask::shared_ptr<RectangularMaskedMesh<MeshT::DIM>> maskedMesh = plask::make_shared<RectangularMaskedMesh<MeshT::DIM>>();
-    bool use_full_mesh = false;  ///< Should we use full mesh?
+    EmptyElementsHandling empty_elements = EMPTY_ELEMENTS_DEFAULT;  ///< Should we use full mesh?
 
   public:
     /// Are we using full mesh?
-    bool usingFullMesh() const { return use_full_mesh; }
+    EmptyElementsHandling getEmptyElements() const { return empty_elements; }
     /// Set whether we should use full mesh
-    void useFullMesh(bool val) {
-        use_full_mesh = val;
+    void setEmptyElements(EmptyElementsHandling val) {
+        empty_elements = val;
         this->invalidate();
     }
 
     bool parseFemConfiguration(XMLReader& reader, Manager& manager) {
         if (reader.getNodeName() == "mesh") {
-            use_full_mesh = reader.getAttribute<bool>("include-empty", use_full_mesh);
+            if (reader.hasAttribute("include-empty")) {
+                this->writelog(LOG_WARNING, this->getId(), "Attribute 'include-empty' is deprecated, use 'empty-elements' instead");
+                empty_elements = reader.requireAttribute<bool>("include-empty") ? EMPTY_ELEMENTS_INCLUDED : EMPTY_ELEMENTS_EXCLUDED;
+            }
+            empty_elements = reader.enumAttribute<EmptyElementsHandling>("empty-elements")
+                                 .value("default", EMPTY_ELEMENTS_DEFAULT)
+                                 .value("exclude", EMPTY_ELEMENTS_EXCLUDED)
+                                 .value("include", EMPTY_ELEMENTS_INCLUDED)
+                                 .value("excluded", EMPTY_ELEMENTS_EXCLUDED)
+                                 .value("included", EMPTY_ELEMENTS_INCLUDED)
+                                 .get(empty_elements);
             return false;
         }
         return FemSolverWithMesh<SpaceT, MeshT>::parseFemConfiguration(reader, manager);
     }
 
     void setupMaskedMesh() {
-        if (use_full_mesh || this->algorithm == ALGORITHM_ITERATIVE) {
-            if (!use_full_mesh) writelog(LOG_WARNING, this->getId(), "For iterative algorithm empty materials are always included");
+        if (empty_elements == EMPTY_ELEMENTS_INCLUDED ||
+            (this->algorithm == ALGORITHM_ITERATIVE && empty_elements == EMPTY_ELEMENTS_DEFAULT)) {
             maskedMesh->selectAll(*this->mesh);
         } else {
             maskedMesh->reset(*this->mesh, *this->geometry, ~plask::Material::EMPTY);
@@ -179,7 +195,7 @@ template <typename SpaceT, typename MeshT> struct FemSolverWithMaskedMesh : publ
 
 template <typename SpaceT, typename MeshT> inline FemMatrix* FemSolverWithMaskedMesh<SpaceT, MeshT>::getMatrix() {
     size_t band;
-    if (use_full_mesh || this->algorithm == ALGORITHM_ITERATIVE) {
+    if (empty_elements == EMPTY_ELEMENTS_INCLUDED || this->algorithm == ALGORITHM_ITERATIVE) {
         band = this->mesh->minorAxis()->size() + 1;
     } else {
         band = 0;
@@ -191,14 +207,18 @@ template <typename SpaceT, typename MeshT> inline FemMatrix* FemSolverWithMasked
     switch (this->algorithm) {
         case ALGORITHM_CHOLESKY: return new DpbMatrix(this, this->maskedMesh->size(), band);
         case ALGORITHM_GAUSS: return new DgbMatrix(this, this->maskedMesh->size(), band);
-        case ALGORITHM_ITERATIVE: return new SparseBandMatrix(this, this->maskedMesh->size(), this->mesh->minorAxis()->size());
+        case ALGORITHM_ITERATIVE:
+            if (empty_elements != EMPTY_ELEMENTS_EXCLUDED)
+                return new SparseBandMatrix(this, this->maskedMesh->size(), this->mesh->minorAxis()->size());
+            else
+                return new SparseFreeMatrix(this, this->maskedMesh->size(), this->maskedMesh->elements().size() * 10);
     }
     return nullptr;
 }
 
 template <> inline FemMatrix* FemSolverWithMaskedMesh<Geometry3D, RectangularMesh<3>>::getMatrix() {
     size_t band;
-    if (use_full_mesh || algorithm == ALGORITHM_ITERATIVE) {
+    if (empty_elements || algorithm == ALGORITHM_ITERATIVE) {
         band = this->mesh->minorAxis()->size() * (this->mesh->mediumAxis()->size() + 1) + 1;
     } else {
         band = 0;
@@ -211,8 +231,11 @@ template <> inline FemMatrix* FemSolverWithMaskedMesh<Geometry3D, RectangularMes
         case ALGORITHM_CHOLESKY: return new DpbMatrix(this, this->maskedMesh->size(), band);
         case ALGORITHM_GAUSS: return new DgbMatrix(this, this->maskedMesh->size(), band);
         case ALGORITHM_ITERATIVE:
-            return new SparseBandMatrix(this, this->maskedMesh->size(), mesh->mediumAxis()->size() * mesh->minorAxis()->size(),
-                                        mesh->minorAxis()->size());
+            if (empty_elements != EMPTY_ELEMENTS_EXCLUDED)
+                return new SparseBandMatrix(this, this->maskedMesh->size(), mesh->mediumAxis()->size() * mesh->minorAxis()->size(),
+                                            mesh->minorAxis()->size());
+            else
+                return new SparseFreeMatrix(this, this->maskedMesh->size(), this->maskedMesh->elements().size() * 36);
     }
     return nullptr;
 }

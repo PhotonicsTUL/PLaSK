@@ -52,10 +52,11 @@
       help: >
         Mesh used by the electrical solver.
     - &full-mesh-electrical
-      attr: include-empty
-      label: Include Empty Regions
-      type: bool
-      default: no
+      attr: empty-elements
+      label: Empty elements
+      type: choice
+      choices: [ default, include, exclude ]
+      default: default
       help: >
         Should empty regions (e.g. air) be included into electrical computations?
 

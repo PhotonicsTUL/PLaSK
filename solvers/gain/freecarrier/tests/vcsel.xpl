@@ -619,7 +619,7 @@ try:
         work.run(save=save_h5 and '{}.h5'.format(desc))
         J = abs(ELECTRICAL.get_total_current())
         print_log(LOG_INFO, "Total current: {:.3g} mA".format(J))
-        DIFFUSION.compute_threshold()
+        DIFFUSION.compute()
         plot_thermoelectric(False)
         plot_gain(None if presentation else 224)
         try:
@@ -823,7 +823,7 @@ try:
 
         work = algorithm.ThermoElectric(THERMAL, ELECTRICAL)
         work.run(save=False)
-        DIFFUSION.compute_threshold()
+        DIFFUSION.compute()
         J0 = abs(ELECTRICAL.get_total_current())
 
         lam = approximate_mode(m,n)
@@ -834,7 +834,7 @@ try:
             ELECTRICAL.voltage_boundary[0].value = volt
             ELECTRICAL.invalidate()
             ELECTRICAL.compute()
-            DIFFUSION.compute_threshold()
+            DIFFUSION.compute()
             OPTICAL.invalidate()
             modeno = OPTICAL.find_mode(lam, m=m)
             val = OPTICAL.modes[modeno].loss
@@ -868,14 +868,14 @@ try:
         T = max(jtemp)
         print_log(LOG_INFO, "Junction temperature: {:.2g} K".format(T))
 
-        DIFFUSION.compute_threshold()
+        DIFFUSION.compute()
         optstart = approximate_mode(m,n)
 
         def func(volt):
             """Function to search zero of"""
             ELECTRICAL.voltage_boundary[0].value = volt
             ELECTRICAL.compute()
-            DIFFUSION.compute_threshold()
+            DIFFUSION.compute()
             mn = OPTICAL.find_mode(optstart, m=m)
             val = (4e7*pi / OPTICAL.modes[mn].lam).imag
             plask.print_log('result', "ThresholdSearch: V = {:.4f} V, loss = {:g} / cm"
@@ -911,7 +911,7 @@ try:
     elif task == 'L1':
         work = algorithm.ThermoElectric(THERMAL, ELECTRICAL)
         work.run(save=save_h5 and '{}.h5'.format(desc))
-        DIFFUSION.compute_threshold()
+        DIFFUSION.compute()
 
         lam = approximate_mode(m,n)
 
@@ -1037,7 +1037,7 @@ try:
         work.run(save=False, noinit=True)
         J = abs(ELECTRICAL.get_total_current())
 
-        DIFFUSION.compute_threshold()
+        DIFFUSION.compute()
 
         gmsh = OPTICAL.mesh.element.mesh.axis0
         GAIN.mesh = gmsh
@@ -1119,7 +1119,7 @@ try:
             J = abs(ELECTRICAL.get_total_current())
 
             ## Find modes above threshold for current voltage
-            DIFFUSION.compute_threshold()
+            DIFFUSION.compute()
             suffix = 'j{:.3f}-'.format(J)
             OPTICAL.invalidate()
             mods = []
@@ -1169,7 +1169,7 @@ try:
         work = algorithm.ThermoElectric(THERMAL, ELECTRICAL)
         work.run(save=save_h5 and '{}.h5'.format(desc))
         J = abs(ELECTRICAL.get_total_current())
-        DIFFUSION.compute_threshold()
+        DIFFUSION.compute()
 
         if PP is not None:
             PP = array(PP0)

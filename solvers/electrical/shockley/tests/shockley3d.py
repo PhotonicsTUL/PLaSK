@@ -68,6 +68,10 @@ class Shockley3D_Test(unittest.TestCase):
         heat = correct_current * 1.
         self.assertAlmostEqual(self.solver.get_total_heat(), heat, 3)
 
+    def testComputationsExcluded(self):
+        self.solver.empty_elements = 'exclude'
+        self.testComputations()
+
     def testComputationsTemp(self):
         self.solver.beta = lambda T: log(T * 70)
         self.solver.compute(1000)
@@ -94,7 +98,7 @@ class Shockley3D_Test(unittest.TestCase):
                 plot_mesh(self.solver.mesh, plane=plane, color='c')
                 plot_boundary(self.solver.voltage_boundary, self.solver.mesh, self.solver.geometry, plane=plane,
                               cmap='bwr', s=40)
-                fig.canvas.set_window_title(plane)
+                window_title(plane)
 
 
 if __name__ == '__main__':

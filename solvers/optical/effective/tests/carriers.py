@@ -72,7 +72,7 @@ class CarriersTest:
         diffusion = self.Diffusion('diffusion')
         diffusion.geometry = self.geometry
         diffusion.inCurrentDensity = vec(0., 10.)
-        diffusion.compute_threshold()
+        diffusion.compute()
         cc = diffusion.outCarriersConcentration(mesh.Rectangular2D([0.250], [0.103]))[0]
         self.assertLess(1e18, cc)
 
