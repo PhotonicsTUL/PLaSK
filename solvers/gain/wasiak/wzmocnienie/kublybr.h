@@ -10,6 +10,8 @@
 #include "jama/jama_svd.h"
 #include "tnt/tnt.h"
 
+#include "../../../../plask/phys/functions.hpp"
+
 #include <cmath>
 #include <complex>
 #include <fstream>
@@ -62,6 +64,11 @@ class Error : public std::exception
 /*******************************************************************/
 typedef TNT::Array2D<double> A2D;
 typedef TNT::Array1D<double> A1D;
+
+typedef std::pair<double, double> parad;
+
+bool jaksortpar(parad a, parad b);
+
 /*******************************************************************/
 class warstwa
 {
@@ -87,6 +94,12 @@ class warstwa
   inline double masa_p(double E) const;
 
  protected:
+  /*
+  double x_pocz;
+  double x_kon;
+  double y_pocz;
+  double y_kon;*/
+
   warstwa * nast; // wskaznik na sasiadke z prawej
   double masa_r; // masa rownolegla
   double tryga(double x, double E) const;
@@ -107,6 +120,7 @@ class warstwa
   double Bi_prim_skala(double x, double E) const;
   double funkcjafal(double x, double E, double A, double B) const;
   double funkcjafal_prim(double x, double E, double A, double B) const;
+  parad AB_z_wartp(double w, double wp, double E) const;
   double k_kwadr(double E) const;
   double Eodk(double k) const;
   void przesun_igreki(double);
@@ -129,6 +143,7 @@ class warstwa_skraj : public warstwa
   friend class wzmocnienie;
 
  public:
+
   enum strona
   {
     lewa,
@@ -156,6 +171,7 @@ class warstwa_skraj : public warstwa
   double ffalb_prim(double x, double E) const;
   double funkcjafal(double x, double E, double C) const;
   double funkcjafal_prim(double x, double E, double C) const;
+  parad AB_z_wartp(double w, double wp, double E) const;
 };
 /*******************************************************************/
 class stan
@@ -167,6 +183,8 @@ class stan
 
   stan(double E, A2D & V, int lz);
 
+  stan(double E, std::vector<parad> & W, int lz);
+  //
   void przesun_poziom(double);
 
  public:
@@ -207,12 +225,17 @@ class struktura
   double dol;
 
   warstwa_skraj lewa, prawa;
+  //std::vector<int> gwiazdki;
   std::vector<warstwa> kawalki; // Wewnetrzne warstwy
   std::vector<double> progi; // Poziome bariery dajace falszywe zera
+  //std::vector<stan> rozwiazania;
 
   void zrobmacierz(double, A2D &);
   double sieczne(double (struktura::*f)(double), double pocz, double kon);
-  double bisekcja(double (struktura::*f)(double), double pocz, double kon);
+  //1.5
+  //  double bisekcja(double (struktura::*f)(double), double pocz, double kon);
+  double bisekcja(double (struktura::*f)(double), double pocz, double kon, double dokl = 1e-9);
+  //
   double norma_stanu(stan & st);
   double energia_od_k_na_ntym(double k, int nr_war, int n);
   double iloczyn_pierwotna_bezpola(double x, int nr_war, const struktura * struk1, const struktura * struk2, int i,
@@ -269,6 +292,14 @@ class struktura
 
   void profil(double Ek, double rozdz);
   std::vector<std::vector<double> > rysowanie_funkcji(double E, double x0, double xk, double krok);
+  //dopisek 1.5
+  parad sklejanie_od_lewej(double E);
+  int ilezer_ffal(double E, std::vector<parad> & W);
+  std::vector<parad> wsp_sklejanie_od_lewej(double E);
+  double blad_sklejania(double E);
+  double poprawianie_poziomu(double E, double DE);
+  void szukanie_poziomow_zpoprawka(double Ek, double rozdz);
+  void szukanie_poziomow_zpoprawka2(double Ek, double rozdz);
 };
 /*******************************************************************/
 class obszar_aktywny
@@ -299,7 +330,7 @@ class obszar_aktywny
   std::vector<double> DeltaSO; // DeltySO w warstwach wzgledem zerowego pasma walencyjnego
   std::vector<double> el_mac; // Elementy macierzowe w warstwach
   double T_ref; // Temperatura odniesienia, dla ktorej ustawione sa przerwy energetyczne
-  double element(int nr_war);
+  //double element(int nr_war); // przenioslem do publicznych LUKASZ 23.05.2023
 
  public:
   obszar_aktywny(struktura * elektron, const std::vector<struktura *> & dziury, double Eg,
@@ -333,7 +364,12 @@ class obszar_aktywny
                               int j); // numeryczne calkowanie
   //  void macierze_przejsc();
   void zrob_macierze_przejsc(); // dopisane 2013
-  void paryiprzekrycia_dopliku(std::ofstream & plik, int nr_c, int nr_v);
+  void paryiprzekrycia_dopliku(ofstream & plik, int nr_c, int nr_v);
+  double przekrycia_schodkowe(double E, int nr_c, int nr_v);
+  void przekrycia_dopliku(ofstream & plik, int nr_c, int nr_v);
+
+  double element(int nr_war); // przenioslem z prywatnych LUKASZ 23.05.2023
+  void ustaw_element(double iM); // dodalem metode LUKASZ 23.05.2023
 };
 /*******************************************************************/
 class wzmocnienie
@@ -399,10 +435,14 @@ class wzmocnienie
   double wzmocnienie_calk_ze_splotem(double E, double b,
                                      double blad = 0.02); // podzial na kawalek o promieniu Rb wokol 0 i reszte
   double wzmocnienie_calk_bez_splotu(double E);
+  double wzmocnienie_calk_bez_splotu_L(double lambda); // dodalem metode LUKASZ LUKI 23.05.2023
   double lumin(double E, double polar = 2.); // polar = 0. -> TE,   polar = 1. -> TM,   polar = 2. -> TE + TM,  
   void profil_wzmocnienia_ze_splotem_dopliku(std::ofstream & plik, double pocz, double kon, double krok, double b);
   void profil_wzmocnienia_bez_splotu_dopliku(std::ofstream & plik, double pocz, double kon, double krok);
+  void profil_wzmocnienia_bez_splotu_dopliku_L(std::ofstream & plik, double pocz, double kon, double krok); // dodalem metode LUKASZ LUKI 23.05.2023
   void profil_lumin_dopliku(std::ofstream & plik, double pocz, double kon, double krok);
+  void profil_lumin_dopliku_L(std::ofstream & plik, double pocz, double kon, double krok); // dodalem metode LUKASZ LUKI 5.09.2023
+
   double moc_lumin();
   static double L(double x, double b);
 };

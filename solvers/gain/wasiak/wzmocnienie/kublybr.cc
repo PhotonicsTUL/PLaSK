@@ -101,6 +101,8 @@ warstwa_skraj::warstwa_skraj(const warstwa_skraj & war)
 {
 }
 /*****************************************************************************/
+//warstwa_skraj::warstwa_skraj(const warstwa_skraj & war) : warstwa(war.masa_p, war.masa_r, (war.lp == lewa)?war.iks - 1:war.iks, war.y, (war.lp == lewa)?war.iks:war.iks + 1, war.y), lp(war.lp), iks(war.iks), y(war.y) {}
+/*****************************************************************************/
 inline double warstwa::masa_p(double E) const
 {
   double wynik;
@@ -875,6 +877,556 @@ double warstwa::funkcjafal_prim(double x, double E, double A, double B) const
   return A * ffala_prim(x, E) + B * ffalb_prim(x, E);
 }
 /*****************************************************************************/
+// Nowe dopiski do wersji 1.5
+/*****************************************************************************/
+stan::stan(double E, std::vector<parad> & W, int lz)
+{
+  poziom = E;
+  int M = W.size();
+  wspolczynniki.resize(2*(M-2) + 2);
+  wspolczynniki[0] = W[0].second;
+  for(int i = 1; i <= M-2; i++)
+    {
+       wspolczynniki[2*i-1] = W[i].first;
+       wspolczynniki[2*i] = W[i].second;
+    }
+  wspolczynniki[2*M-3] = W[M-1].first;
+  liczba_zer = lz;
+  prawdopodobienstwa.reserve(M/2 +1);
+}
+
+
+parad warstwa::AB_z_wartp(double w, double wp, double E) const // liczy ampitudy A i B na podstawie wartości w początku warstwy. wp to pochodna przez masę
+{
+  double masa = masa_p(E);
+  double mian = (ffala_prim(x_pocz, E)*ffalb(x_pocz, E) - ffalb_prim(x_pocz, E)*ffala(x_pocz, E));
+  double A = (-w*ffalb_prim(x_pocz, E) + masa*wp*ffalb(x_pocz, E)) / mian;
+  double B = - (-w*ffala_prim(x_pocz, E) + masa*wp*ffala(x_pocz, E)) / mian;
+  //  std::cerr<<"m_p i masa_p: "<<m_p<<", "<<masa_p(E)<<"\n";
+  return {A, B};
+}
+
+parad warstwa_skraj::AB_z_wartp(double w, double wp, double E) const // liczy ampitudy A i B na podstawie wartości w początku warstwy. wp to pochodna przez masę
+{
+  double masa = masa_p;
+  double mian = (expa_prim(iks, E)*expb(iks, E) - expb_prim(iks, E)*expa(iks, E));
+  double A = (-w*expb_prim(iks, E) + masa*wp*expb(iks, E)) / mian;
+  double B = - (-w*expa_prim(iks, E) + masa*wp*expa(iks, E)) / mian;
+  //  std::cerr<<"skrajna:\niks = "<<iks<<", x_pocz = "<<x_pocz<<"\n";
+  //  std::cerr<<"skrajna:\nexpa = "<<expa(iks, E)<<", expb = "<<expb(iks, E)<<"\n";
+  //  std::cerr<<"skrajna:\nexpa' = "<<expa_prim(iks, E)<<", expb' = "<<expb_prim(iks, E)<<"\n";
+  return {A, B};
+}
+
+parad struktura::sklejanie_od_lewej(double E)
+{
+  double A, B, w, wp;
+  warstwa war = kawalki[0]; // bo nie ma konstruktora domyślnego
+  //  std::cerr<<"lewa\n";
+  w = lewa.funkcjafal(lewa.iks, E, 1.0); // wartosci dla wpółczynnika 1
+  wp = lewa.funkcjafal_prim(lewa.iks, E, 1.0)/lewa.masa_p;
+  //  std::cerr<<"w, wp: "<<w<<", "<<wp<<"\n";
+  parad AB;
+  for(int i = 0; i <= (int)kawalki.size() - 1; i++)
+    {
+      //      std::cerr<<i<<". warstwa\n";
+      war = kawalki[i];
+      AB = war.AB_z_wartp(w, wp, E);
+      A = AB.first;
+      B = AB.second;
+      //      std::cerr<<"AB: "<<A<<", "<<B<<"\n";
+      w = war.funkcjafal(war.x_kon, E, A, B);
+      wp = war.funkcjafal_prim(war.x_kon, E, A, B)/war.masa_p(E);
+      //      std::cerr<<"lewe w, wp: "<<war.funkcjafal(war.x_pocz, E, A, B)<<", "<<war.funkcjafal_prim(war.x_pocz, E, A, B)/war.masa_p(E)<<"\n";
+      //      std::cerr<<"w, wp: "<<w<<", "<<wp<<"\n";
+    }
+  //  std::cerr<<"prawa\n";
+  AB = prawa.AB_z_wartp(w, wp, E);
+  A = AB.first;
+  B = AB.second;
+
+  //  std::cerr<<"lewe w, wp: "<<prawa.warstwa::funkcjafal(prawa.x_pocz, E, A, B)<<", "<<prawa.warstwa::funkcjafal_prim(prawa.x_pocz, E, A, B)/prawa.masa_p<<"\n";
+  return AB;
+}
+
+std::vector<parad> struktura::wsp_sklejanie_od_lewej(double E)
+{
+  double A, B, w, wp;
+  std::vector<parad> wspolczynniki;
+  warstwa war = kawalki[0]; // bo nie ma konstruktora domyślnego
+  w = lewa.funkcjafal(lewa.iks, E, 1.0); // wartosci dla wpółczynnika 1
+  wp = lewa.funkcjafal_prim(lewa.iks, E, 1.0)/lewa.masa_p;
+  parad AB;
+  wspolczynniki.push_back(parad(0.0, 1.0));
+  for(int i = 0; i <= (int)kawalki.size() - 1; i++)
+    {
+      war = kawalki[i];
+      AB = war.AB_z_wartp(w, wp, E);
+      wspolczynniki.push_back(AB);
+      A = AB.first;
+      B = AB.second;
+      w = war.funkcjafal(war.x_kon, E, A, B);
+      wp = war.funkcjafal_prim(war.x_kon, E, A, B)/war.masa_p(E);
+    }
+  AB = prawa.AB_z_wartp(w, wp, E);
+  wspolczynniki.push_back(AB);
+  return wspolczynniki;
+}
+
+int struktura::ilezer_ffal(double E, std::vector<parad> & W)
+{
+  int N = kawalki.size() + 2; //liczba warstw
+  int sumazer = 0;
+  double A, B;//, Al, Bl, Ap, Bp;
+  int pierwsza = -1;
+  do
+    {
+      pierwsza++;
+    }while(pierwsza <= N-3 && (kawalki[pierwsza].y_pocz > E && kawalki[pierwsza].y_kon > E) );
+  int ostatnia = N-2;
+  do
+    {
+      ostatnia--;
+    }while(ostatnia >= 0 && (kawalki[ostatnia].y_pocz > E && kawalki[ostatnia].y_kon > E) );
+  //  double sasiadl, sasiadp; // wartość ffal na lewym brzegu sąsiada z prawej (ta, która powinna być wspólna do obu)
+  if(ostatnia == pierwsza) // tylko jedna podejrzana warstwa, nie trzeba się sąsiadami przejmować
+    {
+      A = W[pierwsza+1].first;
+      B = W[pierwsza+1].second;
+      sumazer += kawalki[pierwsza].zera_ffal(E, A, B);
+    }
+  else
+    {
+      int j = pierwsza;
+      A = W[j+1].first;
+      B = W[j+1].second;
+
+      /*
+      A = V[2*j+1][V.dim2() - 1];
+      B = V[2*j+2][V.dim2() - 1];
+      Ap = V[2*(j+1)+1][V.dim2() - 1];
+      Bp = V[2*(j+1)+2][V.dim2() - 1];
+      sasiadp = kawalki[j+1].funkcjafal(kawalki[j+1].x_pocz, E, Ap, Bp);
+      sasiadl = kawalki[j].funkcjafal(kawalki[j].x_pocz, E, A, B); // po lewej nie ma problemu, więc można podstawić wartość z własnej warstwy
+      sumazer += kawalki[j].zera_ffal(E, A, B, sasiadl, sasiadp);
+      */
+      sumazer += kawalki[j].zera_ffal(E, A, B);
+      //      for(int j = pierwsza + 1; j <= ostatnia - 1; j++)
+      for(int j = pierwsza + 1; j <= ostatnia; j++)
+	{
+	  A = W[j+1].first;
+	  B = W[j+1].second;
+	  sumazer += kawalki[j].zera_ffal(E, A, B);
+	  /*
+	  Al = V[2*(j-1)+1][V.dim2() - 1];
+	  Bl = V[2*(j-1)+2][V.dim2() - 1];
+	  A = V[2*j+1][V.dim2() - 1];
+	  B = V[2*j+2][V.dim2() - 1];
+	  Ap = V[2*(j+1)+1][V.dim2() - 1];
+	  Bp = V[2*(j+1)+2][V.dim2() - 1];
+	  sasiadl = kawalki[j-1].funkcjafal(kawalki[j-1].x_kon, E, Al, Bl);
+	  sasiadp = kawalki[j+1].funkcjafal(kawalki[j+1].x_pocz, E, Ap, Bp);
+	  sumazer += kawalki[j].zera_ffal(E, A, B, sasiadl, sasiadp);
+	  */
+	}
+      /*
+      j = ostatnia;
+      A = V[2*j+1][V.dim2() - 1];
+      B = V[2*j+2][V.dim2() - 1];
+      Al = V[2*(j-1)+1][V.dim2() - 1];
+      Bl = V[2*(j-1)+2][V.dim2() - 1];
+      sasiadp = kawalki[j].funkcjafal(kawalki[j].x_kon, E, A, B); // po prawej nie ma problemu, więc można podstawić wartość z własnej warstwy
+      sasiadl = kawalki[j-1].funkcjafal(kawalki[j-1].x_kon, E, Al, Bl);
+      sumazer += kawalki[j].zera_ffal(E, A, B, sasiadl, sasiadp); // W ostatniej warswie nie może być zera na łączeniu, więc nie ma problemu
+      */
+    }
+  return sumazer;
+}
+
+
+double struktura::blad_sklejania(double E)
+{
+  return sklejanie_od_lewej(E).second; // drugi współczynnk powinien być 0
+}
+
+double struktura::poprawianie_poziomu(double E, double DE)
+{
+  double B0 = blad_sklejania(E);
+  double E1 = E + DE;
+  double B1 = blad_sklejania(E1);
+  //  std::cerr<<"poprawianie. B0 i B1: "<<B0<<", "<<B1<<"\n";
+  if(B0*B1 > 0 && abs(B0) < abs(B1)) // idziemy w złym kierunku
+    {
+      DE = - DE; //odwracamy i zakadamy, że teraz będzie dobrze. ryzykownie
+      E1 = E + DE;
+      B1 = blad_sklejania(E1);
+      //      std::cerr<<"zmiana znaku. B0 i B1: "<<B0<<", "<<B1<<"\n";
+    }
+
+  while(B0*B1 > 0 && abs(B0) > abs(B1))
+    {
+      E1 += DE;
+      B1 = blad_sklejania(E1);
+      //      std::cerr<<"drążymy. B0 i B1: "<<B0<<", "<<B1<<"\n";
+    }
+  //  std::cerr<<"poprawianie. B0 i B1: "<<B0<<", "<<B1<<"\n";
+  double (struktura::*fun)(double) = & struktura::blad_sklejania;
+  double wyn = bisekcja(fun, (std::min)(E, E1), (std::max)(E, E1), 1e-15); // trzeba dokładniej niż domyślnie
+  return wyn;
+}
+
+void struktura::szukanie_poziomow_zpoprawka(double Ek, double rozdz)
+{
+  std::list<stan> listast; // lista znalezionych stanów
+  std::list<stan>::iterator itostd, itnastd; // najwyższy stan nad któ©ym wszystko jest znalezione, następny stan, nad którym trzeba jeszcze szukać
+  std::list<stan>::iterator iter; //pomocniczy
+  double E0 = dol;
+  if(Ek <= E0)
+    {
+      std::cerr<<"Zły zakres energii!\n";
+      abort();
+    }
+  int M = 2*(kawalki.size() + 2) - 2;
+  double wartakt;
+  double (struktura::*fun)(double) = & struktura::czyosobliwa;
+  std::vector<double> trojka;
+  std::clog<<"W szukaniu, E_pocz = "<<Ek<<"\n";
+  double wartpop = czyosobliwa(Ek);
+  std::clog<<"Pierwsza wartosc = "<<wartpop<<"\n";
+  A2D V(M, M);
+  //1.5
+  std::vector<parad> wspolcz;
+  //
+  int ilepoziomow;
+  int liczbazer;
+  double E, Epop;
+  //  double B0, B1;
+  double mnozdorozdz = 1e3; //monnik zmiennej rozdz do kroku w szukaniu górnego stanu
+  if(wartpop == 0)
+    {
+      Ek -= rozdz;
+      wartpop = czyosobliwa(Ek);
+    }
+  Epop = Ek;
+  E = Ek - rozdz*mnozdorozdz;
+  wartakt = czyosobliwa(E);
+  while( (E > E0) && (wartpop*wartakt > 0) )
+    {
+      wartpop = wartakt;
+      Epop = E;
+      E -= rozdz*mnozdorozdz; // żeby nie czekać wieki
+      wartakt = czyosobliwa(E);
+    }
+  if(E <= E0)
+    {
+      std::cerr<<"Nie znalazł nawet jednego poziomu!\n";
+      abort();
+    }
+  std::clog<<"Bisekcja z krancami "<<E<<" i "<<Epop<<"\n";
+  double Eost = bisekcja(fun, E, Epop); // wstępna energia najwyższego poziomu
+
+  // dopiski 1.5:
+  double nowaE = poprawianie_poziomu(Eost, 1e-11);
+  wspolcz = wsp_sklejanie_od_lewej(nowaE);
+  Eost = nowaE;
+
+  liczbazer = ilezer_ffal(Eost, wspolcz);
+  ilepoziomow = liczbazer + 1; // Tyle ma znaleźć poziomów
+  stan nowy = stan(Eost, wspolcz, ilepoziomow - 1);
+
+  listast.push_back(nowy);
+  itostd = listast.end();
+  --itostd; //  iterator na ostatni element
+  stan stymcz;
+  std::clog<<" Eost = "<<Eost<<" ilepoziomow = "<<ilepoziomow<<"\n";
+  punkt ost, ostdob, pierw;
+  itnastd = listast.begin();
+  //  while(listast.size() < ilepoziomow)
+  //  while(itostd != listast.begin())
+  while((int)listast.size() < ilepoziomow)
+    {
+      //      licz = 0;
+      ostdob = *itostd;
+      E = ostdob.en - rozdz;
+      ost = punkt(E, czyosobliwa(E));
+      //      E = (nast_dobre >= 0)?(rozwiazania[nast_dobre].poziom + rozdz):(E0 + rozdz);
+      E = (itnastd != itostd)?(itnastd->poziom + rozdz):(E0 + rozdz);
+      pierw = punkt(E, czyosobliwa(E));
+
+      if(ost.wart*pierw.wart > 0)
+	{
+	  std::clog<<"Zagęszczanie z pierw = "<<pierw.en<<" i ost = "<<ost.en<<"\n";
+	  trojka = zageszczanie(pierw, ost);
+	  if(!trojka.empty())
+	    {
+	      iter = itostd;
+	      for(int i = 1; i >= 0; i--)// bo są dwa zera
+		{
+		  E = bisekcja(fun, trojka[i], trojka[i+1]);
+		  nowaE = poprawianie_poziomu(E, 1e-11);
+		  E = nowaE;
+		  wspolcz = wsp_sklejanie_od_lewej(E);
+		  liczbazer = ilezer_ffal(E, wspolcz);
+		  nowy = stan(E, wspolcz, liczbazer);
+		  std::clog<<"E = "<<E<<" zer jest "<<liczbazer<<"\n";
+		  listast.insert(iter, nowy);
+		  --iter;
+		}
+	    }
+	  else
+	    {
+	      itostd = itnastd;
+	      std::clog<<"Nie znalazł a powinien\n";
+	    }
+
+	}
+      else
+	{
+	  E = bisekcja(fun, pierw.en, ost.en);
+	  nowaE = poprawianie_poziomu(E, 1e-11);
+	  E = nowaE;
+	  wspolcz = wsp_sklejanie_od_lewej(E);
+	  liczbazer = ilezer_ffal(E, wspolcz);
+	  nowy = stan(E, wspolcz, liczbazer);
+	  listast.insert(itostd, nowy);
+	}
+      while((itostd != listast.begin()) && (itostd->liczba_zer <= std::prev(itostd)->liczba_zer + 1)) //stany na liście schodzą po jeden w liczbie zer
+	{
+	  if(itostd->liczba_zer < std::prev(itostd)->liczba_zer + 1)
+	    {
+	      std::clog<<"\nKłopot z miejscami zerowymi: E1 = "<<(itostd->poziom)<<" zer "<<(itostd->liczba_zer)<<"\nE2 = "<<(std::prev(itostd)->poziom)<<" zer "<<(std::prev(itostd)->liczba_zer)<<"\n";
+	    }
+	  --itostd;
+	}
+
+      itnastd = (itostd == listast.begin())?listast.begin():std::prev(itostd);
+      std::clog<<"ostatnie_dobre = "<<(itostd->liczba_zer)<<" nastepne_dobre = "<<(itnastd->liczba_zer)<<"\n";
+    }
+
+  std::clog<<"\n";
+  rozwiazania.reserve(listast.size());
+  iter = listast.begin();
+  while(iter != listast.end())
+    {
+      rozwiazania.push_back(*iter);
+      std::clog<<"zera = "<<(iter->liczba_zer)<<"\tE = "<<(iter->poziom)<<"\n";
+      ++iter;
+    }
+}
+
+void struktura::szukanie_poziomow_zpoprawka2(double Ek, double rozdz)
+{
+  std::list<stan> listast; // lista znalezionych stanów
+  std::list<stan>::iterator itostd, itnastd; // najwyższy stan nad któ©ym wszystko jest znalezione, następny stan, nad którym trzeba jeszcze szukać
+  std::list<stan>::iterator iter; //pomocniczy
+  double E0 = dol;
+  if(Ek <= E0)
+    {
+      std::cerr<<"Zły zakres energii!\n";
+      abort();
+    }
+  int M = 2*(kawalki.size() + 2) - 2;
+  double wartakt;
+  double (struktura::*fun)(double) = & struktura::czyosobliwa;
+  std::vector<double> trojka;
+  std::clog<<"W szukaniu, E_pocz = "<<Ek<<"\n";
+  double wartpop = czyosobliwa(Ek);
+  std::clog<<"Pierwsza wartosc = "<<wartpop<<"\n";
+  A2D V(M, M);
+  //1.5
+  std::vector<parad> wspolcz;
+  //
+  int ilepoziomow;
+  int liczbazer;
+  double E, Epop;
+  //  double B0, B1;
+  double mnozdorozdz = 1e3; //monnik zmiennej rozdz do kroku w szukaniu górnego stanu
+  if(wartpop == 0)
+    {
+      Ek -= rozdz;
+      wartpop = czyosobliwa(Ek);
+    }
+  Epop = Ek;
+  E = Ek - rozdz*mnozdorozdz;
+  wartakt = czyosobliwa(E);
+  while( (E > E0) && (wartpop*wartakt > 0) )
+    {
+      wartpop = wartakt;
+      Epop = E;
+      E -= rozdz*mnozdorozdz; // żeby nie czekać wieki
+      wartakt = czyosobliwa(E);
+    }
+  if(E <= E0)
+    {
+      std::cerr<<"Nie znalazł nawet jednego poziomu!\n";
+      abort();
+    }
+  std::clog<<"Bisekcja z krancami "<<E<<" i "<<Epop<<"\n";
+  double Eost = bisekcja(fun, E, Epop); // wstępna energia najwyższego poziomu
+  double nowaE = poprawianie_poziomu(Eost, 1e-11);
+  Eost = nowaE;
+  //  V = A2D(M, M);
+  liczbazer = ilezer_ffal(Eost, V);
+
+  //  liczbazer = ilezer_ffal(Eost, wspolcz);
+  ilepoziomow = liczbazer + 1; // Tyle ma znaleźć poziomów
+  stan nowy = stan(Eost, V, ilepoziomow - 1);
+
+  std::cerr<<" Eost = "<<Eost<<" ilepoziomow = "<<ilepoziomow<<"\n";
+
+  listast.push_back(nowy);
+  itostd = listast.end();
+  --itostd; //  iterator na ostatni element
+  stan stymcz;
+  std::clog<<" Eost = "<<Eost<<" ilepoziomow = "<<ilepoziomow<<"\n";
+  punkt ost, ostdob, pierw;
+  itnastd = listast.begin();
+  //  while(listast.size() < ilepoziomow)
+  //  while(itostd != listast.begin())
+  while((int)listast.size() < ilepoziomow)
+    {
+      //      licz = 0;
+      ostdob = *itostd;
+      E = ostdob.en - rozdz;
+      ost = punkt(E, czyosobliwa(E));
+      //      E = (nast_dobre >= 0)?(rozwiazania[nast_dobre].poziom + rozdz):(E0 + rozdz);
+      E = (itnastd != itostd)?(itnastd->poziom + rozdz):(E0 + rozdz);
+      pierw = punkt(E, czyosobliwa(E));
+
+      if(ost.wart*pierw.wart > 0)
+	{
+	  std::clog<<"Zagęszczanie z pierw = "<<pierw.en<<" i ost = "<<ost.en<<"\n";
+	  trojka = zageszczanie(pierw, ost);
+	  if(!trojka.empty())
+	    {
+	      iter = itostd;
+	      for(int i = 1; i >= 0; i--)// bo są dwa zera
+		{
+		  E = bisekcja(fun, trojka[i], trojka[i+1]);
+		  nowaE = poprawianie_poziomu(E, 1e-11);
+		  E = nowaE;
+		  liczbazer = ilezer_ffal(E, V);
+		  /*		  wspolcz = wsp_sklejanie_od_lewej(E);
+				  liczbazer = ilezer_ffal(E, wspolcz);*/
+		  nowy = stan(E, V, liczbazer);
+		  std::clog<<"E = "<<E<<" zer jest "<<liczbazer<<"\n";
+		  listast.insert(iter, nowy);
+		  --iter;
+		}
+	    }
+	  else
+	    {
+	      itostd = itnastd;
+	      std::clog<<"Nie znalazł a powinien\n";
+	    }
+
+	}
+      else
+	{
+	  E = bisekcja(fun, pierw.en, ost.en);
+	  nowaE = poprawianie_poziomu(E, 1e-11);
+	  E = nowaE;
+	  liczbazer = ilezer_ffal(E, V);
+	  /*	  wspolcz = wsp_sklejanie_od_lewej(E);
+		  liczbazer = ilezer_ffal(E, wspolcz);*/
+	  nowy = stan(E, V, liczbazer);
+	  listast.insert(itostd, nowy);
+	}
+      while((itostd != listast.begin()) && (itostd->liczba_zer <= std::prev(itostd)->liczba_zer + 1)) //stany na liście schodzą po jeden w liczbie zer
+	{
+	  if(itostd->liczba_zer < std::prev(itostd)->liczba_zer + 1)
+	    {
+	      std::clog<<"\nKłopot z miejscami zerowymi: E1 = "<<(itostd->poziom)<<" zer "<<(itostd->liczba_zer)<<"\nE2 = "<<(std::prev(itostd)->poziom)<<" zer "<<(std::prev(itostd)->liczba_zer)<<"\n";
+	    }
+	  --itostd;
+	}
+
+      itnastd = (itostd == listast.begin())?listast.begin():std::prev(itostd);
+      std::clog<<"ostatnie_dobre = "<<(itostd->liczba_zer)<<" nastepne_dobre = "<<(itnastd->liczba_zer)<<"\n";
+    }
+
+  std::clog<<"\n";
+  rozwiazania.reserve(listast.size());
+  iter = listast.begin();
+  while(iter != listast.end())
+    {
+      rozwiazania.push_back(*iter);
+      std::clog<<"zera = "<<(iter->liczba_zer)<<"\tE = "<<(iter->poziom)<<"\n";
+      ++iter;
+    }
+}
+
+double obszar_aktywny::przekrycia_schodkowe(double E, int nr_c, int nr_v)
+{
+  struktura * el = pasmo_przew[nr_c];
+  struktura * dziu = pasmo_wal[nr_v];
+  A2D * m_prz = calki_przekrycia[nr_c][nr_v];
+  double wynik = 0;
+
+  double E0;
+  std::clog<<"E = "<<E<<"\n";
+  for(int nrpoz_el = 0; nrpoz_el <= int(el->rozwiazania.size()) - 1; nrpoz_el++)
+    for(int nrpoz_dziu = 0; nrpoz_dziu <= int(dziu->rozwiazania.size()) - 1; nrpoz_dziu++)
+	{
+	  //	  std::cerr<<"\nprzekrycie w "<<nrpoz_el<<", "<<nrpoz_dziu;
+	  //	  std::cerr<<" = "<<(*m_prz)[nrpoz_el][nrpoz_dziu];
+	  E0 = Egcv[nr_v] - Egcc[nr_c] + el->rozwiazania[nrpoz_el].poziom + dziu->rozwiazania[nrpoz_dziu].poziom;
+	  if( E-E0 >= 0 )
+	    {
+	      std::clog<<"E0 = "<<E0<<" dodaję "<<nrpoz_el<<", "<<nrpoz_dziu<<": "<<((*m_prz)[nrpoz_el][nrpoz_dziu])<<"\n";
+	      wynik += ((*m_prz)[nrpoz_el][nrpoz_dziu]);
+	    }
+	  else
+	    break;
+	}
+  std::clog<<"wynik = "<<wynik<<"\n";
+  return wynik;
+}
+
+void obszar_aktywny::przekrycia_dopliku(ofstream & plik, int nr_c, int nr_v)
+{
+  struktura * el = pasmo_przew[nr_c];
+  struktura * dziu = pasmo_wal[nr_v];
+  std::vector<parad> Esum;
+  //  double dno = Egcv[nr_v] - Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom // najnuższa energia przejścia
+  double wart;
+  double E0;
+  for(int nrpoz_el = 0; nrpoz_el <= int(el->rozwiazania.size()) - 1; nrpoz_el++)
+    for(int nrpoz_dziu = 0; nrpoz_dziu <= int(dziu->rozwiazania.size()) - 1; nrpoz_dziu++)
+      {
+	E0 = Egcv[nr_v] - Egcc[nr_c] + el->rozwiazania[nrpoz_el].poziom + dziu->rozwiazania[nrpoz_dziu].poziom;
+	//	Esum.push_back({E0, wartpop});
+	//	plik<<E0<<" "<<wartpop<<"\n";
+	wart = przekrycia_schodkowe(std::nextafter(E0, E0+1), nr_c, nr_v);
+	Esum.push_back({E0, wart});
+	//	plik<<E0<<" "<<wart<<"\n"; // nextafter bierze następną liczbę double w kieryunku drugiego argumentu
+	//	wartpop = wart;
+      }
+  sort(Esum.begin(), Esum.end(), jaksortpar);
+  double wartpop = 0;
+  for(int i = 0; i <= (int)Esum.size() - 1; i++)
+    {
+      plik<<Esum[i].first<<" "<<wartpop<<"\n";
+      plik<<Esum[i].first<<" "<<Esum[i].second<<"\n";
+      wartpop = Esum[i].second;
+    }
+}
+
+bool jaksortpar(parad a, parad b) //sortuje po pierwszej wartości, a jak równe , to po drugiej
+{
+  bool wyn = 0;
+  if(a.first < b.first)
+    wyn = 1;
+  if(a.first == b.first && a.second < b.second)
+    wyn = 1;
+
+  return wyn;
+}
+
+
+//koniec dopisków 1.5
+
+/*****************************************************************************/
 double warstwa::norma_kwadr(double E, double A, double B) const
 {
   double wartosc;
@@ -1439,11 +1991,16 @@ struktura::struktura(std::ifstream & plik, rodzaj co, bool bezlicz)
 
   if(!bezlicz)
     {
-      dokl = 5e-7;
+      //1.5
+      //      dokl = 1e-7;
+      dokl = 1e-10;
+      //
       double start;
       //  std::clog<<"gornyprog = "<<gornyprog<<"\n";
       start = -dokl; //(0.001*gornyprog > -dokl)?(0.001*gornyprog):-dokl; // zeby nie zaczac od progu
-      szukanie_poziomow_2(start, dokl, false);
+      //      szukanie_poziomow_2(start,dokl,false);
+      //      std::cout<<"\nTeraz z zpoprawka2\n"<<std::endl;
+      szukanie_poziomow_zpoprawka2(start,dokl);
       normowanie();
     }
 }
@@ -2440,10 +2997,15 @@ void struktura::szukanie_poziomow_2(double Ek, double rozdz, bool debug)
   std::clog << "Pierwsza wartosc = " << wartpop << "\n";
 #endif
   A2D V(M, M);
+  //1.5
+  std::vector<parad> wspolcz;
+  std::ofstream pliktestowy;//("funkcjfalowe");
+  //
   int ilepoziomow;
   int liczbazer;
   //  int ostatnie_dobre , nast_dobre;
   double E;
+  double B0, B1;
   //  double ciagl, Eb0, Eb1;
   //  int licz; // licznik poprawek do E
   if(wartpop == 0)
@@ -2456,28 +3018,65 @@ void struktura::szukanie_poziomow_2(double Ek, double rozdz, bool debug)
   while((E > E0) && (wartpop * wartakt > 0))
     {
       wartpop = wartakt;
-      E -= rozdz;
+      //1.5
+      //      E -= rozdz;
+      E -= rozdz*1e3; // żeby nie czekać wieki
+      //
+      //      E -= 10*rozdz;
       //      std::clog<<"Ek = "<<E<<"\n";
       wartakt = czyosobliwa(E);
     }
     /*  std::clog<<"Sieczne z krancami "<<E<<" i "<<(E + rozdz)<<"\n";
         double Eost = sieczne(fun, E, E + rozdz); // koniec szukania najwyzszego stanu */
-#ifdef LOGUJ // MD
-  std::clog << "Bisekcja z krancami " << E << " i " << (E + rozdz) << "\n";
-#endif
-  double Eost = bisekcja(fun, E, E + rozdz);
+  std::clog<<"Bisekcja z krancami "<<E<<" i "<<(E + rozdz*1e3)<<"\n";
+  double Eost = bisekcja(fun, E, E + rozdz*1e3);
+
+  // dopiski 1.5:
+  parad ABkon = sklejanie_od_lewej(Eost);
+  //  std::clog<<"NOWE: A, B = "<<ABkon.first<<" "<<ABkon.second<<std::endl;
+  std::clog<<"STARE: A, B = "<<ABkon.first<<" "<<ABkon.second<<"\tE = "<<Eost<<std::endl;
+  B0 = ABkon.second;
+  double nowaE = poprawianie_poziomu(Eost, 1e-11);
+  ABkon = sklejanie_od_lewej(nowaE);
+  B1 = ABkon.second;
+  std::clog<<"NOWSZE: A, B = "<<ABkon.first<<" "<<ABkon.second<<"\tE = "<<nowaE<<std::endl;
+  if(abs(B1) > abs(B0))
+    {
+      std::clog<<"B sie pogorszyło(0)! B0, B1 "<<B0<<", "<<B1<<std::endl;
+    }
+  std::clog<<"zmiana E = "<<(Eost-nowaE)<<std::endl;
+  Eost = nowaE;
+  //
+
   if(debug)
     {
       plikdebug << Eost << "\t" << std::flush;
     }
   V = A2D(M, M);
   ilepoziomow = ilezer_ffal(Eost, V) + 1;
+  wspolcz = wsp_sklejanie_od_lewej(Eost);
+  int nowezera = ilezer_ffal(Eost, wspolcz);
+  std::clog<<"stara i nowa liczba zer "<<ilepoziomow-1<<", "<<nowezera<<std::endl;
   if(debug)
     {
       plikdebug << (ilepoziomow - 1) << "\t" << (sprawdz_ciaglosc(Eost, V)) << std::endl;
     }
   //  ostatnie_dobre = ilepoziomow - 1;
   stan nowy(Eost, V, ilepoziomow - 1);
+  //1.5
+  stan nowszy = stan(Eost, wspolcz, ilepoziomow - 1);
+  std::string temat = "funkcjafalowa_E";
+  std::string nazwapliku = temat + std::to_string(ilepoziomow-1);
+  pliktestowy.open(nazwapliku);
+  funkcja1_do_pliku(pliktestowy, nowy, 1e-2);  //
+  pliktestowy.close();
+  pliktestowy.open(nazwapliku + "prim");
+  funkcja1_do_pliku(pliktestowy, nowszy, 1e-2);  //
+  pliktestowy.close();
+  pliktestowy.open("studnie");
+  struktura_do_pliku(pliktestowy);
+  pliktestowy.close();
+  //
   listast.push_back(nowy);
   itostd = listast.end();
   --itostd; //  iterator na ostatni element
@@ -2517,11 +3116,47 @@ void struktura::szukanie_poziomow_2(double Ek, double rozdz, bool debug)
                 {
                   //	      E = sieczne(fun, trojka[i], trojka[i+1]);
                   E = bisekcja(fun, trojka[i], trojka[i + 1]);
+
+		  //1.5
+		  /*		  ABkon = sklejanie_od_lewej(E);
+		  B0 = ABkon.second;
+		  std::clog<<"STARE: A, B = "<<ABkon.first<<" "<<ABkon.second<<std::endl;*/
+		  nowaE = poprawianie_poziomu(E, 1e-11);
+		  /*		  ABkon = sklejanie_od_lewej(nowaE);
+		  B1 = ABkon.second;
+		  std::clog<<"NOWSZE: A, B = "<<ABkon.first<<" "<<ABkon.second<<"\tE = "<<nowaE<<std::endl;
+		  if(abs(B1) > abs(B0))
+		    {
+		      std::clog<<"B sie pogorszyło(1)! B0, B1 "<<B0<<", "<<B1<<std::endl;
+		    }
+
+		  std::clog<<"zmiana E = "<<(E-nowaE)<<std::endl;		  */
+
+		  E = nowaE;
+		  //
+
                   liczbazer = ilezer_ffal(E, V);
 #ifdef LOGUJ // MD
                   std::clog << "E = " << E << " zer jest " << liczbazer << "\n";
 #endif
                   nowy = stan(E, V, liczbazer);
+
+		  //1.5
+		  wspolcz = wsp_sklejanie_od_lewej(E);
+		  nowezera = ilezer_ffal(E, wspolcz);
+		  std::clog<<"\nstara i nowa liczba zer "<<liczbazer<<", "<<nowezera<<std::endl;
+
+		  nazwapliku = temat + std::to_string(liczbazer);
+		  pliktestowy.open(nazwapliku);
+		  funkcja1_do_pliku(pliktestowy, nowy, 1e-2);
+		  pliktestowy.close();
+		  nowszy = stan(E, wspolcz, nowezera);
+		  pliktestowy.open(nazwapliku + "prim");
+		  funkcja1_do_pliku(pliktestowy, nowszy, 1e-2);  //
+		  pliktestowy.close();
+
+		  //
+		  //		  funkcja1_do_pliku(pliktestowy, nowy, 1e-2);
                   /*	      if(liczbazer > ostatnie_dobre)
                               {
                               Error err; // MD
@@ -2548,11 +3183,33 @@ void struktura::szukanie_poziomow_2(double Ek, double rozdz, bool debug)
         {
           //	  E = sieczne(fun, pierw.en, ost.en);
           E = bisekcja(fun, pierw.en, ost.en);
+
+	  //1.5
+	  ABkon = sklejanie_od_lewej(E);
+
+	  B0 = ABkon.second;
+	  std::clog<<"STARE: A, B = "<<ABkon.first<<" "<<ABkon.second<<"\tE = "<<E<<std::endl;
+	  nowaE = poprawianie_poziomu(E, 1e-11);
+	  ABkon = sklejanie_od_lewej(nowaE);
+	  B1 = ABkon.second;
+	  std::clog<<"NOWSZE: A, B = "<<ABkon.first<<" "<<ABkon.second<<"\tE = "<<nowaE<<std::endl;
+
+	  if(abs(B1) > abs(B0))
+	    {
+	      std::clog<<"B sie pogorszyło(2)! B0, B1 "<<B0<<", "<<B1<<std::endl;
+	    }
+
+
+	  std::clog<<"zmiana E = "<<(E-nowaE)<<std::endl;
+	  E = nowaE;
+	  //
+
           liczbazer = ilezer_ffal(E, V);
 #ifdef LOGUJ // MD
           std::clog << "E = " << E << " zer jest " << liczbazer << "\n";
 #endif
           nowy = stan(E, V, liczbazer);
+	  //	  funkcja1_do_pliku(pliktestowy, nowy, 1e-2);
           if(liczbazer >= itostd->liczba_zer)
             {
               Error err; // MD
@@ -2714,19 +3371,22 @@ double struktura::sieczne(double (struktura::*f)(double), double pocz, double ko
   return x;
 }
 /*****************************************************************************/
-double struktura::bisekcja(double (struktura::*f)(double), double pocz, double kon)
+//1.5
+//double struktura::bisekcja(double (struktura::*f)(double), double pocz, double kon,)
+double struktura::bisekcja(double (struktura::*f)(double), double pocz, double kon, double dokl) // domyślnie dokl = 1e-9
+//
 {
 #ifdef LOGUJ // MD
   std::clog.precision(12);
 #endif
   // const double eps = 1e-14; // limit zmian x
-  double dokl = 1e-9;
+  //1.5
+  //  double dokl = 1e-9;
+  //
   //  int limpetli = 30;
   double xp = kon;
   double xl = pocz;
-#ifdef LOGUJ // MD
-  std::clog << "Bisekcja. Wartosci na koncach: " << ((this->*f)(pocz)) << ", " << ((this->*f)(kon)) << "\n";
-#endif
+  //  std::clog<<"Bisekcja. Wartości na końcach: "<<((this->*f)(pocz))<<", "<<((this->*f)(kon))<<"\tdokl = "<<dokl<<"\n";
   if((this->*f)(pocz) * (this->*f)(kon) > 0)
     {
       Error err; // MD
@@ -2734,10 +3394,22 @@ double struktura::bisekcja(double (struktura::*f)(double), double pocz, double k
       throw err;
     }
 
+  if(pocz >= kon)
+    {
+      std::cerr<<"Zła kolejność krańców!\n";
+      abort();
+    }
+  //
+
   double x, fc, fl; // -p -- poprzednie krance
+  //1.5
+  double fp;
+  //
   fl = (this->*f)(xl);
   int liczpetli = 0;
   //  fp = (this->*f)(xp); //Wystarczy chyba tylko tu, ale wtedy nie wypisze dobrze wartosci na krancach
+  fp = (this->*f)(xp); //Wystarczy chyba tylko tu, ale wtedy nie wypisze dobrze wartości na krańcach
+  //
   do
     {
       x = (xp + xl) / 2;
@@ -2750,11 +3422,17 @@ double struktura::bisekcja(double (struktura::*f)(double), double pocz, double k
         {
           xp = x;
           //	  fp = (this->*f)(xp);
+	  //1.5
+	  fp = fc;
+	  //
         }
       else // c bedzie nowym lewym koncem
         {
           xl = x;
-          fl = (this->*f)(xl);
+	  //1.5
+	  //	  fl = (this->*f)(xl);
+	  fl = fc;
+	  //
         }
       liczpetli += 1;
       //      std::clog<<"petla "<<liczpetli<<" x = "<<x<<"\tf(x) = "<<fc<<"\txl = "<<xl<<" xp = "<<xp<<"\n"; //f(xl) =
@@ -2770,11 +3448,32 @@ double struktura::bisekcja(double (struktura::*f)(double), double pocz, double k
       std::cerr<<"\nPrzekroczony limit liczby petli\nOsiagnieta dokladnosc:"<<(xp - xl)<<"\n";
     }
   */
-#ifdef LOGUJ // MD
-  if(fc * fc > 1e-8)
-    std::cerr << "\nfc = " << fc << " zamiast 0!\n";
-#endif
-  return x;
+  //1.5
+  //  if(fc*fc > 1e-8)
+  //  {
+  //    std::cerr<<"\nfc = "<<fc<<" zamiast 0!\n";
+  //  }
+
+  //  return x;
+  //  std::cerr<<"\nfl = "<<fl<<" fp = "<<fp<<"\n";
+  //  std::cerr<<"Dx = "<<xp-xl<<"\n";
+  //  return (abs(fl) > abs(fp))?xp:xl;
+  //usiecznienie
+  double wsp = (fp -fl)/(xp - xl);
+  double xsiecz = xl - fl/wsp;
+  double wyn;
+  double fsiecz = (this->*f)(xsiecz);
+  if(abs(fsiecz) < abs(fp)  && abs(fsiecz) < abs(fl)) // z siecznej lepsze
+    wyn = xsiecz;
+  else
+    {
+      if(abs(fp) > abs(fl)) // który krzniec lepszy?
+	wyn = xl;
+      else
+	wyn = xp;
+    }
+  return wyn;
+  //
 }
 /*****************************************************************************/
 double struktura::norma_stanu(stan & st) // liczy norme i wypelnia prawdopodobienstwa
@@ -2950,6 +3649,7 @@ std::vector<double> struktura::koncentracje_w_warstwach(double qFl, double T)
 /*****************************************************************************/
 void struktura::struktura_do_pliku(std::ofstream & plik)
 {
+  double X = 0.1; // do zamiany A->nm // dodalem X, LUKASZ
   std::vector<warstwa>::iterator it_war = kawalki.begin();
   plik << dlugosc_na_A(lewa.iks) << " " << (lewa.y) << "\n";
   while(it_war != kawalki.end())
@@ -3066,7 +3766,7 @@ void struktura::funkcje_do_pliku_(std::ofstream & plik, char c, double iRefBand,
     }
 }
 /*****************************************************************************/
-void struktura::funkcje_do_pliku(std::ofstream & plik, double krok)
+/*void struktura::funkcje_do_pliku(std::ofstream & plik, double krok)
 {
 #ifdef LOGUJ // MD
   std::clog << "W f_do_p" << std::endl;
@@ -3131,6 +3831,85 @@ void struktura::funkcje_do_pliku(std::ofstream & plik, double krok)
           it_stan++;
         }
       plik << "\n";
+      x += krok;
+    }
+}*/
+/*****************************************************************************/
+void struktura::funkcje_do_pliku(std::ofstream & plik, double krok)
+{
+  int setw_1 = 13,
+    setw_2 = 20,
+    prec_1 = 5,
+    prec_2 = 10,
+    ee = 3;
+
+  krok = krok / (struktura::przelm * 0.1); // dodalem LUKASZ 2023-09-12
+
+  double X = 0.1; // do zamiany A->nm // dodalem X, LUKASZ
+  std::clog<<"W f_do_p"<<std::endl;
+  //plik<<"#\t"; // LUKASZ 2023-09-18
+  plik << setw(setw_1) << "#"; // LUKASZ 2023-09-18
+  std::vector<stan>::iterator it_stan = rozwiazania.begin();
+  while(it_stan != rozwiazania.end())
+    {
+      plik << std::fixed << std::scientific;
+      //plik<<" E="<<setw(setw_)<<std::setprecision(precef_)<<(it_stan->poziom); // LUKASZ 2023-09-18
+      plik << setw(ee) << "E=";
+      plik << std::fixed << std::scientific;
+      plik << setw(setw_2-ee) << std::setprecision(prec_2) << (it_stan->poziom); // LUKASZ 2023-09-18
+      it_stan++;
+    }
+  plik<<"\n";
+  double szer = prawa.iks - lewa.iks;
+  //double bok = szer/4; // ROBERT 2023-09-18
+  double bok = szer; // ROBERT 2023-09-18
+  double x = lewa.iks - bok;
+  while(x <= lewa.iks)
+    {
+      plik << std::fixed << std::scientific;
+      plik << setw(setw_1) << std::setprecision(prec_1) << dlugosc_na_A(x)*X; // dodalem X, LUKASZ
+      //plik<<dlugosc_na_A(x)*X/(struktura::przelm*0.1)<<"\t"; // dodalem X, LUKASZ 2023-09-12
+      it_stan = rozwiazania.begin();
+      while(it_stan != rozwiazania.end())
+	{
+	  plik << std::fixed << std::scientific;
+	  plik << setw(setw_2) << std::setprecision(prec_2) << lewa.funkcjafal(x, it_stan->poziom, it_stan->wspolczynniki[0]);//<<" "; // LUKASZ 2023-09-18
+	  it_stan++;
+	}
+      plik<<"\n";
+      x += krok;
+    }
+  for(int i = 0; i <= (int) kawalki.size() - 1; i++)
+    {
+      x = kawalki[i].x_pocz;
+      while(x <= kawalki[i].x_kon)
+	{
+	  plik << setw(setw_1) << std::setprecision(prec_1) << dlugosc_na_A(x)*X; // dodalem X, LUKASZ
+	  //plik<<dlugosc_na_A(x)*X/(struktura::przelm*0.1)<<"\t"; // dodalem X, LUKASZ 2023-09-12
+	  it_stan = rozwiazania.begin();
+	  while(it_stan != rozwiazania.end())
+	    {
+	      plik << std::fixed << std::scientific;
+	      plik << setw(setw_2) << std::setprecision(prec_2) << kawalki[i].funkcjafal(x, it_stan->poziom, it_stan->wspolczynniki[2*i + 1], it_stan->wspolczynniki[2*i + 2]);//<<" "; // LUKASZ 2023-09-18
+	      it_stan++;
+	    }
+	  plik<<"\n";
+	  x += krok;
+	}
+    }
+  x = prawa.iks ;
+  while(x <= prawa.iks + bok)
+    {
+      plik << setw(setw_1) << std::setprecision(prec_1) << dlugosc_na_A(x)*X; // dodalem X, LUKASZ
+      //plik<<dlugosc_na_A(x)*X/(struktura::przelm*0.1)<<"\t"; // dodalem X, LUKASZ 2023-09-12
+      it_stan = rozwiazania.begin();
+      while(it_stan != rozwiazania.end())
+	{
+	  plik << std::fixed << std::scientific;
+	  plik << setw(setw_2) << std::setprecision(prec_2) << prawa.funkcjafal(x, it_stan->poziom, it_stan->wspolczynniki.back());//<<" "; // LUKASZ 2023-09-18
+	  it_stan++;
+	}
+      plik<<"\n";
       x += krok;
     }
 }
@@ -3669,6 +4448,15 @@ double obszar_aktywny::element(int nr_war) // Do przerobienia
   return (1 / warc->masa_p(0.) - 1) * (Eg + DeltaSO[nr_war]) * Eg / (Eg + 2 * DeltaSO[nr_war] / 3) / 2;
 }
 /*****************************************************************************/
+void obszar_aktywny::ustaw_element(double iM) // dodalem metode LUKASZ LUKI 23.05.2023
+{
+  for(int i = 0; i < (int) el_mac.size(); i++)
+  {
+	el_mac[i] = iM;
+	std::cout << el_mac[i] << "\n";
+  }
+}
+/*****************************************************************************/
 double wzmocnienie::kodE(double E, double mc, double mv)
 {
   double m = (1 / mc + 1 / mv);
@@ -3766,7 +4554,11 @@ wzmocnienie::wzmocnienie(obszar_aktywny * obsz, double konc_pow, double temp, do
     }
 
   if(szdowzm < 0)
+    {
+      std::cerr<<"\nW ifie\n: krańce = "<<pasma->pasmo_przew[0]->kawalki.back().x_kon<<", "<<pasma->pasmo_przew[0]->kawalki.front().x_pocz<<"\n";
     szer_do_wzmoc = pasma->pasmo_przew[0]->kawalki.back().x_kon - pasma->pasmo_przew[0]->kawalki.front().x_pocz;
+      std::cerr<<"\nW ifie szer_do_wzmoc = "<< szer_do_wzmoc<<"\n";
+    }
   else
     szer_do_wzmoc = szdowzm / struktura::przelm;
 
@@ -4502,6 +5294,16 @@ double wzmocnienie::wzmocnienie_calk_bez_splotu(double E)
   return wynik;
 }
 /*****************************************************************************/
+double wzmocnienie::wzmocnienie_calk_bez_splotu_L(double lambda)
+{
+  double wynik = 0.;
+  for(int nr_c = 0; nr_c <= (int) pasma->pasmo_przew.size() - 1; nr_c++)
+    for(int nr_v = 0; nr_v <= (int) pasma->pasmo_wal.size() - 1; nr_v++)
+      wynik += wzmocnienie_od_pary_pasm(plask::phys::PhotonEnergy(lambda), nr_c, nr_v);
+      //wynik += wzmocnienie_od_pary_pasm(cFunc::LamtoE(lambda), nr_c, nr_v);
+  return wynik;
+}
+/*****************************************************************************/
 void wzmocnienie::profil_wzmocnienia_bez_splotu_dopliku(std::ofstream & plik, double pocz, double kon, double krok)
 {
   double wynik;
@@ -4510,7 +5312,11 @@ void wzmocnienie::profil_wzmocnienia_bez_splotu_dopliku(std::ofstream & plik, do
       wynik = 0;
       for(int nr_c = 0; nr_c <= (int)pasma->pasmo_przew.size() - 1; nr_c++)
         for(int nr_v = 0; nr_v <= (int)pasma->pasmo_wal.size() - 1; nr_v++)
+	  {
           wynik += wzmocnienie_od_pary_pasm(E, nr_c, nr_v);
+	    std::cerr<<E<<" "<<wynik<<"\n";
+	  }
+
       plik << E << " " << wynik << "\n";
     }
 }
@@ -4563,6 +5369,23 @@ void wzmocnienie::profil_lumin_dopliku(std::ofstream & plik, double pocz, double
       plik << "\t" << wynikTE << " " << wynikTM;
       //      plik<<E<<" "<<wynik<<"\n";
       plik << std::endl;
+    }
+}
+/*****************************************************************************/
+void wzmocnienie::profil_lumin_dopliku_L(std::ofstream & plik, double pocz, double kon, double krok) // dodalem metode LUKASZ LUKI 5.09.2023
+{
+  double wynikTE, wynikTM;
+    for(double L = pocz; L <= kon; L += krok)
+    {
+      wynikTE = 0.0;
+      wynikTM = 0.0;
+      for(int nr_c = 0; nr_c <= (int) pasma->pasmo_przew.size() - 1; nr_c++)
+	for(int nr_v = 0; nr_v <= (int) pasma->pasmo_wal.size() - 1; nr_v++)
+	  {
+        wynikTE += spont_od_pary_pasm(plask::phys::PhotonEnergy(L), nr_c, nr_v, 0.0);
+        wynikTM += spont_od_pary_pasm(plask::phys::PhotonEnergy(L), nr_c, nr_v, 1.0);
+	  }
+      plik<<L<<" "<<wynikTE<<" "<<wynikTM<<"\n";
     }
 }
 /*****************************************************************************/
