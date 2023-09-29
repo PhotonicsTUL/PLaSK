@@ -225,7 +225,7 @@ struct PLASK_SOLVER_API Diffusion2DSolver : public FemSolverWithMesh<Geometry2DT
     /// Return \c true if the specified element is a junction
     size_t isActive(const RectangularMesh2D::Element& element) const { return isActive(element.getMidpoint()); }
 
-    struct PLASK_API From1DGenerator : public MeshGeneratorD<2> {
+    struct PLASK_SOLVER_API From1DGenerator : public MeshGeneratorD<2> {
         shared_ptr<MeshGeneratorD<1>> generator;
 
         From1DGenerator(const shared_ptr<MeshGeneratorD<1>>& generator) : generator(generator) {}
