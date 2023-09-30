@@ -87,10 +87,10 @@ def _print_cpp(kij, kvals, fvals, file=sys.stdout):
         print(f"F[{sidx(i)}] += {fval};", file=file)
 
 
-def print_cpp(K, F, fname=None):
+def print_cpp(KK, FF, fname=None):
     kij = [(i,j) for j in range(12) for i in range(j+1)]
-    kvals = evaluate(lambda i,j: cpp(K[i,j]), kij)
-    fvals = evaluate(lambda i: cpp(F[i]), range(12))
+    kvals = evaluate(lambda i,j: ' + '.join(cpp(K[i,j]) for K in KK), kij)
+    fvals = evaluate(lambda i: ' + '.join(cpp(F[i]) for F in FF), range(12))
     if mrank == 0:
         if fname is None:
             _print_cpp(kij, kvals, fvals)
@@ -175,11 +175,10 @@ KC = evaluate_matrix(lambda i,j:
 if mrank == 0: print('KC = sym.', KC, end='\n\n')
 
 if mrank == 0:
-    K = KD + KA + KB + KC
-    print('K = sym.', K, end='\n\n')
+    KK = KD, KA, KB, KC
 else:
-    K = None
-K = mpi.bcast(K, root=0)
+    KK = None
+KK = mpi.bcast(KK, root=0)
 
 FB = evaluate_vector(lambda i:
     sym.simplify(sym.integrate(sym.simplify(sym.integrate(B * u02 * φ[i], (x, 0, X))), (y, 0, Y)))
@@ -197,13 +196,12 @@ F0 = evaluate_vector(lambda i:
 if mrank == 0: print('F0 = sym.', F0, end='\n\n')
 
 if mrank == 0:
-    F = FB + FC + F0
-    print('F = sym.', F, end='\n\n')
+    FF = FB, FC, F0
 else:
-    F = None
-F = mpi.bcast(F, root=0)
+    FF = None
+FF = mpi.bcast(FF, root=0)
 
-print_cpp(K, F, 'diffusion3d-eval.ipp')
+print_cpp(KK, FF, 'diffusion3d-eval.ipp')
 
 
 # Wypalanie nośników
@@ -228,4 +226,4 @@ if mrank == 0: print('FL = sym.', FL, end='\n\n')
 KL = mpi.bcast(KL, root=0)
 FL = mpi.bcast(FL, root=0)
 
-print_cpp(KL, FL, 'diffusion3d-eval-shb.ipp')
+print_cpp((KL,), (FL,), 'diffusion3d-eval-shb.ipp')
