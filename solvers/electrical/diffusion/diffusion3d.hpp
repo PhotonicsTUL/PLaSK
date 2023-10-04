@@ -19,53 +19,17 @@
 
 namespace plask { namespace electrical { namespace diffusion {
 
-template <typename T> struct LateralMesh3D : MeshD<3> {
-    shared_ptr<T> lateral;
-    double z;
+template <typename MeshT> struct PLASK_SOLVER_API QwsLateralMesh3D : MultiLateralMesh3D<MeshT> {
 
-    using MeshD<3>::DIM;
+    QwsLateralMesh3D(const shared_ptr<MeshT>& lateral, std::vector<double> vert) :
+        MultiLateralMesh3D<MeshT>(lateral, shared_ptr<OrderedAxis>(new OrderedAxis(vert, 0.))) {}
 
-    LateralMesh3D(const shared_ptr<T>& lateral, double z) : lateral(lateral), z(z) {}
+    QwsLateralMesh3D(const shared_ptr<MeshT>& lateral, const shared_ptr<MeshAxis>& vert) :
+        MultiLateralMesh3D<MeshT>(lateral, vert) {}
 
-    std::size_t size() const override { return lateral->size(); }
-
-    plask::Vec<3> at(std::size_t index) const override {
-        Vec<2> p = lateral->at(index);
-        return Vec<3>(p.c0, p.c1, z);
-    }
-
-    shared_ptr<LateralMesh3D<typename T::ElementMesh>> getElementMesh() const {
-        return make_shared<LateralMesh3D<typename T::ElementMesh>>(lateral->getElementMesh(), z);
-    }
-
-    template <typename RandomAccessContainer>
-    auto interpolateLinear(const RandomAccessContainer& data, const Vec<3>& point, const InterpolationFlags& flags) const {
-        return lateral->interpolateLinear(data, Vec<2>(point.c0, point.c1), flags);
-    }
-
-    template <typename RandomAccessContainer>
-    auto interpolateNearestNeighbor(const RandomAccessContainer& data, const Vec<3>& point, const InterpolationFlags& flags) const {
-        return lateral->interpolateNearestNeighbor(data, Vec<2>(point.c0, point.c1), flags);
-    }
-};
-
-template <typename T> struct ExtendedLateralMesh3D : MeshD<3> {
-    shared_ptr<T> lateral;
-    std::vector<double> zz;
-
-    ExtendedLateralMesh3D(const shared_ptr<T>& lateral, std::vector<double> zz) : lateral(lateral), zz(std::move(zz)) {}
-
-    std::size_t size() const override { return lateral->size() * zz.size(); }
-
-    plask::Vec<3> at(std::size_t index) const override {
-        size_t i = index / zz.size(), j = index % zz.size();
-        Vec<2> p = lateral->at(i);
-        return Vec<3>(p.c0, p.c1, zz[j]);
-    }
-
-    shared_ptr<ExtendedLateralMesh3D<typename T::ElementMesh>> getElementMesh() const {
-        return shared_ptr<ExtendedLateralMesh3D<typename T::ElementMesh>>(
-            new ExtendedLateralMesh3D<typename T::ElementMesh>(lateral->getElementMesh(), zz));
+    shared_ptr<QwsLateralMesh3D<typename MeshT::ElementMesh>> getElementMesh() const {
+        return shared_ptr<QwsLateralMesh3D<typename MeshT::ElementMesh>>(
+            new QwsLateralMesh3D<typename MeshT::ElementMesh>(this->lateralMesh->getElementMesh(), this->vertAxis));
     }
 };
 
@@ -85,8 +49,8 @@ struct ActiveRegion3D {
 
     shared_ptr<LateralMesh3D<RectangularMaskedMesh2D>> mesh2;
     shared_ptr<LateralMesh3D<RectangularMaskedMesh2D::ElementMesh>> emesh2;
-    shared_ptr<ExtendedLateralMesh3D<RectangularMaskedMesh2D>> mesh3;
-    shared_ptr<ExtendedLateralMesh3D<RectangularMaskedMesh2D::ElementMesh>> emesh3;
+    shared_ptr<QwsLateralMesh3D<RectangularMaskedMesh2D>> mesh3;
+    shared_ptr<QwsLateralMesh3D<RectangularMaskedMesh2D::ElementMesh>> emesh3;
 
     std::vector<std::pair<double, double>> QWs;
 
@@ -116,22 +80,22 @@ struct ActiveRegion3D {
 
         mesh2 = make_shared<LateralMesh3D<RectangularMaskedMesh2D>>(lateral_mesh, z);
         emesh2 = mesh2->getElementMesh();
-        // mesh3 = make_shared<ExtendedLateralMesh3D<RectangularMaskedMesh2D>>(lateral_mesh, std::move(QWz));
-        mesh3.reset(new ExtendedLateralMesh3D<RectangularMaskedMesh2D>(lateral_mesh, std::move(QWz)));
+        // mesh3 = make_shared<QwsLateralMesh3D<RectangularMaskedMesh2D>>(lateral_mesh, std::move(QWz));
+        mesh3.reset(new QwsLateralMesh3D<RectangularMaskedMesh2D>(lateral_mesh, std::move(QWz)));
         emesh3 = mesh3->getElementMesh();
     }
 
-    double vert() const { return mesh2->z; }
+    double vert() const { return mesh2->vert; }
 
     template <typename ReceiverType, typename MeshType>
     LazyData<typename ReceiverType::ValueType> verticallyAverage(
         const ReceiverType& receiver,
-        const shared_ptr<ExtendedLateralMesh3D<MeshType>>& mesh,
+        const shared_ptr<QwsLateralMesh3D<MeshType>>& mesh,
         InterpolationMethod interp = InterpolationMethod::INTERPOLATION_DEFAULT) const {
         auto data = receiver(mesh, interp);
-        const size_t n = mesh->zz.size();
+        const size_t n = mesh->vertAxis->size();
         return LazyData<typename ReceiverType::ValueType>(
-            mesh->lateral->size(), [this, data, n](size_t i) -> typename ReceiverType::ValueType {
+            mesh->lateralMesh->size(), [this, data, n](size_t i) -> typename ReceiverType::ValueType {
                 typename ReceiverType::ValueType val(Zero<typename ReceiverType::ValueType>());
                 for (size_t j = n * i, end = n * (i + 1); j < end; ++j) val += data[j];
                 return val / n;
@@ -168,7 +132,7 @@ struct ElementParams3D {
                           element.getLoUpIndex(),
                           element.getUpLoIndex(),
                           element.getUpUpIndex()) {}
-    ElementParams3D(const ActiveRegion3D& active, size_t ie) : ElementParams3D(active.mesh2->lateral->element(ie)) {}
+    ElementParams3D(const ActiveRegion3D& active, size_t ie) : ElementParams3D(active.mesh2->lateralMesh->element(ie)) {}
 };
 
 /**

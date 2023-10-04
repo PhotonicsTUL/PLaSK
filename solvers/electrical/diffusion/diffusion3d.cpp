@@ -17,32 +17,6 @@
 
 namespace plask {
 
-template <typename SrcT, typename DstT>
-struct InterpolationAlgorithm<electrical::diffusion::LateralMesh3D<RectangularMaskedMesh2D>, SrcT, DstT, INTERPOLATION_LINEAR> {
-    static LazyData<DstT> interpolate(
-        const shared_ptr<const electrical::diffusion::LateralMesh3D<RectangularMaskedMesh2D>>& src_mesh,
-        const DataVector<const SrcT>& src_vec,
-        const shared_ptr<const MeshD<3>>& dst_mesh,
-        const InterpolationFlags& flags) {
-        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
-        return new LinearInterpolatedLazyDataImpl<DstT, electrical::diffusion::LateralMesh3D<RectangularMaskedMesh2D>, SrcT>(
-            src_mesh, src_vec, dst_mesh, flags);
-    }
-};
-
-template <typename SrcT, typename DstT>
-struct InterpolationAlgorithm<electrical::diffusion::LateralMesh3D<RectangularMaskedMesh2D>, SrcT, DstT, INTERPOLATION_NEAREST> {
-    static LazyData<DstT> interpolate(
-        const shared_ptr<const electrical::diffusion::LateralMesh3D<RectangularMaskedMesh2D>>& src_mesh,
-        const DataVector<const SrcT>& src_vec,
-        const shared_ptr<const MeshD<3>>& dst_mesh,
-        const InterpolationFlags& flags) {
-        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
-        return new NearestNeighborInterpolatedLazyDataImpl<DstT, electrical::diffusion::LateralMesh3D<RectangularMaskedMesh2D>,
-                                                           SrcT>(src_mesh, src_vec, dst_mesh, flags);
-    }
-};
-
 namespace electrical { namespace diffusion {
 
 constexpr double inv_hc = 1.0e-13 / (phys::c * phys::h_J);
@@ -241,7 +215,7 @@ double Diffusion3DSolver::compute(unsigned loops, bool shb, size_t act) {
 
     size_t nn = active.mesh2->size(), ne = active.emesh2->size();
     size_t N = 3 * nn;
-    size_t nm = active.mesh2->lateral->fullMesh.minorAxis()->size();
+    size_t nm = active.mesh2->lateralMesh->fullMesh.minorAxis()->size();
 
     size_t nmodes = 0;
 
@@ -445,14 +419,14 @@ Diffusion3DSolver::ConcentrationDataImpl::ConcentrationDataImpl(const Diffusion3
                 Vec<2> wrapped_point;
                 size_t index0_lo, index0_hi, index1_lo, index1_hi;
 
-                if (!active.mesh2->lateral->prepareInterpolation(vec(point.c0, point.c1), wrapped_point, index0_lo, index0_hi,
+                if (!active.mesh2->lateralMesh->prepareInterpolation(vec(point.c0, point.c1), wrapped_point, index0_lo, index0_hi,
                                                                  index1_lo, index1_hi, interpolationFlags))
                     return 0.;  // point is outside the active region
 
-                double x = wrapped_point.c0 - active.mesh2->lateral->fullMesh.getAxis0()->at(index0_lo);
-                double y = wrapped_point.c1 - active.mesh2->lateral->fullMesh.getAxis1()->at(index1_lo);
+                double x = wrapped_point.c0 - active.mesh2->lateralMesh->fullMesh.getAxis0()->at(index0_lo);
+                double y = wrapped_point.c1 - active.mesh2->lateralMesh->fullMesh.getAxis1()->at(index1_lo);
 
-                ElementParams3D e(active, active.emesh2->lateral->index(index0_lo, index1_lo));
+                ElementParams3D e(active, active.emesh2->lateralMesh->index(index0_lo, index1_lo));
 
                 const double x2 = x * x, y2 = y * y;
                 const double x3 = x2 * x, y3 = y2 * y;

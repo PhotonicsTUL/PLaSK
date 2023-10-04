@@ -104,6 +104,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "mesh/triangular2d.hpp"
 #include "mesh/extruded_triangular3d.hpp"
 #include "mesh/basic.hpp"
+#include "mesh/lateral.hpp"
 
 #include "provider/provider.hpp"
 #include "provider/providerfor.hpp"
