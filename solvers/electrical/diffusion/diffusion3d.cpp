@@ -155,7 +155,6 @@ void Diffusion3DSolver::setupActiveRegions() {
         std::vector<double> QWz;
         std::vector<std::pair<size_t, size_t>> QWbt;
         double QWheight = 0.;
-        shared_ptr<Material> material;
         for (size_t i = reg.bottom; i < reg.top; ++i) {
             if (reg.isQW[i]) {
                 if (QWbt.empty() || QWbt.back().second != i)

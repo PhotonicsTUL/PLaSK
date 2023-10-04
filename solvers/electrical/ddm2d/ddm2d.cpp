@@ -254,7 +254,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInvalidate() {
     currentsP.reset();
     heats.reset();
     regions.clear();
-    materialSubstrate.reset();
+    substrateMaterial.reset();
 }
 
 
@@ -1665,9 +1665,9 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 			bool substrate = tags.find("substrate") != tags.end();
 
 			if (substrate) {
-				if (!materialSubstrate)
-					materialSubstrate = this->geometry->getMaterial(point);
-				else if (*materialSubstrate != *this->geometry->getMaterial(point))
+				if (!substrateMaterial)
+					substrateMaterial = this->geometry->getMaterial(point);
+				else if (*substrateMaterial != *this->geometry->getMaterial(point))
 					throw Exception("{0}: Non-uniform substrate layer.", this->getId());
 			}
 
@@ -1785,7 +1785,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 	if (!regions.empty() && regions.back().isQW(regions.back().size() - 1))
 		throw Exception("{0}: Quantum-well cannot be located at the edge of the structure.", this->getId());
 
-	if (strained && !materialSubstrate)
+	if (strained && !substrateMaterial)
 		throw BadInput(this->getId(), "Strained quantum wells requested but no layer with substrate role set");
 
 	this->writelog(LOG_DETAIL, "Found {0} active region{1}", regions.size(), (regions.size() == 1) ? "" : "s");
@@ -2014,7 +2014,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 //    if (!regions.empty() && regions.back().isQW(regions.back().size()-1))
 //        throw Exception("{0}: Quantum-well cannot be located at the edge of the structure.", this->getId());
 //
-//    if (strained && !materialSubstrate)
+//    if (strained && !substrateMaterial)
 //        throw BadInput(this->getId(), "Strained quantum wells requested but no layer with substrate role set");
 //	*/
 //    this->writelog(LOG_DETAIL, "Found {0} active region{1}", regions.size(), (regions.size()==1)?"":"s");
@@ -2041,7 +2041,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::ActiveRegionInfo::summarize(co
 		materials.push_back(material);
 		thicknesses.push_back(thck);
 	}
-	/*double substra = solver->strained ? solver->materialSubstrate->lattC(solver->T0, 'a') : 0.; // TODO moze cos z tego wziac???
+	/*double substra = solver->strained ? solver->substrateMaterial->lattC(solver->T0, 'a') : 0.; // TODO moze cos z tego wziac???
 	if (materials.size() > 2) {
 		Material* material = materials[0].get();
 		double e;

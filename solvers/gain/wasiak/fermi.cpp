@@ -149,9 +149,9 @@ void FermiGainSolver<GeometryType>::detectActiveRegions()
 
             if (substrate)
             {
-                if (!materialSubstrate)
-                    materialSubstrate = this->geometry->getMaterial(point);
-                else if (*materialSubstrate != *this->geometry->getMaterial(point))
+                if (!substrateMaterial)
+                    substrateMaterial = this->geometry->getMaterial(point);
+                else if (*substrateMaterial != *this->geometry->getMaterial(point))
                     throw Exception("{0}: Non-uniform substrate layer.", this->getId());
             }
 
@@ -286,10 +286,10 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
 
     if (if_strain)
     {
-        if (!this->materialSubstrate) throw ComputationError(this->getId(), "No layer with role 'substrate' has been found");
+        if (!this->substrateMaterial) throw ComputationError(this->getId(), "No layer with role 'substrate' has been found");
 
-        qstrain = (this->materialSubstrate->lattC(T,'a') - region.materialQW->lattC(T,'a')) / region.materialQW->lattC(T,'a');
-        bstrain = (this->materialSubstrate->lattC(T,'a') - region.materialBarrier->lattC(T,'a')) / region.materialBarrier->lattC(T,'a');
+        qstrain = (this->substrateMaterial->lattC(T,'a') - region.materialQW->lattC(T,'a')) / region.materialQW->lattC(T,'a');
+        bstrain = (this->substrateMaterial->lattC(T,'a') - region.materialBarrier->lattC(T,'a')) / region.materialBarrier->lattC(T,'a');
         qstrain *= 1.;
         bstrain *= 1.;
         //writelog(LOG_RESULT, "Strain in QW: {0}", qstrain);
@@ -297,7 +297,7 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     }
 
     //writelog(LOG_RESULT, "latt const for QW: {0}", region.materialQW->lattC(T,'a'));
-    //writelog(LOG_RESULT, "latt const for subs: {0}", materialSubstrate->lattC(T,'a'));
+    //writelog(LOG_RESULT, "latt const for subs: {0}", substrateMaterial->lattC(T,'a'));
     //writelog(LOG_RESULT, "latt const for barr: {0}", region.materialBarrier->lattC(T,'a'));
 
     Tensor2<double> qme, qmhh, qmlh, bme, bmhh, bmlh;

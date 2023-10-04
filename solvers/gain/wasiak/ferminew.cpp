@@ -183,9 +183,9 @@ FermiNewGainSolver<GeometryType>::detectActiveRegions(const shared_ptr<GeometryT
             bool substrate = tags.find("substrate") != tags.end();
 
             if (substrate) {
-                if (!materialSubstrate)
-                    materialSubstrate = geometry->getMaterial(point);
-                else if (*materialSubstrate != *geometry->getMaterial(point))
+                if (!substrateMaterial)
+                    substrateMaterial = geometry->getMaterial(point);
+                else if (*substrateMaterial != *geometry->getMaterial(point))
                     throw Exception("{0}: Non-uniform substrate layer.", this->getId());
             }
 
@@ -410,11 +410,11 @@ void FermiNewGainSolver<GeometryType>::buildStructure(double T,
                                                       std::unique_ptr<kubly::struktura>& bandsEvlh,
                                                       bool showDetails) {
     if (strains) {
-        if (!this->materialSubstrate)
+        if (!this->substrateMaterial)
             throw ComputationError(this->getId(), "No layer with role 'substrate' has been found");
         if (showDetails)
             for (int i = 0; i < region.size(); ++i) {
-                double e = (this->materialSubstrate->lattC(T, 'a') - region.getLayerMaterial(i)->lattC(T, 'a')) /
+                double e = (this->substrateMaterial->lattC(T, 'a') - region.getLayerMaterial(i)->lattC(T, 'a')) /
                            region.getLayerMaterial(i)->lattC(T, 'a');
                 if ((i == 0) || (i == region.size()-1))
                     e = 0.;
@@ -461,7 +461,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T,
     double lattSub, straine = 0.;
 
     if (strains) {
-        lattSub = this->materialSubstrate->lattC(T, 'a');
+        lattSub = this->substrateMaterial->lattC(T, 'a');
     }
 
     double DEc = region.getLayerMaterial(0)->CB(T, 0.);  // Ec0 for cladding
@@ -512,7 +512,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T,
     double lattSub, straine = 0.;
 
     if (strains) {
-        lattSub = this->materialSubstrate->lattC(T, 'a');
+        lattSub = this->substrateMaterial->lattC(T, 'a');
     }
 
     double DEvhh = region.getLayerMaterial(0)->VB(T, 0., '*', 'H');  // Ev0 for cladding
@@ -564,7 +564,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvlh(double T,
     double lattSub, straine = 0.;
 
     if (strains) {
-        lattSub = this->materialSubstrate->lattC(T, 'a');
+        lattSub = this->substrateMaterial->lattC(T, 'a');
     }
 
     double DEvlh = region.getLayerMaterial(0)->VB(T, 0., '*', 'L');  // Ev0 for cladding

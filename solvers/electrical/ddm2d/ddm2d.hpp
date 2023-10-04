@@ -336,7 +336,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver : public FemSolverWithMesh<G
     };
 
     /// Substrate material
-    shared_ptr<Material> materialSubstrate;
+    shared_ptr<Material> substrateMaterial;
 
     /// List of active regions
     std::vector<ActiveRegionInfo> regions;

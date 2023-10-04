@@ -44,10 +44,13 @@
 
   providers: &providers
   - outGain
+  - outEnergyLevels
 
   receivers: &receivers
   - inTemperature
   - inCarriersConcentration
+  - inFermiLevels
+  - inBandEdges
 
 ###########################################################################################
 
@@ -63,6 +66,25 @@
   geometry: Cylindrical
   mesh: [ Ordered, Regular ]
   need mesh: false
+
+  tags:
+  - *config
+
+  providers: *providers
+
+  receivers: *receivers
+
+###########################################################################################
+
+- solver: FreeCarrier3D
+  lib: freecarrier
+  category: gain
+  help: >
+    Quantum-well gain using free-carrier approximation for three-dimensional Cartesian geometry.
+
+    This solver does not use any mesh by default and the the full gain calculation is performed in each requested point.
+
+  geometry: Cartesian3D
 
   tags:
   - *config

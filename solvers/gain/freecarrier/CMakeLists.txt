@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -68,6 +68,7 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 enable_testing()
 
 add_solver_test(gaas ${CMAKE_CURRENT_SOURCE_DIR}/tests/gaas.py)
+add_solver_test(gaas3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/gaas3d.py)
 
 # Build everything the default way.
 # Call this macro unless you really know what you are doing!

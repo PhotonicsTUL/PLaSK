@@ -238,7 +238,7 @@ static py::object FermiNew_getFermiLevels(FermiNew::FermiNewGainSolver<GeometryT
     kubly::wzmocnienie gMod{self.getGainModule(1000., T, n, region, *levels, true)};
 
     double straine =
-        self.strains ? self.materialSubstrate->lattC(T, 'a') / region.getLayerMaterial(0)->lattC(T, 'a') - 1. : 0.;
+        self.strains ? self.substrateMaterial->lattC(T, 'a') / region.getLayerMaterial(0)->lattC(T, 'a') - 1. : 0.;
     double DEc = region.getLayerMaterial(0)->CB(T, straine);
     double DEv = region.getLayerMaterial(0)->VB(T, straine);
 
@@ -327,7 +327,7 @@ BOOST_PYTHON_MODULE(wasiak) {
         RECEIVER(inCarriersConcentration, "");
         PROVIDER(outGain, "");
         PROVIDER(outLuminescence, "");
-        RW_PROPERTY(geometry_mod, getModGeometry, setModGeometry, "Modified geomery for broadening calculations.");
+        RW_PROPERTY(geometry_mod, getModGeometry, setModGeometry, "Modified geometry for broadening calculations.");
         RW_PROPERTY(roughness, getRoughness, setRoughness,
             "If there is no modified geometry: roughness of the thicknesses of the quantum wells.\n"
             "With modified geometry present: broadening factor. (-).\n");

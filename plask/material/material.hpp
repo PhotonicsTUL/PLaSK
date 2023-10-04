@@ -842,22 +842,22 @@ struct PLASK_API Material {
      * @return @c true only if this is equal to @p other, @c false in case of other is nullptr
      */
     bool operator==(shared_ptr<const Material> other) const {
-        return other ? this->operator==(other) : false;
+        return other ? this->operator==(*other) : false;
     }
 
     /**
-     * Check if this material is deifferent from @a other (checks type and uses isEqual).
+     * Check if this material is different from @a other (checks type and uses isEqual).
      * @param other other material
      * @return @c true only if this is not equal to @p other
      */
-    bool operator!=(const Material& other) const { return ! this->operator==(other); }
+    bool operator!=(const Material& other) const { return !this->operator==(other); }
 
     /**
-     * Check if this material is deifferent from @a other (checks type and uses isEqual).
+     * Check if this material is different from @a other (checks type and uses isEqual).
      * @param other other material
      * @return @c true only if this is not equal to @p other, @c true in case of other is nullptr
      */
-    bool operator!=(shared_ptr<const Material> other) const { return ! this->operator==(other); }
+    bool operator!=(shared_ptr<const Material> other) const { return !this->operator==(other); }
 
 protected:
 

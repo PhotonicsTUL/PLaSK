@@ -132,7 +132,7 @@ struct PLASK_SOLVER_API FermiGainSolver: public SolverWithMesh<GeometryType, Mes
         }
     };
 
-    shared_ptr<Material> materialSubstrate;   ///< Substrate material
+    shared_ptr<Material> substrateMaterial;   ///< Substrate material
 
     ///< List of active regions
     std::vector<ActiveRegionInfo> regions;

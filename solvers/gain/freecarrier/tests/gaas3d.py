@@ -19,9 +19,9 @@ from numpy.testing import assert_allclose
 from plask import *
 from plask import material, geometry, mesh, flow
 
-from gain import FreeCarrierCyl
+from gain.freecarrier import FreeCarrier3D
 
-plask.config.axes = 'rz'
+plask.config.axes = 'xyz'
 
 @material.simple('GaAs')
 class Barrier(material.Material):
@@ -80,15 +80,15 @@ class Well0(material.Material):
 class TestStructureGain(unittest.TestCase):
 
     def build_geometry(self, well_material, barrier_material):
-        substrate = geometry.Rectangle(20., 500., 'GaAs')
+        substrate = geometry.Cylinder(20., 500., 'GaAs')
         substrate.role = 'substrate'
-        well = geometry.Rectangle(20., 0.0060, well_material)
+        well = geometry.Cylinder(20., 0.0060, well_material)
         well.role = 'QW'
-        barrier = geometry.Rectangle(20., 0.0067, barrier_material)
-        stack = geometry.Stack2D()
+        barrier = geometry.Cylinder(20., 0.0067, barrier_material)
+        stack = geometry.Stack3D(x=0, y=0)
         stack.prepend(substrate)
         stack.prepend(substrate)
-        active = geometry.Stack2D()
+        active = geometry.Stack3D(x=0, y=0)
         active.role = 'active'
         for i in range(4):
             active.prepend(barrier)
@@ -96,10 +96,11 @@ class TestStructureGain(unittest.TestCase):
         active.prepend(barrier)
         stack.prepend(active)
         stack.prepend(substrate)
-        return geometry.Cylindrical(stack), active, well
+        stack.prepend(substrate)
+        return geometry.Cartesian3D(stack), active, well
 
     def setUp(self):
-        self.msh = mesh.Rectangular2D([0.], [500.0100])
+        self.mesh = mesh.Rectangular3D([-17., 0., 17.], [-17., 0., 17.], [1000.0100])
         self.geometry, self.active, well = self.build_geometry('Well', 'Barrier')
         self.concentration = plask.StepProfile(self.geometry)
         self.concentration[well] = 3.5e18
@@ -121,7 +122,7 @@ class TestStructureGain(unittest.TestCase):
     def plot_bands(self):
         box = self.geometry.get_object_bboxes(self.active)[0]
         zz = linspace(box.lower.z-0.002, box.upper.z+0.002, 1001)
-        msh = mesh.Rectangular2D([0.], zz)
+        msh = mesh.Rectangular3D([0.], [0.], zz)
         CC = self.get_bands('CONDUCTION', msh)
         VV = self.get_bands('VALENCE_HEAVY', msh)
         plot(1e3*zz, CC)
@@ -133,40 +134,41 @@ class TestStructureGain(unittest.TestCase):
         tight_layout(pad=0.5)
 
     def test_gain(self):
-        solver = FreeCarrierCyl("self.solver")
+        solver = FreeCarrier3D("self.solver")
         solver.geometry = self.geometry
         solver.inCarriersConcentration = self.concentration.outCarriersConcentration
-        self.assertAlmostEqual(solver.outGain(self.msh, 1275.)[0][0], 1254., 0)
-        msh = mesh.Rectangular2D([0.], [-400.])
+        g = 1254.
+        assert_allclose(array(solver.outGain(self.mesh, 1275.))[:,0], [0., g, 0., g, g, g, 0., g, 0.], rtol=1e-3)
+        msh = mesh.Rectangular3D([0.], [0.], [100.])
         self.assertEqual(len(solver.outEnergyLevels('ELECTRONS', msh)[0]), 0)
 
     def test_band_edges_receiver(self):
-        solver = FreeCarrierCyl("self.solver")
+        solver = FreeCarrier3D("self.solver")
         geom, _, _ = self.build_geometry('Well0', 'Barrier0')
         solver.geometry = geom
-        solver.inBandEdges = flow.BandEdgesProviderCyl(self.get_bands)
+        solver.inBandEdges = flow.BandEdgesProvider3D(self.get_bands)
         solver.inCarriersConcentration = self.concentration.outCarriersConcentration
-        self.assertAlmostEqual(solver.outGain(self.msh, 1275.)[0][0], 1254., 0)
+        self.assertAlmostEqual(solver.outGain(self.mesh, 1275.)[4][0], 1254., 0)
         assert_allclose(
-            solver.outEnergyLevels('ELECTRONS', self.msh)[0],
+            solver.outEnergyLevels('ELECTRONS', self.mesh)[4],
             [0.3337, 0.3337, 0.3337, 0.3337, 0.5259, 0.5259, 0.5263, 0.5263, 0.5979, 0.5987],
         rtol=1e-3)
         assert_allclose(
-            solver.outEnergyLevels('HEAVY_HOLES', self.msh)[0],
+            solver.outEnergyLevels('HEAVY_HOLES', self.mesh)[4],
             [-0.6166, -0.6166, -0.6166, -0.6166, -0.6561, -0.6561, -0.6562, -0.6562, -0.7174, -0.7174, -0.7174,
             -0.7174, -0.7978, -0.7916, -0.7859, -0.7813, -0.7788, -0.7651, -0.7627, -0.7606, -0.7591, -0.7586],
         rtol=1e-3)
         assert_allclose(
-            solver.outEnergyLevels('LIGHT_HOLES', self.msh)[0],
+            solver.outEnergyLevels('LIGHT_HOLES', self.mesh)[4],
             [-0.6415, -0.6415, -0.6415, -0.6415, -0.7386, -0.7386, -0.7390, -0.7390, -0.7997, -0.7844, -0.7833],
         rtol=1e-3)
 
     def test_fermi_levels_receiver(self):
-        solver = FreeCarrierCyl("self.solver")
+        solver = FreeCarrier3D("self.solver")
         solver.geometry = self.geometry
         solver.inCarriersConcentration = 0.
-        solver.inFermiLevels = flow.FermiLevelsProviderCyl(self.get_fermi_level)
-        self.assertAlmostEqual(solver.outGain(self.msh, 1275.)[0][0], 1254., 0)
+        solver.inFermiLevels = flow.FermiLevelsProvider3D(self.get_fermi_level)
+        self.assertAlmostEqual(solver.outGain(self.mesh, 1275.)[4][0], 1254., 0)
 
 
 if __name__ == '__main__':

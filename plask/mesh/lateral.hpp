@@ -42,7 +42,7 @@ template <typename MeshT> struct LateralMesh3D : MeshD<3> {
     shared_ptr<MeshT> lateralMesh;
     double vert;
 
-    LateralMesh3D(const shared_ptr<MeshT>& lateralMesh, double vert) : lateralMesh(lateralMesh), vert(vert) {}
+    LateralMesh3D(const shared_ptr<MeshT>& lateralMesh, double vert = 0.) : lateralMesh(lateralMesh), vert(vert) {}
 
     std::size_t size() const override { return lateralMesh->size(); }
 
@@ -51,8 +51,8 @@ template <typename MeshT> struct LateralMesh3D : MeshD<3> {
         return Vec<3>(p.c0, p.c1, vert);
     }
 
-    template <typename T = typename MeshT::ElementMesh> shared_ptr<LateralMesh3D<T>> getElementMesh() const {
-        return make_shared<LateralMesh3D<T>>(lateralMesh->getElementMesh(), vert);
+    template <typename T = MeshT> shared_ptr<LateralMesh3D<typename T::ElementMesh>> getElementMesh() const {
+        return make_shared<LateralMesh3D<typename T::ElementMesh>>(lateralMesh->getElementMesh(), vert);
     }
 };
 
@@ -101,9 +101,9 @@ template <typename MeshT> struct MultiLateralMesh3D : MeshD<3> {
         return Vec<3>(p.c0, p.c1, vertAxis->at(j));
     }
 
-    template <typename T = typename MeshT::ElementMesh> shared_ptr<MultiLateralMesh3D<T>> getElementMesh() const {
-        return shared_ptr<MultiLateralMesh3D<T>>(
-            new MultiLateralMesh3D<T>(lateralMesh->getElementMesh(), vertAxis->getMidpointAxis()));
+    template <typename T = MeshT> shared_ptr<MultiLateralMesh3D<typename T::ElementMesh>> getElementMesh() const {
+        return shared_ptr<MultiLateralMesh3D<typename T::ElementMesh>>(
+            new MultiLateralMesh3D<typename T::ElementMesh>(lateralMesh->getElementMesh(), vertAxis->getMidpointAxis()));
     }
 };
 
