@@ -306,7 +306,7 @@ class MaterialPlot(QWidget):
             self.info.setText(text + "</table>")
             self.info.resize(int(self.info.document().idealWidth()), int(self.info.document().size().height()))
             self.info.show()
-            self.info.setMaximumHeight(self.info.document().size().height())
+            self.info.setMaximumHeight(int(self.info.document().size().height()))
         else:
             self.info.hide()
 
