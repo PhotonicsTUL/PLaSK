@@ -368,9 +368,12 @@ template <typename BaseT> struct PLASK_SOLVER_API FreeCarrierGainSolver : public
         this->invalidate();
     }
 
-    shared_ptr<GainSpectrum<BaseT>> getGainSpectrum(const Vec<DIM>& point);
-
     friend struct GainSpectrum<BaseT>;
+
+    shared_ptr<GainSpectrum<BaseT>> getGainSpectrum(const Vec<DIM>& point) {
+        this->initCalculation();
+        return make_shared<GainSpectrum<BaseT>>(this, point);
+    }
 
     typedef GainSpectrum<BaseT> GainSpectrumType;
 };
