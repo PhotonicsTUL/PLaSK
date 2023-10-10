@@ -258,13 +258,13 @@ template <typename GeometryT> template <typename DT> struct FreeCarrierGainSolve
 };
 
 template <typename GeometryT>
-struct FreeCarrierGainSolver2D<GeometryT>::InterpolatedData : public FreeCarrierGainSolver2D<GeometryT>::DataBase<Tensor2<double>> {
-    using typename DataBase<Tensor2<double>>::AveragedData;
+struct FreeCarrierGainSolver2D<GeometryT>::ComputedData : public FreeCarrierGainSolver2D<GeometryT>::DataBaseTensor2 {
+    using typename DataBaseTensor2::AveragedData;
 
     /// Computed interpolations in each active region
     std::vector<LazyData<Tensor2<double>>> data;
 
-    template <typename... Args> InterpolatedData(Args... args) : DataBase<Tensor2<double>>(args...) {}
+    template <typename... Args> ComputedData(Args... args) : DataBaseTensor2(args...) {}
 
     void compute(double wavelength, InterpolationMethod interp) {
         // Compute gains on mesh for each active region
@@ -300,10 +300,10 @@ struct FreeCarrierGainSolver2D<GeometryT>::InterpolatedData : public FreeCarrier
 };
 
 template <typename GeometryT>
-struct FreeCarrierGainSolver2D<GeometryT>::GainData : public FreeCarrierGainSolver2D<GeometryT>::InterpolatedData {
-    using typename DataBase<Tensor2<double>>::AveragedData;
+struct FreeCarrierGainSolver2D<GeometryT>::GainData : public FreeCarrierGainSolver2D<GeometryT>::ComputedData {
+    using typename DataBaseTensor2::AveragedData;
 
-    template <typename... Args> GainData(Args... args) : InterpolatedData(args...) {}
+    template <typename... Args> GainData(Args... args) : ComputedData(args...) {}
 
     DataVector<Tensor2<double>> getValues(double wavelength,
                                           InterpolationMethod interp,
@@ -321,8 +321,9 @@ struct FreeCarrierGainSolver2D<GeometryT>::GainData : public FreeCarrierGainSolv
             Fvs.name = "quasi Fermi level for holes";
             Fcs.data = this->solver->inFermiLevels(FermiLevels::ELECTRONS, temps.mesh, interp);
             Fvs.data = this->solver->inFermiLevels(FermiLevels::HOLES, temps.mesh, interp);
+            plask::openmp_size_t end = this->regpoints[reg]->size();
 #pragma omp parallel for
-            for (plask::openmp_size_t i = 0; i < this->regpoints[reg]->size(); ++i) {
+            for (plask::openmp_size_t i = 0; i < end; ++i) {
                 if (error) continue;
                 try {
                     double T = temps[i];
@@ -337,8 +338,9 @@ struct FreeCarrierGainSolver2D<GeometryT>::GainData : public FreeCarrierGainSolv
             }
             if (error) std::rethrow_exception(error);
         } else {
+            plask::openmp_size_t end = this->regpoints[reg]->size();
 #pragma omp parallel for
-            for (plask::openmp_size_t i = 0; i < this->regpoints[reg]->size(); ++i) {
+            for (plask::openmp_size_t i = 0; i < end; ++i) {
                 if (error) continue;
                 try {
                     double T = temps[i];
@@ -360,10 +362,10 @@ struct FreeCarrierGainSolver2D<GeometryT>::GainData : public FreeCarrierGainSolv
 };
 
 template <typename GeometryT>
-struct FreeCarrierGainSolver2D<GeometryT>::DgdnData : public FreeCarrierGainSolver2D<GeometryT>::InterpolatedData {
-    using typename DataBase<Tensor2<double>>::AveragedData;
+struct FreeCarrierGainSolver2D<GeometryT>::DgdnData : public FreeCarrierGainSolver2D<GeometryT>::ComputedData {
+    using typename DataBaseTensor2::AveragedData;
 
-    template <typename... Args> DgdnData(Args... args) : InterpolatedData(args...) {}
+    template <typename... Args> DgdnData(Args... args) : ComputedData(args...) {}
 
     DataVector<Tensor2<double>> getValues(double wavelength,
                                           InterpolationMethod /*interp*/,
@@ -374,8 +376,9 @@ struct FreeCarrierGainSolver2D<GeometryT>::DgdnData : public FreeCarrierGainSolv
         const double h = 0.5 * DIFF_STEP;
         DataVector<Tensor2<double>> values(this->regpoints[reg]->size());
         std::exception_ptr error;
+        plask::openmp_size_t end = this->regpoints[reg]->size();
 #pragma omp parallel for
-        for (plask::openmp_size_t i = 0; i < this->regpoints[reg]->size(); ++i) {
+        for (plask::openmp_size_t i = 0; i < end; ++i) {
             if (error) continue;
             try {
                 double T = temps[i];
@@ -422,8 +425,8 @@ const LazyData<Tensor2<double>> FreeCarrierGainSolver2D<GeometryT>::getGainData(
 
 template <typename GeometryT>
 struct FreeCarrierGainSolver2D<GeometryT>::EnergyLevelsData
-    : public FreeCarrierGainSolver2D<GeometryT>::DataBase<std::vector<double>> {
-    using typename DataBase<std::vector<double>>::AveragedData;
+    : public FreeCarrierGainSolver2D<GeometryT>::DataBaseVector {
+    using typename DataBaseVector::AveragedData;
 
     size_t which;
     std::vector<LazyData<double>> temps;
@@ -432,7 +435,7 @@ struct FreeCarrierGainSolver2D<GeometryT>::EnergyLevelsData
                      FreeCarrierGainSolver2D<GeometryT>* solver,
                      const shared_ptr<const MeshD<2>>& dst_mesh,
                      InterpolationMethod interp)
-        : DataBase<std::vector<double>>(solver, dst_mesh), which(size_t(which)) {
+        : DataBaseVector(solver, dst_mesh), which(size_t(which)) {
         temps.reserve(solver->regions.size());
         for (size_t reg = 0; reg != solver->regions.size(); ++reg) {
             AveragedData temp(this->solver, "temperature", this->regpoints[reg], this->solver->regions[reg]);

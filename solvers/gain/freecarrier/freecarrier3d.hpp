@@ -63,6 +63,9 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver3D : public FreeCarrierGainSolver<S
     struct DgdnData;
     struct EnergyLevelsData;
 
+    typedef DataBase<Tensor2<double>> DataBaseTensor2;
+    typedef DataBase<std::vector<double>> DataBaseVector;
+
     friend struct ActiveRegionMesh;
 
     const LazyData<Tensor2<double>> getGainData(Gain::EnumType what,

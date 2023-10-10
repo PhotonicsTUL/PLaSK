@@ -246,14 +246,14 @@ template <typename DT> struct FreeCarrierGainSolver3D::DataBase : public LazyDat
     size_t size() const override { return dest_mesh->size(); }
 };
 
-struct FreeCarrierGainSolver3D::ComputedData : public FreeCarrierGainSolver3D::DataBase<Tensor2<double>> {
-    using typename DataBase<Tensor2<double>>::AveragedData;
+struct FreeCarrierGainSolver3D::ComputedData : public FreeCarrierGainSolver3D::DataBaseTensor2 {
+    using typename DataBaseTensor2::AveragedData;
 
     /// Computed interpolations in each active region
     std::vector<DataVector<Tensor2<double>>> data;
 
     ComputedData(FreeCarrierGainSolver3D* solver, const shared_ptr<const MeshD<3>>& dst_mesh)
-        : DataBase<Tensor2<double>>(solver, dst_mesh), data(solver->regions.size()) {}
+        : DataBaseTensor2(solver, dst_mesh), data(solver->regions.size()) {}
 
     void compute(double wavelength, InterpolationMethod interp) {
         // Compute gains on mesh for each active region
@@ -285,7 +285,7 @@ struct FreeCarrierGainSolver3D::ComputedData : public FreeCarrierGainSolver3D::D
 };
 
 struct FreeCarrierGainSolver3D::GainData : public FreeCarrierGainSolver3D::ComputedData {
-    using typename DataBase<Tensor2<double>>::AveragedData;
+    using typename DataBaseTensor2::AveragedData;
 
     template <typename... Args> GainData(Args... args) : ComputedData(args...) {}
 
@@ -344,7 +344,7 @@ struct FreeCarrierGainSolver3D::GainData : public FreeCarrierGainSolver3D::Compu
 };
 
 struct FreeCarrierGainSolver3D::DgdnData : public FreeCarrierGainSolver3D::ComputedData {
-    using typename DataBase<Tensor2<double>>::AveragedData;
+    using typename DataBaseTensor2::AveragedData;
 
     template <typename... Args> DgdnData(Args... args) : ComputedData(args...) {}
 
@@ -402,8 +402,8 @@ const LazyData<Tensor2<double>> FreeCarrierGainSolver3D::getGainData(Gain::EnumT
     }
 }
 
-struct FreeCarrierGainSolver3D::EnergyLevelsData : public FreeCarrierGainSolver3D::DataBase<std::vector<double>> {
-    using typename DataBase<std::vector<double>>::AveragedData;
+struct FreeCarrierGainSolver3D::EnergyLevelsData : public FreeCarrierGainSolver3D::DataBaseVector {
+    using typename DataBaseVector::AveragedData;
 
     size_t which;
     std::vector<AveragedData> temps;
@@ -413,7 +413,7 @@ struct FreeCarrierGainSolver3D::EnergyLevelsData : public FreeCarrierGainSolver3
                      FreeCarrierGainSolver3D* solver,
                      const shared_ptr<const MeshD<3>>& dst_mesh,
                      InterpolationMethod interp)
-        : DataBase<std::vector<double>>(solver, dst_mesh), which(size_t(which)) {
+        : DataBaseVector(solver, dst_mesh), which(size_t(which)) {
         temps.reserve(solver->regions.size());
         for (size_t reg = 0; reg != solver->regions.size(); ++reg) {
             temps.emplace_back(this->solver, "temperature", make_shared<ActiveRegionMesh>(this, reg), this->solver->regions[reg]);

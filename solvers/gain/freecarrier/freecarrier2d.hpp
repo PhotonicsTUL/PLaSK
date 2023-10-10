@@ -36,10 +36,13 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver2D : public FreeCarrierGainSolver<S
     void detectActiveRegions() override;
 
     template <typename DT> struct DataBase;
-    struct InterpolatedData;
+    struct ComputedData;
     struct GainData;
     struct DgdnData;
     struct EnergyLevelsData;
+
+    typedef DataBase<Tensor2<double>> DataBaseTensor2;
+    typedef DataBase<std::vector<double>> DataBaseVector;
 
     const LazyData<Tensor2<double>> getGainData(Gain::EnumType what,
                                                 const shared_ptr<const MeshD<2>>& dst_mesh,
