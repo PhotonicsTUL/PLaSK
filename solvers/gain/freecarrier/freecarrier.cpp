@@ -172,13 +172,13 @@ void FreeCarrierGainSolver<BaseT>::ActiveRegionInfo::summarize(const FreeCarrier
         if (isQW(i)) totalqw += thicknesses[i];
 
 #ifndef NDEBUG
-    solver->writelog(LOG_DEBUG, "Active region @ {1}  ({2}/{3})", origin, bottom, top);
+    solver->writelog(LOG_DEBUG, "Active region @ {0}  ({1}/{2})", origin, bottom, top);
     assert(materials.size() == thicknesses.size());
     std::string ws = "-";
     for (size_t i = 0; i != materials.size(); ++i) {
         auto w = std::find(wells.begin(), wells.end(), i);
         if (w != wells.end()) ws = format("{:d}", size_t(w - wells.begin()));
-        solver->writelog(LOG_DEBUG, "[{4}]  {1:.2f}nm {2}{3}", thicknesses[i] * 1e3, materials[i]->name(),
+        solver->writelog(LOG_DEBUG, "[{3}]  {0:.2f}nm {1}{2}", thicknesses[i] * 1e3, materials[i]->name(),
                          isQW(i) ? "  (QW)" : "", ws);
     }
 #endif
