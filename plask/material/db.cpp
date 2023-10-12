@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -307,19 +307,6 @@ shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const s
     return shared_ptr<MaterialsDB::MixedCompositionFactory>(
             new MixedCompositionOnlyFactory(getConstructor(m1), m1.composition, m2.composition, shape)
     );
-
-    /*std::string m1comp, m1dop, m2comp, m2dop;
-    std::tie(m1comp, m1dop) = splitString2(material1_fullname, ':');
-    std::tie(m2comp, m2dop) = splitString2(material2_fullname, ':');
-    std::string m1_dop_name, m2_dop_name;
-    double m1_dop_am = 0.0, m2_dop_am = 0.0;
-    if (m1dop != "") Material::parseDopant(m1dop, m1_dop_name, m1_dop_type, m1_dop_am);
-    if (m2dop != "") Material::parseDopant(m2dop, m2_dop_name, m2_dop_type, m2_dop_am);
-    if (m1_dop_name != m2_dop_name)
-        throw MaterialParseException("Cannot mix materials with different doping: '{0}' and '{1}'", material1_fullname, material2_fullname);
-    if (m1_dop_type != m2_dop_type)
-        throw MaterialParseException("Cannot mix materials for which doping is given in different formats: '{0}' and '{1}'", material1_fullname, material2_fullname);
-    return getFactory(m1comp, m2comp, m1_dop_name, m1_dop_type, m1_dop_am, m2_dop_am);*/
 }
 
 /*void MaterialsDB::addSimple(const MaterialConstructor* constructor) {

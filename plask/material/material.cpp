@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -26,15 +26,15 @@ namespace plask {
 
 // inline std::pair<std::string, int> el_g(const std::string& g, int p) { return std::pair<std::string, int>(g, p); }
 
-int objectGroup(const std::string& objectName) {
-    static const std::map<std::string, int> objectGroups =
+int elementGroup(const std::string& objectName) {
+    static const std::map<std::string, int> elementGroups =
         { {"Be", 2}, {"Mg", 2}, {"Ca", 2}, {"Sr", 2}, {"Ba", 2},
           {"B", 3}, {"Al", 3}, {"Ga", 3}, {"In", 3}, {"Tl", 3},
           {"C", 4}, {"Si", 4}, {"Ge", 4}, {"Sn", 4}, {"Pb", 4},
           {"N", 5}, {"P", 5}, {"As", 5}, {"Sb", 5}, {"Bi", 5},
           {"O", 6}, {"S", 6}, {"Se", 6}, {"Te", 6}
         };
-    return map_find(objectGroups, objectName, 0);
+    return map_find(elementGroups, objectName, 0);
 }
 
 template <typename NameValuePairIter>
@@ -87,13 +87,13 @@ void Material::Parameters::parse(const std::string &full_material_str, bool allo
     std::tie(name, dope) = splitString2(full_material_str, ':');
     std::tie(name, label) = splitString2(name, '_');
     if (!dope.empty())
-        Material::parseDopant(dope, dopant, doping, allow_dopant_without_amount);
+        Material::parseDopant(dope, dopant, doping, allow_dopant_without_amount, full_material_str.c_str());
     else
         this->clearDoping();
     if (isSimpleMaterialName(name))
         composition.clear();
     else
-        composition = Material::parseComposition(name);
+        composition = Material::parseComposition(name, full_material_str);
 }
 
 std::string Material::Parameters::str() const {
@@ -101,8 +101,8 @@ std::string Material::Parameters::str() const {
     if (isAlloy()) {
         std::map<int, std::vector<std::pair<std::string, double>>> by_group;
         for (auto c: composition) {
-            int group = objectGroup(c.first);
-            if (group == 0) throw plask::MaterialParseException("Wrong object name \"{0}\"", c.first);
+            int group = elementGroup(c.first);
+            if (group == 0) throw plask::MaterialParseException("Wrong element name \"{0}\"", c.first);
             by_group[group].push_back(c);
         }
         for (auto g: by_group) {
@@ -273,7 +273,7 @@ double Material::Nd() const { throwNotImplemented("Nd()"); }
 Material::Composition Material::completeComposition(const Composition &composition) {
     std::map<int, std::vector<std::pair<std::string, double>>> by_group;
     for (auto c: composition) {
-        int group = objectGroup(c.first);
+        int group = elementGroup(c.first);
         if (group == 0) throw plask::MaterialParseException("Wrong object name \"{0}\"", c.first);
         by_group[group].push_back(c);
     }
@@ -288,7 +288,7 @@ Material::Composition Material::completeComposition(const Composition &compositi
 Material::Composition Material::minimalComposition(const Composition &composition) {
     std::map<int, std::vector<std::pair<std::string, double>>> by_group;
     for (auto c: composition) {
-        int group = objectGroup(c.first);
+        int group = elementGroup(c.first);
         if (group == 0) throw plask::MaterialParseException("Wrong object name \"{0}\"", c.first);
         by_group[group].push_back(c);
     }
@@ -313,19 +313,19 @@ const char* getAmountEnd(const char* begin, const char* end) {
     return begin;
 }
 
-double toDouble(const std::string& s) {
+double toDouble(const std::string& s, const char* fullname) {
     try {
         return boost::lexical_cast<double>(s);
     } catch (std::exception& e) {
-        throw MaterialParseException(e.what());
+        throw MaterialParseException("Cannot parse '{}' as number in '{}'", s, fullname);
     }
 }
 
-std::pair<std::string, double> Material::firstCompositionObject(const char*& begin, const char* end) {
+std::pair<std::string, double> Material::firstCompositionObject(const char*& begin, const char* end, const char* fullname) {
     std::pair<std::string, double> result;
     const char* comp_end = getObjectEnd(begin, end);
     if (comp_end == begin)
-        throw MaterialParseException(std::string("Expected element but found character: ") + *begin);
+        throw MaterialParseException("Expected element but found character: '{0:c}' in '{1:s}'", *begin, fullname);
     result.first = std::string(begin, comp_end);
     const char* amount_end = getAmountEnd(comp_end, end);
     if (amount_end == comp_end) {       //no amount info for this object
@@ -333,25 +333,25 @@ std::pair<std::string, double> Material::firstCompositionObject(const char*& beg
         begin = amount_end;
     } else {
         if (amount_end == end)
-            throw MaterialParseException("Unexpected end of input while reading element amount. Couldn't find ')'");
-        result.second = toDouble(std::string(comp_end+1, amount_end));
+            throw MaterialParseException("Unexpected end of input while reading element amount. Couldn't find ')' in '{}'", fullname);
+        result.second = toDouble(std::string(comp_end+1, amount_end), fullname);
         begin = amount_end+1;   //skip also ')', begin now points to 1 character after ')'
     }
     return result;
 }
 
 
-Material::Composition Material::parseComposition(const char* begin, const char* end) {
-    const char* fullname = begin;   // for exceptions only
+Material::Composition Material::parseComposition(const char* begin, const char* end, const char* fullname) {
+    if (fullname == nullptr) fullname = begin;   // for exceptions only
     Material::Composition result;
     std::set<int> groups;
     int prev_g = -1;
     while (begin != end) {
-        auto c = firstCompositionObject(begin, end);
-        int g = objectGroup(c.first);
+        auto c = firstCompositionObject(begin, end, fullname);
+        int g = elementGroup(c.first);
         if (g != prev_g) {
             if (!groups.insert(g).second)
-                throw MaterialParseException("Incorrect elements order in \"{0}\"", fullname);
+                throw MaterialParseException("Incorrect elements order in '{}'", fullname);
             prev_g = g;
         }
         result.insert(c);
@@ -359,34 +359,37 @@ Material::Composition Material::parseComposition(const char* begin, const char* 
     return result;
 }
 
-Material::Composition Material::parseComposition(const std::string& str) {
+Material::Composition Material::parseComposition(const std::string& str, const std::string& fullname) {
     const char* c = str.data();
-    return parseComposition(c, c + str.size());
+    if (fullname.empty())
+        return parseComposition(c, c + str.size(), c);
+    else
+        return parseComposition(c, c + str.size(), fullname.c_str());
 }
 
-void Material::parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, double& doping, bool allow_dopant_without_amount) {
+void Material::parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, double& doping, bool allow_dopant_without_amount, const char* fullname) {
     const char* name_end = getObjectEnd(begin, end);
     if (name_end == begin)
-         throw MaterialParseException("No dopant name");
+         throw MaterialParseException("No dopant name in '{}'", fullname);
     dopant_elem_name.assign(begin, name_end);
     if (name_end == end) {
         if (!allow_dopant_without_amount)
-            throw MaterialParseException("Unexpected end of input while reading doping concentration");
+            throw MaterialParseException("Unexpected end of input while reading doping concentration in '{}'", fullname);
         // there might be some reason to specify material with dopant but undoped (can be caught in material constructor)
         doping = NAN;
         return;
     }
     if (*name_end == '=') {
-        if (name_end+1 == end) throw MaterialParseException("Unexpected end of input while reading doping concentration");
-        doping = toDouble(std::string(name_end+1, end));
+        if (name_end+1 == end) throw MaterialParseException("Unexpected end of input while reading doping concentration in '{}'", fullname);
+        doping = toDouble(std::string(name_end+1, end), fullname);
         return;
     }
-    throw MaterialParseException("Expected '=' but found '{0}' instead", *name_end);
+    throw MaterialParseException("Expected '=' but found '{}' instead in '{}'", *name_end, fullname);
 }
 
-void Material::parseDopant(const std::string &dopant, std::string &dopant_elem_name, double &doping, bool allow_dopant_without_amount) {
+void Material::parseDopant(const std::string &dopant, std::string &dopant_elem_name, double &doping, bool allow_dopant_without_amount, const std::string & fullname) {
     const char* c = dopant.data();
-    parseDopant(c, c + dopant.size(), dopant_elem_name, doping, allow_dopant_without_amount);
+    parseDopant(c, c + dopant.size(), dopant_elem_name, doping, allow_dopant_without_amount, fullname.c_str());
 }
 
 std::vector<std::string> Material::parseObjectsNames(const char *begin, const char *end) {

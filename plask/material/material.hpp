@@ -50,7 +50,7 @@ extern PLASK_API OmpNestLock material_omp_lock;
  * @param objectName name of object
  * @return group of object with given name @p objectName or 0 if given object is not known
  */
-int objectGroup(const std::string& objectName);
+int elementGroup(const std::string& objectName);
 
 struct MaterialsDB;
 
@@ -291,9 +291,10 @@ struct PLASK_API Material {
      * Parse composition object from [begin, end) string.
      * @param begin begin of string, will be increased to point to potential next composition object or end (if parsed composition object was last one)
      * @param end points just after last charcter of string, must be: begin < end
+     * @param fullname full name of material, used for error messages
      * @return parsed object name and ammount (NaN if there was no information about ammount)
      */
-    static std::pair<std::string, double> firstCompositionObject(const char*& begin, const char* end);
+    static std::pair<std::string, double> firstCompositionObject(const char*& begin, const char* end, const char* fullname);
 
     /**
      * Change NaN-s in material composition to calculated amounts.
@@ -321,7 +322,7 @@ struct PLASK_API Material {
      * @return parsed composition, can be not complete, for "Al(0.7)GaN" result is ("Al", 0.7), ("Ga", NaN), ("N", NaN)
      * @see @ref completeComposition
      */
-    static Composition parseComposition(const char* begin, const char* end);
+    static Composition parseComposition(const char* begin, const char* end, const char* fullname = nullptr);
 
     /**
      * Parse composition from string.
@@ -331,7 +332,7 @@ struct PLASK_API Material {
      * @return parsed composition, can be not complate, for "Al(0.7)GaN" result is ("Al", 0.7), ("Ga", NaN), ("N", NaN)
      * @see @ref completeComposition
      */
-    static Composition parseComposition(const std::string& composition_str);
+    static Composition parseComposition(const std::string& composition_str, const std::string& fullname = "");
 
     /**
      * Parse information about dopant from string.
@@ -340,8 +341,9 @@ struct PLASK_API Material {
      * @param[in] begin, end [begin, end) string or range in string
      * @param[out] dopant_elem_name, doping parsed values
      * @param[in] allow_dopant_without_amount if true, dopant without ammount is allowed (in such case, dopant_elem_name is filled, but doping_type is set to NO_DOPING and doping to 0.0)
+     * @param[in] fullname full name of material, used for error messages
      */
-    static void parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, double& doping, bool allow_dopant_without_amount = false);
+    static void parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, double& doping, bool allow_dopant_without_amount, const char* fullname);
 
     /**
      * Parse information about dopant from string.
@@ -350,8 +352,9 @@ struct PLASK_API Material {
      * @param[in] dopant string to parse
      * @param[out] dopant_elem_name, doping parsed values
      * @param[in] allow_dopant_without_amount if true, dopant without ammount is allowed (in such case, dopant_elem_name is filled, but doping_type is set to NO_DOPING and doping to 0.0)
+     * @param[in] fullname full name of material, used for error messages
      */
-    static void parseDopant(const std::string& dopant, std::string& dopant_elem_name, double& doping, bool allow_dopant_without_amount = false);
+    static void parseDopant(const std::string& dopant, std::string& dopant_elem_name, double& doping, bool allow_dopant_without_amount, const std::string& fullname);
 
     /**
      * Split object name to objects.
