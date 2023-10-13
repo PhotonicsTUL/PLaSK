@@ -54,10 +54,14 @@ void FreeCarrierGainSolver3D::detectActiveRegions() {
                             }
                         }
                     } else if (role == "substrate") {
-                        if (!this->substrateMaterial)
-                            this->substrateMaterial = material;
-                        else if (*this->substrateMaterial != *material)
-                            throw Exception("{0}: Non-uniform substrate layer.", this->getId());
+                        if (this->explicitSubstrate)
+                            this->writelog(LOG_WARNING, "Explicit substrate layer specified, role 'substrate' ignored");
+                        else {
+                            if (!this->substrateMaterial)
+                                this->substrateMaterial = material;
+                            else if (*this->substrateMaterial != *material)
+                                throw Exception("{0}: Non-uniform substrate layer.", this->getId());
+                        }
                     }
                 }
                 if (cur == 0 && roles.find("QW") != roles.end())

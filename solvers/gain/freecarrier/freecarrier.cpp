@@ -65,6 +65,10 @@ template <typename BaseT> void FreeCarrierGainSolver<BaseT>::loadConfiguration(X
             T0 = reader.getAttribute<double>("T0", T0);
             strained = reader.getAttribute<bool>("strained", strained);
             //             quick_levels = reader.getAttribute<bool>("quick-levels", quick_levels);
+            if (reader.hasAttribute("substrate")) {
+                substrateMaterial = MaterialsDB::getDefault().get(reader.requireAttribute<std::string>("substrate"));
+                explicitSubstrate = true;
+            }
             reader.requireTagEnd();
         } else
             this->parseStandardConfiguration(reader, manager, "<geometry>, <mesh>, <levels>, or <config>");

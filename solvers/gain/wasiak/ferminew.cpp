@@ -64,6 +64,10 @@ void FermiNewGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Mana
             strains = reader.getAttribute<bool>("strained", strains);
             adjust_widths = reader.getAttribute<bool>("adjust-layers", adjust_widths);
             build_struct_once = reader.getAttribute<bool>("fast-levels", build_struct_once);
+            if (reader.hasAttribute("substrate")) {
+                substrateMaterial = MaterialsDB::getDefault().get(reader.requireAttribute<std::string>("substrate"));
+                explicitSubstrate = true;
+            }
             reader.requireTagEnd();
             // } else if (param == "levels") {
             // std::string els, hhs, lhs;
@@ -183,10 +187,14 @@ FermiNewGainSolver<GeometryType>::detectActiveRegions(const shared_ptr<GeometryT
             bool substrate = tags.find("substrate") != tags.end();
 
             if (substrate) {
-                if (!substrateMaterial)
-                    substrateMaterial = geometry->getMaterial(point);
-                else if (*substrateMaterial != *geometry->getMaterial(point))
-                    throw Exception("{0}: Non-uniform substrate layer.", this->getId());
+                if (this->explicitSubstrate)
+                    this->writelog(LOG_WARNING, "Explicit substrate layer specified, role 'substrate' ignored");
+                else {
+                    if (!substrateMaterial)
+                        substrateMaterial = geometry->getMaterial(point);
+                    else if (*substrateMaterial != *geometry->getMaterial(point))
+                        throw Exception("{0}: Non-uniform substrate layer.", this->getId());
+                }
             }
 
             if (QW && !active)

@@ -33,8 +33,15 @@
       type: bool
       default: false
       help: Boolean attribute indicating if the solver should consider strain in the active region. If set
-        to <i>yes</i> then there must a layer with the role "<i>substrate</i>" in the geometry. The strain
-        is computed by comparing the atomic lattice constants of the substrate and the quantum wells.
+        to <i>yes</i> then the substrate material must be either explicitly specified of there must a layer with
+        the role "<i>substrate</i>" in the geometry. The strain is computed by comparing the atomic lattice constants
+        of the substrate and the quantum wells.
+    - attr: substrate
+      label: Substrate
+      type: material
+      help: >
+        Name of the substrate material. This attribute is used only if the <i>strained</i> attribute is set to <i>yes</i>.
+        If this attribute is not set then the substrate material must be specified by a layer with the role "<i>substrate</i>".
     - attr: T0
       label: Reference temperature
       type: float

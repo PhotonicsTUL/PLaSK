@@ -167,6 +167,10 @@ BOOST_PYTHON_MODULE(wasiak) {
               "Gain solver based on Fermi Golden Rule for Cartesian 2D geometry.")
         solver.add_property("strained", &__Class__::getStrains, &__Class__::setStrains,
                             "Consider strain in QW and barriers? (True or False).");
+        RW_PROPERTY(substrate, getSubstrate, setSubstrate,
+                    u8"Substrate material.\n\n"
+                    u8"Material of the substrate. This is used to compute strain in the active region.\n"
+                    u8"If not set, the solver looks for geometry object with the __substrate__ role.\n");
         solver.add_property("adjust_layers", &__Class__::getAdjustWidths, &__Class__::setAdjustWidths,
                             "Adjust thicknesses of quantum wells?\n\n"
                             "Setting this to True, allows to adjust the widths of the gain region layers\n"
@@ -224,6 +228,10 @@ BOOST_PYTHON_MODULE(wasiak) {
               "Gain solver based on Fermi Golden Rule for Cylindrical 2D geometry.")
         solver.add_property("strained", &__Class__::getStrains, &__Class__::setStrains,
                             "Consider strain in QW and barriers? (True or False).");
+        RW_PROPERTY(substrate, getSubstrate, setSubstrate,
+                    u8"Substrate material.\n\n"
+                    u8"Material of the substrate. This is used to compute strain in the active region.\n"
+                    u8"If not set, the solver looks for geometry object with the __substrate__ role.\n");
         solver.add_property("adjust_layers", &__Class__::getAdjustWidths, &__Class__::setAdjustWidths,
                             "Adjust thicknesses of quantum wells?\n\n"
                             "Setting this to True, allows to adjust the widths of the gain region layers\n"

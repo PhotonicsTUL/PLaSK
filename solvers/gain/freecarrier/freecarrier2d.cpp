@@ -62,10 +62,14 @@ template <typename GeometryT> void FreeCarrierGainSolver2D<GeometryT>::detectAct
                         }
                     }
                 } else if (role == "substrate") {
-                    if (!this->substrateMaterial)
-                        this->substrateMaterial = this->geometry->getMaterial(point);
-                    else if (*this->substrateMaterial != *this->geometry->getMaterial(point))
-                        throw Exception("{0}: Non-uniform substrate layer.", this->getId());
+                    if (this->explicitSubstrate)
+                        this->writelog(LOG_WARNING, "Explicit substrate layer specified, role 'substrate' ignored");
+                    else {
+                        if (!this->substrateMaterial)
+                            this->substrateMaterial = this->geometry->getMaterial(point);
+                        else if (*this->substrateMaterial != *this->geometry->getMaterial(point))
+                            throw Exception("{0}: Non-uniform substrate layer.", this->getId());
+                    }
                 }
             }
             if (num == 0 && roles.find("QW") != roles.end())

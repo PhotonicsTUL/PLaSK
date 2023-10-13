@@ -216,6 +216,10 @@ BOOST_PYTHON_MODULE(freecarrier) {
                     u8"If set to ``True`` then there must a layer with the role *substrate* in\n"
                     u8"the geometry. The strain is computed by comparing the atomic lattice constants\n"
                     u8"of the substrate and the quantum wells.");
+        RW_PROPERTY(substrate, getSubstrate, setSubstrate,
+                    u8"Substrate material.\n\n"
+                    u8"Material of the substrate. This is used to compute strain in the active region.\n"
+                    u8"If not set, the solver looks for geometry object with the __substrate__ role.\n");
         RECEIVER(inTemperature, "");
         RECEIVER(inBandEdges, "");
         RECEIVER(inCarriersConcentration, "");
@@ -295,6 +299,10 @@ BOOST_PYTHON_MODULE(freecarrier) {
                     u8"If set to ``True`` then there must a layer with the role *substrate* in\n"
                     u8"the geometry. The strain is computed by comparing the atomic lattice constants\n"
                     u8"of the substrate and the quantum wells.");
+        RW_PROPERTY(substrate, getSubstrate, setSubstrate,
+                    u8"Substrate material.\n\n"
+                    u8"Material of the substrate. This is used to compute strain in the active region.\n"
+                    u8"If not set, the solver looks for geometry object with the __substrate__ role.\n");
         RECEIVER(inTemperature, "");
         RECEIVER(inBandEdges, "");
         RECEIVER(inCarriersConcentration, "");

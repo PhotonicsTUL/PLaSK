@@ -137,7 +137,8 @@ class TestStructureGain(unittest.TestCase):
         solver = FreeCarrier3D("self.solver")
         solver.geometry = self.geometry
         solver.inCarriersConcentration = self.concentration.outCarriersConcentration
-        g = 1254.
+        solver.strained = True
+        g = 1314.
         assert_allclose(array(solver.outGain(self.mesh, 1275.))[:,0], [0., g, 0., g, g, g, 0., g, 0.], rtol=1e-3)
         msh = mesh.Rectangular3D([0.], [0.], [100.])
         self.assertEqual(len(solver.outEnergyLevels('ELECTRONS', msh)[0]), 0)

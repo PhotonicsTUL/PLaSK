@@ -171,6 +171,7 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
     shared_ptr<GeometryType> geometry_mod;  ///< Modified geometry for broadening calculation
 
     shared_ptr<Material> substrateMaterial;  ///< Substrate material
+    bool explicitSubstrate;                  ///< Is substrate explicitly defined?
 
     ///< List of active regions
     std::vector<ActiveRegionInfo> regions;
@@ -315,6 +316,16 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
             strains = value;
             if (build_struct_once) this->invalidate();
         }
+    }
+
+    /// Get substrate material
+    shared_ptr<Material> getSubstrate() const { return substrateMaterial; }
+    /// Set substrate material
+    void setSubstrate(shared_ptr<Material> material) {
+        bool invalid = substrateMaterial != material;
+        substrateMaterial = material;
+        explicitSubstrate = bool(material);
+        if (invalid) this->invalidate();
     }
 
     bool getAdjustWidths() const { return adjust_widths; }

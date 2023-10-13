@@ -81,7 +81,6 @@ class TestStructureGain(unittest.TestCase):
 
     def build_geometry(self, well_material, barrier_material):
         substrate = geometry.Rectangle(20., 500., 'GaAs')
-        substrate.role = 'substrate'
         well = geometry.Rectangle(20., 0.0060, well_material)
         well.role = 'QW'
         barrier = geometry.Rectangle(20., 0.0067, barrier_material)
@@ -134,9 +133,11 @@ class TestStructureGain(unittest.TestCase):
 
     def test_gain(self):
         solver = FreeCarrierCyl("self.solver")
+        solver.strained = True
+        solver.substrate = 'GaAs'
         solver.geometry = self.geometry
         solver.inCarriersConcentration = self.concentration.outCarriersConcentration
-        self.assertAlmostEqual(solver.outGain(self.msh, 1275.)[0][0], 1254., 0)
+        self.assertAlmostEqual(solver.outGain(self.msh, 1275.)[0][0], 1314., 0)
         msh = mesh.Rectangular2D([0.], [-400.])
         self.assertEqual(len(solver.outEnergyLevels('ELECTRONS', msh)[0]), 0)
 

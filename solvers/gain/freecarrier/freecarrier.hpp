@@ -168,9 +168,6 @@ template <typename BaseT> struct PLASK_SOLVER_API FreeCarrierGainSolver : public
         }
     };
 
-    /// Substrate material
-    shared_ptr<Material> substrateMaterial;
-
     /// List of active regions
     std::vector<ActiveRegionInfo> regions;
 
@@ -199,6 +196,12 @@ template <typename BaseT> struct PLASK_SOLVER_API FreeCarrierGainSolver : public
     void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager) override;
 
   protected:
+    /// Substrate material
+    shared_ptr<Material> substrateMaterial;
+
+    /// Is substrate material explicitly set?
+    bool explicitSubstrate = false;
+
     /**
      * Detect active regions.
      * Store information about them in the \p regions field.
@@ -337,6 +340,17 @@ template <typename BaseT> struct PLASK_SOLVER_API FreeCarrierGainSolver : public
             return level(LH, E, params);
     }
 #endif
+
+    /// Get substrate material
+    shared_ptr<Material> getSubstrate() const { return substrateMaterial; }
+
+    /// Set substrate material
+    void setSubstrate(shared_ptr<Material> material) {
+        bool invalid = substrateMaterial != material;
+        substrateMaterial = material;
+        explicitSubstrate = bool(material);
+        if (invalid) this->invalidate();
+    }
 
     /// Compute quasi-Fermi levels for given concentration and temperature
     void findFermiLevels(double& Fc, double& Fv, double n, double T, const ActiveRegionParams& params) const;
