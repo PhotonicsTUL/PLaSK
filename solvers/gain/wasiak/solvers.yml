@@ -1,100 +1,3 @@
-- solver: WasiakOld2D
-  category: gain
-  geometry: Cartesian2D
-  help: "Simple gain solver based on Fermi Golden Rule for two-dimensional Cartesian\
-    \ geometry.\n\n    This solver does not use any mesh by default and the the full\
-    \ gain calculation is performed in each requested point.\n    However, if there\
-    \ is a mesh specified then the gain is computed only in the mesh points and interpolated\
-    \ in-between."
-  lib: wasiak
-  mesh:
-  - Ordered
-  - Regular
-  need mesh: false
-  tags:
-  - &config1
-    tag: config
-    help: Some important gain parameters.
-    label: Gain Parameters
-    attrs:
-    - attr: lifetime
-      help: Average carriers lifetime. This parameter is used for gain spectrum broadening.
-      label: Carriers lifetime
-      type: float
-      unit: ps
-    - attr: matrix-elem
-      help: "Value of the squared matrix element in gain computations.\n        If\
-        \ it is not set it is estimated automatically."
-      label: Matrix element
-      type: float
-      unit: (eV/m<sub>0</sub>)<sup>2</sup>
-    - attr: strained
-      help: "Boolean attribute indicated if the solver should consider strain in the\
-        \ active region.\n        If set to <i>yes</i> then there must a layer with\
-        \ the role \"<i>substrate</i>\"\n        in the geometry. The strain is computed\
-        \ by comparing the atomic lattice constants of the substrate and\n       \
-        \ the quantum wells."
-      label: Strained
-      type: bool
-    - attr: cond-shift
-      help: Additional conduction band shift for quantum wells.
-      label: Conduction band shift
-      type: float
-      unit: eV
-    - attr: vale-shift
-      help: Additional valence band shift for quantum wells.
-      label: Valence band shift
-      type: float
-      unit: eV
-  - &levels1
-    tag: levels
-    help: >
-      Custom energy levels in quantum wells. If this tag is used all levels must be set.
-    label: Custom energy levels (either none or all attributes must be given)
-    attrs:
-    - attr: el
-      help: Comma-separated list of electron levels.
-      label: Electron levels
-      type: list of floats
-      unit: eV
-    - attr: hh
-      help: Comma-separated list of heavy hole levels.
-      label: Heavy hole levels
-      type: list of floats
-      unit: eV
-    - attr: lh
-      help: Comma-separated list of light hole levels.
-      label: Light hole levels
-      type: list of floats
-      unit: eV
-  providers: &providers1
-  - outGain
-  receivers: &receivers
-  - inTemperature
-  - inCarriersConcentration
-
-###########################################################################################
-
-- solver: WasiakOldCyl
-  category: gain
-  geometry: Cylindrical
-  help: "Simple gain solver based on Fermi Golden Rule for Cylindrical geometry.\n\
-    \n    This solver does not use any mesh by default and the the full gain calculation\
-    \ is performed in each requested point.\n    However, if there is a mesh specified\
-    \ then the gain is computed only in the mesh points and interpolated in-between."
-  lib: wasiak
-  mesh:
-  - Ordered
-  - Regular
-  need mesh: false
-  tags:
-  - *config1
-  - *levels1
-  providers: *providers1
-  receivers: *receivers
-
-###########################################################################################
-
 - solver: WasiakNew2D
   category: gain
   help: "Simple gain solver based on Fermi Golden Rule for two-dimensional Cartesian\
@@ -198,10 +101,12 @@
       type: float
       default: 300
       unit: K
-  providers: &providers2
+  providers: &providers
   - outGain
   - outLuminescence
-  receivers: *receivers
+  receivers: &receivers
+  - inTemperature
+  - inCarriersConcentration
 
 ###########################################################################################
 
@@ -221,12 +126,12 @@
     - attr: ref
       label: Geometry
       required: true
-      type: Cylindrical geometry
+      type: cylindrical geometry
       help: >
         Name of the geometry used by the this solver.
     - attr: mod
       label: Modified
-      type: Cylindrical geometry
+      type: cylindrical geometry
       help: >
         Name of the modified geometry for broadening calculation.
   - tag: mesh
@@ -241,5 +146,5 @@
       help: >
         Name of the exisiting Ordered or Regular mesh used by this solver.
   - *config2
-  providers: *providers2
+  providers: *providers
   receivers: *receivers
