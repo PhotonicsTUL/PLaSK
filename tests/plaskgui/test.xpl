@@ -466,7 +466,7 @@
   </electrical>
   <gain name="GAIN" solver="FreeCarrierCyl" lib="freecarrier">
     <geometry ref="GeoO"/>
-    <config lifetime="0.5" matrix-elem="8"/>
+    <config lifetime="0.5" matrix-elem="8" substrate="Al(0.2)GaN"/>
   </gain>
   <optical name="OPTICAL" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="GeoO"/>

@@ -18,6 +18,7 @@ from ...qt.QtWidgets import *
 from ...qt.QtGui import *
 from ...qt import qt_exec
 from ..defines import get_defines_completer
+from ..materials import MaterialsComboBox
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
 from ...lib.highlighter.xml import SYNTAX
 from ...utils.str import empty_to_none
@@ -26,7 +27,7 @@ from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, EditComboBox, Mult
 from ...utils.qsignals import BlockQtSignals
 from ...utils.qundo import UndoCommandWithSetter
 from ...model.solvers.schemasolver import SchemaTag, SchemaCustomWidgetTag, \
-    AttrGroup, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath, AttrGeometry, AttrMesh
+    AttrGroup, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath, AttrGeometry, AttrMesh, AttrMaterial
 from ...model.solvers.bconds import SchemaBoundaryConditions
 from ...utils.texteditor.xml import XML_SCHEME
 from . import Controller
@@ -284,6 +285,14 @@ class SolverWidget(QWidget):
             edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name:
                                          weakself._change_attr(group, name, edit.currentText()))
             edit.setCompleter(get_defines_completer(defines, edit))
+            if attr.default is not None:
+                edit.lineEdit().setPlaceholderText(attr.default)
+        elif isinstance(attr, AttrMaterial):
+            edit = MaterialsComboBox(materials_model=self.controller.document.materials.model,
+                                     defines_model=self.controller.document.defines.model)
+            edit.setEditable(True)
+            edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name:
+                                         weakself._change_attr(group, name, edit.currentText()))
             if attr.default is not None:
                 edit.lineEdit().setPlaceholderText(attr.default)
         else:

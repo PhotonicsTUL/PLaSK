@@ -38,6 +38,7 @@
             "geometry object",
             "geometry path",
             "mesh",
+            "material",
             "list of floats",
             "list of ints"
           ]

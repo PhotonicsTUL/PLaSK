@@ -117,6 +117,11 @@ class AttrMesh(Attr):
         self.types = mesh_types
 
 
+class AttrMaterial(Attr):
+    def __init__(self, tag, name, label, required, help, typ, default=None):
+        super().__init__(tag, name, label, required, help, typ, default)
+
+
 class SchemaTag:
     def __init__(self, name, label, attrs):
         self.name = name
@@ -364,23 +369,25 @@ def read_attr(tn, attr):
     ad = attr.get('default')
     ar = attr.get('required', False)
     if au is not None:
-        al += u' ({})'.format(au)
-    if at == u'choice':
+        al += ' ({})'.format(au)
+    if at == 'choice':
         ac = tuple(str(ch).strip() for ch in attr['choices'])
         ao = tuple(str(ch).strip() for ch in attr.get('other', ()))
         ak = attr.get('case sensitive', False)
         result = AttrChoice(tn, an, al, ar, ah, at, ac, ao, ak, ad)
-    elif at == u'bool':
+    elif at == 'bool':
         result = AttrBool(tn, an, al, ar, ah, at, ad)
-    elif at == u'geometry object':
+    elif at == 'geometry object':
         result = AttrGeometryObject(tn, an, al, ar, ah, at)
-    elif at == u'geometry path':
+    elif at == 'geometry path':
         result = AttrGeometryPath(tn, an, al, ar, ah, at)
-    elif at.endswith(u' geometry'):
+    elif at.endswith(' geometry'):
         result = AttrGeometry(tn, an, al, ar, ah, at, at[:-9].lower())
-    elif at == u'mesh':
+    elif at == 'mesh':
         ac = tuple(str(ch).strip() for ch in attr['mesh types'])
         result = AttrMesh(tn, an, al, ar, ah, at, ac)
+    elif at == 'material':
+        result = AttrMaterial(tn, an, al, ar, ah, at)
     else:
         if an.endswith('#'):
             result = AttrMulti(tn, an, al, ar, ah, at)
@@ -469,7 +476,7 @@ def load_yaml(filename, categories=CATEGORIES, solvers=SOLVERS):
                                 gl = attr['group']
                                 gu = attr.get('unit')
                                 if gu is not None:
-                                    gl += u' ({})'.format(gu)
+                                    gl += ' ({})'.format(gu)
                                 group = AttrGroup(gl)
                                 for a in attr.get('attrs', []):
                                     group.append(read_attr(tn, a))
