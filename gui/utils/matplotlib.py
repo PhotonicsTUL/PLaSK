@@ -359,7 +359,7 @@ class PlotWidgetBase(QWidget):
             stack = self.toolbar._nav_stack
         except AttributeError:
             stack = self.toolbar._views
-        if stack.empty():
+        if len(stack) == 0:
             self.toolbar.push_current()
         ax = plane_to_axes(self.plane, 2 if isinstance(box, plask.geometry.Box2D) else 3)
         m = (box.upper[ax[0]] - box.lower[ax[0]]) * margin

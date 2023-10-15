@@ -80,13 +80,12 @@ class Well0(material.Material):
 class TestStructureGain(unittest.TestCase):
 
     def build_geometry(self, well_material, barrier_material):
-        substrate = geometry.Cylinder(20., 500., 'GaAs')
+        substrate = geometry.Cylinder(20., 1000., 'GaAs')
         substrate.role = 'substrate'
         well = geometry.Cylinder(20., 0.0060, well_material)
         well.role = 'QW'
         barrier = geometry.Cylinder(20., 0.0067, barrier_material)
         stack = geometry.Stack3D(x=0, y=0)
-        stack.prepend(substrate)
         stack.prepend(substrate)
         active = geometry.Stack3D(x=0, y=0)
         active.role = 'active'
@@ -95,7 +94,6 @@ class TestStructureGain(unittest.TestCase):
             active.prepend(well)
         active.prepend(barrier)
         stack.prepend(active)
-        stack.prepend(substrate)
         stack.prepend(substrate)
         return geometry.Cartesian3D(stack), active, well
 

@@ -119,16 +119,16 @@ template <typename GeometryT> void FreeCarrierGainSolver2D<GeometryT>::detectAct
         }
         if (reg.bottom == 0)  //
             throw Exception("{0}: Active region cannot be located at the bottom of the structure.", this->getId());
-        if (reg.top == points->axis[1]->size() - 1)
+        if (reg.top == points->axis[1]->size())
             throw Exception("{0}: Active region cannot be located at the top of the structure.", this->getId());
         this->regions.emplace_back(mesh->at(reg.left, reg.bottom - 1));
         auto region = &this->regions.back();
         region->bottom = mesh->axis[1]->at(1) - mesh->axis[1]->at(0);
         region->top = mesh->axis[1]->at(mesh->axis[1]->size() - 1) - mesh->axis[1]->at(mesh->axis[1]->size() - 2);
         double width = mesh->axis[0]->at(reg.right) - mesh->axis[0]->at(reg.left);
-        for (size_t c = reg.left; c < reg.right; ++c) {
+        for (size_t r = reg.bottom - 1, j = 0; r <= reg.top; ++r, ++j) {
             bool layerQW = false;
-            for (size_t r = reg.bottom - 1, j = 0; r <= reg.top; ++r, ++j) {
+            for (size_t c = reg.left; c < reg.right; ++c) {
                 shared_ptr<Material> material;
                 auto point = points->at(c, r);
                 double height = mesh->axis[1]->at(r + 1) - mesh->axis[1]->at(r);

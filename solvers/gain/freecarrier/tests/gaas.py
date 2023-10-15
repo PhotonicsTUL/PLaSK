@@ -85,8 +85,11 @@ class TestStructureGain(unittest.TestCase):
         well.role = 'QW'
         barrier = geometry.Rectangle(20., 0.0067, barrier_material)
         stack = geometry.Stack2D()
-        stack.prepend(substrate)
-        stack.prepend(substrate)
+        cap = geometry.Rectangle(10., 500., 'GaAs')
+        shelf = geometry.Shelf2D()
+        shelf.append(cap)
+        shelf.append(cap)
+        stack.prepend(shelf)
         active = geometry.Stack2D()
         active.role = 'active'
         for i in range(4):

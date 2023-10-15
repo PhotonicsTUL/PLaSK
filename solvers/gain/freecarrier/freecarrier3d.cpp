@@ -122,7 +122,7 @@ void FreeCarrierGainSolver3D::detectActiveRegions() {
         // Detect quantum wells in the active region
         if (reg.bottom == 0)  //
             throw Exception("{0}: Active region cannot be located at the bottom of the structure.", this->getId());
-        if (reg.top == points->axis[2]->size() - 1)
+        if (reg.top == points->axis[2]->size())
             throw Exception("{0}: Active region cannot be located at the top of the structure.", this->getId());
         this->regions.emplace_back(mesh->at(0, 0, reg.bottom - 1));
         auto region = &this->regions.back();
