@@ -26,6 +26,17 @@ from ..utils.qsignals import BlockQtSignals
 from ..utils.config import dark_style
 
 
+class MultiEditorWidget(QWidget):
+
+    def __init__(self, controller, parent=None):
+        super().__init__(parent)
+        self.controller = controller
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.controller.adjust_info_height()
+
+
 class MultiEditorController(Controller):
     """
         Controller which consist with a list of controllers and display one at time (using QStackedWidget).
@@ -36,7 +47,7 @@ class MultiEditorController(Controller):
         object.__init__(self)
         self.controllers = list(controllers)
 
-        self.widget = QWidget()
+        self.widget = MultiEditorWidget(self)
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
 
@@ -102,6 +113,7 @@ class MultiEditorController(Controller):
 
     def on_edit_enter(self):
         self.current_controller.on_edit_enter()
+        self.adjust_info_height()
 
     def on_edit_exit(self):
         return self.current_controller.on_edit_exit()
@@ -119,8 +131,16 @@ class MultiEditorController(Controller):
         if rows == 0:
             self.info_table.setVisible(False)
         else:
-            self.info_table.setFixedHeight(int(self.info_table.sizeHintForRow(0) * min(rows, 3)))
             self.info_table.setVisible(True)
+
+    def adjust_info_height(self):
+        if self.info_table.isVisible():
+            scrollbar = self.info_table.horizontalScrollBar()
+            height = self.info_table.sizeHintForRow(0) * self.info_model.rowCount() + 4
+            height = self.info_table.sizeHintForRow(0) * min(self.info_model.rowCount(), 3)
+            if scrollbar.isVisible():
+                height += scrollbar.sizeHint().height()
+            self.info_table.setFixedHeight(int(height))
 
 
 class GUIAndSourceController(MultiEditorController):
