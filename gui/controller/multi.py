@@ -119,7 +119,7 @@ class MultiEditorController(Controller):
         if rows == 0:
             self.info_table.setVisible(False)
         else:
-            self.info_table.setFixedHeight(int(self.info_table.sizeHintForRow(0) * rows))
+            self.info_table.setFixedHeight(int(self.info_table.sizeHintForRow(0) * min(rows, 3)))
             self.info_table.setVisible(True)
 
 
