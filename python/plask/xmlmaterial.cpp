@@ -53,7 +53,8 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
         mobe, mobh, taue, tauh, Ce, Ch, e13, e15, e33, c13, c33, Psp,
         y1, y2, y3;
 
-    PythonEvalMaterialConstructor(const std::string& name, const std::string& base, bool alloy) :
+    template <typename BaseT>
+    PythonEvalMaterialConstructor(const std::string& name, const BaseT& base, bool alloy) :
         MaterialsDB::MaterialConstructor(name),
         base(base),
         kind(Material::GENERIC), condtype(Material::CONDUCTIVITY_UNDETERMINED),
@@ -360,32 +361,45 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
 }
 
 void PythonManager::loadMaterial(XMLReader& reader) {
+    std::string material_name, base_name;
+    bool alloy;
+    shared_ptr<PythonEvalMaterialConstructor> constructor;
+
     try {
-        std::string material_name = reader.requireAttribute("name");
-        std::string base_name = reader.requireAttribute("base");
-        bool alloy = reader.getAttribute<bool>("alloy", false);
-
-        shared_ptr<PythonEvalMaterialConstructor> constructor = plask::make_shared<PythonEvalMaterialConstructor>(material_name, base_name, alloy);
+        material_name = reader.requireAttribute("name");
+        base_name = reader.requireAttribute("base");
+        alloy = reader.getAttribute<bool>("alloy", false);
+        constructor = plask::make_shared<PythonEvalMaterialConstructor>(material_name, base_name, alloy);
         constructor->self = constructor;
+    } catch (py::error_already_set&) {
+        if (draft) PyErr_Clear();
+        else throw;
+    } catch (const std::runtime_error& err) {
+        throwErrorIfNotDraft(XMLException(reader, err.what()));
+    }
+    if (!constructor) constructor = plask::make_shared<PythonEvalMaterialConstructor>(
+        material_name, shared_ptr<Material>(new DummyMaterial(base_name)), alloy);
+    constructor->self = constructor;
 
-#       define COMPILE_PYTHON_MATERIAL_FUNCTION_(funcname, func) \
-        else if (reader.getNodeName() == funcname) { \
-            constructor->func = compilePythonFromXml(reader, *this); \
-            try { \
-                py::dict locals; \
-                constructor->cache.func.reset( \
-                    py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
-                        py::handle<>(PyEval_EvalCode(constructor->func.ptr_cast<PyObject>(), pyXplGlobals->ptr(), locals.ptr())).get() \
-                    ) \
-                ); \
-                writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '{0}'", material_name); \
-            } catch (py::error_already_set&) { \
-                PyErr_Clear(); \
-            } \
-        }
+#   define COMPILE_PYTHON_MATERIAL_FUNCTION_(funcname, func) \
+    else if (reader.getNodeName() == funcname) { \
+        constructor->func = compilePythonFromXml(reader, *this); \
+        try { \
+            py::dict locals; \
+            constructor->cache.func.reset( \
+                py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
+                    py::handle<>(PyEval_EvalCode(constructor->func.ptr_cast<PyObject>(), pyXplGlobals->ptr(), locals.ptr())).get() \
+                ) \
+            ); \
+            writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '{0}'", material_name); \
+        } catch (py::error_already_set&) { \
+            PyErr_Clear(); \
+        } \
+    }
 
-#       define COMPILE_PYTHON_MATERIAL_FUNCTION(func) COMPILE_PYTHON_MATERIAL_FUNCTION_(BOOST_PP_STRINGIZE(func), func)
+#   define COMPILE_PYTHON_MATERIAL_FUNCTION(func) COMPILE_PYTHON_MATERIAL_FUNCTION_(BOOST_PP_STRINGIZE(func), func)
 
+    try {
         while (reader.requireTagOrEnd()) {
             if (reader.getNodeName() == "condtype") {
                 auto condname = reader.requireTextInCurrentTag();
