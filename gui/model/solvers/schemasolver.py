@@ -462,9 +462,12 @@ def load_yaml(filename, categories=CATEGORIES, solvers=SOLVERS):
                             modpath, modname = os.path.split(modname)
                             if not os.path.isabs(modpath):
                                 modpath = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(filename)), modpath))
+                            sys_path = sys.path[:]
                             sys.path.insert(0, modpath)
-                            mod = import_module(modname)
-                            del sys.path[0]
+                            try:
+                                mod = import_module(modname)
+                            finally:
+                                sys.path[:] = sys_path
                             func = mod.__dict__[widget['func']]
                             schema.append(SchemaCustomWidgetTag(tn, tl, widget.get('button label', "View / Edit"), func))
                     else:

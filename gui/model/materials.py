@@ -14,6 +14,7 @@ import sys
 import os
 import re
 from copy import copy
+from functools import partial
 
 from lxml import etree
 import itertools
@@ -237,28 +238,36 @@ if plask is not None:
 
     class HandleMaterialsModule:
 
-        def __init__(self, document):
+        def __init__(self, document, register_wrap=None):
             if document is not None and document.filename is not None:
                 self.dirname = os.path.dirname(document.filename)
             else:
                 self.dirname = None
+            self.register_wrap = register_wrap
+            self._registers_orig = None
 
         def __enter__(self):
+            self._sys_path = sys.path[:]
             sys.path.insert(0, '.')
             if self.dirname is not None:
                 sys.path.insert(0, self.dirname)
+            if self.register_wrap is not None:
+                self._registers_orig = plask._material._register_material_simple, plask._material._register_material_alloy
+                plask._material._register_material_simple = self.register_wrap(plask._material._register_material_simple)
+                plask._material._register_material_alloy = self.register_wrap(plask._material._register_material_alloy)
             return self
 
         def __exit__(self, type=None, value=None, traceback=None):
-            if self.dirname is not None:
-                del sys.path[0]
-            del sys.path[0]
+            sys.path[:] = self._sys_path
+            if self._registers_orig is not None:
+                plask._material._register_material_simple, plask._material._register_material_alloy = self._registers_orig
+                self._registers_orig = None
 
 else:
 
     class HandleMaterialsModule:
 
-        def __init__(self, names=None):
+        def __init__(self, document, register_wrap=None):
             pass
 
         def __enter__(self):
@@ -268,47 +277,25 @@ else:
             pass
 
 
+class _NamesContainer:
+    __slots__ = ['names']
+
+
 class MaterialsModel(TableModel):
 
-    if plask is not None:
+    class RegisterWrap:
 
-        class _HandleMaterialsModule(HandleMaterialsModule):
+        def __init__(self, register, container):
+            self.container = container
+            self.register = register
 
-            class Register:
-
-                def __init__(self, handler, fun):
-                    self.handler = handler
-                    self.fun = fun
-
-                def __call__(self, name, cls, base):
-                    try:
-                        self.handler.names.remove(name)
-                    except ValueError:
-                        pass
-                    self.handler.names.append(name)
-                    return self.fun(name, cls, base)
-
-            def __init__(self, document):
-                super().__init__(document)
-                self.names = []
-                self._register_simple = plask._material._register_material_simple
-                self._register_alloy = plask._material._register_material_alloy
-
-            def __enter__(self):
-                super().__enter__()
-                plask._material._register_material_simple = self.Register(self, self._register_simple)
-                plask._material._register_material_alloy = self.Register(self, self._register_alloy)
-                return self
-
-            def __exit__(self, type=None, value=None, traceback=None):
-                super().__exit__(type, value, traceback)
-                plask._material._register_material_simple = self._register_simple
-                plask._material._register_material_alloy = self._register_alloy
-
-    else:
-
-        class _HandleMaterialsModule(HandleMaterialsModule):
-            pass
+        def __call__(self, name, cls, base):
+            try:
+                self.container.names.remove(name)
+            except ValueError:
+                pass
+            self.container.names.append(name)
+            return self.register(name, cls, base)
 
     class External(QAbstractTableModel):
 
@@ -658,7 +645,8 @@ class MaterialsModel(TableModel):
             entries = self.entries[:limit]
         else:
             entries = self.entries
-        with self._HandleMaterialsModule(self.document) as module_handler:
+        container = _NamesContainer()
+        with HandleMaterialsModule(self.document, partial(self.RegisterWrap, container=container)):
             for material in entries:
                 if isinstance(material, MaterialsModel.External):
                     if material.cache is None and plask is not None and material.name:
@@ -675,13 +663,12 @@ class MaterialsModel(TableModel):
                                     import traceback
                                     traceback.print_exc()
                         elif material.what == 'module':
-                            material.cache = module_handler.names = []
+                            material.cache = container.names = []
                             try:
-                                with HandleMaterialsModule(self.document):
-                                    if material.name in sys.modules:
-                                        reload_module(sys.modules[material.name])
-                                    else:
-                                        import_module(material.name)
+                                if material.name in sys.modules:
+                                    reload_module(sys.modules[material.name])
+                                else:
+                                    import_module(material.name)
                             except:
                                 if _DEBUG:
                                     import traceback

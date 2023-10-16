@@ -37,16 +37,16 @@ class AlGaAsDp(material.Material):
     name = "AlGaAs:Dp"
 
     def __init__(self, *args, **kwargs):
-        super().__init__()
+        super().__init__(doping=kwargs['doping'])
         self.args = args,
         self.kwargs = kwargs
-        self.composition = self.complete_composition(kwargs, self.name)
+        self._composition = self.complete_composition(kwargs)
 
     def VB(self, T=300., e=0., point='G', hole='H'):
-        return self.kwargs['dc'] * T
+        return self.kwargs['doping'] * T
 
     def CB(self, T=300., e=0., point='G'):
-        return self.composition['Ga'] * T
+        return self._composition['Ga'] * T
 
     def NR(self, wl, T, n):
         return (3.5, 3.6, 3.7, 0.1)

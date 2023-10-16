@@ -805,34 +805,34 @@ shared_ptr<Material> MaterialsDB_const(py::tuple args, py::dict kwargs) {
     return plask::make_shared<ConstMaterial>(base, params);
 }
 
-// py::dict Material__completeComposition(const Material& self, py::dict src) {
-//     py::list keys = src.keys();
-//     Material::Composition comp;
-//     py::object none;
-//     for(int i = 0; i < py::len(keys); ++i) {
-//         std::string k = py::extract<std::string>(keys[i]);
-//         if (k != "doping") {
-//             py::object s = src[keys[i]];
-//             comp[py::extract<std::string>(keys[i])] = (s != none) ? py::extract<double>(s): std::numeric_limits<double>::quiet_NaN();
-//         }
-//     }
-//     std::string name = self.name();
-//     if (name != "") {
-//         std::string basename = splitString2(name, ':').first;
-//         std::vector<std::string> objects = Material::parseObjectsNames(basename);
-//         for (auto c: comp) {
-//             if (std::find(objects.begin(), objects.end(), c.first) == objects.end()) {
-//                 throw TypeError(u8"'{}' not allowed in material {}", c.first, name);
-//             }
-//         }
-//     }
-//
-//     comp = Material::completeComposition(comp);
-//
-//     py::dict result;
-//     for (auto c: comp) result[c.first] = c.second;
-//     return result;
-// }
+py::dict Material__completeComposition(const Material& self, py::dict src) {
+    py::list keys = src.keys();
+    Material::Composition comp;
+    py::object none;
+    for(int i = 0; i < py::len(keys); ++i) {
+        std::string k = py::extract<std::string>(keys[i]);
+        if (k != "doping") {
+            py::object s = src[keys[i]];
+            comp[py::extract<std::string>(keys[i])] = (s != none) ? py::extract<double>(s): std::numeric_limits<double>::quiet_NaN();
+        }
+    }
+    std::string name = self.name();
+    if (name != "") {
+        std::string basename = splitString2(name, ':').first;
+        std::vector<std::string> objects = Material::parseObjectsNames(basename);
+        for (auto c: comp) {
+            if (std::find(objects.begin(), objects.end(), c.first) == objects.end()) {
+                throw TypeError(u8"'{}' not allowed in material {}", c.first, name);
+            }
+        }
+    }
+
+    comp = Material::completeComposition(comp);
+
+    py::dict result;
+    for (auto c: comp) result[c.first] = c.second;
+    return result;
+}
 
 std::string Material__str__(const Material& self) {
     return self.str();
@@ -1137,13 +1137,13 @@ void initMaterials() {
     MaterialClass
         .def("__init__", raw_constructor(&PythonMaterial::__init__))
 
-        // .def("complete_composition", &Material__completeComposition, (py::arg("composition")),
-        //         u8"Fix incomplete material composition basing on pattern.\n\n"
-        //         u8"Args:\n"
-        //         u8"    composition (dict): Dictionary with incomplete composition (i.e. the one\n"
-        //         u8"                        missing some elements).\n"
-        //         u8"Return:\n"
-        //         u8"    dict: Dictionary with completed composition.")
+        .def("complete_composition", &Material__completeComposition, (py::arg("composition")),
+                u8"Fix incomplete material composition basing on pattern.\n\n"
+                u8"Args:\n"
+                u8"    composition (dict): Dictionary with incomplete composition (i.e. the one\n"
+                u8"                        missing some elements).\n"
+                u8"Return:\n"
+                u8"    dict: Dictionary with completed composition.")
 
         .add_property("name", &Material::name, u8"Material name (without composition and doping amounts).")
 

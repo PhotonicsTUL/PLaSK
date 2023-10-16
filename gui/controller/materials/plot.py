@@ -68,13 +68,14 @@ class MaterialPlot(QWidget):
         if plask is not None:
             plask.material.setdb(default_materialdb)
             manager = plask.Manager(draft=True)
+            sys_path = sys.path[:]
             try:
                 with HandleMaterialsModule(model.document):
                     manager.load(self._get_xpl_content())
             except:
                 pass
             finally:
-                del sys.path[0]
+                sys.path[:] = sys_path
             self.materialdb = copy(plask.material.db)
             del manager
 

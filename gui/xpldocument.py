@@ -133,6 +133,7 @@ class XPLDocument:
         infile = open(filename, 'rb')
         tree = etree.parse(infile, XMLparser)
         self.loglevel = tree.getroot().attrib.get('loglevel', 'detail')
+        self.filename = filename
         with OrderedTagReader(tree.getroot()) as r:
             for i, name in enumerate(XPLDocument.SECTION_NAMES):
                 element = r.get(name)
@@ -142,7 +143,6 @@ class XPLDocument:
                 else:
                     self.model_by_index(i).clear()
             self.comments[-1] = r.get_comments()
-        self.filename = filename
         self.set_clean()
 
     def get_contents(self, sections=None, update_lines=None):
