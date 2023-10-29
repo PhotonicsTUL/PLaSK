@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -15,7 +15,8 @@ from lxml import etree
 
 from .config import CONFIG
 
-XMLparser = etree.XMLParser(remove_blank_text=True, strip_cdata=False, remove_comments=not CONFIG['experimental/preserve_comments'])
+# XMLparser = etree.XMLParser(remove_blank_text=True, strip_cdata=False, remove_comments=not CONFIG['experimental/preserve_comments'])
+XMLparser = etree.XMLParser(remove_blank_text=True, strip_cdata=False, remove_comments=False)
 
 
 class Element:

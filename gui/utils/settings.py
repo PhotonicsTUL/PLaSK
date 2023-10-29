@@ -318,16 +318,11 @@ CONFIG_WIDGETS = {
              Combo('geometry/default_align_ordering', ['', 'normal', 'reverse'],
                    "Default ordering in Align geometry container. Affects only newly created items.")),
         ],
-        "Experimental Features": [
-            "Here you can turn on experimental features. Please expect that they are not 100% reliable.\n"
-            "Turning them on may cause GUI to crash or the correct files may not load properly.\n\n"
-            "You have been warned, use at your own risk!\n",
-            ("Preserve XML comments",
-             CheckBox('experimental/preserve_comments',
-                      "If this option is checked, PLaSK will try to preserve comments in the XML source.",
-                      needs_restart=True)),
-
-        ]
+        # "Experimental Features": [
+        #     "Here you can turn on experimental features. Please expect that they are not 100% reliable.\n"
+        #     "Turning them on may cause GUI to crash or the correct files may not load properly.\n\n"
+        #     "You have been warned, use at your own risk!\n",
+        # ],
     },
     "Graphics": {
         "General": [

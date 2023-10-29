@@ -153,7 +153,6 @@ DEFAULTS = {
     'workarounds/no_jedi': False,
     'workarounds/system_jedi': False,
     'workarounds/no_unicode_minus': False,
-    'experimental/preserve_comments': False,
 }
 
 if os.name == 'posix':
