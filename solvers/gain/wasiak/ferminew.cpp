@@ -649,7 +649,7 @@ kubly::wzmocnienie FermiNewGainSolver<GeometryType>::getGainModule(double wavele
     if (isnan(n)) throw ComputationError(this->getId(), "Wrong carriers concentration ({0}/cm3)", n);
     n = max(n, 1e-6);  // To avoid hangs
 
-    double QWh = region.qwtotallen * 0.1;  // total thickness of QWs (nm)
+    double QWh = region.qwtotallen;  // total thickness of QWs (Å)
 
     // calculating nR
     double QWnr = 0.;
@@ -669,7 +669,7 @@ kubly::wzmocnienie FermiNewGainSolver<GeometryType>::getGainModule(double wavele
 
     // this->writelog(LOG_DEBUG, "Creating gain module");
     kubly::wzmocnienie gainModule(
-        levels.activeRegion.get(), n * (QWh * 1e-7), T, QWnr, deltaEg, 10. * QWh,  // QWh in Å
+        levels.activeRegion.get(), n * (QWh * 1e-8), T, QWnr, deltaEg, QWh,  // QWh in Å
         region.mod ? kubly::wzmocnienie::Z_POSZERZENIEM : kubly::wzmocnienie::Z_CHROPOWATOSCIA);
 
     // this->writelog(LOG_DEBUG, "Recalculating carrier concentrations..");
@@ -681,7 +681,7 @@ kubly::wzmocnienie FermiNewGainSolver<GeometryType>::getGainModule(double wavele
     //     while (1) {
     //         in1 = n * 10.;
 
-    //         gainModule.nosniki_c = gainModule.nosniki_v = gainModule.przel_gest_z_cm2(in1 * QWh * 1e-7);
+    //         gainModule.nosniki_c = gainModule.nosniki_v = gainModule.przel_gest_z_cm2(in1 * QWh * 1e-8);
     //         double qFc = gainModule.qFlc;
     //         // double tFlv = gainModule.qFlv;
 

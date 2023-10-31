@@ -171,7 +171,7 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
     shared_ptr<GeometryType> geometry_mod;  ///< Modified geometry for broadening calculation
 
     shared_ptr<Material> substrateMaterial;  ///< Substrate material
-    bool explicitSubstrate;                  ///< Is substrate explicitly defined?
+    bool explicitSubstrate = false;          ///< Is substrate explicitly defined?
 
     ///< List of active regions
     std::vector<ActiveRegionInfo> regions;
