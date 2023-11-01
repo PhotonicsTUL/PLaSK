@@ -646,7 +646,7 @@ if(BUILD_PYTHON)
                            ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash868.bmp
                            ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash1116.bmp)
             set_target_properties(plaskgui_exe PROPERTIES OUTPUT_NAME "plaskgui")
-            install(TARGETS plaskgui_exe RUNTIME DESTINATION bin COMPONENT core)
+            install(TARGETS plaskgui_exe RUNTIME DESTINATION bin COMPONENT gui)
         endif()
 
     endif()

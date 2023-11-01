@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -729,7 +729,7 @@ system_main(int argc, const system_char *argv[])
             py::object interactive = py::import("plask.interactive");
             py::list sys_argv;
             if (argc == 1) sys_argv.append("");
-            for (int i = 1; i < argc; i++) sys_argv.append(argv[i]);
+            for (int i = 1; i < argc; i++) sys_argv.append(system_str_to_pyobject(argv[i]));
             interactive.attr("interact")(py::object(), sys_argv);
         }  catch (py::error_already_set&) { // This should not happen
             int exitcode = handlePythonException();

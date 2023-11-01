@@ -27,21 +27,18 @@ import weakref as _weakref
 _any = any
 _sum = sum
 
-_basepath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_i = sys.path.index(_basepath) if _basepath in sys.path else 0
-_basepath = os.path.dirname(_basepath)
 if 'PLASK_PREFIX_PATH' not in os.environ:
-    os.environ['PLASK_PREFIX_PATH'] = PREFIX_PATH = os.path.dirname(os.path.dirname(_basepath))
+    _plask_python_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    _plask_lib_path = os.path.dirname(_plask_python_path)
+    os.environ['PLASK_PREFIX_PATH'] = PREFIX_PATH = os.path.dirname(os.path.dirname(_plask_lib_path))
 else:
     PREFIX_PATH = os.environ['PLASK_PREFIX_PATH']
+    _plask_lib_path = os.path.join(PREFIX_PATH, 'lib', 'plask')
+    _plask_python_path = os.path.join(PREFIX_PATH, 'python')
+_i = sys.path.index(_plask_python_path) if _plask_python_path in sys.path else 0
 
 if os.name == 'nt':
-    _path = os.environ.get('PATH', "").split(';')
-    _plask_bin_path = os.path.join(PREFIX_PATH, 'bin')
-    if _plask_bin_path not in _path:
-        _path.append(_plask_bin_path)
-        os.environ['PATH'] = ';'.join(_path)
-
+    os.add_dll_directory(os.path.join(PREFIX_PATH, 'bin'))
 
 try:
     from . import _plask
@@ -64,7 +61,7 @@ if 'PLASK_SOLVERS_PATH' in os.environ:
         _i += 1
         sys.path.insert(_i, _path)
 else:
-    sys.path.insert(_i+1, os.path.join(_basepath, 'solvers'))
+    sys.path.insert(_i+1, os.path.join(_plask_lib_path, 'solvers'))
 
 
 ## ## plask.material ## ##
