@@ -45,6 +45,17 @@ static py::object initPlask(int argc, const system_char* const argv[]) {
     if (PyImport_AppendInittab("_plask", &PLASK_MODULE) != 0) throw plask::CriticalException("No _plask module");
 
     // Initialize Python
+#if PY_VERSION_HEX >= 0x03080000
+    PyPreConfig preconfig;
+    PyPreConfig_InitPythonConfig(&preconfig);
+    preconfig.utf8_mode = 1;
+    PyStatus status = Py_PreInitialize(&preconfig);
+    // if (PyStatus_Exception(status)) {
+    //     Py_ExitStatusException(status);
+    // }
+#else
+    Py_UTF8Mode = 1;  // use UTF-8 for all strings
+#endif
     Py_Initialize();
 
     // Add search paths
