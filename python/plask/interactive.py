@@ -74,6 +74,7 @@ def _init_ipython_session(argv=[]):
     app.profile = "plask"
     app.display_banner = False
     app.exec_lines = preexec_lines
+    app.interact = app.force_interact = True
     app.initialize(argv)
     return app
 
