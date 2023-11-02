@@ -6,7 +6,7 @@
     in Cartesian 2D geometry.
 
     This solver performs under-threshold thermo-electrical computations.
-    It computes electric current flow and temperaure distribution in
+    It computes electric current flow and temperature distribution in
     a self-consistent loop until desired convergence is reached.
 
   tags:
@@ -235,7 +235,7 @@
     in cylindrical 2D geometry.
 
     This solver performs under-threshold thermo-electrical computations.
-    It computes electric current flow and temperaure distribution in
+    It computes electric current flow and temperature distribution in
     a self-consistent loop until desired convergence is reached.
 
   tags:
@@ -292,7 +292,7 @@
     in 3D geometry.
 
     This solver performs under-threshold thermo-electrical computations.
-    It computes electric current flow and temperaure distribution in
+    It computes electric current flow and temperature distribution in
     a self-consistent loop until desired convergence is reached.
 
   tags:

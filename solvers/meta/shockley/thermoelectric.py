@@ -576,7 +576,7 @@ class ThermoElectricCyl(ThermoElectric):
     Thermo-electric calculations solver without the optical part.
 
     This solver performs under-threshold thermo-electrical computations.
-    It computes electric current flow and temperaure distribution in a self-
+    It computes electric current flow and temperature distribution in a self-
     consistent loop until desired convergence is reached.
 
     The computations can be executed using `compute` method, after which
@@ -636,7 +636,7 @@ class ThermoElectric3D(ThermoElectric):
     Thermo-electric calculations solver without the optical part.
 
     This solver performs under-threshold thermo-electrical computations.
-    It computes electric current flow and temperaure distribution in a self-
+    It computes electric current flow and temperature distribution in a self-
     consistent loop until desired convergence is reached.
 
     The computations can be executed using `compute` method, after which
