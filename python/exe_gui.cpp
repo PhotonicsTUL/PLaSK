@@ -11,6 +11,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
+#include <ctime>
 #include <plask/config.hpp>
 
 #include "exe_common.hpp"  // includes windows.h
@@ -18,9 +19,9 @@
 #ifdef SHOW_SPLASH
 #    include <X11/Xatom.h>
 #    include <X11/Xlib.h>
+#    include <plask/splash1116.h>
 #    include <plask/splash620.h>
 #    include <plask/splash868.h>
-#    include <plask/splash1116.h>
 #endif
 
 //******************************************************************************
@@ -105,14 +106,55 @@ int handlePythonException() {
     PyErr_Fetch(&type, &value, &original_traceback);
     PyErr_NormalizeException(&type, &value, &original_traceback);
     py::handle<> value_h(value), type_h(type), original_traceback_h(py::allow_null(original_traceback));
+
     if (type == PyExc_SystemExit) {
         int exitcode = 0;
         if (PyLong_Check(value)) exitcode = (int)PyLong_AsLong(value);
         PyErr_Clear();
         return exitcode;
     }
+
     std::string msg = py::extract<std::string>(py::str(value_h));
     std::string cap = py::extract<std::string>(py::object(type_h).attr("__name__"));
+
+    std::time_t current_time = std::time(nullptr);
+    char filename[256];
+    boost::filesystem::path filepath;
+    std::strftime(filename, 255, "plaskgui.%Y%m%d.%H%M%S.error.log", std::localtime(&current_time));
+    FILE* log = nullptr;
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+    boost::filesystem::path homepath;
+    if (const char* home = getenv("USERPROFILE")) {
+        homepath = home;
+    } else {
+        const char *hdrive = getenv("HOMEDRIVE"), *hpath = getenv("HOMEPATH");
+        if (hdrive && hpath) homepath = boost::filesystem::path(hdrive) / hpath;
+        else homepath = boost::filesystem::path("C:\\");
+    }
+    if (homepath != boost::filesystem::path("C:\\")) {
+        filepath = homepath / "Desktop" / filename;
+        log = fopen(filepath.string().c_str(), "a");
+    }
+    if (!log) {
+        filepath = homepath / filename;
+        log = fopen(filepath.string().c_str(), "a");
+    }
+#else
+    if (const char* home = getenv("HOME")) filepath = boost::filesystem::path(home) / filename;
+    else filepath = boost::filesystem::path("/tmp") / filename;
+    log = fopen(filepath.string().c_str(), "a");
+#endif
+    if (log) {
+        py::object tb(py::import("traceback"));
+        py::object tb_list(tb.attr("format_exception")(type_h, value_h, original_traceback_h));
+        for(int i = 0; i < py::len(tb_list); i++) {
+            std::string line = py::extract<std::string>(tb_list[i]);
+            fprintf(log, "%s", line.c_str());
+        }
+        fclose(log);
+        msg += "\n\nError details were saved to: " + filepath.string();
+    }
+
     showError(msg, cap);
     return 1;
 }
@@ -235,8 +277,7 @@ class Splash {
             width = splash620.width;
             height = splash620.height;
             data = splash620.data;
-        }
-        else if (scale < 1.8) {
+        } else if (scale < 1.8) {
             width = splash868.width;
             height = splash868.height;
             data = splash868.data;
@@ -246,16 +287,15 @@ class Splash {
             data = splash1116.data;
         }
 
-        window = XCreateSimpleWindow(display, RootWindow(display, scr),
-                                     (screen_width - width) / 2, (screen_height - height) / 2, width, height,
-                                     0, BlackPixel(display, scr), BlackPixel(display, scr));
+        window = XCreateSimpleWindow(display, RootWindow(display, scr), (screen_width - width) / 2, (screen_height - height) / 2,
+                                     width, height, 0, BlackPixel(display, scr), BlackPixel(display, scr));
 
         Atom type = XInternAtom(display, "_NET_WM_WINDOW_TYPE", False);
         Atom value = XInternAtom(display, "_NET_WM_WINDOW_TYPE_SPLASH", False);
         XChangeProperty(display, window, type, XA_ATOM, 32, PropModeReplace, reinterpret_cast<unsigned char*>(&value), 1);
 
-        XImage* image = XCreateImage(display, DefaultVisual(display, 0), 24, ZPixmap, 0, const_cast<char*>(data),
-                                     width, height, 32, 0);
+        XImage* image =
+            XCreateImage(display, DefaultVisual(display, 0), 24, ZPixmap, 0, const_cast<char*>(data), width, height, 32, 0);
 
         pixmap = XCreatePixmap(display, window, width, height, DefaultDepthOfScreen(DefaultScreenOfDisplay(display)));
         GC gc = XCreateGC(display, pixmap, 0, NULL);

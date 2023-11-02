@@ -911,7 +911,7 @@ def _handle_exception(exc_type, exc_value, exc_traceback):
                 error_file = os.path.join(CURRENT_DIR,
                                           time.strftime("plaskgui.%Y%m%d.%H%M%S.error.log",
                                                         time.localtime(time.time())))
-                msg += u"\n\nError details saved to:\n{}".format(error_file)
+                msg += u"\n\nError details were saved to:\n{}".format(error_file)
                 msg += u"\n\nFurther errors will not be reported (but they will be saved to the above file)."
             out = open(error_file, 'a')
         out.write(dat)
