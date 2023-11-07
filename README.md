@@ -54,96 +54,99 @@ appreciate if you gave us a proper recognition by citing the following works:
 #### Deb-dased systems (Debian, Ubuntu, Mint, etc.)
 
 Enter the following commands:
+```shell
+$ sudo apt install g++ git cmake cmake-qt-gui ninja-build libboost-all-dev \
+           libeigen3-dev libexpat1-dev libmkl-dev python3-dev \
+           python3-numpy python3-scipy python3-matplotlib python3-h5py python3-lxml \
+           python3-yaml python3-pyqt5 python3-sphinx python3-pip ipython3 \
+           doxygen libgsl-dev libx11-dev qhelpgenerator-qt5 qttools5-dev-tools \
+           python3-sphinxcontrib.qthelp
 
-    $ sudo apt install g++ git cmake cmake-qt-gui ninja-build libboost-all-dev \
-               libeigen3-dev libexpat1-dev libmkl-dev python3-dev \
-               python3-numpy python3-scipy python3-matplotlib python3-h5py python3-lxml \
-               python3-yaml python3-pyqt5 python3-sphinx python3-pip ipython3 \
-               doxygen libgsl-dev libx11-dev qhelpgenerator-qt5 qttools5-dev-tools \
-               python3-sphinxcontrib.qthelp
+# On Ubuntu 21.10 the following command is necessary
+$ sudo apt install python3-sphinxcontrib.qthelp
 
-    # On Ubuntu 21.10 the following command is necessary
-    $ sudo apt install python3-sphinxcontrib.qthelp
+$ cd _your/chosen/plask/directory_
 
-    $ cd _your/chosen/plask/directory_
+$ git clone git@phys.p.lodz.pl:plask.git .
 
-    $ git clone git@phys.p.lodz.pl:plask.git .
+$ git submodule update --init
 
-    $ git submodule update --init
+$ mkdir build-release
 
-    $ mkdir build-release
+$ cd build-release
 
-    $ cd build-release
+$ cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI_TESTING=OFF ..
 
-    $ cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI_TESTING=OFF ..
-
-    $ ninja
+$ ninja
+```
 
 If you want to build debug version, replace `release` with `debug` and `Release` with `Debug` in above instruction.
 
 You may also use alternative compiler CLang, which should compile your code faster. To do so, replace the above
-`cmake -G Ninja -D CMAKE_BUILD_TYPE=Release ..` command with:
+`cmake -G Ninja -D CMAKE_BUILD_TYPE=Release ..` command with
+```shell
+$ sudo apt install clang
 
-    $ sudo apt install clang
-
-    $ cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..
-
+$ cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..
+```
 
 Additionally, you may install your favorite IDE. E.g. one of the following:
+```shell
+$ sudo apt install code
 
-    $ sudo apt install code
+$ sudo apt install qtcreator
 
-    $ sudo apt install qtcreator
+$ sudo apt install codeblocks
 
-    $ sudo apt install codeblocks
+$ sudo apt install kdevelop
+```
 
-    $ sudo apt install kdevelop
-
-In `qtcreator` of `kdevelop` you may open `CMakeList.txt` as a project.
+In `vscode`, `qtcreator` or `kdevelop` you may open `CMakeList.txt` as a project.
 
 #### Manjaro and Arch Linux
 
 Enter the following commands:
+```shell
+$ sudo pacman -S --needed gcc cmake git boost boost-libs eigen expat \
+       ninja openmp openblas lapack python-numpy python-scipy \
+       python-matplotlib python-h5py python-lxml python-yaml \
+       pyside2 python-sphinx python-pip ipython doxygen gsl libx11
 
-    $ sudo pacman -S --needed gcc cmake git boost boost-libs eigen expat \
-           ninja openmp openblas lapack python-numpy python-scipy \
-           python-matplotlib python-h5py python-lxml python-yaml \
-           pyside2 python-sphinx python-pip ipython doxygen gsl libx11
+$ cd _your/chosen/plask/directory_
 
-    $ cd _your/chosen/plask/directory_
+$ git clone git@phys.p.lodz.pl:plask.git .
 
-    $ git clone git@phys.p.lodz.pl:plask.git .
+$ git submodule update --init
 
-    $ git submodule update --init
+$ mkdir build-release
 
-    $ mkdir build-release
+$ cd build-release
 
-    $ cd build-release
+$ cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI_TESTING=OFF ..
 
-    $ cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_GUI_TESTING=OFF ..
-
-    $ ninja
+$ ninja
+```
 
 If you want to build debug version, replace `release` with `debug` and `Release` with `Debug` in above instruction.
 
 You may also use alternative compiler CLang, which should compile your code faster. To do so, replace the above
-`cmake -G Ninja -D CMAKE_BUILD_TYPE=Release ..` command with:
+`cmake -G Ninja -D CMAKE_BUILD_TYPE=Release ..` command with
+```shell
+$ sudo pacman -S clang
 
-    $ sudo pacman -S clang
-
-    $ cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..
-
+$ cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..
+```
 
 Additionally, you may install your favorite IDE. E.g. one of the following:
+```shell
+$ sudo pacman -S code
 
-    $ sudo pacman -S code
+$ sudo pacman -S kdevelop
 
-    $ sudo pacman -S kdevelop
+$ sudo pacman -S qtcreator
 
-    $ sudo pacman -S qtcreator
-
-    $ sudo pacman -S codeblocks
-
+$ sudo pacman -S codeblocks
+```
 In `vscode`, `qtcreator` of `kdevelop` you may open `CMakeList.txt` as a project.
 
 ### Windows
@@ -186,15 +189,21 @@ Eventually your Path environment variable must contain the following folders:
 - `C:\ProgramData\Anaconda3\Library\usr\bin`
 - `C:\ProgramData\Anaconda3\Scripts`
 
+You also need to define two new environment variables:
+- `CMAKE_PREFIX_PATH` — set its value to `C:\Libraries`
+- `MKLROOT` — set it to `C:\ProgramData\Anaconda3\Library`
+
 Next open an `Anaconda Prompt` as administrator and type two commands:
 
-    conda install mkl-devel
+```
+conda install mkl-devel
+```
 
-The last step is to create the file `%APPDATA%\Python\Python310\site-packages\usercustomize.py` and to put into it:
-
-    import os
-    os.add_dll_directory('C:\\Libraries\\bin')
-
+The last step is to create the file (or open if it already exists) `C:\ProgramData\Anaconda3\Lib\site-packages\sitecustomize.py` and to put into it:
+```python
+import os
+os.add_dll_directory('C:\\Libraries\\bin')
+```
 
 #### Compile PLaSK under Visual Studio
 
