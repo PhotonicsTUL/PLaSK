@@ -1,0 +1,15 @@
+{
+    "recommendations": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "ms-python.python",
+        "redhat.vscode-yaml",
+        "yaeeyore.yapfpf",
+        "xaver.clang-format",
+        "jeff-hykin.better-cpp-syntax",
+        "streetsidesoftware.code-spell-checker",
+        "mhutchie.git-graph",
+        "maattdd.gitless",
+        "rozpuszczalny.vscode-redmine"
+    ]
+}

@@ -31,7 +31,7 @@ if(WIN32 AND NOT CYGWIN AND NOT MSYS)
   )
   find_path(GSL_INCLUDE_DIR
     NAMES gsl/gsl_cdf.h gsl/gsl_randist.h
-    PATHS "C:/Program Files/GnuWin32/include" "C:/Program Files (x86)/GnuWin32/include"
+    PATHS "C:/Libraries/include" "C:/Program Files/GnuWin32/include" "C:/Program Files (x86)/GnuWin32/include"
   )
 
   if(GSL_INCLUDE_DIR)
