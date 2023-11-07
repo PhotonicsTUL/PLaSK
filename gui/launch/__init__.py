@@ -344,6 +344,10 @@ def launch_plask(window):
                     pass
                 if launch_defs:
                     launch_config['defines'].insert(0, save_defs)
+            try:
+                window.current_controller.save_data_in_model()
+            except (etree.LxmlError, ValueError):
+                pass  # error is set in the controller
             launcher.launch(window, shlex.split(launch_args), launch_defs)
     finally:
         if launch_config.get('defines') == []:  # None != []
