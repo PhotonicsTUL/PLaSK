@@ -36,7 +36,7 @@ macro(_eigen3_get_version)
 endmacro(_eigen3_get_version)
 
 find_path(EIGEN3_INCLUDE_DIR NAMES Eigen/Core
-     PATHS "C:/Libraries/include" ${EXPAT_INCLUDE_DIRS}
+     PATHS ${EIGEN3_DIR} ENV EIGEN3_DIR
      PATH_SUFFIXES eigen3
    )
 
