@@ -729,7 +729,7 @@ void export_FourierSolver3D()
         .def("__getattr__", &FourierSolver3D_Mode__getattr__)
     ;
 
-    Scattering<FourierSolver3D>::registerClass("3D");
+    Scattering<FourierSolver3D>::registerClass("3D", "Fourier");
     Eigenmodes<FourierSolver3D>::registerClass("Fourier3D", "3D");
 
     FourierSolver3D_LongTranWrapper<size_t>::register_("Sizes");

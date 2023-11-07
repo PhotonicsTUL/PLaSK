@@ -363,7 +363,7 @@ void export_BesselSolverCyl()
         .def("__repr__", &BesselSolverCyl_Mode_repr)
     ;
 
-    Scattering<BesselSolverCyl>::registerClass("Cyl");
+    Scattering<BesselSolverCyl>::registerClass("Cyl", "Bessel");
     Eigenmodes<BesselSolverCyl>::registerClass("BesselCyl", "Cyl");
 }
 

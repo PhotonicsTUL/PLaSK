@@ -805,7 +805,7 @@ struct Scattering {
         return shared_ptr<Scattering<SolverT>>(new Scattering<SolverT>(parent, side, incident));
     }
 
-    static py::class_<Scattering<SolverT>, shared_ptr<Scattering<SolverT>>, boost::noncopyable> registerClass(const char* suffix, const char* name="Fourier") {
+    static py::class_<Scattering<SolverT>, shared_ptr<Scattering<SolverT>>, boost::noncopyable> registerClass(const char* suffix, const char* name) {
         py::class_<Scattering<SolverT>, shared_ptr<Scattering<SolverT>>, boost::noncopyable> cls("Scattering",
             u8"Reflected mode proxy.\n\n"
             u8"This class contains providers for the scattered field.\n"
@@ -836,34 +836,67 @@ struct Scattering {
                  u8"Args:\n"
                  u8"    level (float): Vertical level at which the coefficients are computed.\n\n"
                  u8":rtype: numpy.ndarray\n"
-                )
-            .def("integrateEE", &Scattering<SolverT>::getIntegralEE, (py::arg("z1"), "z2"),
-                 u8"Get average integral of the squared electric field:\n\n"
-                 u8"\\\\[\\\\frac 1 2 \\\\int_{z_1}^{z_2} \\|E\\|^2.\\\\]\n\n"
-                 u8"In the lateral direction integration is performed over the whole domain.\n\n"
-                 u8"Args:\n"
-                 u8"    z1 (float): Lower vertical bound of the integral.\n"
-                 u8"    z2 (float): Upper vertical bound of the integral.\n\n"
-                 u8"Returns:\n"
-                 u8"    float: Computed integral [V\\ :sup:`2` / m\\ :sup:`2`].\n\n"
-                 u8"Warning:\n"
-                 u8"    This method may return incorrect results for layers with gain,\n"
-                 u8"    due to the strong non-Hemiticity!\n"
-                )
-            .def("integrateHH", &Scattering<SolverT>::getIntegralHH, (py::arg("z1"), "z2"),
-                 u8"Get average integral of the squared magnetic field:\n\n"
-                 u8"\\\\[\\\\frac 1 2 \\\\int_{z_1}^{z_2} \\|H\\|^2.\\\\]\n\n"
-                 u8"In the lateral direction integration is performed over the whole domain.\n\n"
-                 u8"Args:\n"
-                 u8"    z1 (float): Lower vertical bound of the integral.\n"
-                 u8"    z2 (float): Upper vertical bound of the integral.\n"
-                 u8"Returns:\n"
-                 u8"    float: Computed integral [A\\ :sup:`2` / m\\ :sup:`2`].\n"
-                 u8"Warning:\n"
-                 u8"    This method may return incorrect results for layers with gain,\n"
-                 u8"    due to the strong non-Hemiticity!\n"
-                )
+                );
 
+        if (suffix[0] == '2') {
+            cls
+                .def("integrateEE", &Scattering<SolverT>::getIntegralEE, (py::arg("z1"), "z2"),
+                     u8"Get average integral of the squared electric field:\n\n"
+                     u8"\\\\[\\\\frac 1 2 \\\\int\\\\int_{z_1}^{z_2} \\|E\\|^2.\\\\]\n\n"
+                     u8"In the lateral direction integration is performed over the whole domain.\n\n"
+                     u8"Args:\n"
+                     u8"    z1 (float): Lower vertical bound of the integral.\n"
+                     u8"    z2 (float): Upper vertical bound of the integral.\n\n"
+                     u8"Returns:\n"
+                     u8"    float: Computed integral [V\\ :sup:`2`].\n\n"
+                     // u8"Warning:\n"
+                     // u8"    This method may return incorrect results for layers with gain,\n"
+                     // u8"    due to the strong non-Hemiticity!\n"
+                    )
+                .def("integrateHH", &Scattering<SolverT>::getIntegralHH, (py::arg("z1"), "z2"),
+                     u8"Get average integral of the squared magnetic field:\n\n"
+                     u8"\\\\[\\\\frac 1 2 \\\\int\\\\int_{z_1}^{z_2} \\|H\\|^2.\\\\]\n\n"
+                     u8"In the lateral direction integration is performed over the whole domain.\n\n"
+                     u8"Args:\n"
+                     u8"    z1 (float): Lower vertical bound of the integral.\n"
+                     u8"    z2 (float): Upper vertical bound of the integral.\n"
+                     u8"Returns:\n"
+                     u8"    float: Computed integral [A\\ :sup:`2`].\n"
+                     // u8"Warning:\n"
+                     // u8"    This method may return incorrect results for layers with gain,\n"
+                     // u8"    due to the strong non-Hemiticity!\n"
+                    );
+        } else {
+            cls
+                .def("integrateEE", &Scattering<SolverT>::getIntegralEE, (py::arg("z1"), "z2"),
+                     u8"Get average integral of the squared electric field:\n\n"
+                     u8"\\\\[\\\\frac 1 2 \\\\int\\\\int_{z_1}^{z_2} \\|E\\|^2.\\\\]\n\n"
+                     u8"In the lateral direction integration is performed over the whole domain.\n\n"
+                     u8"Args:\n"
+                     u8"    z1 (float): Lower vertical bound of the integral.\n"
+                     u8"    z2 (float): Upper vertical bound of the integral.\n\n"
+                     u8"Returns:\n"
+                     u8"    float: Computed integral [V\\ :sup:`2` m].\n\n"
+                     // u8"Warning:\n"
+                     // u8"    This method may return incorrect results for layers with gain,\n"
+                     // u8"    due to the strong non-Hemiticity!\n"
+                    )
+                .def("integrateHH", &Scattering<SolverT>::getIntegralHH, (py::arg("z1"), "z2"),
+                     u8"Get average integral of the squared magnetic field:\n\n"
+                     u8"\\\\[\\\\frac 1 2 \\\\int\\\\int_{z_1}^{z_2} \\|H\\|^2.\\\\]\n\n"
+                     u8"In the lateral direction integration is performed over the whole domain.\n\n"
+                     u8"Args:\n"
+                     u8"    z1 (float): Lower vertical bound of the integral.\n"
+                     u8"    z2 (float): Upper vertical bound of the integral.\n"
+                     u8"Returns:\n"
+                     u8"    float: Computed integral [A\\ :sup:`2` m].\n"
+                     // u8"Warning:\n"
+                     // u8"    This method may return incorrect results for layers with gain,\n"
+                     // u8"    due to the strong non-Hemiticity!\n"
+                    );
+        }
+
+        cls
             .add_property("R", &Scattering<SolverT>::reflectivity, u8"Total reflection coefficient (-).")
             .add_property("T", &Scattering<SolverT>::transmittivity, u8"Total transmission coefficient (-).")
             .add_property("reflectivity", &Scattering<SolverT>::reflectivity100, u8"Total reflection coefficient [%].\n\nThis differs from :attr:`Scattering.R` by unit.\n")

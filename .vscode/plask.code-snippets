@@ -1,0 +1,76 @@
+{
+	"cpp-template": {
+		"prefix": "Template: cpp",
+		"body": [
+			"/* ",
+			" * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL",
+			" * Copyright (c) $CURRENT_YEAR Lodz University of Technology",
+			" * ",
+			" * This program is free software: you can redistribute it and/or modify",
+			" * it under the terms of the GNU General Public License as published by",
+			" * the Free Software Foundation, version 3.",
+			" *",
+			" * This program is distributed in the hope that it will be useful,",
+			" * but WITHOUT ANY WARRANTY; without even the implied warranty of",
+			" * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the",
+			" * GNU General Public License for more details.",
+			" */",
+			"",
+			"",
+			"namespace plask {",
+			"",
+			"${0}",
+			"",
+			"} // namespace plask",
+		],
+		"description": "PLaSK: CPP File Template"
+	},
+	"hpp-template": {
+		"prefix": "Template: hpp ",
+		"body": [
+			"/* ",
+			" * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL",
+			" * Copyright (c) $CURRENT_YEAR Lodz University of Technology",
+			" * ",
+			" * This program is free software: you can redistribute it and/or modify",
+			" * it under the terms of the GNU General Public License as published by",
+			" * the Free Software Foundation, version 3.",
+			" *",
+			" * This program is distributed in the hope that it will be useful,",
+			" * but WITHOUT ANY WARRANTY; without even the implied warranty of",
+			" * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the",
+			" * GNU General Public License for more details.",
+			" */",
+			"#ifndef ${1:${RELATIVE_FILEPATH/(\\w)|([\\.\\/])/${1:/upcase}${2:+_}/gm}}",
+			"#define ${1:${RELATIVE_FILEPATH/(\\w)|([\\.\\/])/${1:/upcase}${2:+_}/gm}}",
+						"",
+			"",
+			"namespace plask {",
+			"",
+			"${0}",
+			"",
+			"} // namespace plask",
+			"",
+			"#endif"
+		],
+		"description": "PLaSK: HPP File Template"
+	},
+	"python-template": {
+		"prefix": "Template: python",
+		"body": [
+			"# This file is part of PLaSK (https://plask.app) by Photonics Group at TUL",
+			"# Copyright (c) $CURRENT_YEAR Lodz University of Technology",
+			"#",
+			"# This program is free software: you can redistribute it and/or modify",
+			"# it under the terms of the GNU General Public License as published by",
+			"# the Free Software Foundation, version 3.",
+			"#",
+			"# This program is distributed in the hope that it will be useful,",
+			"# but WITHOUT ANY WARRANTY; without even the implied warranty of",
+			"# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the",
+			"# GNU General Public License for more details.",
+			""
+		],
+		"description": "PLaSK: Python File Template"
+	}
+}

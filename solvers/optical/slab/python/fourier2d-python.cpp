@@ -629,7 +629,7 @@ void export_FourierSolver2D() {
         .def("__repr__", &FourierSolver2D_Mode_repr)
         .def("__getattr__", &FourierSolver2D_Mode__getattr__);
 
-    Scattering<FourierSolver2D>::registerClass("2D");
+    Scattering<FourierSolver2D>::registerClass("2D", "Fourier");
     Eigenmodes<FourierSolver2D>::registerClass("Fourier2D", "2D");
 }
 
