@@ -156,8 +156,8 @@ class MaterialsComboBox(ComboBox):
         self.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         if defines_model is not None:
             completer = get_defines_completer(defines_model, parent, material_list)
-            if show_popup:
-                completer.activated.connect(self.show_components_popup)
+            # if show_popup:
+            #     completer.activated.connect(self.show_components_popup)
             if editable:
                 line_edit.setCompleter(completer)
             else:
@@ -226,9 +226,6 @@ class MaterialsComboBox(ComboBox):
         except:
             pass  # it is possible that internal combo box has been deleted
         if self.popup_select_cb is not None: self.popup_select_cb(material_name)
-
-    def wheelEvent(self, evt):
-        evt.ignore()
 
 
 class ExternalLineEdit(QLineEdit):

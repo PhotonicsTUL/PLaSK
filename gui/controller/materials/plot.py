@@ -208,6 +208,15 @@ class MaterialPlot(QWidget):
                 arg.setChecked(True)
 
         if init_material is not None:
+            if '{' in init_material:
+                manager = plask.Manager(draft=True)
+                try:
+                    manager.load(self._get_xpl_content((defines,)))
+                except:
+                    pass
+                else:
+                    init_material = init_material.format(**manager.defs)
+                del manager
             self.set_material(init_material, True)
             self.material.setDisabled(True)
         else:
@@ -224,9 +233,9 @@ class MaterialPlot(QWidget):
             except:
                 pass
 
-    def _get_xpl_content(self):
+    def _get_xpl_content(self, models=None):
         data = '<plask loglevel="error">\n\n'
-        for m in (self.defines, self.model):
+        for m in models or (self.defines, self.model):
             try:
                 element = m.make_file_xml_element()
             except:

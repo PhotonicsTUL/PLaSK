@@ -56,6 +56,7 @@ class MultiEditorController(Controller):
         self.info_table.setModel(self.info_model)
         self.info_table.setSelectionMode(QListView.SelectionMode.NoSelection)
         self.info_table.setVisible(False)
+        self.info_table.setFixedHeight(0)
         self.info_model.entries = []
         info_selection_model = self.info_table.selectionModel()
         info_selection_model.currentChanged.connect(self._on_select_info)
@@ -132,11 +133,11 @@ class MultiEditorController(Controller):
             self.info_table.setVisible(False)
         else:
             self.info_table.setVisible(True)
+            self.adjust_info_height()
 
     def adjust_info_height(self):
         if self.info_table.isVisible():
             scrollbar = self.info_table.horizontalScrollBar()
-            height = self.info_table.sizeHintForRow(0) * self.info_model.rowCount() + 4
             height = self.info_table.sizeHintForRow(0) * min(self.info_model.rowCount(), 3)
             if scrollbar.isVisible():
                 height += scrollbar.sizeHint().height()
