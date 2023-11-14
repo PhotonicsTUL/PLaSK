@@ -348,7 +348,7 @@ class PlotWidgetBase(QWidget):
         vbox.setContentsMargins(0, 0, 2, 1)
 
         self.axes = self.figure.add_subplot(111, adjustable='datalim')
-        self.axes.grid(True)
+        self.axes.grid(CONFIG['plots/show_grid'])
         # self.axes.tick_params(axis='both', length=6, width=1, direction='in', which='major', zorder=9,
         #                       labelbottom=False, labeltop=False, labelleft=False, labelright=False)
         # self.axes.tick_params(axis='both', length=3, width=1, direction='in', which='minor', zorder=9)
@@ -386,8 +386,11 @@ class PlotWidgetBase(QWidget):
         self.axes.cla()
         self.selectors = []
         self.axes.minorticks_on()
-        self.axes.grid(which='major', ls='-', lw=1, alpha=0.4, color='0.5')
-        self.axes.grid(which='minor', ls='-', lw=1, alpha=0.1, color='0.5')
+        if CONFIG['plots/show_grid']:
+            self.axes.grid(which='major', ls='-', lw=1, alpha=0.4, color=CONFIG['plots/grid_color'])
+            self.axes.grid(which='minor', ls='-', lw=1, alpha=0.1, color=CONFIG['plots/grid_color'])
+        else:
+            self.axes.grid(False)
         self.axes.axhline(0., ls='-', color=CONFIG['plots/axes_color'], alpha=0.4, zorder=3)
         self.axes.axvline(0., ls='-', color=CONFIG['plots/axes_color'], alpha=0.4, zorder=3)
         margin = 0.1 if set_limits else None

@@ -124,6 +124,7 @@ DEFAULTS = {
                        if matplotlib is not None else '#000000',
     'plots/grid_color': matplotlib.colors.to_hex(matplotlib.rcParams['grid.color'])
                        if matplotlib is not None else '#b0b0b0',
+    'plots/show_grid': True,
     'syntax/python_builtin': 'color=maroon',
     'syntax/python_comment': 'color=#5ca45c, italic=true',
     'syntax/python_decorator': 'color=#009f81',

@@ -330,6 +330,7 @@ CONFIG_WIDGETS = {
             ("Edges color", Color('plots/edge_color', "Color of edges in all plots.")),
             ("Axes color", Color('plots/axes_color', "Color of zero axes in all plots.")),
             ("Grid color", Color('plots/grid_color', "Color of grid in all plots.")),
+            ('Show grid', CheckBox('plots/show_grid', "Show grid in all plots.")),
         ],
         "Geometry View": [
             ("Selection frame color", Color('geometry/selected_color',

@@ -405,7 +405,7 @@ class GridsController(Controller):
             colors = CONFIG['geometry/material_colors'].copy()
             self.mesh_preview.get_color = BwColor(colors, self.mesh_preview.axes)
             self.mesh_preview.axes.set_facecolor(CONFIG['plots/face_color'])
-            self.mesh_preview.axes.grid(True, color=CONFIG['plots/grid_color'])
+            self.mesh_preview.axes.grid(CONFIG['plots/show_grid'], color=CONFIG['plots/grid_color'])
             if self._current_controller is not None and \
                (self.plot_auto_refresh or hasattr(self._current_controller.model, 'geometry_name')):
                 if self.current_mesh is None or self.current_geometry is None:

@@ -238,5 +238,5 @@ class GeometrySourceController(SourceEditController):
             colors = CONFIG['geometry/material_colors'].copy()
             self.geometry_view.get_color = plask.ColorFromDict(colors, self.geometry_view.axes)
             self.geometry_view.axes.set_facecolor(CONFIG['plots/face_color'])
-            self.geometry_view.axes.grid(True, color=CONFIG['plots/grid_color'])
+            self.geometry_view.axes.grid(CONFIG['plots/show_grid'], color=CONFIG['plots/grid_color'])
             self.plot_current_element()
