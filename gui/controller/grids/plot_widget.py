@@ -22,6 +22,7 @@ from ...utils.matplotlib import PlotWidgetBase, PlotWidgetWithInfoBase, BwColor
 
 
 class PlotWidget(PlotWidgetWithInfoBase):
+
     class NavigationToolbar(PlotWidgetBase.NavigationToolbar):
 
         toolitems = (

@@ -77,15 +77,18 @@ class FigureCanvasWithInfo(FigureCanvas):
         info_selection_model = self.info_table.selectionModel()
         info_selection_model.currentChanged.connect(self._on_select_info)
 
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
+    def _adjust_info_size(self, width):
         if self.info_table.isVisible():
-            self.info_table.setFixedWidth(event.size().width())
+            self.info_table.setFixedWidth(width)
             scrollbar = self.info_table.horizontalScrollBar()
             height = self.info_table.sizeHintForRow(0) * self.info_model.rowCount() + 4
             if scrollbar.isVisible():
                 height += scrollbar.sizeHint().height()
             self.info_table.setFixedHeight(int(height))
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._adjust_info_size(event.size().width())
 
     def _on_info_layout_changed(self):
         rows = self.info_model.rowCount()
@@ -93,6 +96,7 @@ class FigureCanvasWithInfo(FigureCanvas):
             self.info_table.setVisible(False)
         else:
             self.info_table.setVisible(True)
+            self._adjust_info_size(self.size().width())
 
     def _on_select_info(self, current, _):
         row = current.row()
