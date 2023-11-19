@@ -13,20 +13,15 @@ This section contains specification of custom materials that can be used togethe
 
    Definition of a custom material.
 
-   :attr required name: Name of the material. As all custom materials are simple materials, it can be an arbitrary identifier string. However, it may also contain a doping specification without the doping amount.
+   :attr required name: Name of the material. As all custom materials are simple materials, it can be an arbitrary identifier string. However, it may also contain a doping specification without the doping amount (e.g. "``myGaAs``" or "``newAlAs:Si``").
    :attr required base: Textual specification of the base material. The doping amount information can be skipped from it, in which case the doping amount will have to be specified when the custom material is used. The following bases are always available: *semiconductor*, *dielectric*, *oxide*, *metal*, *liquid_crystal*.
+   :attr alloy: If you specify attribute ``alloy="yes"``, your material will be an alloy. Its name must then consist of element names with an optional custom label after the "``_``" character. For example: "``GaInN``" "``AlGaAs_custom``".
 
    .. xml:contents::
 
-      The content of this element is the list of user-defined material properties. Each element of such list is a tag specifying the particular property which content is a mathematical expression computing this property. Each such expression can use several variables: the ones specified below next to each tag and ``dc`` or ``cc`` that will contain the user specified doping amounts: dopant or carriers concentration, respectively (at most one of ``cc`` or ``dc`` is defined, never both). If the expression does not use any variables, it is evaluated only once when XPL file is being loaded.
+      The content of this element is the list of user-defined material properties. Each element of such list is a tag specifying the particular property which content is a mathematical expression computing this property. Each such expression can use several variables: the ones specified below next to each tag and ``self`` that refers to the material itself and allows to access its doping (``self.doping``) and composition in case of alloys (e.g. ``self.Ga`` for the amount of gallium). You may also access the parameters of base materials using ``super()`` function (e.g. ``super().thermk(T)``). If the expression does not use any variables, it is evaluated only once when XPL file is being loaded.
 
       Some properties are anisotropic and can have different values for lateral and vertical components. In such case, two separate values may (but do not have to) be defined in the contents of the material property tag and they should be separated with a comma.
-
-      Content of each property can contain doc-string which can provide additional information on the calculation method. Lines of the doc-string with the following formats have special meanings:
-
-      - ``*source:* ...`` - bibliography source of calculation method of the material property;
-      - ``*see:* material_name.property comment`` link to different property (of different material, if given) (both ``material_name`` and ``comment`` are optional, but dot is always required);
-      - ``argument_name *range:* from*:*to`` the range of the argument values for which the calculation method is known to works fine; ``from`` and ``to`` are floats and ``argument_name`` is one of: ``T``, ``e``, ``lam``, ``n``, ``h``, ``doping``
 
       .. rubric:: Example:
 
@@ -35,7 +30,7 @@ This section contains specification of custom materials that can be used togethe
          <materials>
            <material name="MyMaterial" base="Semiconductor">
              <nr>3.5 + 0.01*T</nr>
-             <absp comment="no temperature dependence">10.</absp>
+             <absp>10.</absp>
            </material>
          <materials>
 
@@ -205,7 +200,7 @@ This section contains specification of custom materials that can be used togethe
 
       .. xml:tag:: <Eg>
 
-         Energy gap *E*\ :sub:`g` (eV).
+         Energy band gap *E*\ :sub:`g` (eV).
 
          Variables: ``T`` — temperature (K), ``e`` — lateral strain (-),
          ``point`` — point in the Brillouin zone ('*' means minimum bandgap).
@@ -254,21 +249,21 @@ This section contains specification of custom materials that can be used togethe
       .. xml:tag:: <mob>
 
          Majority carriers mobility in-plane (lateral) and cross-plane (vertical) direction
-         (cm\ :sup:`2`/Vs).
+         (cm\ :sup:`2`/(Vs)).
 
          Variables: T — temperature (K).
 
       .. xml:tag:: <mobe>
 
          Electron mobility in-plane (lateral) and cross-plane (vertical) direction
-         (cm\ :sup:`2`/Vs).
+         (cm\ :sup:`2`/(Vs)).
 
          Variables: T — temperature (K).
 
       .. xml:tag:: <mobh>
 
          Hole mobility in-plane (lateral) and cross-plane (vertical) direction
-         (cm\ :sup:`2`/Vs).
+         (cm\ :sup:`2`/(Vs)).
 
          Variables: T — temperature (K).
 
