@@ -16,7 +16,10 @@ is_py26 = not is_py3 and sys.version_info[1] < 7
 
 
 def find_module_py33(string, path=None):
-    loader = importlib.machinery.PathFinder.find_module(string, path)
+    if sys.version_info < (3, 5):
+        loader = importlib.machinery.PathFinder.find_module(string, path)
+    else:
+        loader = importlib.machinery.PathFinder.find_spec(string, path).loader
 
     if loader is None and path is None:  # Fallback to find builtins
         loader = importlib.find_loader(string)

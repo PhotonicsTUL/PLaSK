@@ -51,7 +51,7 @@ def preload_jedi_modules():
         try:
             jedi.Script(PREAMBLE, 8, 0, None).completions()
         except:
-            from ... import _DEBUG
+            from .... import _DEBUG
             if _DEBUG:
                 import traceback
                 traceback.print_exc()

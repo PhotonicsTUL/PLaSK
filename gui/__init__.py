@@ -16,6 +16,7 @@ import os
 import re
 import subprocess
 import pkgutil
+import importlib
 import traceback
 import datetime
 
@@ -949,14 +950,14 @@ def load_plugins():
         plugin_dirs = [os.path.expanduser("~/.local/lib/plask/gui/plugins"), "/etc/plask/gui/plugins"]
     plugin_dirs.append(os.path.join(__path__[0], 'plugins'))
 
-    for loader, modname, ispkg in pkgutil.iter_modules(plugin_dirs):
+    for finder, modname, ispkg in pkgutil.iter_modules(plugin_dirs):
         name = desc = None
-        if ispkg:
-            fname = os.path.join(loader.find_module(modname).get_filename())
-            if not fname.endswith('__init__.py'):
-                fname = os.path.join(fname, '__init__.py')
+        if sys.version_info < (3, 5):
+            fname = finder.find_module(modname).get_filename()
         else:
-            fname = loader.find_module(modname).get_filename()
+            fname = finder.find_spec(modname).loader.path
+        if ispkg and not fname.endswith('__init__.py'):
+            fname = os.path.join(fname, '__init__.py')
         try:
             for line in open(fname):
                 line = line.strip()
@@ -973,7 +974,10 @@ def load_plugins():
             PLUGINS.append((modname, name, desc))
             try:
                 if CONFIG.get('plugins/{}'.format(modname), True):
-                    loader.find_module(modname).load_module(modname)
+                    if sys.version_info < (3, 5):
+                        finder.find_module(modname).load_module(modname)
+                    else:
+                        fname = finder.find_spec(modname).loader.load_module(modname)
             except:
                 if _DEBUG:
                     import traceback as tb
