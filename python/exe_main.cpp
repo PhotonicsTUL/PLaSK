@@ -25,7 +25,12 @@
 //******************************************************************************
 #define PLASK_MODULE PyInit__plask
 extern "C" PyObject* PLASK_MODULE(void);
+
+#if PY_VERSION_HEX < 0x030C0000
 PyAPI_DATA(int) Py_UnbufferedStdioFlag;
+#else
+static bool unbuffered_stdio = false;
+#endif
 
 //******************************************************************************
 py::object* globals;
@@ -76,7 +81,7 @@ static py::object initPlask(int argc, const system_char* argv[], bool banner) {
     // Initialize the plask module
     if (PyImport_AppendInittab("_plask", &PLASK_MODULE) != 0) throw plask::CriticalException("No _plask module");
 
-    // Initialize Python
+        // Initialize Python
 #if PY_VERSION_HEX >= 0x03080000
     PyPreConfig preconfig;
     PyPreConfig_InitPythonConfig(&preconfig);
@@ -88,7 +93,16 @@ static py::object initPlask(int argc, const system_char* argv[], bool banner) {
 #elif PY_VERSION_HEX >= 0x03070000
     Py_UTF8Mode = 1;  // use UTF-8 for all strings
 #endif
+
+#if PY_VERSION_HEX >= 0x030C0000
+    PyConfig config;
+    PyConfig_InitPythonConfig(&config);
+    config.buffered_stdio = !unbuffered_stdio;
+    Py_InitializeFromConfig(&config);
+    PyConfig_Clear(&config);
+#else
     Py_Initialize();
+#endif
 
     // Add search paths
     py::object sys = py::import("sys");
@@ -430,7 +444,11 @@ int
             setvbuf(stdout, nullptr, _IONBF, 0);
             setvbuf(stderr, nullptr, _IONBF, 0);
             log_color = "none";
+#if PY_VERSION_HEX < 0x030C0000
             Py_UnbufferedStdioFlag = 1;
+#else
+            unbuffered_stdio = true;
+#endif
             --argc;
             ++argv;
         } else if (arg == CSTR(-x)) {
