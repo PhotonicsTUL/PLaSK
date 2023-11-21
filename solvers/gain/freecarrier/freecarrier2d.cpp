@@ -123,8 +123,8 @@ template <typename GeometryT> void FreeCarrierGainSolver2D<GeometryT>::detectAct
             throw Exception("{0}: Active region cannot be located at the top of the structure.", this->getId());
         this->regions.emplace_back(mesh->at(reg.left, reg.bottom - 1));
         auto region = &this->regions.back();
-        region->bottom = mesh->axis[1]->at(1) - mesh->axis[1]->at(0);
-        region->top = mesh->axis[1]->at(mesh->axis[1]->size() - 1) - mesh->axis[1]->at(mesh->axis[1]->size() - 2);
+        region->bottom = mesh->axis[1]->at(reg.bottom) - mesh->axis[1]->at(reg.bottom - 1);
+        region->top = mesh->axis[1]->at(reg.top + 1) - mesh->axis[1]->at(reg.top);
         double width = mesh->axis[0]->at(reg.right) - mesh->axis[0]->at(reg.left);
         for (size_t r = reg.bottom - 1, j = 0; r <= reg.top; ++r, ++j) {
             bool layerQW = false;

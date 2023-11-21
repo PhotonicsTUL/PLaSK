@@ -22,13 +22,10 @@ namespace plask { namespace gain { namespace freecarrier {
  * Gain solver using Fermi Golden Rule
  */
 struct PLASK_SOLVER_API FreeCarrierGainSolver3D : public FreeCarrierGainSolver<SolverOver<Geometry3D>> {
-    /// Data for energy level
-
-    /// Structure containing information about each active region
     using typename FreeCarrierGainSolver<SolverOver<Geometry3D>>::ActiveRegionInfo;
-
-    /// Structure containing active region data for current used
     using typename FreeCarrierGainSolver<SolverOver<Geometry3D>>::ActiveRegionParams;
+    using typename FreeCarrierGainSolver<SolverOver<Geometry3D>>::GeometryType;
+    using typename FreeCarrierGainSolver<SolverOver<Geometry3D>>::GainSpectrumType;
 
     FreeCarrierGainSolver3D(const std::string& name = "");
 

@@ -126,11 +126,10 @@ void FreeCarrierGainSolver3D::detectActiveRegions() {
             throw Exception("{0}: Active region cannot be located at the top of the structure.", this->getId());
         this->regions.emplace_back(mesh->at(0, 0, reg.bottom - 1));
         auto region = &this->regions.back();
-        region->bottom = mesh->axis[2]->at(1) - mesh->axis[2]->at(0);
-        region->top = mesh->axis[2]->at(mesh->axis[2]->size() - 1) - mesh->axis[2]->at(mesh->axis[2]->size() - 2);
+        region->bottom = mesh->axis[2]->at(reg.bottom) - mesh->axis[2]->at(reg.bottom - 1);
+        region->top = mesh->axis[2]->at(reg.top + 1) - mesh->axis[2]->at(reg.top);
         double dx = mesh->axis[0]->at(mesh->axis[0]->size() - 1) - mesh->axis[0]->at(0);
         double dy = mesh->axis[1]->at(mesh->axis[1]->size() - 1) - mesh->axis[1]->at(0);
-
         for (size_t i = reg.bottom - 1, j = 0; i <= reg.top; ++i, ++j) {
             bool QW = reg.isQW[i];
             auto material = reg.materials[j];

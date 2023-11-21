@@ -238,7 +238,8 @@ BOOST_PYTHON_MODULE(freecarrier) {
 
         py::scope scope = solver;
         (void)scope;  // don't warn about unused variable scope
-        py::class_<GainSpectrum<__Class__>, plask::shared_ptr<GainSpectrum<__Class__>>, boost::noncopyable>(
+        py::class_<typename __Class__::GainSpectrumType, plask::shared_ptr<typename __Class__::GainSpectrumType>,
+                   boost::noncopyable>(
             "Spectrum", u8"Gain spectrum object. You can call it like a function to get gains for different wavelengths.",
             py::no_init)
             .def("__call__", &FreeCarrierGainSpectrum__call__<__Class__>, py::arg("lam"),
@@ -321,7 +322,8 @@ BOOST_PYTHON_MODULE(freecarrier) {
 
         py::scope scope = solver;
         (void)scope;  // don't warn about unused variable scope
-        py::class_<GainSpectrum<__Class__>, plask::shared_ptr<GainSpectrum<__Class__>>, boost::noncopyable>(
+        py::class_<typename __Class__::GainSpectrumType, plask::shared_ptr<typename __Class__::GainSpectrumType>,
+                   boost::noncopyable>(
             "Spectrum", u8"Gain spectrum object. You can call it like a function to get gains for different wavelengths.",
             py::no_init)
             .def("__call__", &FreeCarrierGainSpectrum__call__<__Class__>, py::arg("lam"),
@@ -400,7 +402,8 @@ BOOST_PYTHON_MODULE(freecarrier) {
 
         py::scope scope = solver;
         (void)scope;  // don't warn about unused variable scope
-        py::class_<GainSpectrum<__Class__>, plask::shared_ptr<GainSpectrum<__Class__>>, boost::noncopyable>(
+        py::class_<typename __Class__::GainSpectrumType, plask::shared_ptr<typename __Class__::GainSpectrumType>,
+                   boost::noncopyable>(
             "Spectrum", u8"Gain spectrum object. You can call it like a function to get gains for different wavelengths.",
             py::no_init)
             .def("__call__", &FreeCarrierGainSpectrum__call__<__Class__>, py::arg("lam"),
