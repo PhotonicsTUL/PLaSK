@@ -26,7 +26,7 @@ Constants
 :attr:`Z0`      Free space impedance (Ω)
 :attr:`h.J`     Planck constant (J·s)
 :attr:`h.eV`    Planck constant (eV·s)
-:attr:`SB`      Stefan-Boltzmann constant (W/(m\ :sup:`2`\ ·K\ :sup:`4`\ ))
+:attr:`SB`      Stefan-Boltzmann constant (W/(m\\ :sup:`2`\\ ·K\\ :sup:`4`\\ ))
 :attr:`kB.J`    Boltzmann constant (J/K)
 :attr:`kB.eV`   Boltzmann constant (eV/K)
 =============== ============================================================
