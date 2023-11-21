@@ -28,4 +28,14 @@ Custom Material Class in Python
 ===============================
 .. _sec-custom-materials-python:
 
+The second way is to define a custom material class in Python. This is more flexible and allows you to use all the features of Python language. You can do it by creating a Python module with definitions of your materials. Then, you may load this material in your XPL file by adding
+
+.. code-block:: xml
+
+    <module name="module_name"/>
+
+to the ``<materials>`` section or by selectinf *Add Module* in GUI.
+
+
+
 If custom __init__ ALWAYS call superclass __init__.
