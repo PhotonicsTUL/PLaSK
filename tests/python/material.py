@@ -102,7 +102,7 @@ class Material(unittest.TestCase):
         print(ptest.NR(m1))
         self.assertEqual(tuple(ptest.NR(m1)), (3.5, 3.6, 3.7, 0.1))
 
-        with(self.assertRaisesRegexp(TypeError, "'N' not allowed in material AlGaAs:Dp")):
+        with(self.assertRaisesRegex(TypeError, "'N' not allowed in material AlGaAs:Dp")):
             mx = Material.AlGaAsDp(Al=0.2, N=0.9, doping=1e18)
 
         m2 = material.AlGaAs(Al=0.2, dopant="Dp", doping=5.0)
@@ -120,7 +120,7 @@ class Material(unittest.TestCase):
 
         c = Material.WithChar()
         self.assertEqual(c.name, "WithChar")
-        with self.assertRaisesRegexp(NotImplementedError, "Method not implemented"): c.VB(1.0)
+        with self.assertRaisesRegex(NotImplementedError, "Method not implemented"): c.VB(1.0)
         self.assertEqual( ptest.call_chi(c, 'A'), 1.5)
 
     def testInfo(self):

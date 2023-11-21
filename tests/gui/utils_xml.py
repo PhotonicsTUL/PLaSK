@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -61,11 +61,11 @@ class TestAttributeReader(GUITestCase):
         return AttributeReader(etree.XML('<element attr1="val1" attr2="val2" attr3="val3"/>'))
 
     def test_unexpected_attributes(self):
-        with self.assertRaisesRegexp(ValueError, 'unexpected.*attr'):
+        with self.assertRaisesRegex(ValueError, 'unexpected.*attr'):
             with TestAttributeReader._construct_reader(): pass
 
     def test_unexpected_attribute(self):
-        with self.assertRaisesRegexp(ValueError, 'unexpected.*attr2'):
+        with self.assertRaisesRegex(ValueError, 'unexpected.*attr2'):
             with TestAttributeReader._construct_reader() as r:
                 self.assertEqual(r.get('attr1'), 'val1')
                 self.assertEqual(r.get('attr3'), 'val3')
@@ -74,7 +74,7 @@ class TestAttributeReader(GUITestCase):
         with TestAttributeReader._construct_reader() as r:
             self.assertEqual(r.require('attr1'), 'val1')
             self.assertEqual(r.require('attr2'), 'val2')
-            with (self.assertRaisesRegexp(KeyError, '"unexisted_attr" is expected in tag <element>')):
+            with (self.assertRaisesRegex(KeyError, '"unexisted_attr" is expected in tag <element>')):
                 r.require('unexisted_attr')
             self.assertEqual(r.require('attr3'), 'val3')
 
@@ -103,7 +103,7 @@ class TestAttributeReader(GUITestCase):
             self.assertEqual(r['attr3'], 'val3')
 
     def test_mark_read_some(self):
-        with self.assertRaisesRegexp(ValueError, 'unexpected.*attr3'):
+        with self.assertRaisesRegex(ValueError, 'unexpected.*attr3'):
             with TestAttributeReader._construct_reader() as r:
                 r.mark_read('attr1', 'attr2')
 
@@ -114,7 +114,7 @@ class TestAttributeReader(GUITestCase):
     def test_require_all_read(self):
         with TestAttributeReader._construct_reader() as r:
             r.mark_read('attr1', 'attr2')
-            with self.assertRaisesRegexp(ValueError, 'unexpected.*attr3'):
+            with self.assertRaisesRegex(ValueError, 'unexpected.*attr3'):
                 r.require_all_read()
             self.assertEqual(r.require('attr3'), 'val3')
 
@@ -138,11 +138,11 @@ class TestOrderedTagReader(GUITestCase):
             '</parent>'))
 
     def test_unexpected_child(self):
-        with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child.*aaa'):
+        with self.assertRaisesRegex(ValueError, 'parent.*has unexpected child.*aaa'):
             with TestOrderedTagReader._construct_reader(): pass
 
     def test_unexpected_child_after_some_reads(self):
-        with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child'):
+        with self.assertRaisesRegex(ValueError, 'parent.*has unexpected child'):
             with TestOrderedTagReader._construct_reader() as r:
                 self.assertEqualXML(r.get(), '<aaa/>')
                 self.assertEqualXML(r.get(), '<bbb/>')
@@ -150,7 +150,7 @@ class TestOrderedTagReader(GUITestCase):
     def test_get_and_recent_was_unexpected(self):
         with TestOrderedTagReader._construct_reader() as r:
             self.assertEqualXML(r.get(), '<aaa/>')
-            with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child.*aaa'):
+            with self.assertRaisesRegex(ValueError, 'parent.*has unexpected child.*aaa'):
                 r.recent_was_unexpected()
             self.assertEqualXML(r.get(), '<aaa/>')
             self.assertEqualXML(r.get('bbb'), '<bbb/>')
@@ -158,7 +158,7 @@ class TestOrderedTagReader(GUITestCase):
             self.assertEqualXML(r.get('other', 'ccc'), '<ccc><child/></ccc>')
             self.assertIs(r.get('ccc', 'aaa', 'bbb'), None)
             self.assertEqualXML(r.get('ccc', 'ddd', 'bbb'), '<ddd/>')
-            with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child.*ddd'):
+            with self.assertRaisesRegex(ValueError, 'parent.*has unexpected child.*ddd'):
                 r.recent_was_unexpected()
             self.assertEqualXML(r.get(), '<ddd/>')
             r.get_comments()
@@ -193,11 +193,11 @@ class TestUnorderedTagReader(GUITestCase):
             '</parent>'))
 
     def test_unexpected_child(self):
-        with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child'):
+        with self.assertRaisesRegex(ValueError, 'parent.*has unexpected child'):
             with TestUnorderedTagReader._construct_reader(): pass
 
     def test_unexpected_child_after_some_reads(self):
-        with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child'):
+        with self.assertRaisesRegex(ValueError, 'parent.*has unexpected child'):
             with TestUnorderedTagReader._construct_reader() as r:
                 self.assertEqualXML(r.get('ccc'), '<ccc><child/></ccc>')
                 self.assertEqualXML(r.get('aaa'), '<aaa/>')
@@ -208,7 +208,7 @@ class TestUnorderedTagReader(GUITestCase):
             self.assertEqualXML(r.get('ccc'), '<ccc><child/></ccc>')
             r.mark_read('ddd')
             self.assertEqualXML(r.get('aaa'), '<aaa/>')
-            with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child'):
+            with self.assertRaisesRegex(ValueError, 'parent.*has unexpected child'):
                 r.require_all_read()
             r.mark_read('bbb')
             self.assertEqualXML(r.get('ccc'), '<ccc><child/></ccc>')  # again
@@ -218,12 +218,12 @@ class TestUnorderedTagReader(GUITestCase):
     def test_require_and_mark_read(self):
         with TestUnorderedTagReader._construct_reader() as r:
             self.assertEqualXML(r.require('ccc'), '<ccc><child/></ccc>')
-            with self.assertRaisesRegexp(KeyError, 'parent.*does not have required.*zzz'):
+            with self.assertRaisesRegex(KeyError, 'parent.*does not have required.*zzz'):
                 r.require('zzz')
             r.mark_read('ddd')
             self.assertEqualXML(r.require('ddd'), '<ddd/>')
             self.assertEqualXML(r.require('bbb'), '<bbb/>')
-            with self.assertRaisesRegexp(KeyError, 'parent.*does not have required.*xxx'):
+            with self.assertRaisesRegex(KeyError, 'parent.*does not have required.*xxx'):
                 r.require('xxx')
             r.mark_read('aaa')
 
@@ -231,4 +231,3 @@ class TestUnorderedTagReader(GUITestCase):
 if __name__ == '__main__':
     test = unittest.main(exit=False)
     sys.exit(not test.result.wasSuccessful())
-
