@@ -3,7 +3,6 @@ To ensure compatibility from Python ``2.6`` - ``3.3``, a module has been
 created. Clearly there is huge need to use conforming syntax.
 """
 import sys
-import imp
 import os
 import re
 try:
@@ -49,6 +48,7 @@ def find_module_py33(string, path=None):
 
 
 def find_module_pre_py33(string, path=None):
+    import imp
     module_file, module_path, description = imp.find_module(string, path)
     module_type = description[2]
     return module_file, module_path, module_type is imp.PKG_DIRECTORY

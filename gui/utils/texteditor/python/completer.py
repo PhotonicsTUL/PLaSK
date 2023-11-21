@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -24,7 +24,8 @@ from ....utils.config import CONFIG
 try:
     import jedi
 except ImportError:
-    jedi_path = os.path.join(__path__[0], 'lib', 'jedi')
+    from . import __path__ as _path_
+    jedi_path = os.path.join(_path_[0], 'lib', 'jedi')
     if jedi_path not in sys.path:
         sys.path.insert(1, jedi_path)
         import jedi
