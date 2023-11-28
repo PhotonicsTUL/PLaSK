@@ -49,7 +49,7 @@ class _SimplifiedMaterial(_Material):
         return self._absp + self._dadl * (lam - self._lam) + self._dadT * (T - self._T)
 
     def Nr(self, lam, T=300., n=0.):
-        return self.nr(lam, T, n) - 7.95774715459e-09 * self.absp(lam, T) * lam
+        return self.nr(lam, T, n) - 7.95774715459e-09j * self.absp(lam, T) * lam
 
     def NR(self, lam, T=300., n=0.):
         Nr = self.Nr(lam, T, n)
@@ -90,7 +90,7 @@ def simplify(item, lam, T=300., linear='nr', dT=100.):
 
     from ._gradients import simplify_gradient_nr
 
-    dl = 1e-6
+    dl = 1.
 
     data0 = simplify_gradient_nr(item.height, m0.Nr(lam, T), m1.Nr(lam, T), lam, linear)
     dataT = simplify_gradient_nr(item.height, m0.Nr(lam, T+dT), m1.Nr(lam, T+dT), lam, linear, data0[0][0])
