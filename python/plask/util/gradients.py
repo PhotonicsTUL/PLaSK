@@ -36,7 +36,6 @@ class _SimplifiedMaterial(_Material):
         self._T = T
         self._dndl = dNdl.real
         self._dndT = dNdT.real
-        self._dadl = fa * dNdl.imag
         self._dadT = fa * dNdT.imag
 
     def __str__(self):
@@ -46,7 +45,7 @@ class _SimplifiedMaterial(_Material):
         return self._nr + self._dndl * (lam - self._lam) + self._dndT * (T - self._T)
 
     def absp(self, lam, T=300.):
-        return self._absp + self._dadl * (lam - self._lam) + self._dadT * (T - self._T)
+        return self._absp + self._dadT * (T - self._T)
 
     def Nr(self, lam, T=300., n=0.):
         return self.nr(lam, T, n) - 7.95774715459e-09j * self.absp(lam, T) * lam
