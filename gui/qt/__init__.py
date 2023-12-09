@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -21,12 +21,16 @@ def _setup_matplotlib(backend):
     except ImportError:
         pass
     else:
+        os.environ['QT_API'] = backend.lower()
         try:
             matplotlib.use('QtAgg')
-        except ValueError:
+        except (ValueError, ImportError):
             if backend not in ('PyQt5', 'PySide2'):
                 return False
-            matplotlib.use('Qt5Agg')
+            try:
+                matplotlib.use('Qt5Agg')
+            except (ValueError, ImportError):
+                return False
             try:
                 matplotlib.rcParams['backend.qt5'] = backend
             except (KeyError, ValueError):
