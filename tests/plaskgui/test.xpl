@@ -458,7 +458,7 @@
         <place side="bottom"/>
       </condition>
     </voltage>
-    <matrix algorithm="cholesky" itererr="2"/>
+    <matrix algorithm="cholesky"/>
     <junction beta0="{beta_def}" beta1="19.2" js0="{js_def}" js1="1.1"/>
   </electrical>
   <electrical name="DIFFUSION" solver="DiffusionCyl" lib="diffusion">

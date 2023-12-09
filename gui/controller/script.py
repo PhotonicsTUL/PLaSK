@@ -13,19 +13,14 @@
 import sys
 import weakref
 
-from ..qt import QT_API
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
 from ..qt.QtGui import *
-from ..utils.qsignals import BlockQtSignals
-from ..utils.help import open_help
 from .source import SourceEditController
 from ..model.script import ScriptModel
-from ..utils.config import CONFIG, set_font
-from ..utils.widgets import EDITOR_FONT, ComboBox
-from ..utils.texteditor import TextEditor, EditorWidget
-from ..utils.texteditor.python import PythonEditor, PythonEditorWidget, PYTHON_SCHEME
-from ..utils.texteditor import EditorWidget
+from ..utils.config import CONFIG
+from ..utils.widgets import ComboBox
+from ..utils.texteditor.python import PythonEditorWidget, PYTHON_SCHEME
 
 
 LOG_LEVELS = ['Error', 'Warning', 'Important', 'Info', 'Result', 'Data', 'Detail', 'Debug']

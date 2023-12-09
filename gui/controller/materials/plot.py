@@ -208,7 +208,7 @@ class MaterialPlot(QWidget):
                 arg.setChecked(True)
 
         if init_material is not None:
-            if '{' in init_material:
+            if '{' in init_material and defines is not None:
                 manager = plask.Manager(draft=True)
                 try:
                     manager.load(self._get_xpl_content((defines,)))
@@ -236,13 +236,14 @@ class MaterialPlot(QWidget):
     def _get_xpl_content(self, models=None):
         data = '<plask loglevel="error">\n\n'
         for m in models or (self.defines, self.model):
-            try:
-                element = m.make_file_xml_element()
-            except:
-                pass
-            else:
-                if len(element) or element.text:
-                    data += etree.tostring(element, encoding='unicode', pretty_print=True) + '\n'
+            if m is not None:
+                try:
+                    element = m.make_file_xml_element()
+                except:
+                    pass
+                else:
+                    if len(element) or element.text:
+                        data += etree.tostring(element, encoding='unicode', pretty_print=True) + '\n'
         data += '</plask>\n'
         return data
 

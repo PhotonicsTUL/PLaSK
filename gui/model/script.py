@@ -55,8 +55,10 @@ class SourceModel(SectionModel):
         return self._source
 
     def set_text(self, text):
-        self._source = text.expandtabs()
-        self.fire_changed()
+        text = text.expandtabs()
+        if self._source != text:
+            self._source = text
+            self.fire_changed()
 
 
 class ScriptModel(SourceModel):

@@ -264,7 +264,7 @@ class MainWindow(QMainWindow):
         plot_material_action = QAction(QIcon.fromTheme('matplotlib'), 'Examine &Material Parameters...', self)
         CONFIG.set_shortcut(plot_material_action, 'examine_material')
         plot_material_action.triggered.connect(lambda: show_material_plot(self, self.document.materials.model,
-                                                                          self.document.defines.model))
+                                                                          getattr(self.document.defines, 'model', None)))
 
         fullscreen_action = QAction(QIcon.fromTheme('view-fullscreen'), 'Toggle Full Screen', self)
         CONFIG.set_shortcut(fullscreen_action, 'fullscreen')

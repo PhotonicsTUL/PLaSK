@@ -14,6 +14,7 @@ import shutil
 import re
 
 from .qt.QtWidgets import *
+from .utils.qsignals import BlockQtSignals
 from .controller.source import SourceEditController
 from .controller.script import ScriptController, LOG_LEVELS
 from .utils.config import CONFIG
@@ -56,6 +57,9 @@ class TextDocument:
 
     def set_changed(self, changed=True):
         self.window.set_changed(changed)
+        if self.script.source_widget is not None:
+            document = self.script.source_widget.editor.document()
+            with BlockQtSignals(document): document.setModified(changed)
 
     def load_from_file(self, filename):
         data = open(filename, 'rb').read()
