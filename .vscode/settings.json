@@ -78,5 +78,8 @@
     },
     "python.analysis.diagnosticSeverityOverrides": {
         "reportMissingModuleSource": "none"
-    }
+    },
+    "cmake.preferredGenerators": [
+        "Ninja"
+    ]
 }
