@@ -18,19 +18,15 @@ from ....qt.QtCore import *
 from ....qt.QtGui import *
 from ....qt.QtWidgets import *
 
-from ....utils.qthread import BackgroundTask, Lock
-from ....utils.config import CONFIG
+from ...qthread import BackgroundTask, Lock
+from ...config import CONFIG
 
 try:
     import jedi
+    if jedi.__version__ < '0.16.0':
+        raise ImportError
 except ImportError:
-    from . import __path__ as _path_
-    jedi_path = os.path.join(_path_[0], 'lib', 'jedi')
-    if jedi_path not in sys.path:
-        sys.path.insert(1, jedi_path)
-        import jedi
-    else:
-        jedi = None
+    jedi = None
 
 JEDI_MUTEX = QMutex()
 
@@ -45,11 +41,23 @@ from plask.pylab import *
 from plask.hdf5 import *
 """
 
+try:
+    import plask
+except ImportError:
+    prefix = sys.prefix
+else:
+    prefix = plask.prefix
+
+PLASK_PATHS = [
+    os.path.join(prefix, 'lib', 'plask', 'python'),
+    os.path.join(prefix, 'lib', 'plask', 'solvers')
+]
+
 
 def preload_jedi_modules():
     with Lock(JEDI_MUTEX):
         try:
-            jedi.Script(PREAMBLE, 8, 0, None).completions()
+            jedi.Script(PREAMBLE, project=jedi.Project(None, added_sys_path=PLASK_PATHS)).complete(8, 0)
         except:
             from .... import _DEBUG
             if _DEBUG:
@@ -143,8 +151,9 @@ def get_completions(document, text, block, column):
                       prefix + "\n------------------------------------------------------------------------------------",
                       file=sys.stderr)
                 sys.stdout.flush()
-            script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column, document.filename)
-            items = [(c.name, _try_type(c)) for c in script.completions()
+            dirname = os.path.dirname(os.path.abspath(document.filename))
+            script = jedi.Script(prefix+text, path=document.filename, project=jedi.Project(dirname, added_sys_path=PLASK_PATHS))
+            items = [(c.name, _try_type(c)) for c in script.complete(block+prefix.count('\n')+1, column)
                      if not c.name.startswith('_') and c.name != 'mro']
         except:
             if _DEBUG:
@@ -165,16 +174,12 @@ def get_docstring(document, text, block, column):
                       prefix + "\n------------------------------------------------------------------------------------",
                       file=sys.stderr)
                 sys.stdout.flush()
-            script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column, document.filename)
-            defs = script.completions()
+            dirname = os.path.dirname(os.path.abspath(document.filename))
+            script = jedi.Script(prefix+text, path=document.filename, project=jedi.Project(dirname, added_sys_path=PLASK_PATHS))
+            defs = script.help(block+prefix.count('\n')+1, column)
             if defs:
                 doc = defs[0].docstring()
                 name = defs[0].name
-                if not doc:
-                    defs = script.goto_definitions()
-                    if defs:
-                        name = defs[0].name
-                        doc = defs[0].docstring()
                 if _DEBUG:
                     d = defs[0]
                     print('{}: [{}] {} "{}..."'.format(d.name, d.type, d.description, doc[:8]), file=sys.stderr)
@@ -192,8 +197,9 @@ def get_definitions(document, text, block, column):
     if jedi is None or CONFIG['workarounds/no_jedi']: return None, None
     with Lock(JEDI_MUTEX) as lck:
         try:
-            script = jedi.Script(text, block+1, column, document.filename)
-            defs = script.goto_assignments()
+            dirname = os.path.dirname(os.path.abspath(document.filename))
+            script = jedi.Script(text, path=document.filename, project=jedi.Project(dirname, added_sys_path=PLASK_PATHS))
+            defs = script.goto(block+1, column)
         except:
             return None, None
         if defs:
@@ -228,7 +234,7 @@ class CompletionsController(QCompleter):
         self._edit.setTextCursor(cursor)
 
     def start_completion(self):
-        if CONFIG['workarounds/no_jedi']: return
+        if jedi is None or CONFIG['workarounds/no_jedi']: return
 
         cursor = self._edit.textCursor()
         row = cursor.blockNumber()

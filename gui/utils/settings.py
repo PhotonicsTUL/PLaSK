@@ -458,10 +458,6 @@ CONFIG_WIDGETS = {
                                                 "stop responding for the couple of seconds when showing completion "
                                                 "pop-up, but may be helpful if the program often crashes on "
                                                 "completion.")),
-            ("Use system completion library", CheckBox('workarounds/system_jedi',
-                                                       "Use system jedi library. This may be newer version "
-                                                       "than the one bundled with PLaSK. However, it has been "
-                                                       "reported to cause GUI crashes.", True)),
             ("Disable completion", CheckBox('workarounds/no_jedi',
                                             "Disable script completion and on-line help.")),
         ],
@@ -1036,7 +1032,7 @@ class SettingsDialog(QDialog):
             msgbox = QMessageBox()
             msgbox.setWindowTitle("Settings Import Error")
             msgbox.setText("The file '{}' could not be loaded from disk.".format(filename))
-            msgbox.setInformativeText(unicode(err))
+            msgbox.setInformativeText(err)
             msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
             msgbox.setIcon(QMessageBox.Icon.Critical)
             qt_exec(msgbox)
@@ -1053,7 +1049,7 @@ class SettingsDialog(QDialog):
             msgbox = QMessageBox()
             msgbox.setWindowTitle("Settings Export Error")
             msgbox.setText("The file '{}' could not be saved to disk.".format(filename))
-            msgbox.setInformativeText(unicode(err))
+            msgbox.setInformativeText(err)
             msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
             msgbox.setIcon(QMessageBox.Icon.Critical)
             qt_exec(msgbox)

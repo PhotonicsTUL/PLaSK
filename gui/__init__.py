@@ -16,12 +16,15 @@ import os
 import re
 import subprocess
 import pkgutil
-import importlib
 import traceback
-import datetime
 
 from lxml import etree
 from uuid import getnode
+
+try:
+    import plask
+except ImportError:
+    pass
 
 if __name__ == '__main__':
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -43,16 +46,6 @@ from .qt.QtGui import *
 from .qt import QtSignal, QT_API, qt_exec
 
 
-try:
-    import plask
-except ImportError:
-    prefix = sys.prefix
-else:
-    prefix = plask.prefix
-
-
-sys.path.insert(0, os.path.join(prefix, 'share', 'plask', 'stubs'))
-
 sys.path.insert(4, os.path.join(__path__[0], 'external', 'pysparkle'))
 
 
@@ -63,9 +56,6 @@ except ImportError:
     matplotlib = None
 
 from .utils.config import CONFIG
-
-if not CONFIG.get('workarounds/system_jedi'):
-    sys.path.insert(1, os.path.join(__path__[0], 'lib', 'jedi'))
 
 from .xpldocument import XPLDocument
 from .textdocument import TextDocument, PyDocument, XmlDocument

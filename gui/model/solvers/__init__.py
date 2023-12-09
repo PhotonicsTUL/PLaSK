@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -96,9 +96,9 @@ class Solver(TreeFragmentModel):
             #     except (IOError, SystemError):
             #         pass
             if lib is not None:
-                return "from {1}.{2} import {3} as {0}\n{0} = {0}()".format(self.name, self.category, lib, self.solver)
+                return "from {1}.{2} import {3}\n{0} = {3}()\ndel {3}".format(self.name, self.category, lib, self.solver)
             else:
-                return "from {1} import {2} as {0}\n{0} = {0}()".format(self.name, self.category, self.solver)
+                return "from {1} import {2}\n{0} = {2}()\ndel {2}".format(self.name, self.category, self.solver)
         else:
             return "{} = None".format(self.name)
 
@@ -165,8 +165,6 @@ class TreeFragmentSolver(Solver):
 
 class Tag:
     """XML tag for custom configuration"""
-    tags: "list of child tags"
-    attrs: "dict of tag attributes"
 
     def __init__(self, name: str, tags: list = [], attrs: dict = {}):
         self.name = name

@@ -113,4 +113,3 @@ workarounds:
   disable_omp: false
   jedi_no_dot: false
   no_jedi: false
-  system_jedi: false

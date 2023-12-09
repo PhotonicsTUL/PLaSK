@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -245,8 +245,6 @@ if __name__ == "__main__":
     e = 0
     for arg in sys.argv[1:]:
         try:
-            c = StubCreator(arg)
-            c.create_stub_from_module(arg)
             path_comp = arg.split('.')
             if len(path_comp) > 1:
                 path = os.path.join(*path_comp[:-1])
@@ -255,13 +253,14 @@ if __name__ == "__main__":
                 except OSError as exc:
                     if exc.errno == errno.EEXIST and os.path.isdir(path): pass
                     else: raise
-                open(os.path.join(path, "__init__.py"), 'a+')
             else:
                 path = ''
+            c = StubCreator(arg)
+            c.create_stub_from_module(arg)
             try:
-                file = open(os.path.join(path, path_comp[-1] + '.py'), 'w+', encoding='utf-8')
+                file = open(os.path.join(path, path_comp[-1] + '.pyi'), 'w+', encoding='utf-8')
             except TypeError:
-                file = open(os.path.join(path, path_comp[-1] + '.py'), 'w+')
+                file = open(os.path.join(path, path_comp[-1] + '.pyi'), 'w+')
             print(c, file=file)
         except:
             print("Error while generating stubs for module:", arg, file=sys.stderr)

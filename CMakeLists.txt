@@ -500,18 +500,11 @@ if(BUILD_PYTHON)
 
     set(plask_stubs _plask geometry mesh _material flow)
     foreach(stub ${plask_stubs})
-        list(APPEND plask_stubs_files ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/python/plask/${stub}.py)
+        list(APPEND plask_stubs_files ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/python/plask/${stub}.pyi)
         list(APPEND plask_stubs_modules plask.${stub})
     endforeach()
     file(REMOVE ${plask_stubs_files}) # wrong stubs can make build fail
     if(BUILD_GUI)
-        if(CMAKE_CONFIGURATION_TYPES)
-            foreach(CONF ${CMAKE_CONFIGURATION_TYPES})   # under multi-target env. (like MSVC) install stubs for all configurations
-                file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CONF}/share/plask/stubs)
-            endforeach()
-        else()
-            file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs)
-        endif()
         add_custom_command(OUTPUT ${plask_stubs_files}
                            COMMAND ${CMAKE_COMMAND} -E env PLASK_DEFAULT_MATERIALS= ${CMAKE_BINARY_DIR}/bin/plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_stubs_modules}
                            DEPENDS ${plask_binary} ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${PLASK_MATERIALS}
@@ -594,7 +587,8 @@ if(BUILD_PYTHON)
                     PATTERN *.py EXCLUDE
                     PATTERN *.pyc EXCLUDE
                     PATTERN *.pyo EXCLUDE
-                    PATTERN __pycache__ EXCLUDE # for python 3
+                    PATTERN *.pyi EXCLUDE
+                    PATTERN __pycache__ EXCLUDE
             )
         else()
             install(DIRECTORY gui DESTINATION lib/plask COMPONENT gui
@@ -602,7 +596,8 @@ if(BUILD_PYTHON)
                     PATTERN *.xpl EXCLUDE
                     PATTERN *.pyc EXCLUDE
                     PATTERN *.pyo EXCLUDE
-                    PATTERN __pycache__ EXCLUDE # for python 3
+                    PATTERN *.pyi EXCLUDE
+                    PATTERN __pycache__ EXCLUDE
             )
             # This will make plaskgui work without install
             file(MAKE_DIRECTORY ${PLASK_PATH})

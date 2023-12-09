@@ -152,7 +152,6 @@ DEFAULTS = {
     'workarounds/disable_omp': False,
     'workarounds/jedi_no_dot': False,
     'workarounds/no_jedi': False,
-    'workarounds/system_jedi': False,
     'workarounds/no_unicode_minus': False,
 }
 

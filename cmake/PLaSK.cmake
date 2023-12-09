@@ -154,13 +154,13 @@ macro(make_default)
         endif()
         if(BUILD_GUI)
             string(REPLACE "/" "." SOLVER_MODULE ${SOLVER_DIR})
-            set(SOLVER_STUB ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs/${SOLVER_DIR}.py)
+            set(SOLVER_STUB ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}.pyi)
             add_custom_command(OUTPUT ${SOLVER_STUB}
                                COMMAND ${CMAKE_BINARY_DIR}/bin/plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}
                                DEPENDS ${plask_binary} ${SOLVER_PYTHON_MODULE} ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${PLASK_MATERIALS}
-                               WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs
+                               WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers
                               )
-            install(FILES ${SOLVER_STUB} DESTINATION share/plask/stubs/${SOLVER_CATEGORY_NAME} COMPONENT gui)
+            install(FILES ${SOLVER_STUB} DESTINATION lib/plask/solvers/${SOLVER_CATEGORY_NAME} COMPONENT gui)
             add_custom_target(${SOLVER_LIBRARY}-stub ALL DEPENDS ${SOLVER_LIBRARY} ${SOLVER_PYTHON_MODULE} ${SOLVER_STUB})
         endif()
     endif()
@@ -199,13 +199,13 @@ macro(make_pure_python)
 
     if(BUILD_GUI)
         string(REPLACE "/" "." SOLVER_MODULE ${SOLVER_DIR})
-        set(SOLVER_STUB ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs/${SOLVER_DIR}.py)
+        set(SOLVER_STUB ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}.pyi)
         add_custom_command(OUTPUT ${SOLVER_STUB}
                             COMMAND ${CMAKE_BINARY_DIR}/bin/plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}
                             DEPENDS ${plask_binary} ${SOLVER_PYTHON_MODULE} ${CMAKE_SOURCE_DIR}/toolset/makestub.py
-                            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs
+                            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers
                             )
-        install(FILES ${SOLVER_STUB} DESTINATION share/plask/stubs/${SOLVER_CATEGORY_NAME} COMPONENT gui)
+        install(FILES ${SOLVER_STUB} DESTINATION lib/plask/solvers/${SOLVER_CATEGORY_NAME} COMPONENT gui)
         add_custom_target(${SOLVER_LIBRARY}-stub ALL DEPENDS ${SOLVER_LIBRARY}-python ${SOLVER_PYTHON_MODULE} ${SOLVER_STUB})
         if(DEFINED SOLVER_GUI_INSTALL_FILES)
             install(FILES ${SOLVER_GUI_INSTALL_FILES} DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT gui)
