@@ -1,0 +1,82 @@
+{
+    "cmake.buildDirectory" : "${workspaceFolder}/build/${variant:buildConfig}",
+    "cmake.configureSettings": {
+        "SHOW_EXTENDED_WARNINGS": false,
+        "BLA_VENDOR": "Intel_64lp_seq",
+        "ZSH_COMPLETIONS_PATH": "/usr/share/zsh/site-functions"
+    },
+    "cmake.ctestArgs": [
+        "--timeout",
+        "120"
+    ],
+    "C_Cpp.enhancedColorization": "Enabled",
+    "restructuredtext.confPath": "${workspaceFolder}/doc",
+    "restructuredtext.builtDocumentationPath": "${workspaceFolder}/build/release/doc/html",
+    "python.linting.enabled": false,
+    "cmakeExplorer.buildDir": "${buildDirectory}",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}",
+        "${workspaceFolder}/gui/external/pysparkle",
+        "${workspaceFolder}/build/release/lib/plask/python",
+        "${workspaceFolder}/build/release/share/plask/stubs"
+    ],
+    "python.analysis.stubPath": "${workspaceFolder}/build/release/plask/stubs",
+    "yaml.schemas": {
+        "http://json-schema.org/draft-07/schema#": "${workspaceFolder}/doc/schema/solvers.yaml",
+        "file:///${workspaceFolder}/doc/schema/solvers.json": "solvers.yml"
+    },
+    "yaml.customTags": [
+        "!include mapping"
+    ],
+    "gitlens.remotes": [
+        {
+            "domain": "phys.p.lodz.pl",
+            "type": "Custom",
+            "protocol": "https",
+            "name": "Redmine",
+            "urls": {
+                "repository": "https://redmine.phys.p.lodz.pl/projects/${repo}/repository",
+                "branches": "https://redmine.phys.p.lodz.pl/projects/${repo}/repository",
+                "branch": "https://redmine.phys.p.lodz.pl/projects/${repo}/repository?rev=${branch}",
+                "commit": "https://redmine.phys.p.lodz.pl/projects/${repo}/repository/revisions/${id}",
+                "file": "https://redmine.phys.p.lodz.pl/projects/plask/repository/revisions/master/entry/${file}${line}",
+                "fileInCommit": "https://redmine.phys.p.lodz.pl/projects/${repo}/repository/revisions/${id}/entry/${file}${line}",
+                "fileInBranch": "https://redmine.phys.p.lodz.pl/projects/plask/repository/revisions/${branch}/entry/${file}${line}",
+                "fileLine": "#L${line}",
+                "fileRange": "#L${start}"
+            }
+        }
+    ],
+    "C_Cpp.dimInactiveRegions": true,
+    "cSpell.customDictionaries": {
+        "project-words": {
+            "name": "plask",
+            "path": "${workspaceFolder}/.dict.txt",
+            "description": "PLaSK-specific dictionary",
+            "addWords": true
+        }
+    },
+    "restructuredtext.linter.doc8.extraArgs": [
+        "--ignore=D001"
+    ],
+    "autoSnippet.snippets": [
+        {
+            "pattern": "**/*.hpp",
+            "snippet": "hpp-template"
+        },
+        {
+            "pattern": "**/*.cpp",
+            "snippet": "cpp-template"
+        },
+        {
+            "language": "python",
+            "snippet": "python-template"
+        }
+    ],
+    "[restructuredtext]": {
+        "editor.wordWrap": "on"
+    },
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingModuleSource": "none"
+    }
+}
