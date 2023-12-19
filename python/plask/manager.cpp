@@ -443,7 +443,6 @@ void PythonManager::export_dict(py::object self, py::object dict) {
     dict["PTH"] = self.attr("pth");
     dict["GEO"] = self.attr("geo");
     dict["MSH"] = self.attr("msh");
-    dict["MSG"] = self.attr("msh");  // TODO: Remove in the future
     dict["DEF"] = self.attr("defs");
 
     dict["__overrites__"] = self.attr("overrites");
@@ -476,6 +475,11 @@ static py::object dict__getitem__(const Manager::Map<T>& self, std::string key) 
     auto found = self.find(key);
     if (found == self.end()) throw KeyError(key);
     return py::object(found->second);
+}
+
+template <typename T>
+static T& dict_get_or_create(Manager::Map<T>& self, std::string key) {
+    return self[key];
 }
 
 template <typename T>
@@ -592,22 +596,33 @@ static py::list Manager_errors(const Manager& self) {
 }
 
 template <typename T>
+static inline void register_manager_dict_getters(py::class_<Manager::Map<T>, boost::noncopyable>& c) {
+    c.def("__getitem__", &dict__getitem__<T>).def("__getattr__", &dict__getattr__<T>);
+}
+
+template <>
+inline void register_manager_dict_getters(py::class_<Manager::Map<PathHints>, boost::noncopyable>& c) {
+    c.def("__getitem__", &dict_get_or_create<PathHints>, py::return_internal_reference<>());
+    c.attr("__getattr__") = c.attr("__getitem__");
+}
+
+template <typename T>
 static void register_manager_dict(const std::string name) {
-    py::class_<Manager::Map< T>, boost::noncopyable> c((name+"Dict").c_str(), (u8"Dictionary holding each loaded " + item_name<T>()).c_str(), py::no_init); c
-        .def("__getitem__", &dict__getitem__<T>)
-        // .def("__setitem__", &dict__setitem__<T>)
-        // .def("__delitem__", &dict__delitem__<T>)
+    py::class_<Manager::Map<T>, boost::noncopyable> c((name+"Dict").c_str(), (u8"Dictionary holding each loaded " + item_name<T>()).c_str(), py::no_init); c
+        .def("__setitem__", &dict__setitem__<T>)
+        .def("__delitem__", &dict__delitem__<T>)
         .def("__len__", &dict__len__<T>)
         .def("__contains__", &dict__contains__<T>)
         .def("__iter__", &detail::dict_iterator<T>::new_iterator)
         .def("keys", &dict_keys<T>)
         .def("values", &dict_values<T>)
         .def("items", &dict_items<T>)
-        .def("__getattr__", &dict__getattr__<T>)
         .def("clear", &Manager::Map< T>::clear, u8"Remove all elements from the dictionary.")
-        // .def("__setattr__", &dict__setattr__<T>)
-        // .def("__delattr__", &dict__delattr__<T>)
+        .def("__setattr__", &dict__setattr__<T>)
+        .def("__delattr__", &dict__delattr__<T>)
     ;
+    register_manager_dict_getters<T>(c);
+
     // This swap ensures that in case there is an object with id 'keys', 'values', or 'items' it will take precedence over corresponding method
     py::object __getattr__ = c.attr("__getattr__");
     c.attr("__getattr__") = c.attr("__getattribute__");
@@ -728,7 +743,6 @@ void register_manager() {
     register_manager_dict<shared_ptr<GeometryObject>>("GeometryObjects");
     register_manager_dict<PathHints>("PathHints");
     register_manager_dict<shared_ptr<MeshBase>>("Meshes");
-    register_manager_dict<shared_ptr<MeshGenerator>>("MeshGenerators");
     register_manager_dict<shared_ptr<Solver>>("Solvers");
 
     py::scope scope(manager);
