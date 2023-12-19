@@ -76,6 +76,30 @@ class DataTest(unittest.TestCase):
             data[:,:]
 
 
+class TensorTest(unittest.TestCase):
+
+    def setUp(self):
+        one = array([[1.0, 0.1, 0.2j], [0.1, 1.0, 0.1j], [-0.2j, 0.1j, 1.0]])
+        self.arr = array([1. * one, 2. * one, 3. * one, 4. * one])
+
+    def testTensor1(self):
+        self.assertEqual(self.arr.shape, (4, 3, 3))
+        dat = Data(self.arr, mesh.Rectangular2D([0, 1], [0, 1]))
+        assert_array_equal(array(dat), self.arr)
+        assert_array_equal(dat.array, self.arr.reshape(2, 2, 3, 3))
+
+    def testTensor2(self):
+        arr = self.arr.reshape(2, 2, 3, 3)
+        dat = Data(self.arr, mesh.Rectangular2D([0, 1], [0, 1]))
+        assert_array_equal(array(dat), self.arr)
+        assert_array_equal(dat.array, arr)
+
+    def testTensor3(self):
+        arr = self.arr[:3,:,:]
+        dat = Data(arr, mesh.Rectangular2D([1, 2, 3], [0]))
+        assert_array_equal(array(dat), arr)
+
+
 if __name__ == '__main__':
     test = unittest.main(exit=False)
     sys.exit(not test.result.wasSuccessful())

@@ -27,7 +27,9 @@
 
 namespace boost { namespace python {
 
-template <> struct base_type_traits<PyArrayObject> { typedef PyObject type; };
+template <> struct base_type_traits<PyArrayObject> {
+    typedef PyObject type;
+};
 
 }}  // namespace boost::python
 
@@ -154,28 +156,30 @@ template <> struct isBasicData<Tensor2<dcomplex>> : std::true_type {};
 template <> struct isBasicData<Tensor3<double>> : std::true_type {};
 template <> struct isBasicData<Tensor3<dcomplex>> : std::true_type {};
 
-template <typename T> struct basetype { typedef T type; };
-template <typename T, int dim> struct basetype<const Vec<dim, T>> { typedef T type; };
-template <typename T> struct basetype<const Tensor2<T>> { typedef T type; };
-template <typename T> struct basetype<const Tensor3<T>> { typedef T type; };
+template <typename T> struct basetype {
+    typedef T type;
+};
+template <typename T, int dim> struct basetype<const Vec<dim, T>> {
+    typedef T type;
+};
+template <typename T> struct basetype<const Tensor2<T>> {
+    typedef T type;
+};
+template <typename T> struct basetype<const Tensor3<T>> {
+    typedef T type;
+};
 
-template <typename T> constexpr inline static npy_intp type_dim() { return 1; }
-template <> constexpr inline npy_intp type_dim<Vec<2, double>>() { return 2; }
-template <> constexpr inline npy_intp type_dim<Vec<2, dcomplex>>() { return 2; }
-template <> constexpr inline npy_intp type_dim<Vec<3, double>>() { return 3; }
-template <> constexpr inline npy_intp type_dim<Vec<3, dcomplex>>() { return 3; }
-// template <> constexpr inline npy_intp type_dim<Tensor2<double>>() { return 2; }
-// template <> constexpr inline npy_intp type_dim<Tensor2<dcomplex>>() { return 2; }
-template <> constexpr inline npy_intp type_dim<Tensor3<double>>() { return 4; }
-template <> constexpr inline npy_intp type_dim<Tensor3<dcomplex>>() { return 4; }
-template <> constexpr inline npy_intp type_dim<const Vec<2, double>>() { return 2; }
-template <> constexpr inline npy_intp type_dim<const Vec<2, dcomplex>>() { return 2; }
-template <> constexpr inline npy_intp type_dim<const Vec<3, double>>() { return 3; }
-template <> constexpr inline npy_intp type_dim<const Vec<3, dcomplex>>() { return 3; }
-template <> constexpr inline npy_intp type_dim<const Tensor2<double>>() { return 2; }
-template <> constexpr inline npy_intp type_dim<const Tensor2<dcomplex>>() { return 2; }
-template <> constexpr inline npy_intp type_dim<const Tensor3<double>>() { return 4; }
-template <> constexpr inline npy_intp type_dim<const Tensor3<dcomplex>>() { return 4; }
+
+template <typename T> struct type_dim { enum { SIZE = 1, SHAPE = 1, DIM = 1 }; };
+template <typename T> struct type_dim<Vec<2,T>> { enum { SIZE = 2, SHAPE = 2, DIM = 2 }; };
+template <typename T> struct type_dim<Vec<3,T>> { enum { SIZE = 3, SHAPE = 2, DIM = 3 }; };
+template <typename T> struct type_dim<Tensor2<T>> { enum { SIZE = 2, SHAPE = 2, DIM = 2 }; };
+template <typename T> struct type_dim<Tensor3<T>> { enum { SIZE = 9, SHAPE = 3, DIM = 3 }; };
+template <typename T> struct type_dim<const Vec<2,T>> { enum { SIZE = 2, SHAPE = 2, DIM = 2 }; };
+template <typename T> struct type_dim<const Vec<3,T>> { enum { SIZE = 3, SHAPE = 2, DIM = 3 }; };
+template <typename T> struct type_dim<const Tensor2<T>> { enum { SIZE = 2, SHAPE = 2, DIM = 2 }; };
+template <typename T> struct type_dim<const Tensor3<T>> { enum { SIZE = 9, SHAPE = 3, DIM = 3 }; };
+
 
 inline static std::vector<npy_intp> mesh_dims(const RectangularMesh<2>& mesh) {
     return {npy_intp(mesh.axis[0]->size()), npy_intp(mesh.axis[1]->size())};
@@ -184,9 +188,10 @@ inline static std::vector<npy_intp> mesh_dims(const RectangularMesh<3>& mesh) {
     return {npy_intp(mesh.axis[0]->size()), npy_intp(mesh.axis[1]->size()), npy_intp(mesh.axis[2]->size())};
 }
 
-template <typename T> inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<2>& mesh, size_t nd) {
+template <typename T> inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<2>& mesh, const size_t nd) {
     std::vector<npy_intp> strides(nd);
-    strides.back() = sizeof(T) / type_dim<T>();
+    strides[nd-1] = sizeof(T) / type_dim<T>::SIZE;
+    strides[nd-2] = strides[nd-1] * type_dim<T>::DIM;
     if (mesh.getIterationOrder() == RectangularMesh<2>::ORDER_10) {
         strides[0] = sizeof(T);
         strides[1] = mesh.axis[0]->size() * sizeof(T);
@@ -205,7 +210,9 @@ template <typename T> inline static std::vector<npy_intp> mesh_strides(const Rec
         break;
 
 template <typename T> inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<3>& mesh, size_t nd) {
-    std::vector<npy_intp> strides(nd, sizeof(T) / type_dim<T>());
+    std::vector<npy_intp> strides(nd);
+    strides[nd-1] = sizeof(T) / type_dim<T>::SIZE;
+    strides[nd-2] = strides[nd-1] * type_dim<T>::DIM;
     typedef RectangularMesh<3> Mesh3D;
     switch (mesh.getIterationOrder()) {
         ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 0, 1, 2)
@@ -347,8 +354,7 @@ static py::object PythonDataVector_getitem(const PythonDataVector<T, dim>& self,
         if (i < 0 || std::size_t(i) >= self.size()) throw IndexError(u8"index out of range");
         return py::object(self[i]);
     } else if (PyTuple_Check(item.ptr())) {
-        if (py::len(item) != dim)
-            throw TypeError("you must use either 1 or {} data indices", dim);
+        if (py::len(item) != dim) throw TypeError("you must use either 1 or {} data indices", dim);
         bool all_int = true;
         for (int i = 0; i != dim; ++i) {
             PyObject* it = py::object(item[i]).ptr();
@@ -380,9 +386,17 @@ static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type 
     py::object dtype = py::object()) {
     const PythonDataVector<T, dim>* self = py::extract<const PythonDataVector<T, dim>*>(oself);
     if (self->mesh_changed) throw Exception(u8"cannot create array, mesh changed since data retrieval");
-    const int nd = (detail::type_dim<T>() == 1) ? 1 : 2;
-    npy_intp dims[] = {static_cast<npy_intp>(self->mesh->size()), detail::type_dim<T>()};
-    npy_intp strides[] = {static_cast<npy_intp>(sizeof(T)), static_cast<npy_intp>(sizeof(T) / detail::type_dim<T>())};
+    const int nd = detail::type_dim<T>::SHAPE;
+    npy_intp dims[] = {
+        static_cast<npy_intp>(self->mesh->size()),
+        detail::type_dim<T>::DIM,
+        detail::type_dim<T>::SIZE / detail::type_dim<T>::DIM
+    };
+    npy_intp strides[] = {
+        static_cast<npy_intp>(sizeof(T)),
+        static_cast<npy_intp>(sizeof(T) / detail::type_dim<T>::SIZE * detail::type_dim<T>::DIM),
+        static_cast<npy_intp>(sizeof(T) / detail::type_dim<T>::SIZE)
+    };
     PyObject* arr = PyArray_New(&PyArray_Type, nd, dims, detail::typenum<T>(), strides, (void*)self->data(), 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from data");
     confirm_array<T>(arr, oself, dtype);
@@ -411,7 +425,8 @@ static inline typename std::enable_if<detail::isBasicData<T>::value, PyObject*>:
     if (!mesh) return nullptr;
 
     std::vector<npy_intp> dims = detail::mesh_dims(*mesh);
-    if (detail::type_dim<T>() != 1) dims.push_back(detail::type_dim<T>());
+    if (detail::type_dim<T>::SHAPE > 1) dims.push_back(detail::type_dim<T>::DIM);
+    if (detail::type_dim<T>::SHAPE > 2) dims.push_back(detail::type_dim<T>::SIZE / detail::type_dim<T>::DIM);
 
     PyObject* arr = PyArray_New(&PyArray_Type, int(dims.size()), &dims.front(), detail::typenum<T>(),
                                 &detail::mesh_strides<T>(*mesh, dims.size()).front(), (void*)self->data(), 0, 0, NULL);
@@ -464,7 +479,7 @@ static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type 
     py::handle<PyArrayObject> newarr;
 
     if (PyArray_NDIM(arr) == 1) {
-        size = PyArray_DIMS(arr)[0] / type_dim<T>();
+        size = PyArray_DIMS(arr)[0] / type_dim<T>::SIZE;
         if (PyArray_STRIDES(arr)[0] != sizeof(T)) {
             writelog(LOG_DEBUG, u8"Copying numpy array to make it contiguous");
             npy_intp sizes[] = {PyArray_DIMS(arr)[0]};
@@ -474,13 +489,15 @@ static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type 
             PyArray_CopyInto(newarr.get(), arr);
             arr = newarr.get();
         }
-    } else if (type_dim<T>() != 1 && PyArray_NDIM(arr) == 2 && std::size_t(PyArray_DIMS(arr)[0]) == mesh->size() &&
-               PyArray_DIMS(arr)[1] == type_dim<T>()) {
+    } else if (type_dim<T>::SIZE != 1 && PyArray_NDIM(arr) == type_dim<T>::SHAPE &&
+               std::size_t(PyArray_DIMS(arr)[0]) == mesh->size() &&
+               PyArray_DIMS(arr)[1] == type_dim<T>::DIM &&
+               (type_dim<T>::SHAPE < 3 || PyArray_DIMS(arr)[2] == type_dim<T>::SIZE / type_dim<T>::DIM)) {
         size = mesh->size();
         if (PyArray_STRIDES(arr)[0] != sizeof(T)) {
             writelog(LOG_DEBUG, u8"Copying numpy array to make it contiguous");
-            npy_intp sizes[] = {static_cast<npy_intp>(size), type_dim<T>()};
-            npy_intp strides[] = {static_cast<npy_intp>(sizeof(T)), static_cast<npy_intp>(sizeof(T) / type_dim<T>())};
+            npy_intp sizes[] = {static_cast<npy_intp>(size), type_dim<T>::SIZE};
+            npy_intp strides[] = {static_cast<npy_intp>(sizeof(T)), static_cast<npy_intp>(sizeof(T) / type_dim<T>::SIZE)};
             newarr = py::handle<PyArrayObject>(
                 (PyArrayObject*)PyArray_New(&PyArray_Type, 2, sizes, PyArray_TYPE(arr), strides, nullptr, 0, 0, nullptr));
             PyArray_CopyInto(newarr.get(), arr);
@@ -490,7 +507,7 @@ static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type 
         auto rectangular = dynamic_pointer_cast<RectangularMesh<dim>>(mesh);
         if (!rectangular) throw TypeError(u8"for this mesh type only one-dimensional array is allowed");
         auto meshdims = mesh_dims(*rectangular);
-        if (type_dim<T>() != 1) meshdims.push_back(type_dim<T>());
+        if (type_dim<T>::SIZE != 1) meshdims.push_back(type_dim<T>::SIZE);
         std::size_t nd = meshdims.size();
         if ((std::size_t)PyArray_NDIM(arr) != nd) throw ValueError(u8"provided array must have either 1 or {0} dimensions", dim);
         for (std::size_t i = 0; i != nd; ++i)
@@ -543,28 +560,26 @@ static typename std::enable_if<!detail::isBasicData<T>::value, py::object>::type
 
 template <typename T, int dim> static py::object makeDataVector(PyArrayObject* arr, shared_ptr<MeshD<dim>> mesh) {
     size_t ndim = PyArray_NDIM(arr);
-    size_t last_dim = PyArray_DIMS(arr)[ndim - 1];
+    size_t last_dim = PyArray_DIMS(arr)[ndim-1];
     if (ndim == 1) {
         if (last_dim == 2 * mesh->size())
             return makeDataVectorImpl<Vec<2, T>, dim>(arr, mesh);
         else if (last_dim == 3 * mesh->size())
             return makeDataVectorImpl<Vec<3, T>, dim>(arr, mesh);
-        else if (last_dim == 4 * mesh->size())
-            return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
     } else if (ndim == 2 && std::size_t(PyArray_DIMS(arr)[0]) == mesh->size()) {
         if (last_dim == 2)
             return makeDataVectorImpl<Vec<2, T>, dim>(arr, mesh);
         else if (last_dim == 3)
             return makeDataVectorImpl<Vec<3, T>, dim>(arr, mesh);
-        else if (last_dim == 4)
-            return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
+    } else if (ndim == 3 && std::size_t(PyArray_DIMS(arr)[0]) == mesh->size() && last_dim == 3 && PyArray_DIMS(arr)[1] == 3) {
+        return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
     } else if (ndim == dim + 1) {
         if (last_dim == 2)
             return makeDataVectorImpl<Vec<2, T>, dim>(arr, mesh);
         else if (last_dim == 3)
             return makeDataVectorImpl<Vec<3, T>, dim>(arr, mesh);
-        else if (last_dim == 4)
-            return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
+    } else if (ndim == dim + 2 && last_dim == 3 && PyArray_DIMS(arr)[ndim-2] == 3) {
+        return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
     }
     return makeDataVectorImpl<T, dim>(arr, mesh);
 }
@@ -655,8 +670,12 @@ static PythonDataVector<T, dim> PythonDataVector__div__(const PythonDataVector<T
 //     vec /= a;
 // }
 
+template <typename T> struct _Pow { typedef double type; };
+template <typename T> struct _Pow<Tensor3<T>> { typedef int type; };
+
+
 template <typename T, int dim>
-static PythonDataVector<T, dim> PythonDataVector__pow__(const PythonDataVector<T, dim>& vec, double a) {
+static PythonDataVector<T, dim> PythonDataVector__pow__(const PythonDataVector<T, dim>& vec, typename _Pow<T>::type a) {
     DataVector<typename std::remove_const<T>::type> vec2(vec.size());
     for (size_t i = 0; i != vec.size(); ++i) vec2[i] = std::pow(vec[i], a);
     return PythonDataVector<const T, dim>(std::move(vec2), vec.mesh);
