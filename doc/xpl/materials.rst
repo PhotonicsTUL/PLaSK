@@ -207,9 +207,20 @@ This section contains specification of custom materials that can be used togethe
 
       .. xml:tag:: <eps>
 
-         Dielectric constant *ε*\ :sub:`R` (-).
+         Static dielectric constant *ε*\ :sub:`∞` (-).
 
          Variables: ``T`` — temperature (K).
+
+      .. xml:tag:: <Eps>
+
+         Hermitian complex permittivity tensor *ε*(*λ*) (-).
+         Tensor must have the form [ *n*\ :sub:`00`, *n*\ :sub:`11`, *n*\ :sub:`22`, *n*\ :sub:`01`, *n*\ :sub:`02`, *n*\ :sub:`12` ].
+
+         Variables: ``lam`` — wavelength (nm), ``T`` — temperature (K), n — injected carriers concentration (cm\ :sup:`-3`).
+
+         .. warning::
+
+            This parameter is used only by solvers that can consider refractive index anisotropy properly. It is strongly advised to also define :xml:tag:`Nr`.
 
       .. xml:tag:: <lattC>
 
@@ -311,17 +322,6 @@ This section contains specification of custom materials that can be used togethe
          Real refractive index \ :sup:`2`*n*\ :sub:`R` (-).
 
          Variables: ``lam`` — wavelength (nm), ``T`` — temperature (K), n — injected carriers concentration (cm\ :sup:`-3`).
-
-      .. xml:tag:: <NR>
-
-         Anisotropic complex refractive index tensor *n*\ :sub:`R` (-).
-         Tensor must have the form [ *n*\ :sub:`00`, *n*\ :sub:`11`, *n*\ :sub:`22`, *n*\ :sub:`01`, *n*\ :sub:`10` ].
-
-         Variables: ``lam`` — wavelength (nm), ``T`` — temperature (K), n — injected carriers concentration (cm\ :sup:`-3`).
-
-         .. warning::
-
-            This parameter is used only by solvers that can consider refractive index anisotropy properly. It is strongly advised to also define :xml:tag:`Nr`.
 
       .. xml:tag:: <Nv>
 

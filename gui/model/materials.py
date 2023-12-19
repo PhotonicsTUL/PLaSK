@@ -91,7 +91,15 @@ MATERIALS_PROPERTES = {
         u'Energy band gap <i>E</i><sub><i>g</i></sub>', u'eV', [(u'T', u'temperature', u'K'), (u'e', u'lateral strain', '-'),
                                                                 (u'point', u'point in the Brillouin zone', '-')]
     ),
-    'eps': (u'Dielectric constant <i>ε<sub>R</sub></i>', u'-', [(u'T', u'temperature', u'K')]),
+    'eps': (u'Static dielectric constant <i>ε<sub>∞</sub></i>', u'-', [(u'T', u'temperature', u'K')]),
+    'Eps': (
+        u'Hermitian complex permittivity tensor <i>ε</i>(<i>λ</i>).<br/>'
+        u'(mind that some solvers use isotropic refractive index instead; '
+        u'tensor must have the form [<i>n</i><sub>00</sub>, <i>n</i><sub>11</sub>, '
+        u'<i>n</i><sub>22</sub>, <i>n</i><sub>01</sub>, <i>n</i><sub>02</sub>, <i>n</i><sub>12</sub>])',
+        u'-', [(u'lam', u'wavelength', u'nm'), (u'T', u'temperature', u'K'),
+               (u'n', u'injected carriers concentration', 'cm<sup>-1</sup>')]
+    ),
     'lattC': (u'Lattice constant', u'Å', [(u'T', u'temperature', u'K'), (u'x', u'lattice parameter', '-')]),
     'Me': (
         u'Electron effective mass <i>M</i><sub><i>e</i></sub> in lateral '
@@ -138,14 +146,6 @@ MATERIALS_PROPERTES = {
     'nr': (
         u'Real refractive index <i>n</i><sub><i>R</i></sub>', u'-', [(u'lam', u'wavelength', u'nm'), (u'T', u'temperature', u'K'),
                                                                      (u'n', u'injected carriers concentration', 'cm<sup>-1</sup>')]
-    ),
-    'NR': (
-        u'Anisotropic complex refractive index tensor <i>n</i><sub><i>R</i></sub>.<br/>'
-        u'(mind that some solvers use Nr instead; '
-        u'tensor must have the form [<i>n</i><sub>00</sub>, <i>n</i><sub>11</sub>, '
-        u'<i>n</i><sub>22</sub>, <i>n</i><sub>01</sub>, <i>n</i><sub>10</sub>])',
-        u'-', [(u'lam', u'wavelength', u'nm'), (u'T', u'temperature', u'K'),
-               (u'n', u'injected carriers concentration', 'cm<sup>-1</sup>')]
     ),
     'Psp': (u'Spontaneous polarization <i>P<sub>sp</sub></i>', u'C/m<sup>2</sup>', [(u'T', u'temperature', u'K')]),
     'taue': (u'Monomolecular electrons lifetime <i>τ<sub>e</sub></i>', u'ns', [(u'T', u'temperature', u'K')]),

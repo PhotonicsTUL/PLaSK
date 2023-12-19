@@ -58,6 +58,7 @@ struct PLASK_API MaterialInfo {
         c12,        ///< elastic constant
         c44,        ///< elastic constant
         eps,        ///< dielectric constant
+        Eps,         ///< complex permittivity index tensor
         chi,        ///< electron affinity
         Na,         ///< acceptor concentration
         Nd,         ///< donor concentration
@@ -78,7 +79,6 @@ struct PLASK_API MaterialInfo {
         nr,         ///< refractive index
         absp,       ///< absorption coefficient alpha
         Nr,         ///< complex refractive index
-        NR,         ///< complex refractive index tensor
         mobe,       ///< electron mobility
         mobh,       ///< hole mobility
         taue,       ///< monomolecular electrons lifetime (ns)
