@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -429,7 +429,7 @@ private:
      * Check if current XML state is available and throw exception if not.
      */
     void ensureHasCurrent() const {
-        if (!hasCurrent()) throw XMLException("XML reader: no current node (missing first read() call?)");
+        if (!hasCurrent()) throw XMLException("xML reader: no current node (missing first read() call?)");
     }
 
     /// @return current XML state (valid only if hasCurrent() returns @c true)
@@ -457,7 +457,7 @@ private:
      */
     static unsigned strToUnsigned(std::string str) {
         int value = boost::lexical_cast<int>(boost::trim_copy(str));
-        if (value < 0) throw XMLException("Negative value given for unsigned");
+        if (value < 0) throw XMLException("negative value given for unsigned");
         return unsigned(value);
     }
 

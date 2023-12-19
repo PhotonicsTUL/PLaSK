@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -107,7 +107,7 @@ struct ScaledProviderBase: public DstProviderT {
      */
     void ensureHasProvider() const {
         if (!source)
-            throw Exception("Scaled {0} provider has no source", this->name());
+            throw Exception("scaled {0} provider has no source", this->name());
     }
 
 };
@@ -144,7 +144,7 @@ struct ScaledFieldProviderImpl<DstPropertyT, SrcPropertyT, MULTI_FIELD_PROPERTY,
         this->ensureHasProvider();
         return (*this->source)(n, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method) * this->scale;
     }
-    
+
     size_t size() const override {
         this->ensureHasProvider();
         return this->source->size();

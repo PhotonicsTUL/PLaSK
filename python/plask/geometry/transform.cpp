@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -107,7 +107,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation",
 
 template <typename Cls>
 shared_ptr<Cls> Mirror_constructor1(size_t axis, shared_ptr<typename Cls::ChildType> child) {
-    if (axis >= Cls::DIM) throw ValueError("Wrong axis number.");
+    if (axis >= Cls::DIM) throw ValueError("wrong axis number.");
     return plask::make_shared<Cls>(typename Primitive<Cls::DIM>::Direction(axis), child);
 }
 
@@ -128,7 +128,7 @@ void setFlipDir(Cls& self, py::object val) {
     } catch (py::error_already_set&) {
         PyErr_Clear();
         size_t no = py::extract<size_t>(val);
-        if (no >= Cls::DIM) throw ValueError("Wrong axis number.");
+        if (no >= Cls::DIM) throw ValueError("wrong axis number.");
         self.flipDir = typename Primitive<Cls::DIM>::Direction(no);
     }
 }

@@ -464,7 +464,7 @@ template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::s
 }
 
 template <> double ElectricalFem2DSolver<Geometry2DCartesian>::integrateCurrent(size_t vindex, bool onlyactive) {
-    if (!potentials) throw NoValue("Current densities");
+    if (!potentials) throw NoValue("current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis[0]->size() - 1; ++i) {
@@ -479,7 +479,7 @@ template <> double ElectricalFem2DSolver<Geometry2DCartesian>::integrateCurrent(
 }
 
 template <> double ElectricalFem2DSolver<Geometry2DCylindrical>::integrateCurrent(size_t vindex, bool onlyactive) {
-    if (!potentials) throw NoValue("Current densities");
+    if (!potentials) throw NoValue("current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis[0]->size() - 1; ++i) {
@@ -496,7 +496,7 @@ template <> double ElectricalFem2DSolver<Geometry2DCylindrical>::integrateCurren
 }
 
 template <typename Geometry2DType> double ElectricalFem2DSolver<Geometry2DType>::getTotalCurrent(size_t nact) {
-    if (!potentials) throw NoValue("Current");
+    if (!potentials) throw NoValue("current");
     if (nact >= active.size()) throw BadInput(this->getId(), "Wrong active region number");
     const auto& act = active[nact];
     // Find the average of the active region
@@ -507,7 +507,7 @@ template <typename Geometry2DType> double ElectricalFem2DSolver<Geometry2DType>:
 template <typename Geometry2DType>
 const LazyData<double> ElectricalFem2DSolver<Geometry2DType>::getVoltage(shared_ptr<const MeshD<2>> dest_mesh,
                                                                          InterpolationMethod method) const {
-    if (!potentials) throw NoValue("Voltage");
+    if (!potentials) throw NoValue("voltage");
     this->writelog(LOG_DEBUG, "Getting voltage");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     if (this->maskedMesh->full())
@@ -519,7 +519,7 @@ const LazyData<double> ElectricalFem2DSolver<Geometry2DType>::getVoltage(shared_
 template <typename Geometry2DType>
 const LazyData<Vec<2>> ElectricalFem2DSolver<Geometry2DType>::getCurrentDensities(shared_ptr<const MeshD<2>> dest_mesh,
                                                                                   InterpolationMethod method) {
-    if (!potentials) throw NoValue("Current density");
+    if (!potentials) throw NoValue("current density");
     this->writelog(LOG_DEBUG, "Getting current densities");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN);
@@ -541,7 +541,7 @@ const LazyData<Vec<2>> ElectricalFem2DSolver<Geometry2DType>::getCurrentDensitie
 template <typename Geometry2DType>
 const LazyData<double> ElectricalFem2DSolver<Geometry2DType>::getHeatDensities(shared_ptr<const MeshD<2>> dest_mesh,
                                                                                InterpolationMethod method) {
-    if (!potentials) throw NoValue("Heat density");
+    if (!potentials) throw NoValue("heat density");
     this->writelog(LOG_DEBUG, "Getting heat density");
     if (!heats) saveHeatDensities();  // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;

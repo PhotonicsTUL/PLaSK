@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -78,7 +78,7 @@ struct PLASK_API Strategy {
 
     /*void ensureCanCoexists(const Strategy& oppositeStrategy) const {
         if (!canCoexistsWith(oppositeStrategy) || !oppositeStrategy.canCoexistsWith(*this))
-            throw Exception("Edges \"{0}\" and \"{1}\" can't be used on opposite sides.", this->str(), oppositeStrategy.str());
+            throw Exception("edges \"{0}\" and \"{1}\" can't be used on opposite sides.", this->str(), oppositeStrategy.str());
     }*/
 
     /**
@@ -300,7 +300,7 @@ class PLASK_API StrategyPairHolder {
         // strategy_lo.ensureCanCoexists(strategy_hi);
         if (strategy_hi.canMoveOutsideBoundingBox()) {
             if (strategy_lo.canMoveOutsideBoundingBox())
-                throw Exception("Edges on both sides can move point outside bounding box.");
+                throw Exception("edges on both sides can move point outside bounding box.");
             reverseCallingOrder = true;
         } else
             reverseCallingOrder = false;

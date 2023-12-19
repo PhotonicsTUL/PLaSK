@@ -78,7 +78,7 @@ void* CoeffsArray::convertible(PyObject* obj) {
 void CoeffsArray::construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
     PyArrayObject* arr = (PyArrayObject*)obj;
     if (PyArray_NDIM(arr) != 1)
-        throw TypeError("Only rank 1 arrays allowed");
+        throw TypeError("only rank 1 arrays allowed");
     size_t size = PyArray_DIMS(arr)[0];
 
     if (PyArray_TYPE(arr) != NPY_CDOUBLE || PyArray_STRIDES(arr)[0] != sizeof(dcomplex)) {

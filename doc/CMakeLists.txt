@@ -63,7 +63,7 @@ option(BUILD_QTHELP "Build and install QtHelp for GUI" OFF)
 find_program(QHELPGENERATOR qhelpgenerator HINTS ${QT_PATH}/bin)
 
 if(QHELPGENERATOR)
-    exec_program(${QHELPGENERATOR} ARGS -v OUTPUT_VARIABLE qhelpgenerator_version_string)
+    execute_process(COMMAND ${QHELPGENERATOR} -v OUTPUT_VARIABLE qhelpgenerator_version_string)
     string(REGEX REPLACE "^Qt Help Generator version ([0-9]+(\\.[0-9]+)*) \\(Qt ([0-9]+(\\.[0-9]+)*)\\)" "\\3"
            qhelpgenerator_version "${qhelpgenerator_version_string}")
     if(qhelpgenerator_version VERSION_LESS "5.12.0")

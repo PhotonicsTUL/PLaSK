@@ -27,9 +27,9 @@ void checkCompositionSimilarity(const Material::Composition& material1compositio
     for (auto& p1: material1composition) {
         auto p2 = material2composition.find(p1.first);
         if (p2 == material2composition.end())
-            throw MaterialParseException("Materials compositions are different: {0} if missing from one of the materials", p1.first);
+            throw MaterialParseException("materials compositions are different: {0} if missing from one of the materials", p1.first);
         if (std::isnan(p1.second) != std::isnan(p2->second))
-            throw MaterialParseException("Amounts must be defined for the same elements, which is not true in case of '{0}' element", p1.first);
+            throw MaterialParseException("amounts must be defined for the same elements, which is not true in case of '{0}' element", p1.first);
     }
 }
 
@@ -149,7 +149,7 @@ void MaterialsDB::loadAllToDefault(const std::string& dir) {
 }
 
 void MaterialsDB::ensureCompositionIsNotEmpty(const Material::Composition &composition) {
-    if (composition.empty()) throw MaterialParseException("Unknown material composition");
+    if (composition.empty()) throw MaterialParseException("unknown material composition");
 }
 
 MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor():
@@ -279,13 +279,13 @@ shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
 shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const std::string& material1_fullname, const std::string& material2_fullname, double shape) const {
     Material::Parameters m1(material1_fullname), m2(material2_fullname);
     if (m1.dopant != m2.dopant)
-        throw MaterialParseException("Cannot mix materials with different doping: '{0}' and '{1}'", material1_fullname, material2_fullname);
+        throw MaterialParseException("cannot mix materials with different doping: '{0}' and '{1}'", material1_fullname, material2_fullname);
     if ((m1.label != m2.label) || (m1.isAlloy() != m2.isAlloy()))
-        throw MaterialParseException("Cannot mix different materials: '{0}' and '{1}'", material1_fullname, material2_fullname);
+        throw MaterialParseException("cannot mix different materials: '{0}' and '{1}'", material1_fullname, material2_fullname);
 
     if (!m1.isAlloy()) {  // simple material, without parsing composition, still dopants can be mixed
         if (m1.name != m2.name)
-            throw MaterialParseException("Cannot mix different materials: '{0}' and '{1}'", material1_fullname, material2_fullname);
+            throw MaterialParseException("cannot mix different materials: '{0}' and '{1}'", material1_fullname, material2_fullname);
 
         if (!m1.hasDoping()) //??
             throw MaterialParseException("{0}: only complex or doped materials with different doping concentrations can be mixed", material1_fullname);

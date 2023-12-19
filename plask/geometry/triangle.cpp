@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -90,7 +90,7 @@ void Triangle::addLineSegmentsToSet(std::set<typename GeometryObjectD<2>::LineSe
                                     unsigned max_steps,
                                     double min_step_size) const {
     if (!materialProvider->isUniform(Primitive<3>::DIRECTION_TRAN))
-        throw NotImplemented("Triangular mesh for triangles non-uniform in transverse direction");
+        throw NotImplemented("triangular mesh for triangles non-uniform in transverse direction");
     typedef typename GeometryObjectD<2>::LineSegment Segment;
     if (materialProvider->isUniform(Primitive<3>::DIRECTION_VERT)) {
         segments.insert(Segment(Primitive<2>::ZERO_VEC, p0));

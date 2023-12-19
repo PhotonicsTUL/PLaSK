@@ -127,7 +127,7 @@ void Circle<3>::addLineSegmentsToSet(std::set<typename GeometryObjectD<3>::LineS
                                      double min_step_size) const {
     if (!materialProvider->isUniform(Primitive<3>::DIRECTION_LONG) ||
         materialProvider->isUniform(Primitive<3>::DIRECTION_TRAN)) {
-        throw NotImplemented("Triangular mesh for sphere non-uniform in any horizontal direction");
+        throw NotImplemented("triangular mesh for sphere non-uniform in any horizontal direction");
     }
     typedef typename GeometryObjectD<3>::LineSegment Segment;
     if (this->max_steps) max_steps = this->max_steps;

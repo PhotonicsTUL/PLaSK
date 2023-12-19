@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -16,7 +16,7 @@
 namespace plask {
 
 void Mesh::writeXML(XMLElement &) const {
-    throw NotImplemented("Mesh::writeXML()");
+    throw NotImplemented("mesh::writeXML()");
 }
 
 void Mesh::onChange(const Mesh::Event &) {}
@@ -32,7 +32,7 @@ RegisterMeshReader::RegisterMeshReader(const std::string& tag_name, ReadingFunct
 
 RegisterMeshReader::ReadingFunction RegisterMeshReader::getReader(const std::string& name) {
     auto reader = getReaders().find(name);
-    if (reader == getReaders().end()) throw Exception("No registered reader for mesh of type '{0}'", name);
+    if (reader == getReaders().end()) throw Exception("no registered reader for mesh of type '{0}'", name);
     return reader->second;
 }
 
@@ -48,7 +48,7 @@ RegisterMeshGeneratorReader::RegisterMeshGeneratorReader(const std::string& tag_
 
 RegisterMeshGeneratorReader::ReadingFunction RegisterMeshGeneratorReader::getReader(const std::string& name) {
     auto reader = getReaders().find(name);
-    if (reader == getReaders().end()) throw Exception("No registered reader for mesh generator of type '{0}'", name);
+    if (reader == getReaders().end()) throw Exception("no registered reader for mesh generator of type '{0}'", name);
     return reader->second;
 }
 

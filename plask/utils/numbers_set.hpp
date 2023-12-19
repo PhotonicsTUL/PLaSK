@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -254,7 +254,7 @@ struct CompressedSetOfNumbers {
      */
     number_t at(std::size_t index) const {
         auto seg_it = std::upper_bound(segments.begin(), segments.end(), index, Segment::compareByIndexEnd);
-        if (seg_it == segments.end()) throw OutOfBoundsException("CompressedSetOfNumbers::at", "index", index, 0, this->size()-1);
+        if (seg_it == segments.end()) throw OutOfBoundsException("compressedSetOfNumbers::at", "index", index, 0, this->size()-1);
         // here: index < seg_it->indexEnd
         return seg_it->numberEnd + index - seg_it->indexEnd;
     }
@@ -521,4 +521,3 @@ public:
 }   // namespace plask
 
 #endif // PLASK__UTILS_NUMBERS_SET_H
-

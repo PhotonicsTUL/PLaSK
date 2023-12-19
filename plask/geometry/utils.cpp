@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -25,7 +25,7 @@ template <int dims>
 const typename BoundingBoxCache<dims>::BoundingBoxT &BoundingBoxCache<dims>::operator()() {
     if (!isFresh) {
         //if (!object) return BoundingBoxT::invalidInstance();
-        if (!object) throw Exception("BoundingBoxCache is not initialized or object was deleted, so can't get bounding box");
+        if (!object) throw Exception("boundingBoxCache is not initialized or object was deleted, so can't get bounding box");
         boundingBox = object->getBoundingBox();
         isFresh = true;
     }

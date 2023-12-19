@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -146,7 +146,7 @@ struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
 
         Element at(std::size_t index) const {
             if (index >= mesh->getElementsCount())
-                throw OutOfBoundsException("ExtrudedTriangularMesh3D::Elements::at", "index", index, 0, mesh->getElementsCount()-1);
+                throw OutOfBoundsException("extrudedTriangularMesh3D::Elements::at", "index", index, 0, mesh->getElementsCount()-1);
             return Element(*mesh, index);
         }
 

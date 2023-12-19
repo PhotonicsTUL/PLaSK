@@ -626,7 +626,7 @@ const LazyData<double> DiffusionFem2DSolver<Geometry2DType>::getConcentration(Ca
     if (what != CarriersConcentration::MAJORITY && what != CarriersConcentration::PAIRS) {
         return LazyData<double>(dest_mesh->size(), NAN);
     }
-    if (!n_present.data()) throw NoValue("Carriers concentration");
+    if (!n_present.data()) throw NoValue("carriers concentration");
     return LazyData<double>(new DiffusionFem2DSolver<Geometry2DType>::ConcentrationDataImpl(this, dest_mesh, interpolation));
 }
 
@@ -825,7 +825,7 @@ template <typename Geometry2DType> std::vector<Box2D> DiffusionFem2DSolver<Geome
 template <typename Geometry2DType> double DiffusionFem2DSolver<Geometry2DType>::getZQWCoordinate() {
     double coordinate = 0.0;
     std::size_t no_QW = detected_QW.size();
-    if (no_QW == 0) throw Exception("No quantum wells defined");
+    if (no_QW == 0) throw Exception("no quantum wells defined");
     // here no_QW > 0:
     std::size_t no_Box;
     if (no_QW % 2 == 0) {
@@ -840,7 +840,7 @@ template <typename Geometry2DType> double DiffusionFem2DSolver<Geometry2DType>::
 
 template <typename Geometry2DType> std::vector<double> DiffusionFem2DSolver<Geometry2DType>::getZQWCoordinates() {
     std::size_t no_QW = detected_QW.size();
-    if (no_QW == 0) throw Exception("No quantum wells defined");
+    if (no_QW == 0) throw Exception("no quantum wells defined");
 
     std::vector<double> coordinates(no_QW);
 

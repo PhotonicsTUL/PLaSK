@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -30,7 +30,7 @@ template <typename OT, typename IT = OT, typename F> py::object UFUNC(F f, py::o
 
         if (inarr == NULL || PyArray_TYPE(inarr) != detail::typenum<IT>()) {
             Py_XDECREF(inarr);
-            throw TypeError("Cannot convert input array to required type");
+            throw TypeError("cannot convert input array to required type");
         }
 
         PyArrayObject* op[2] = {inarr, NULL};
@@ -40,7 +40,7 @@ template <typename OT, typename IT = OT, typename F> py::object UFUNC(F f, py::o
         PyArray_Descr* op_dtypes[2] = {NULL, PyArray_DescrFromType(detail::typenum<OT>())};
         NpyIter* iter = NpyIter_MultiNew(2, op, flags, NPY_KEEPORDER, NPY_NO_CASTING, op_flags, op_dtypes);
         if (iter == NULL) {
-            throw CriticalException("Error in array iteration");
+            throw CriticalException("error in array iteration");
         }
         NpyIter_IterNextFunc* iternext = NpyIter_GetIterNext(iter, NULL);
         npy_intp innerstride = NpyIter_GetInnerStrideArray(iter)[0];
@@ -67,7 +67,7 @@ template <typename OT, typename IT = OT, typename F> py::object UFUNC(F f, py::o
         if (NpyIter_Deallocate(iter) != NPY_SUCCEED) {
             Py_DECREF(ret);
             Py_DECREF(inarr);
-            throw CriticalException("Error in array iteration");
+            throw CriticalException("error in array iteration");
         }
         Py_DECREF(inarr);
         return py::object(py::handle<>((PyObject*)ret));
@@ -87,7 +87,7 @@ py::object PARALLEL_UFUNC(F f, py::object input, const char* name, const char* a
 
         if (inarr == NULL || PyArray_TYPE(inarr) != detail::typenum<IT>()) {
             Py_XDECREF(inarr);
-            throw TypeError("Cannot convert input array to required type");
+            throw TypeError("cannot convert input array to required type");
         }
 
         PyArrayObject* op[2] = {inarr, NULL};
@@ -97,7 +97,7 @@ py::object PARALLEL_UFUNC(F f, py::object input, const char* name, const char* a
         PyArray_Descr* op_dtypes[2] = {NULL, PyArray_DescrFromType(detail::typenum<OT>())};
         NpyIter* iter = NpyIter_MultiNew(2, op, flags, NPY_KEEPORDER, NPY_NO_CASTING, op_flags, op_dtypes);
         if (iter == NULL) {
-            throw CriticalException("Error in array iteration");
+            throw CriticalException("error in array iteration");
         }
         NpyIter_IterNextFunc* iternext = NpyIter_GetIterNext(iter, NULL);
         npy_intp innerstride = NpyIter_GetInnerStrideArray(iter)[0];
@@ -155,7 +155,7 @@ py::object PARALLEL_UFUNC(F f, py::object input, const char* name, const char* a
         if (NpyIter_Deallocate(iter) != NPY_SUCCEED) {
             Py_DECREF(ret);
             Py_DECREF(inarr);
-            throw CriticalException("Error in array iteration");
+            throw CriticalException("error in array iteration");
         }
         Py_DECREF(inarr);
         return py::object(py::handle<>((PyObject*)ret));

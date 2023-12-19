@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -114,9 +114,9 @@ void Prism::addLineSegmentsToSet(std::set<typename GeometryObjectD<3>::LineSegme
                                  unsigned max_steps,
                                  double min_step_size) const {
     if (!materialProvider->isUniform(Primitive<3>::DIRECTION_LONG))
-        throw NotImplemented("Prismatic mesh for prisms non-uniform in longitudinal direction");
+        throw NotImplemented("prismatic mesh for prisms non-uniform in longitudinal direction");
     if (!materialProvider->isUniform(Primitive<3>::DIRECTION_TRAN))
-        throw NotImplemented("Prismatic mesh for prisms non-uniform in transverse direction");
+        throw NotImplemented("prismatic mesh for prisms non-uniform in transverse direction");
     std::set<double> vert;
     addPointsAlongToSet(vert, Primitive<3>::DIRECTION_VERT, max_steps, min_step_size);
     typedef typename GeometryObjectD<3>::LineSegment Segment;

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -417,7 +417,7 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
      * @return n-th axis (cn)
      */
     const shared_ptr<MeshAxis>& getAxis(size_t n) const {
-        if (n >= 2) throw Exception("Bad axis number");
+        if (n >= 2) throw Exception("bad axis number");
         return axis[n];
     }
 

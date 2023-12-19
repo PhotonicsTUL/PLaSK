@@ -32,13 +32,13 @@ void Manager::ExternalSourcesFromFile::operator()(Manager &manager, const std::s
     boost::filesystem::path url_path(url);
     if (url_path.is_relative()) {
         if (originalFileName.empty())
-            throw Exception("Error while reading section \"{0}\": relative path name \"{1}\" is not supported.", section, url);
+            throw Exception("error while reading section \"{0}\": relative path name \"{1}\" is not supported.", section, url);
         url_path = originalFileName;
         url_path.remove_filename();
         url_path /= url;
     }
     if (hasCircularRef(url_path, section))
-        throw Exception("Error while reading section \"{0}\": circular reference was detected.", section);
+        throw Exception("error while reading section \"{0}\": circular reference was detected.", section);
     XMLReader reader(url_path.string().c_str());
     manager.loadSection(reader, section, ExternalSourcesFromFile(url_path, section, this));
 }
@@ -195,10 +195,10 @@ void Manager::loadGrids(XMLReader &reader)
             std::replace(name.begin(), name.end(), '-', '_');
             BadId::throwIfBad("mesh", name);
             if (meshes.find(name) != meshes.end())
-                throw NamesConflictException("Mesh or mesh generator", name);
+                throw NamesConflictException("mesh or mesh generator", name);
             shared_ptr<Mesh> mesh = RegisterMeshReader::getReader(type)(reader);
             if (reader.getNodeType() != XMLReader::NODE_ELEMENT_END || reader.getNodeName() != "mesh")
-                throw Exception("Internal error in {0} mesh reader, after return reader does not point to end of mesh tag.", type);
+                throw Exception("internal error in {0} mesh reader, after return reader does not point to end of mesh tag.", type);
             meshes[name] = mesh;
         } else if (reader.getNodeName() == "generator") {
             std::string type = reader.requireAttribute("type");
@@ -208,10 +208,10 @@ void Manager::loadGrids(XMLReader &reader)
             BadId::throwIfBad("generator", name);
             std::string key = type + "." + method;
             if (meshes.find(name) != meshes.end())
-                throw NamesConflictException("Mesh or mesh generator", name);
+                throw NamesConflictException("mesh or mesh generator", name);
             shared_ptr<MeshGenerator> generator = RegisterMeshGeneratorReader::getReader(key)(reader, *this);
             if (reader.getNodeType() != XMLReader::NODE_ELEMENT_END || reader.getNodeName() != "generator")
-                throw Exception("Internal error in {0} (method: {1}) mesh generator reader, after return reader does not point to end of generator tag.", type, method);
+                throw Exception("internal error in {0} (method: {1}) mesh generator reader, after return reader does not point to end of generator tag.", type, method);
             meshes[name] = generator;
         } else
             throw XMLUnexpectedElementException(reader, "<mesh...>, <generator...>, or </grids>");
@@ -221,7 +221,7 @@ void Manager::loadGrids(XMLReader &reader)
 shared_ptr<Solver> Manager::loadSolver(const std::string &, const std::string &, const std::string &, const std::string& name) {
     auto found = solvers.find(name);
     if (found == solvers.end())
-        throw Exception("In C++ solvers ('{0}' in this case) must be created and added to Manager::solvers manually before reading XML.", name);
+        throw Exception("in C++ solvers ('{0}' in this case) must be created and added to Manager::solvers manually before reading XML.", name);
     solvers.erase(found); // this is necessary so we don't have name conflicts — the solver will be added back to the map by loadSolvers
     return found->second;
 }

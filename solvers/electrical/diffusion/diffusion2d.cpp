@@ -525,7 +525,7 @@ Diffusion2DSolver<Geometry2DType>::ConcentrationDataImpl::ConcentrationDataImpl(
         for (const auto& iactive : solver->active) {
             const auto& active = iactive.second;
             auto src_mesh = active.mesh();
-            if (!active.U) throw NoValue("Carriers concentration");
+            if (!active.U) throw NoValue("carriers concentration");
             assert(src_mesh->size() == active.U.size() / 2);
             concentrations.emplace_back(LazyData<double>(dest_mesh->size(), [this, active, src_mesh](size_t i) -> double {
                 double x = interpolationFlags.wrap(0, destination_mesh->at(i).c0);
@@ -552,7 +552,7 @@ Diffusion2DSolver<Geometry2DType>::ConcentrationDataImpl::ConcentrationDataImpl(
     } else {
         for (const auto& iactive : solver->active) {
             const auto& active = iactive.second;
-            if (!active.U) throw NoValue("Carriers concentration");
+            if (!active.U) throw NoValue("carriers concentration");
             shared_ptr<RectangularMesh<2>> mesh(
                 new RectangularMesh<2>(active.mesh(), shared_ptr<OnePointAxis>(new OnePointAxis(active.vert()))));
             DataVector<double> conc(active.U.size() / 2);

@@ -478,7 +478,7 @@ void ElectricalFem3DSolver::saveHeatDensity() {
 }
 
 double ElectricalFem3DSolver::integrateCurrent(size_t vindex, bool onlyactive) {
-    if (!potential) throw NoValue("Current densities");
+    if (!potential) throw NoValue("current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis[0]->size() - 1; ++i) {
@@ -505,7 +505,7 @@ double ElectricalFem3DSolver::getTotalCurrent(size_t nact) {
 }
 
 const LazyData<double> ElectricalFem3DSolver::getVoltage(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) const {
-    if (!potential) throw NoValue("Voltage");
+    if (!potential) throw NoValue("voltage");
     this->writelog(LOG_DEBUG, "Getting potential");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     if (maskedMesh->full())
@@ -515,7 +515,7 @@ const LazyData<double> ElectricalFem3DSolver::getVoltage(shared_ptr<const MeshD<
 }
 
 const LazyData<Vec<3>> ElectricalFem3DSolver::getCurrentDensity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) {
-    if (!potential) throw NoValue("Current density");
+    if (!potential) throw NoValue("current density");
     this->writelog(LOG_DEBUG, "Getting current density");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(geometry, InterpolationFlags::Symmetry::NPP, InterpolationFlags::Symmetry::PNP,
@@ -536,7 +536,7 @@ const LazyData<Vec<3>> ElectricalFem3DSolver::getCurrentDensity(shared_ptr<const
 }
 
 const LazyData<double> ElectricalFem3DSolver::getHeatDensity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) {
-    if (!potential) throw NoValue("Heat density");
+    if (!potential) throw NoValue("heat density");
     this->writelog(LOG_DEBUG, "Getting heat density");
     if (!heat) saveHeatDensity();  // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;

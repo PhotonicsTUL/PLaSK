@@ -411,7 +411,7 @@ Diffusion3DSolver::ConcentrationDataImpl::ConcentrationDataImpl(const Diffusion3
     if (interp == InterpolationMethod::INTERPOLATION_DEFAULT || interp == InterpolationMethod::INTERPOLATION_SPLINE) {
         for (const auto& iactive : solver->active) {
             const auto& active = iactive.second;
-            if (!active.U) throw NoValue("Carriers concentration");
+            if (!active.U) throw NoValue("carriers concentration");
             concentrations.emplace_back(LazyData<double>(dest_mesh->size(), [this, active](size_t i) -> double {
                 auto point = destination_mesh->at(i);
 
@@ -455,7 +455,7 @@ Diffusion3DSolver::ConcentrationDataImpl::ConcentrationDataImpl(const Diffusion3
     } else {
         for (const auto& iactive : solver->active) {
             const auto& active = iactive.second;
-            if (!active.U) throw NoValue("Carriers concentration");
+            if (!active.U) throw NoValue("carriers concentration");
             DataVector<double> conc(active.U.size() / 3);
             DataVector<double>::iterator c = conc.begin();
             for (auto u = active.U.begin(); u < active.U.end(); u += 3, ++c) *c = *u;

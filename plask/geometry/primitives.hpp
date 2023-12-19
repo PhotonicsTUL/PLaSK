@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -792,7 +792,7 @@ template <> struct PLASK_API Primitive<2> {
     enum Direction { DIRECTION_TRAN = 0, DIRECTION_VERT = 1 };
 
     static void ensureIsValidDirection(unsigned direction) {
-        if (direction > 1) throw Exception("Bad 2D direction index, {0} was given but allowed are: 0, 1.", direction);
+        if (direction > 1) throw Exception("bad 2D direction index, {0} was given but allowed are: 0, 1.", direction);
     }
 
     /// Compare if \c a < \b with reasonable tollerance
@@ -827,7 +827,7 @@ template <> struct PLASK_API Primitive<3> {
 
     static void ensureIsValidDirection(unsigned direction) {
         if (direction > 2)
-            throw DimensionError("Bad 3D direction index, {} was given but allowed are: 0, 1, 2.", direction);
+            throw DimensionError("bad 3D direction index, {} was given but allowed are: 0, 1, 2.", direction);
     }
 
     static void ensureIsValid2DDirection(unsigned direction) {

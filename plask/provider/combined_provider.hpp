@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -134,7 +134,7 @@ struct CombinedProviderBase: public BaseProviderT {
      */
     void ensureHasProviders() const {
         if (providers.empty())
-            throw Exception("Combined {0} provider has no components", this->name());
+            throw Exception("combined {0} provider has no components", this->name());
     }
 
 };
@@ -184,7 +184,7 @@ struct FieldSumProviderImpl<PropertyT, SpaceT, VariadicTemplateTypesHolder<Extra
         do {
             std::size_t last_size = providers.back().size();
             if (size != last_size)
-                throw DataError("Data sources sizes differ ([{0}] - [%2])", size, last_size);
+                throw DataError("data sources sizes differ ([{0}] - [%2])", size, last_size);
             providers.push_back((*p)(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method));
             ++p;
         } while (p != this->end());

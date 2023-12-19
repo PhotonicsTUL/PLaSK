@@ -77,7 +77,7 @@ static py::object FermiNewGain_setLevels(py::tuple args, py::dict kwargs)
                 throw TypeError("set_levels() got an unexpected keyword argument '{}'", *key);
         }
         if (!el || !hh || !lh) {
-            throw ValueError("All 'el', 'hh', and 'lh' levels must be set");
+            throw ValueError("all 'el', 'hh', and 'lh' levels must be set");
         }
     } catch(...) {
         delete[] el; delete[] hh; delete[] lh;

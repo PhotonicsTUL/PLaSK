@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -140,7 +140,7 @@ struct GeometryObjectTransform : public GeometryObjectD<dim> {
     std::size_t getChildrenCount() const override { return hasChild() ? 1 : 0; }
 
     shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override {
-        if (!hasChild() || child_no > 0) throw OutOfBoundsException("GeometryObjectTransform::getChildNo", "child_no");
+        if (!hasChild() || child_no > 0) throw OutOfBoundsException("geometryObjectTransform::getChildNo", "child_no");
         return _child;
     }
 

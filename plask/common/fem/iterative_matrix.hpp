@@ -542,7 +542,7 @@ struct SparseFreeMatrix : SparseMatrix {
             case IterativeMatrixParams::PRECOND_JAC: return nspcg_jac4;
             case IterativeMatrixParams::PRECOND_LSP: return nspcg_lsp4;
             case IterativeMatrixParams::PRECOND_NEU: return nspcg_neu4;
-            default: throw NotImplemented("Preconditioner not implemented for non-rectangular or masked mesh");
+            default: throw NotImplemented("preconditioner not implemented for non-rectangular or masked mesh");
         };
         assert(NULL);
     }

@@ -369,10 +369,10 @@ shared_ptr<GeometryObject> GeometryReader::requireObjectWithName(const std::stri
 void GeometryReader::registerObjectName(const std::string& name, shared_ptr<GeometryObject> object) {
     if (isAutoName(name)) {
         if (!autoNamedObjects.insert(std::map<std::string, shared_ptr<GeometryObject>>::value_type(name, object)).second)
-            throw NamesConflictException("Auto-named geometry object", name);
+            throw NamesConflictException("auto-named geometry object", name);
     } else {  // normal name
         if (!manager.geometrics.insert(std::map<std::string, shared_ptr<GeometryObject>>::value_type(name, object)).second)
-            throw NamesConflictException("Geometry object", name);
+            throw NamesConflictException("geometry object", name);
     }
 }
 

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -26,7 +26,7 @@ struct OStreamOutput: public XMLWriter::Output {
 
     OStreamOutput(ostream_t& stream_ref): ostream(stream_ref) {
     }
-    
+
     template <typename... StreamCtorArgT>
     OStreamOutput(StreamCtorArgT&&... stream_open_arg) {
         ostream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
@@ -54,7 +54,7 @@ struct CFileOutput: public XMLWriter::Output {
 
     void write(const char *buffer, std::size_t n) override {
         if (std::fwrite(buffer, 1, n, file) != n)
-            throw XMLWriterException("XML writter can't write to C file descriptor.");
+            throw XMLWriterException("xML writter can't write to C file descriptor.");
     }
 
     /*void put(char c) {
@@ -204,7 +204,7 @@ bool XMLWriter::Element::disallowAttributes() {
 
 void XMLWriter::Element::ensureIsCurrent() {
     if (this != writer->current)
-        throw XMLWriterException("Operation is not permitted as the XML element \""+ name +"\" is not the last one in the stack");
+        throw XMLWriterException("operation is not permitted as the XML element \""+ name +"\" is not the last one in the stack");
 }
 
 XMLWriter::XMLWriter(std::ostream& out, std::size_t indentation)

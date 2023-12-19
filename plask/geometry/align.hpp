@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -805,9 +805,9 @@ inline Aligner<direction> fromXML(const XMLReader& reader, const AxisNames& axis
 template <Direction direction1, Direction direction2>
 inline Aligner<direction1, direction2> fromDictionary(Dictionary dic, const AxisNames& axes) {
     Aligner<direction1> a1 = fromDictionary<direction1>(dic, axes);
-    if (a1.isNull()) throw Exception("No aligner for axis{0} defined.", direction1);
+    if (a1.isNull()) throw Exception("no aligner for axis{0} defined.", direction1);
     Aligner<direction2> a2 = fromDictionary<direction2>(dic, axes);
-    if (a2.isNull()) throw Exception("No aligner for axis{0} defined.", direction2);
+    if (a2.isNull()) throw Exception("no aligner for axis{0} defined.", direction2);
     return Aligner<direction1, direction2>(a1, a2);
 }
 
@@ -865,11 +865,11 @@ inline Aligner<direction1, direction2> fromXML(const XMLReader& reader, const Ax
 template <Direction direction1, Direction direction2, Direction direction3>
 inline Aligner3D fromDictionary(Dictionary dictionary, const AxisNames& axis_names) {
     Aligner<Primitive<3>::Direction(0)> a0 = fromDictionary<Primitive<3>::Direction(0)>(dictionary, axis_names);
-    if (a0.isNull()) throw Exception("No aligner for axis{0} defined.", 0);
+    if (a0.isNull()) throw Exception("no aligner for axis{0} defined.", 0);
     Aligner<Primitive<3>::Direction(1)> a1 = fromDictionary<Primitive<3>::Direction(1)>(dictionary, axis_names);
-    if (a1.isNull()) throw Exception("No aligner for axis{0} defined.", 1);
+    if (a1.isNull()) throw Exception("no aligner for axis{0} defined.", 1);
     Aligner<Primitive<3>::Direction(2)> a2 = fromDictionary<Primitive<3>::Direction(2)>(dictionary, axis_names);
-    if (a2.isNull()) throw Exception("No aligner for axis{0} defined.", 2);
+    if (a2.isNull()) throw Exception("no aligner for axis{0} defined.", 2);
     return Aligner3D(a0, a1, a2);
 }
 

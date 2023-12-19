@@ -67,7 +67,7 @@ struct PLASK_API Manager {
 
     /// Throw exception with information that loading from external sources is not supported or disallowed.
     static void disallowExternalSources(Manager& PLASK_UNUSED(manager), const std::string& url, const std::string& section) {
-        throw Exception("Can't load section \"{0}\" from \"{1}\". Loading from external sources is not supported or disallowed.", section, url); }
+        throw Exception("can't load section \"{0}\" from \"{1}\". Loading from external sources is not supported or disallowed.", section, url); }
 
     /// Allow to support reading some sections from other files.
     struct PLASK_API ExternalSourcesFromFile {
@@ -118,7 +118,7 @@ private:
 
     /*struct LoadFunCallbackT {
         std::pair< XMLReader, std::unique_ptr<LoadFunCallbackT> > get(const std::string& url) const {
-            throw Exception("Can't load section from \"{0}\". Loading from external sources is not supported or disallowed.", url);
+            throw Exception("can't load section from \"{0}\". Loading from external sources is not supported or disallowed.", url);
         }
     };*/
 
@@ -520,7 +520,7 @@ private:
      */
     void storeBoundary(const std::string& name, boost::any&& boundary) {
         if (!this->boundaries.insert(std::make_pair(name, std::move(boundary))).second)
-            throw NamesConflictException("Place (boundary)", name);
+            throw NamesConflictException("place (boundary)", name);
     }
 
 public:

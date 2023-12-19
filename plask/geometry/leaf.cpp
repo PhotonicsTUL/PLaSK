@@ -109,7 +109,7 @@ GeometryObject::Subtree GeometryObjectLeaf<dim>::getPathsAt(const typename Geome
 }
 
 template <int dim> shared_ptr<GeometryObject> GeometryObjectLeaf<dim>::getChildNo(std::size_t) const {
-    throw OutOfBoundsException("GeometryObjectLeaf::getChildNo", "child_no");
+    throw OutOfBoundsException("geometryObjectLeaf::getChildNo", "child_no");
 }
 
 template <int dim>

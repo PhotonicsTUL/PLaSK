@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -323,8 +323,8 @@ template <int dim> class PLASK_API GeometryD : public Geometry {
      * @return child of this
      */
     shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override {
-        // if (!hasChild() || child_no > 0) throw OutOfBoundsException("Geometry::getChildNo", "child_no");
-        if (child_no >= getChildrenCount()) throw OutOfBoundsException("Geometry::getChildNo", "child_no");
+        // if (!hasChild() || child_no > 0) throw OutOfBoundsException("geometry::getChildNo", "child_no");
+        if (child_no >= getChildrenCount()) throw OutOfBoundsException("geometry::getChildNo", "child_no");
         return getObject3D();
     }
 

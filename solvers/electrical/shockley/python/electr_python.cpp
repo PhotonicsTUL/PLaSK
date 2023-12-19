@@ -170,7 +170,7 @@ struct PythonCondSolver : public std::conditional<std::is_same<GeometryT, Geomet
      */
     Tensor2<double> activeCond(size_t n, double U, double jy, double T) override {
         if (n >= this->active.size() || n >= cond_function.size() || cond_function[n].is_none())
-            throw IndexError("No conductivity for active region {}", n);
+            throw IndexError("no conductivity for active region {}", n);
         py::object cond = cond_function[n](U, jy, T);
         py::extract<double> double_cond(cond);
         if (double_cond.check()) return Tensor2<double>(0., double_cond());

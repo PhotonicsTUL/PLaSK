@@ -256,7 +256,7 @@ ConstMaterial::ConstMaterial(const shared_ptr<Material>& base, const std::map<st
         else if (item.first == "Psp") cache.Psp.reset(item.second);
         else if (item.first == "Na") cache.Na.reset(item.second);
         else if (item.first == "Nd") cache.Nd.reset(item.second);
-        else throw MaterialParseException("Bad material parameter '{}'", item.first);
+        else throw MaterialParseException("bad material parameter '{}'", item.first);
     }
 }
 

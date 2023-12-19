@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -121,7 +121,7 @@ bool PythonGeometryObjectChanger::apply(shared_ptr<GeometryObject>& to_change, V
                 if (translation) {
                     size_t dim = py::len(result[1]);
                     if (dim != 2 && dim != 3)
-                        throw TypeError("Translation must be 2D or 3D vector");
+                        throw TypeError("translation must be 2D or 3D vector");
                     (*translation)[0] = 0.;
                     (*translation)[3-dim] = py::extract<double>(result[1][0]);
                     (*translation)[3-dim+1] = py::extract<double>(result[1][1]);

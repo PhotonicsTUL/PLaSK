@@ -128,7 +128,7 @@ struct XMLPythonDataSource: public XMLReader::DataSource {
                 data = py::extract<const char*>(readobj);
             }
             len = strlen(data);
-            if (len > buf_size-read) throw CriticalException("Too much data read");
+            if (len > buf_size-read) throw CriticalException("too much data read");
             std::copy_n(data, len, buff);
             buff += len;
             read += len;
@@ -201,7 +201,7 @@ PLASK_PYTHON_API void loadXpl(py::object self, py::object src, py::dict vars, py
 
     manager->overrites = py::tuple(vars.keys());
     if (vars.has_key("self"))
-        throw ValueError("Definition name 'self' is reserved");
+        throw ValueError("definition name 'self' is reserved");
     manager->defs.update(vars);
 
     struct SelfGuard {
@@ -548,7 +548,7 @@ template <typename T>
 static void dict__delattr__(Manager::Map<T>& self, const std::string& attr) {
     std::string key = attr;
     auto found = self.find(key);
-    if (found == self.end()) throw AttributeError("No " + item_name<T>() + " with id '{0}'", attr);
+    if (found == self.end()) throw AttributeError("no " + item_name<T>() + " with id '{0}'", attr);
     self.erase(found);
 }
 

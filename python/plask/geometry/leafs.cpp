@@ -56,7 +56,7 @@ template <int dim> struct PythonMaterialProvider : public GeometryObjectLeaf<dim
     bool isUniform(Primitive<3>::Direction /*direction*/) const override { return false; }
 
     XMLWriter::Element& writeXML(XMLWriter::Element& /*dest_xml_object*/, const AxisNames& /*axes*/) const override {
-        throw NotImplemented("Writing Python callable material to XML");
+        throw NotImplemented("writing Python callable material to XML");
     }
 };
 
@@ -98,7 +98,7 @@ template <int dim> void setLeafMaterialFast(shared_ptr<GeometryObjectLeaf<dim>> 
     if (PyTuple_Check(omaterial.ptr()) || PyList_Check(omaterial.ptr())) {
         auto l = py::len(omaterial);
         double shape = 1.;
-        if (l != 2 && l != 3) throw TypeError("Argument is not a proper material");
+        if (l != 2 && l != 3) throw TypeError("argument is not a proper material");
         std::string mat1 = py::extract<std::string>(omaterial[0]);
         std::string mat2 = py::extract<std::string>(omaterial[1]);
         if (l == 3) shape = py::extract<double>(omaterial[2]);
@@ -169,7 +169,7 @@ void Cuboid_setAngle(Cuboid* self, double angle) {
     if (auto rotated_cuboid = dynamic_cast<RotatedCuboid*>(self))
         rotated_cuboid->setAngle(angle);
     else
-        throw TypeError("Specify angle value (possibly 0) at cuboid creation to be able to change it");
+        throw TypeError("specify angle value (possibly 0) at cuboid creation to be able to change it");
 }
 
 // Triangle constructor wraps

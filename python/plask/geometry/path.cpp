@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -159,7 +159,7 @@ namespace detail {
 
 static shared_ptr<GeometryObject> Path__getitem__(const Path& self, long int index) {
     long int i = (index >= 0) ? index : (long int)(self.objects.size()) + index;
-    if (i < 0 || std::size_t(i) >= self.objects.size()) throw IndexError("Index {0} out of range for Path ({1} < index < {2})", index, -(long int)(self.objects.size()), self.objects.size());
+    if (i < 0 || std::size_t(i) >= self.objects.size()) throw IndexError("index {0} out of range for Path ({1} < index < {2})", index, -(long int)(self.objects.size()), self.objects.size());
     return const_pointer_cast<GeometryObject>(self.objects[i]);
 }
 

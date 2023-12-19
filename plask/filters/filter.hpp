@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -269,12 +269,12 @@ struct FilterBaseImpl< PropertyT, MULTI_FIELD_PROPERTY, OutputSpaceType, Variadi
         //InterpolationMethod method;
 
         EnumType num;
-        
+
         FilterLazyDataImpl(
                 const FilterBaseImpl< PropertyT, MULTI_FIELD_PROPERTY, OutputSpaceType, VariadicTemplateTypesHolder<ExtraArgs...> >& filter,
                 EnumType num, const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method
                 )
-            : innerSourcesData(filter.innerSources.size()), /*filter(filter),*/ dst_mesh(dst_mesh)/*, extra_args(extra_args...), method(method)*/, num(num) 
+            : innerSourcesData(filter.innerSources.size()), /*filter(filter),*/ dst_mesh(dst_mesh)/*, extra_args(extra_args...), method(method)*/, num(num)
         {
             for (std::size_t source_index = 0; source_index < filter.innerSources.size(); ++source_index)
                 innerSourcesData[source_index] = filter.innerSources[source_index]->operator()(num, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
@@ -339,7 +339,7 @@ public:
                 size_t size = this->outerSource->size();
                 for (const auto& inner: this->innerSources) {
                     if (inner->size() != size)
-                        throw DataError("All providers in {} filter must have equal number of values", PropertyT::NAME);
+                        throw DataError("all providers in {} filter must have equal number of values", PropertyT::NAME);
                 }
                 return size;
             })
@@ -596,7 +596,7 @@ struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, 
     }
 
     ReceiverFor<PropertyT, Geometry2DCylindrical>& input(Geometry2DCylindrical&, const PathHints* = nullptr) override {
-        throw Exception("Bad use of filter over Cartesian space. Cartesian geometry 2D can't contain cylindrical geometry and can't be included in cylindrical geometry.");
+        throw Exception("bad use of filter over Cartesian space. Cartesian geometry 2D can't contain cylindrical geometry and can't be included in cylindrical geometry.");
     }
 
     ReceiverFor<PropertyT, Geometry2DCartesian>& input(GeometryObjectD<2>& obj, const PathHints* path = nullptr) {
@@ -681,7 +681,7 @@ struct FilterImpl<PropertyT, Geometry2DCylindrical>: public FilterBase<PropertyT
     }
 
     ReceiverFor<PropertyT, Geometry2DCartesian>& input(Geometry2DCartesian&, const PathHints* = nullptr) override {
-        throw Exception("Bad use of filter over cylindrical space. Cylindrical geometry can't contain Cartesian geometry 2D and can't be included in Cartesian geometry 2D.");
+        throw Exception("bad use of filter over cylindrical space. Cylindrical geometry can't contain Cartesian geometry 2D and can't be included in Cartesian geometry 2D.");
     }
 
     ReceiverFor<PropertyT, Geometry2DCylindrical>& input(GeometryObjectD<2>& obj, const PathHints* path = nullptr) {
@@ -708,7 +708,7 @@ struct FilterImpl<PropertyT, Geometry2DCylindrical>: public FilterBase<PropertyT
     ReceiverFor<PropertyT, Geometry2DCylindrical>& setOuter(GeometryObjectD<2>& outerObj, const PathHints* path = nullptr) {
         std::unique_ptr< TranslatedOuterDataSource<PropertyT, Geometry2DCylindrical> > source(new TranslatedOuterDataSource<PropertyT, Geometry2DCylindrical>());
         if (source->inTranslation.rad_r() != 0.0)
-            throw Exception("Bad use of a filter over cylindrical space. Connection of the data sources connected with the cylindrical geometries translated in rad_r direction are not allowed.");
+            throw Exception("bad use of a filter over cylindrical space. Connection of the data sources connected with the cylindrical geometries translated in rad_r direction are not allowed.");
         source->connect(outerObj, *this->geometry->getChild(), path);
         return this->setOuterRecv(std::move(source));
     }
@@ -729,7 +729,7 @@ struct FilterImpl<PropertyT, Geometry2DCylindrical>: public FilterBase<PropertyT
         std::unique_ptr< TranslatedInnerDataSource<PropertyT, Geometry2DCylindrical> > source(new TranslatedInnerDataSource<PropertyT, Geometry2DCylindrical>());
         for (const auto& r: source->regions) {
             if (r.inTranslation.rad_r() != 0.0)
-                throw Exception("Bad use of a filter over cylindrical space. Connection of the data sources connected with the cylindrical geometries translated in rad_r direction are not allowed.");
+                throw Exception("bad use of a filter over cylindrical space. Connection of the data sources connected with the cylindrical geometries translated in rad_r direction are not allowed.");
         }
         source->connect(innerObj, *this->geometry, path);
         return this->appendInnerRecv(std::move(source));

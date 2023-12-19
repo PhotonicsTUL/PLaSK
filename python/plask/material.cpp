@@ -47,11 +47,6 @@ namespace detail {
             new (storage) std::string(get_source()->str());
             data->convertible = storage;
         }
-
-        static PyObject* convert(const Tensor2<double>& pair)  {
-            py::tuple tuple = py::make_tuple(pair.c00, pair.c11);
-            return boost::python::incref(tuple.ptr());
-        }
     };
 
 }
@@ -669,11 +664,11 @@ shared_ptr<Material> PythonMaterial::__init__(const py::tuple& args, const py::d
                             py::object value = method(); \
                             cache->param.reset(py::extract<Type>(value)); \
                         } catch (py::error_already_set&) { \
-                            throw TypeError("Cannot convert return value of static method '" BOOST_PP_STRINGIZE(param) "()' in material class '{}' to correct type", cls_name); \
+                            throw TypeError("cannot convert return value of static method '" BOOST_PP_STRINGIZE(param) "()' in material class '{}' to correct type", cls_name); \
                         } \
                         py::setattr(cls, py::object(BOOST_PP_STRINGIZE(param)), detail::Cached##param##GetterObj); \
                     } else { \
-                        throw TypeError("Method '" BOOST_PP_STRINGIZE(param) "()' in material class '{}' can be static only if it takes no parameters", cls_name); \
+                        throw TypeError("method '" BOOST_PP_STRINGIZE(param) "()' in material class '{}' can be static only if it takes no parameters", cls_name); \
                     } \
                 } \
             } else if (!PyMethod_Check(method.ptr())) { \
@@ -681,7 +676,7 @@ shared_ptr<Material> PythonMaterial::__init__(const py::tuple& args, const py::d
                 try { \
                     cache->param.reset(py::extract<Type>(method)); \
                 } catch (py::error_already_set&) { \
-                    throw TypeError("Cannot convert static parameter '" BOOST_PP_STRINGIZE(param) "' in material class '{}' to correct type", cls_name); \
+                    throw TypeError("cannot convert static parameter '" BOOST_PP_STRINGIZE(param) "' in material class '{}' to correct type", cls_name); \
                 } \
                 py::setattr(cls, py::object(BOOST_PP_STRINGIZE(param)), detail::Cached##param##GetterObj); \
             } \
@@ -796,7 +791,7 @@ shared_ptr<Material> MaterialsDB_const(py::tuple args, py::dict kwargs) {
             params[*key] = py::extract<double>(kwargs[*key]);
         } catch (py::error_already_set) {
             PyErr_Clear();
-            throw MaterialParseException("Bad material parameter value '{}={}'", std::string(*key),
+            throw MaterialParseException("bad material parameter value '{}={}'", std::string(*key),
                                          py::extract<std::string>(py::str(kwargs[*key]))());
         }
 

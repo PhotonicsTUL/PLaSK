@@ -301,7 +301,7 @@ struct RegisterReceiverImpl<ReceiverT, SINGLE_VALUE_PROPERTY, VariadicTemplateTy
         }
         if (assignProvider(self, obj)) return;
         if (assignValue(self, obj)) return;
-        throw TypeError("You can only attach {0} provider or a {1}", type_name<typename ReceiverT::PropertyTag>(),
+        throw TypeError("you can only attach {0} provider or a {1}", type_name<typename ReceiverT::PropertyTag>(),
                         std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
     }
 
@@ -658,7 +658,7 @@ struct PythonProviderFor<ProviderT, MULTI_FIELD_PROPERTY, VariadicTemplateTypesH
                   } else {
                       try {
                           ReturnedType data = py::extract<ReturnedType>(this->function);
-                          if (n > 1) throw IndexError("Provider index out of range");
+                          if (n > 1) throw IndexError("provider index out of range");
                           if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
                           return dataInterpolate(data, const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh), method);
                       } catch (py::error_already_set&) {

@@ -181,7 +181,7 @@ boost::python::type_id<RegularAxis>());
                 } else if (py::len(tuple) == 3) {
                     new(storage) RegularAxis(py::extract<double>(tuple[0]), py::extract<double>(tuple[1]),
 py::extract<unsigned>(tuple[2])); } else throw py::error_already_set(); data->convertible = storage; } catch
-(py::error_already_set) { throw TypeError("Must provide either mesh.Regular or a tuple (first[, last=first, count=1])");
+(py::error_already_set) { throw TypeError("must provide either mesh.Regular or a tuple (first[, last=first, count=1])");
             }
         }
     };
@@ -260,7 +260,7 @@ shared_ptr<MeshAxis> extract_axis(const py::object& axis) {
     } else if (PyFloat_Check(axis.ptr()) || PyLong_Check(axis.ptr())) {
         return plask::make_shared<OrderedAxis>(std::initializer_list<double>({py::extract<double>(axis)()}));
     } else {
-        throw TypeError("Wrong type of axis, it must derive from Rectangular1D or be a sequence.");
+        throw TypeError("wrong type of axis, it must derive from Rectangular1D or be a sequence.");
     }
 }
 
@@ -464,11 +464,11 @@ template <> py::tuple AxisParamProxy<size_t, 3, RectangularMeshDivideGenerator<3
 }
 
 template <> py::tuple AxisParamProxy<size_t, 2, RectangularMeshDivideGenerator<2>>::__div__(size_t f) const {
-    if (get(0) < f || get(1) < f) throw ValueError("Refinement already too small.");
+    if (get(0) < f || get(1) < f) throw ValueError("refinement already too small.");
     return py::make_tuple(get(0) / f, get(1) / f);
 }
 template <> py::tuple AxisParamProxy<size_t, 3, RectangularMeshDivideGenerator<3>>::__div__(size_t f) const {
-    if (get(0) < f || get(1) < f || get(2) < f) throw ValueError("Refinement already too small.");
+    if (get(0) < f || get(1) < f || get(2) < f) throw ValueError("refinement already too small.");
     return py::make_tuple(get(0) / f, get(1) / f, get(2) / f);
 }
 
@@ -520,7 +520,7 @@ template <int dim> struct DivideGeneratorDivMethods {
         // } catch (py::error_already_set) {
         //     PyErr_Clear();
         if (py::len(val) != dim)
-            throw ValueError("Wrong size of 'prediv' ({0} items provided and {1} required)", py::len(val), dim);
+            throw ValueError("wrong size of 'prediv' ({0} items provided and {1} required)", py::len(val), dim);
         for (int i = 0; i < dim; ++i) self.pre_divisions[i] = py::extract<size_t>(val[i]);
         // }
         self.fireChanged();
@@ -533,7 +533,7 @@ template <int dim> struct DivideGeneratorDivMethods {
         // } catch (py::error_already_set) {
         //     PyErr_Clear();
         if (py::len(val) != dim)
-            throw ValueError("Wrong size of 'postdiv' ({0} items provided and {1} required)", py::len(val), dim);
+            throw ValueError("wrong size of 'postdiv' ({0} items provided and {1} required)", py::len(val), dim);
         for (int i = 0; i < dim; ++i) self.post_divisions[i] = py::extract<size_t>(val[i]);
         // }
         self.fireChanged();
@@ -589,7 +589,7 @@ template <int dim> struct SmoothGeneratorParamMethods {
         // } catch (py::error_already_set) {
         //     PyErr_Clear();
         if (py::len(val) != dim)
-            throw ValueError("Wrong size of 'small' ({0} items provided and {1} required)", py::len(val), dim);
+            throw ValueError("wrong size of 'small' ({0} items provided and {1} required)", py::len(val), dim);
         for (int i = 0; i < dim; ++i) self.finestep[i] = py::extract<double>(val[i]);
         // }
         self.fireChanged();
@@ -602,7 +602,7 @@ template <int dim> struct SmoothGeneratorParamMethods {
         // } catch (py::error_already_set) {
         //     PyErr_Clear();
         if (py::len(val) != dim)
-            throw ValueError("Wrong size of 'large' ({0} items provided and {1} required)", py::len(val), dim);
+            throw ValueError("wrong size of 'large' ({0} items provided and {1} required)", py::len(val), dim);
         for (int i = 0; i < dim; ++i) self.maxstep[i] = py::extract<double>(val[i]);
         // }
         self.fireChanged();
@@ -615,7 +615,7 @@ template <int dim> struct SmoothGeneratorParamMethods {
         // } catch (py::error_already_set) {
         //     PyErr_Clear();
         if (py::len(val) != dim)
-            throw ValueError("Wrong size of 'factor' ({0} items provided and {1} required)", py::len(val), dim);
+            throw ValueError("wrong size of 'factor' ({0} items provided and {1} required)", py::len(val), dim);
         for (int i = 0; i < dim; ++i) self.factor[i] = py::extract<double>(val[i]);
         // }
         self.fireChanged();
@@ -662,7 +662,7 @@ void RectangularMeshRefinedGenerator_addRefinement1(RectangularMeshDivideGenerat
                                                     const PathHints& path,
                                                     double position) {
     int i = int(current_axes[axis]) - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
+    if (i < 0 || i > 1) throw ValueError("bad axis name {0}.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i),
                        dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), path, position);
 }
@@ -673,7 +673,7 @@ void RectangularMeshRefinedGenerator_addRefinement2(RectangularMeshDivideGenerat
                                                     GeometryObjectD<DIM>& object,
                                                     double position) {
     int i = int(current_axes[axis]) - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
+    if (i < 0 || i > 1) throw ValueError("bad axis name {0}.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i),
                        dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), position);
 }
@@ -684,7 +684,7 @@ void RectangularMeshRefinedGenerator_addRefinement3(RectangularMeshDivideGenerat
                                                     GeometryObject::Subtree subtree,
                                                     double position) {
     int i = int(current_axes[axis]) - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
+    if (i < 0 || i > 1) throw ValueError("bad axis name {0}.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), subtree, position);
 }
 
@@ -694,7 +694,7 @@ void RectangularMeshRefinedGenerator_addRefinement4(RectangularMeshDivideGenerat
                                                     Path path,
                                                     double position) {
     int i = int(current_axes[axis]) - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
+    if (i < 0 || i > 1) throw ValueError("bad axis name {0}.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), path, position);
 }
 
@@ -705,7 +705,7 @@ void RectangularMeshRefinedGenerator_removeRefinement1(RectangularMeshDivideGene
                                                        const PathHints& path,
                                                        double position) {
     int i = int(current_axes[axis]) - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
+    if (i < 0 || i > 1) throw ValueError("bad axis name {0}.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i),
                           dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), path, position);
 }
@@ -716,7 +716,7 @@ void RectangularMeshRefinedGenerator_removeRefinement2(RectangularMeshDivideGene
                                                        GeometryObjectD<DIM>& object,
                                                        double position) {
     int i = int(current_axes[axis]) - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
+    if (i < 0 || i > 1) throw ValueError("bad axis name {0}.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i),
                           dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), position);
 }
@@ -727,7 +727,7 @@ void RectangularMeshRefinedGenerator_removeRefinement3(RectangularMeshDivideGene
                                                        GeometryObject::Subtree subtree,
                                                        double position) {
     int i = int(current_axes[axis]) - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
+    if (i < 0 || i > 1) throw ValueError("bad axis name {0}.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), subtree, position);
 }
 
@@ -737,7 +737,7 @@ void RectangularMeshRefinedGenerator_removeRefinement4(RectangularMeshDivideGene
                                                        Path path,
                                                        double position) {
     int i = int(current_axes[axis]) - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
+    if (i < 0 || i > 1) throw ValueError("bad axis name {0}.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), path, position);
 }
 
@@ -763,7 +763,7 @@ template <int dim>
 py::dict RectangularMeshRefinedGenerator_listRefinements(const RectangularMeshDivideGenerator<dim>& self,
                                                          const std::string& axis) {
     int i = int(current_axes[axis]) - 3 + DIM;
-    if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
+    if (i < 0 || i > 1) throw ValueError("bad axis name {0}.", axis);
     py::dict refinements;
     for (auto refinement : self.getRefinements(typename Primitive<DIM>::Direction(i))) {
         py::object object{const_pointer_cast<GeometryObjectD<DIM>>(refinement.first.first.lock())};

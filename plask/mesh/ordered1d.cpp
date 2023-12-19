@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -142,7 +142,7 @@ void OrderedAxis::removePoints(std::size_t start, std::size_t stop, std::ptrdiff
         if (step == -1)
             points.erase(points.begin() + stop, points.begin() + start);
         else if (step == 0)
-            throw Exception("OrderedAxis: step cannot be zero");
+            throw Exception("orderedAxis: step cannot be zero");
         else
             for (std::size_t i = start; i > stop; i += step)
                 points.erase(points.begin() + i);

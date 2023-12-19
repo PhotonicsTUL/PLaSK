@@ -317,7 +317,7 @@ double toDouble(const std::string& s, const char* fullname) {
     try {
         return boost::lexical_cast<double>(s);
     } catch (std::exception& e) {
-        throw MaterialParseException("Cannot parse '{}' as number in '{}'", s, fullname);
+        throw MaterialParseException("cannot parse '{}' as number in '{}'", s, fullname);
     }
 }
 
@@ -325,7 +325,7 @@ std::pair<std::string, double> Material::firstCompositionObject(const char*& beg
     std::pair<std::string, double> result;
     const char* comp_end = getObjectEnd(begin, end);
     if (comp_end == begin)
-        throw MaterialParseException("Expected element but found character: '{0:c}' in '{1:s}'", *begin, fullname);
+        throw MaterialParseException("expected element but found character: '{0:c}' in '{1:s}'", *begin, fullname);
     result.first = std::string(begin, comp_end);
     const char* amount_end = getAmountEnd(comp_end, end);
     if (amount_end == comp_end) {       //no amount info for this object
@@ -333,7 +333,7 @@ std::pair<std::string, double> Material::firstCompositionObject(const char*& beg
         begin = amount_end;
     } else {
         if (amount_end == end)
-            throw MaterialParseException("Unexpected end of input while reading element amount. Couldn't find ')' in '{}'", fullname);
+            throw MaterialParseException("unexpected end of input while reading element amount. Couldn't find ')' in '{}'", fullname);
         result.second = toDouble(std::string(comp_end+1, amount_end), fullname);
         begin = amount_end+1;   //skip also ')', begin now points to 1 character after ')'
     }
@@ -351,7 +351,7 @@ Material::Composition Material::parseComposition(const char* begin, const char* 
         int g = elementGroup(c.first);
         if (g != prev_g) {
             if (!groups.insert(g).second)
-                throw MaterialParseException("Incorrect elements order in '{}'", fullname);
+                throw MaterialParseException("incorrect elements order in '{}'", fullname);
             prev_g = g;
         }
         result.insert(c);
@@ -370,21 +370,21 @@ Material::Composition Material::parseComposition(const std::string& str, const s
 void Material::parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, double& doping, bool allow_dopant_without_amount, const char* fullname) {
     const char* name_end = getObjectEnd(begin, end);
     if (name_end == begin)
-         throw MaterialParseException("No dopant name in '{}'", fullname);
+         throw MaterialParseException("no dopant name in '{}'", fullname);
     dopant_elem_name.assign(begin, name_end);
     if (name_end == end) {
         if (!allow_dopant_without_amount)
-            throw MaterialParseException("Unexpected end of input while reading doping concentration in '{}'", fullname);
+            throw MaterialParseException("unexpected end of input while reading doping concentration in '{}'", fullname);
         // there might be some reason to specify material with dopant but undoped (can be caught in material constructor)
         doping = NAN;
         return;
     }
     if (*name_end == '=') {
-        if (name_end+1 == end) throw MaterialParseException("Unexpected end of input while reading doping concentration in '{}'", fullname);
+        if (name_end+1 == end) throw MaterialParseException("unexpected end of input while reading doping concentration in '{}'", fullname);
         doping = toDouble(std::string(name_end+1, end), fullname);
         return;
     }
-    throw MaterialParseException("Expected '=' but found '{}' instead in '{}'", *name_end, fullname);
+    throw MaterialParseException("expected '=' but found '{}' instead in '{}'", *name_end, fullname);
 }
 
 void Material::parseDopant(const std::string &dopant, std::string &dopant_elem_name, double &doping, bool allow_dopant_without_amount, const std::string & fullname) {
@@ -397,7 +397,7 @@ std::vector<std::string> Material::parseObjectsNames(const char *begin, const ch
     std::vector<std::string> elemenNames;
     do {
         const char* new_begin = getObjectEnd(begin, end);
-        if (new_begin == begin) throw MaterialParseException("Ill-formatted name \"{0}\"", std::string(full_name, end));
+        if (new_begin == begin) throw MaterialParseException("ill-formatted name \"{0}\"", std::string(full_name, end));
         elemenNames.push_back(std::string(begin, new_begin));
         begin = new_begin;
     } while (begin != end);

@@ -66,7 +66,7 @@ static void FourierSolver2D_setMirrors(FourierSolver2D& self, py::object value) 
                 self.mirrors.reset(
                     std::make_pair<double, double>(double(py::extract<double>(value[0])), double(py::extract<double>(value[1]))));
             } catch (py::error_already_set&) {
-                throw ValueError("None, float, or tuple of two floats required");
+                throw ValueError("none, float, or tuple of two floats required");
             }
         }
     }
@@ -397,7 +397,7 @@ namespace detail {
                 else
                     throw py::error_already_set();
             } catch (py::error_already_set&) {
-                throw ValueError("Wrong component specification.");
+                throw ValueError("wrong component specification.");
             }
         }
         return val;

@@ -96,7 +96,7 @@ static py::object Solver_getInterface(SolverT& self) {
 
 template <typename SolverT>
 static void Solver_setInterface(SolverT& PLASK_UNUSED(self), const py::object& PLASK_UNUSED(value)) {
-    throw AttributeError("Setting interface by layer index is not supported anymore (set it by object or position)");
+    throw AttributeError("setting interface by layer index is not supported anymore (set it by object or position)");
 }
 
 
@@ -177,7 +177,7 @@ struct PythonComponentConventer {
                 else
                     throw py::error_already_set();
             } catch (py::error_already_set&) {
-                throw ValueError("Wrong component specification.");
+                throw ValueError("wrong component specification.");
             }
         }
         new(storage) Expansion::Component(val);
@@ -378,7 +378,7 @@ struct Eigenmodes {
 
     LazyData<double> getLightMagnitude(std::size_t n, shared_ptr<const MeshD<SolverT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) {
         if (n >= gamma.size())
-            throw IndexError("Bad eigenmode number");
+            throw IndexError("bad eigenmode number");
         cvector E(TE.data() + TE.rows()*n, TE.rows());
         cvector H(TH.data() + TH.rows()*n, TH.rows());
         solver.transfer->diagonalizer->source()->initField(FIELD_E, method);
@@ -398,7 +398,7 @@ struct Eigenmodes {
 
     LazyData<Vec<3,dcomplex>> getLightE(std::size_t n, shared_ptr<const MeshD<SolverT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) {
         if (n >= gamma.size())
-            throw IndexError("Bad eigenmode number");
+            throw IndexError("bad eigenmode number");
         cvector E(TE.data() + TE.rows()*n, TE.rows());
         cvector H(TH.data() + TH.rows()*n, TH.rows());
         solver.transfer->diagonalizer->source()->initField(FIELD_E, method);
@@ -418,7 +418,7 @@ struct Eigenmodes {
 
     LazyData<Vec<3,dcomplex>> getLightH(std::size_t n, shared_ptr<const MeshD<SolverT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) {
         if (n >= gamma.size())
-            throw IndexError("Bad eigenmode number");
+            throw IndexError("bad eigenmode number");
         cvector E(TE.data() + TE.rows()*n, TE.rows());
         cvector H(TH.data() + TH.rows()*n, TH.rows());
         solver.transfer->diagonalizer->source()->initField(FIELD_H, method);
@@ -462,7 +462,7 @@ struct Eigenmodes {
     Eigenmode __getitem__(int n) {
         if (n < 0) n = size() + n;
         if (n < 0 || n >= size())
-            throw IndexError("Bad eigenmode number");
+            throw IndexError("bad eigenmode number");
         return Eigenmode(this, n);
     }
 

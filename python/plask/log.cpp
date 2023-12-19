@@ -338,7 +338,7 @@ PLASK_PYTHON_API void setLoggingColor(std::string color) {
     else if (color == "none" || color == "mono")
         default_logger->color = Logger::COLOR_NONE;
     else
-        throw ValueError("Wrong logging coloring specification.");
+        throw ValueError("wrong logging coloring specification.");
 }
 
 void LoggingConfig::setLoggingColor(std::string color) {

@@ -303,7 +303,7 @@ FermiNewGainSolver<GeometryType>::detectActiveRegions(const shared_ptr<GeometryT
     this->writelog(LOG_INFO, "Found {0} active region{1}", regions.size(), (regions.size() == 1) ? "" : "s");
     size_t n = 0;
     for (auto& region : regions) {
-        if (region.layers->getChildrenCount() <= 2) throw Exception("Not enough layers in the active region {}", n);
+        if (region.layers->getChildrenCount() <= 2) throw Exception("not enough layers in the active region {}", n);
         region.summarize(this);
         this->writelog(LOG_INFO, "Active region {0}: {1} nm single QW, {2} nm all QW, {3} nm total", n++,
                        0.1 * region.qwlen, 0.1 * region.qwtotallen, 0.1 * region.totallen);
@@ -364,7 +364,7 @@ template <typename GeometryType> void FermiNewGainSolver<GeometryType>::prepareA
     if (geometry_mod) {
         regs = detectActiveRegions(this->geometry_mod);
         if (regs.size() != regions.size())
-            throw Exception("Modified geometry has different number of active regions ({}) than the main one ({})",
+            throw Exception("modified geometry has different number of active regions ({}) than the main one ({})",
                             regs.size(), regions.size());
         auto region = regions.begin();
         for (const auto& reg : regs) (region++)->mod.reset(std::move(reg));

@@ -115,7 +115,7 @@ class PythonEvalMaterial: public MaterialWithBase
             std::string type, value;
             if (ptype) { type = py::extract<std::string>(py::object(py::handle<>(ptype)).attr("__name__")); type = ": " + type; }
             if (pvalue) { value = py::extract<std::string>(py::str(py::handle<>(pvalue))); value = ": " + value; }
-            throw ValueError("Error in custom material function <{1}> of '{0}'{2}{3}", this->name(), funname, type, value);
+            throw ValueError("error in custom material function <{1}> of '{0}'{2}{3}", this->name(), funname, type, value);
         }
     }
 
@@ -450,7 +450,6 @@ void PythonManager::loadMaterial(XMLReader& reader) {
             COMPILE_PYTHON_MATERIAL_FUNCTION(absp)
             COMPILE_PYTHON_MATERIAL_FUNCTION(Nr)
             COMPILE_PYTHON_MATERIAL_FUNCTION(NR)
-
             COMPILE_PYTHON_MATERIAL_FUNCTION(mobe)
             COMPILE_PYTHON_MATERIAL_FUNCTION(mobh)
             COMPILE_PYTHON_MATERIAL_FUNCTION(taue)

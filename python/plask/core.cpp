@@ -405,7 +405,7 @@ py::docstring_options doc_options(
 //             }
 //             data->convertible = storage;
 //         } catch (py::error_already_set) {
-//             throw TypeError("Must provide either plask.vector or a sequence of length {0} of proper dtype", dim);
+//             throw TypeError("must provide either plask.vector or a sequence of length {0} of proper dtype", dim);
 //         }
 //     }
 // };

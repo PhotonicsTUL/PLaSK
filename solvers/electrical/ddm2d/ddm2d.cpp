@@ -1368,7 +1368,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveHeatDensities()
 
 template <> double DriftDiffusionModel2DSolver<Geometry2DCartesian>::integrateCurrent(size_t vindex, bool onlyactive)
 {
-    if (!dvnPsi) throw NoValue("Current densities");
+    if (!dvnPsi) throw NoValue("current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis[0]->size()-1; ++i) {
@@ -1383,7 +1383,7 @@ template <> double DriftDiffusionModel2DSolver<Geometry2DCartesian>::integrateCu
 
 template <> double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::integrateCurrent(size_t vindex, bool onlyactive)
 {
-    if (!dvnPsi) throw NoValue("Current densities");
+    if (!dvnPsi) throw NoValue("current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis[0]->size()-1; ++i) {
@@ -1408,7 +1408,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::getTotalCurrent(size_t nact)
 template <typename Geometry2DType>
 const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getPotentials(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
 {
-    if (!dvnPsi) throw NoValue("Potential");
+    if (!dvnPsi) throw NoValue("potential");
     this->writelog(LOG_DEBUG, "Getting potentials");
     if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
     return interpolate(this->mesh, dvnPsi*mEx, dst_mesh, method, this->geometry); // here the potential is rescalled (*mEx)
@@ -1420,7 +1420,7 @@ const LazyData <double> DriftDiffusionModel2DSolver<Geometry2DType>::getFermiLev
     FermiLevels::EnumType what, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
 {
     if (what == FermiLevels::ELECTRONS) {
-        if (!dvnFnEta) throw NoValue("Quasi-Fermi electron level");
+        if (!dvnFnEta) throw NoValue("quasi-Fermi electron level");
         this->writelog(LOG_DEBUG, "Getting quasi-Fermi electron level");
 
         DataVector<double> dvnFn(size);
@@ -1432,7 +1432,7 @@ const LazyData <double> DriftDiffusionModel2DSolver<Geometry2DType>::getFermiLev
         if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
         return interpolate(this->mesh, dvnFn, dst_mesh, method, this->geometry); // here the quasi-Fermi electron level is rescalled (*mEx)
     } else if (what == FermiLevels::HOLES) {
-        if (!dvnFpKsi) throw NoValue("Quasi-Fermi hole level");
+        if (!dvnFpKsi) throw NoValue("quasi-Fermi hole level");
         this->writelog(LOG_DEBUG, "Getting quasi-Fermi hole level");
 
         DataVector<double> dvnFp(size);
@@ -1454,7 +1454,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getBandEdg
     BandEdges::EnumType what, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
     if (what == BandEdges::CONDUCTION) {
-        if (!dvnPsi) throw NoValue("Conduction band edge");
+        if (!dvnPsi) throw NoValue("conduction band edge");
         this->writelog(LOG_DEBUG, "Getting conduction band edge");
 
         DataVector<double> dvnEc(size, 0.);
@@ -1487,7 +1487,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getBandEdg
         if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
         return interpolate(this->mesh, dvnEc, dst_mesh, method, this->geometry); // here the conduction band edge is rescalled (*mEx)
     } else if (what == BandEdges::VALENCE_LIGHT || what == BandEdges::VALENCE_HEAVY) {
-        if (!dvnPsi) throw NoValue("Valence band edge");
+        if (!dvnPsi) throw NoValue("valence band edge");
         this->writelog(LOG_DEBUG, "Getting valence band edge");
 
         DataVector<double> dvnEv(size, 0.);
@@ -1528,7 +1528,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getBandEdg
 template <typename Geometry2DType>
 const LazyData < Vec<2>> DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensitiesForElectrons(shared_ptr<const MeshD < 2> > dest_mesh, InterpolationMethod method)
 {
-    if (!dvnFnEta) throw NoValue("Current density");
+    if (!dvnFnEta) throw NoValue("current density");
     this->writelog(LOG_DEBUG, "Getting current densities");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN);
@@ -1544,7 +1544,7 @@ const LazyData < Vec<2>> DriftDiffusionModel2DSolver<Geometry2DType>::getCurrent
 template <typename Geometry2DType>
 const LazyData < Vec<2>> DriftDiffusionModel2DSolver<Geometry2DType>::getCurrentDensitiesForHoles(shared_ptr<const MeshD < 2> > dest_mesh, InterpolationMethod method)
 {
-    if (!dvnFpKsi) throw NoValue("Current density");
+    if (!dvnFpKsi) throw NoValue("current density");
     this->writelog(LOG_DEBUG, "Getting current densities");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN);
@@ -1567,7 +1567,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getCarrier
 
     switch (what) {
         case CarriersConcentration::ELECTRONS:
-            if (!dveN) throw NoValue("Electron concentration");
+            if (!dveN) throw NoValue("electron concentration");
             this->writelog(LOG_DEBUG, "Getting electron concentration");
 
             for (auto e: this->mesh->elements()) {
@@ -1591,7 +1591,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getCarrier
             return interpolate(this->mesh, dvn, dst_mesh, method, this->geometry); // here the electron concentration is rescalled (*mNx)*/
 
         case CarriersConcentration::HOLES:
-            if (!dveP) throw NoValue("Hole concentration");
+            if (!dveP) throw NoValue("hole concentration");
             this->writelog(LOG_DEBUG, "Getting hole concentration");
 
             for (auto e: this->mesh->elements()) {
@@ -1623,7 +1623,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getCarrier
 template <typename Geometry2DType>
 const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDensities(shared_ptr<const MeshD < 2> > dest_mesh, InterpolationMethod method)
 {
-    if ((!dvnFnEta)||(!dvnFpKsi)) throw NoValue("Heat density");
+    if ((!dvnFnEta)||(!dvnFpKsi)) throw NoValue("heat density");
     this->writelog(LOG_DEBUG, "Getting heat density");
     if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;

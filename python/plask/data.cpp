@@ -268,7 +268,7 @@ template <typename MeshT> struct PythonDataVector_SliceBase {
             if (index.check()) {
                 int idx(index);
                 if (idx < 0) idx += size;
-                if (idx >= size) throw IndexError("Index {}} is out of bounds for axis {}} with size {}", idx, ax, size);
+                if (idx >= size) throw IndexError("index {}} is out of bounds for axis {}} with size {}", idx, ax, size);
                 start[id] = idx;
                 stop[id] = idx + 1;
                 step[id] = 1;
@@ -283,7 +283,7 @@ template <typename MeshT> struct PythonDataVector_SliceBase {
                 length[id] = PySlice_AdjustIndices(size, start + id, stop + id, step[id]);
 #endif
             }
-            if (step[id] < 0) throw ValueError("Negative slice steps are not suported for Data");
+            if (step[id] < 0) throw ValueError("negative slice steps are not suported for Data");
             std::vector<double> points;
             points.reserve(length[id]);
             auto src_axis = src_mesh->getAxis(ax);
@@ -348,13 +348,13 @@ static py::object PythonDataVector_getitem(const PythonDataVector<T, dim>& self,
         return py::object(self[i]);
     } else if (PyTuple_Check(item.ptr())) {
         if (py::len(item) != dim)
-            throw TypeError("You must use either 1 or {} data indices", dim);
+            throw TypeError("you must use either 1 or {} data indices", dim);
         bool all_int = true;
         for (int i = 0; i != dim; ++i) {
             PyObject* it = py::object(item[i]).ptr();
             bool is_int = PyLong_Check(it);
             if (!(PySlice_Check(it) || is_int))
-                throw TypeError("Data indices must be integers or {}D slices not {}", dim,
+                throw TypeError("data indices must be integers or {}D slices not {}", dim,
                                 py::extract<std::string>(item[i].attr("__class__").attr("__name__"))());
             all_int = all_int && is_int;
         }
@@ -363,7 +363,7 @@ static py::object PythonDataVector_getitem(const PythonDataVector<T, dim>& self,
         else
             return PythonDataVector_Slice<T, dim>(self, item);
     } else {
-        throw TypeError("Data indices must be integers or {}D slices not {}", dim,
+        throw TypeError("data indices must be integers or {}D slices not {}", dim,
                         py::extract<std::string>(item.attr("__class__").attr("__name__"))());
     }
 }
@@ -620,14 +620,14 @@ static PythonDataVector<T, dim> PythonDataVector__sub__(const PythonDataVector<T
 // template <typename T, int dim>
 // static void PythonDataVector__iadd__(const PythonDataVector<T,dim>& vec1, const PythonDataVector<T,dim>& vec2) {
 //     if (vec1.mesh != vec2.mesh)
-//         throw ValueError("You may only add data on the same mesh");
+//         throw ValueError("you may only add data on the same mesh");
 //     vec1 += vec2;
 // }
 //
 // template <typename T, int dim>
 // static void PythonDataVector__isub__(const PythonDataVector<T,dim>& vec1, const PythonDataVector<T,dim>& vec2) {
 //     if (vec1.mesh != vec2.mesh)
-//         throw ValueError("You may only subtract data on the same mesh");
+//         throw ValueError("you may only subtract data on the same mesh");
 //     vec1 -= vec2;
 // }
 

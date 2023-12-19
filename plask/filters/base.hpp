@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -330,7 +330,7 @@ struct OuterDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
 
     void calcConnectionParameters() override {
         std::vector<Vec<InputGeomObj::DIM, double>> pos = this->inputObj->getObjectPositions(*this->outputObj, this->getPath());
-        if (pos.size() != 1) throw Exception("Inner output geometry object has not unambiguous position in outer input geometry object.");
+        if (pos.size() != 1) throw Exception("inner output geometry object has not unambiguous position in outer input geometry object.");
         inTranslation = pos[0];
     }
 

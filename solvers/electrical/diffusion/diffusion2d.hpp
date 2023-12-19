@@ -235,7 +235,7 @@ struct PLASK_SOLVER_API Diffusion2DSolver : public FemSolverWithMesh<Geometry2DT
             auto mesh1d = (*generator)(geometry);
             if (shared_ptr<MeshAxis> axis = dynamic_pointer_cast<MeshAxis>(mesh1d))
                 return make_shared<RectangularMesh<2>>(axis, simple_mesh->vert());
-            throw BadInput("Generator1D", "1D mesh must be MeshAxis");
+            throw BadInput("generator1D", "1D mesh must be MeshAxis");
         }
     };
 

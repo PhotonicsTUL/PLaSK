@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -24,7 +24,7 @@ namespace details {
 template <Primitive<3>::Direction dir, Aligner<dir> AlignerType(double coordinate)>
 inline void tryGetAligner(Aligner<dir>& ans, plask::optional<double> param) {
     if (!param) return;
-    if (!ans.isNull()) throw Exception("Multiple specifications of aligner in direction {0}", dir);
+    if (!ans.isNull()) throw Exception("multiple specifications of aligner in direction {0}", dir);
     ans = AlignerType(*param);
 }
 

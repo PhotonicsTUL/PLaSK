@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -74,7 +74,7 @@ static void lattice_set_segments(Lattice& self, const py::object& value) {
         py::stl_input_iterator<py::object> points_it(*segments_it), points_end_it;
         for ( ; points_it != points_end_it; ++points_it) {
             if (py::len(*points_it) != 2)
-                throw TypeError("Each vertex in lattice segment must have exactly two integer coordinates");
+                throw TypeError("each vertex in lattice segment must have exactly two integer coordinates");
             py::stl_input_iterator<int> coord_it(*points_it);
             segment.emplace_back(*(coord_it++), *(coord_it++));
         }

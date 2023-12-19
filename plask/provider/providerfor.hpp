@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -184,7 +184,7 @@ struct PropertyAtDimImpl<PropertyTag, 2, false> {
     static LazyData<ValueType> convertLazyData(const LazyData<ValueType>& src) { return src; }
 
     template <typename MeshT>
-    static LazyData<ValueType> convertLazyData(const LazyData<typename PropertyTag::ValueType3D>& src, const shared_ptr<MeshT>&) { 
+    static LazyData<ValueType> convertLazyData(const LazyData<typename PropertyTag::ValueType3D>& src, const shared_ptr<MeshT>&) {
         return LazyData<ValueType>(src.size(), [src](std::size_t i) { return PropertyTag::value3Dto2D(src[i]); });
     }
 };
@@ -209,7 +209,7 @@ struct PropertyAtDimImpl<PropertyTag, 3, false> {
     static LazyData<ValueType> convertLazyData(const LazyData<ValueType>& src) { return src; }
 
     template <typename MeshT>
-    static LazyData<ValueType> convertLazyData(const LazyData<typename PropertyTag::ValueType2D>& src, const shared_ptr<MeshT>&) { 
+    static LazyData<ValueType> convertLazyData(const LazyData<typename PropertyTag::ValueType2D>& src, const shared_ptr<MeshT>&) {
         return LazyData<ValueType>(src.size(), [src](std::size_t i) { return PropertyTag::value2Dto3D(src[i]); });
     }
 };
@@ -225,7 +225,7 @@ template <typename PropertyTag>
 struct PropertyAtImpl<PropertyTag, Geometry3D, Geometry2DCylindrical, false>: public PropertyAtDimImpl<PropertyTag, 3, false> {
     typedef typename PropertyTag::ValueType3D ValueType;
 
-    static LazyData<ValueType> convertLazyData(const LazyData<typename PropertyTag::ValueType2D>& src, const shared_ptr<CylReductionTo2DMesh>& mesh) { 
+    static LazyData<ValueType> convertLazyData(const LazyData<typename PropertyTag::ValueType2D>& src, const shared_ptr<CylReductionTo2DMesh>& mesh) {
         return LazyData<ValueType>(src.size(), [src, mesh](std::size_t i) { return PropertyTag::value2Dto3Dcyl(src[i], mesh->rVector(i)); });
     }
 };
@@ -234,7 +234,7 @@ template <typename PropertyTag>
 struct PropertyAtImpl<PropertyTag, Geometry2DCylindrical, Geometry3D, false>: public PropertyAtDimImpl<PropertyTag, 2, false> {
     typedef typename PropertyTag::ValueType2D ValueType;
 
-    static LazyData<ValueType> convertLazyData(const LazyData<typename PropertyTag::ValueType3D>& src, const shared_ptr<PointsOnCircleMeshExtend>& mesh) { 
+    static LazyData<ValueType> convertLazyData(const LazyData<typename PropertyTag::ValueType3D>& src, const shared_ptr<PointsOnCircleMeshExtend>& mesh) {
         return LazyData<ValueType>(src.size(), [src, mesh](std::size_t i) { return PropertyTag::value3Dto2Dcyl(src[i], mesh->rVector(i)); });
     }
 };
@@ -529,7 +529,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
     typename std::enable_if<propertyType == FIELD_PROPERTY || propertyType == MULTI_FIELD_PROPERTY>::type
     setValue(DataVector<const ValueType> data, shared_ptr<MeshT> mesh) {
         if (data.size() != mesh->size())
-            throw BadMesh("ReceiverFor::setValues()", "Mesh size ({1}) and data size ({0}) do not match", data.size(), mesh->size());
+            throw BadMesh("receiverFor::setValues()", "Mesh size ({1}) and data size ({0}) do not match", data.size(), mesh->size());
         this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshT>(data, mesh), true);
     }
 
@@ -554,7 +554,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
         size_t i = 0;
         for (Iterator it = begin; it != end; ++it, ++i )
             if (*it.size() != mesh->size())
-                throw BadMesh("ReceiverFor::setValues()", "Mesh size ({1}) and data[{2}] size ({0}) do not match", it->size(), mesh->size(), i);
+                throw BadMesh("receiverFor::setValues()", "Mesh size ({1}) and data[{2}] size ({0}) do not match", it->size(), mesh->size(), i);
         this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshT>(begin, end, mesh), true);
     }
 
@@ -568,7 +568,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
     setValue(const std::vector<DataVector<const ValueType>>& data, shared_ptr<MeshT> mesh) {
         for (auto it = data.begin(); it != data.end(); ++it)
             if (it->size() != mesh->size())
-                throw BadMesh("ReceiverFor::setValues()", "Mesh size ({1}) and data[{2}] size ({0}) do not match", it->size(), mesh->size(), it-data.begin());
+                throw BadMesh("receiverFor::setValues()", "Mesh size ({1}) and data[{2}] size ({0}) do not match", it->size(), mesh->size(), it-data.begin());
         this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshT>(data.begin(), data.end(), mesh), true);
     }
 
@@ -777,7 +777,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
     typedef SpaceT SpaceType;
 
     typedef typename PropertyT::EnumType EnumType;
-    
+
     static constexpr const char* NAME = PropertyT::NAME;
     const char* name() const override { return NAME; }
 
@@ -1021,7 +1021,7 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
 
     typedef PropertyT PropertyTag;
     typedef SpaceT SpaceType;
-    
+
     static constexpr const char* NAME = PropertyT::NAME;
     const char* name() const override { return NAME; }
 
@@ -1112,7 +1112,7 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
         void ensureHasCorrectValue() const {
             if (!hasValue()) throw NoValue(this->name());
             if (values.size() != mesh_ptr->size())
-                throw BadMesh("Provider::WithValue", "Mesh size ({1}) and values size ({0}) do not match", values.size(), mesh_ptr->size());
+                throw BadMesh("provider::WithValue", "Mesh size ({1}) and values size ({0}) do not match", values.size(), mesh_ptr->size());
         }
 
         /**
@@ -1266,7 +1266,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
     typedef SpaceT SpaceType;
 
     typedef typename PropertyT::EnumType EnumType;
-    
+
     static constexpr const char* NAME = PropertyT::NAME;
     const char* name() const override { return NAME; }
 
@@ -1384,7 +1384,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
         void ensureHasCorrectValue(size_t n) const {
             if (n >= values.size()) throw NoValue(this->name());
             if (values[n].size() != mesh_ptr->size())
-                    throw BadMesh("Provider::WithValue", "Mesh size ({1}) and values[{2}] size ({0}) do not match", values.size(), mesh_ptr->size(), n);
+                    throw BadMesh("provider::WithValue", "Mesh size ({1}) and values[{2}] size ({0}) do not match", values.size(), mesh_ptr->size(), n);
         }
 
         /// Throw NoValue exception if value is not initialized and BadMesh exception if the mesh and values sizes mismatch
@@ -1392,7 +1392,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
             if (values.size() == 0) throw NoValue(this->name());
             for (size_t i = 0; i != values.size(); ++i)
                 if (values[i].size() != mesh_ptr->size())
-                    throw BadMesh("Provider::WithValue", "Mesh size ({1}) and values[{2}] size ({0}) do not match", values.size(), mesh_ptr->size(), i);
+                    throw BadMesh("provider::WithValue", "Mesh size ({1}) and values[{2}] size ({0}) do not match", values.size(), mesh_ptr->size(), i);
         }
 
         /**
@@ -1601,7 +1601,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
          */
         template<typename ClassType, typename MemberType>
         Delegate(ClassType* object, MemberType member): Base(object, member), sizeGetter([]{return PropertyT::NUM_VALS;}) {}
-            
+
         size_t size() const override {
             return sizeGetter();
         }
@@ -1646,14 +1646,14 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
          * @param values required values
          */
         ConstProviderType(const std::initializer_list<ValueType>& values): values(values) {}
-        
+
         /**
          * Construct values from iterator
          * \param begin,end iterator range
          */
         template <typename Iterator>
         explicit ConstProviderType(const Iterator& begin, const Iterator& end): values(begin, end) {}
-        
+
         /**
          * @return copy of value for each point in dst_mesh, ignore interpolation method
          */

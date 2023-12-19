@@ -97,7 +97,7 @@ void RotatedCuboid::addLineSegmentsToSet(std::set<typename GeometryObjectD<3>::L
                                          unsigned max_steps,
                                          double min_step_size) const {
     if (!(materialProvider->isUniform(Primitive<3>::DIRECTION_TRAN) && materialProvider->isUniform(Primitive<3>::DIRECTION_LONG)))
-        throw NotImplemented("Triangular mesh for rotated cuboids non-uniform in lateral directions");
+        throw NotImplemented("triangular mesh for rotated cuboids non-uniform in lateral directions");
 
     std::vector<double> ptsz;
     std::set<double> ps;

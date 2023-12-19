@@ -115,7 +115,7 @@ void Intersection<dim>::addLineSegmentsToSet(std::set<typename GeometryObjectD<d
                                                this->min_step_size ? this->min_step_size : min_step_size);
             return;
         }
-        throw NotImplemented("Getting line segments for objects interception");
+        throw NotImplemented("getting line segments for objects interception");
         // std::set<typename GeometryObjectD<dim>::LineSegment> child_segments;
         // this->_child->addLineSegmentsToSet(child_segments, this->max_steps ? this->max_steps : max_steps,
         //                                    this->min_step_size ? this->min_step_size : min_step_size);
