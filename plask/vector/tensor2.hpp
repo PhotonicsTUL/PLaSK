@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -220,39 +220,39 @@ struct Tensor2 {
         return Tensor2<T>(-c00, -c11);
     }
 
-    /**
-     * Square each component of tensor
-     * \return squared tensor
-     */
-    Tensor2<T> sqr() const {
-        return Tensor2<T>(c00*c00, c11*c11);
-    }
+    // /**
+    //  * Square each component of tensor
+    //  * \return squared tensor
+    //  */
+    // Tensor2<T> sqr() const {
+    //     return Tensor2<T>(c00*c00, c11*c11);
+    // }
 
-    /**
-     * Square each component of tensor in place
-     * \return *this (squared)
-     */
-    Tensor2<T>& sqr_inplace() {
-        c00 *= c00; c11 *= c11;
-        return *this;
-    }
+    // /**
+    //  * Square each component of tensor in place
+    //  * \return *this (squared)
+    //  */
+    // Tensor2<T>& sqr_inplace() {
+    //     c00 *= c00; c11 *= c11;
+    //     return *this;
+    // }
 
-    /**
-     * Square root of each component of tensor
-     * \return squared tensor
-     */
-    Tensor2<T> sqrt() const {
-        return Tensor2<T>(std::sqrt(c00), std::sqrt(c11));
-    }
+    // /**
+    //  * Square root of each component of tensor
+    //  * \return squared tensor
+    //  */
+    // Tensor2<T> sqrt() const {
+    //     return Tensor2<T>(std::sqrt(c00), std::sqrt(c11));
+    // }
 
-    /**
-     * Square root of each component of tensor in place
-     * \return *this (squared)
-     */
-    Tensor2<T>& sqrt_inplace() {
-        c00 = std::sqrt(c00); c11 = std::sqrt(c11);
-        return *this;
-    }
+    // /**
+    //  * Square root of each component of tensor in place
+    //  * \return *this (squared)
+    //  */
+    // Tensor2<T>& sqrt_inplace() {
+    //     c00 = std::sqrt(c00); c11 = std::sqrt(c11);
+    //     return *this;
+    // }
 
     /**
      * Power of each component of tensor
