@@ -4,9 +4,9 @@ Optical Analysis of Photonic-Crystal VCSEL
 Analyzed Structure
 ^^^^^^^^^^^^^^^^^^
 
-All the previous tutorials dealed with two-dimensional geometry. Here we will define a three-dimensional structure and perform its optical analysis. This tutorial is base on the article ‘Numerical Methods for modeling Photonic-Crystal VCSELs’ [Dems-2010]_, which compares several advanced method for analysis of a PC-VCSEL.
+All the previous tutorials dealt with two-dimensional geometry. Here we will define a three-dimensional structure and perform its optical analysis. This tutorial is base on the article ‘Numerical Methods for modeling Photonic-Crystal VCSELs’ [Dems-2010]_, which compares several advanced method for analysis of a PC-VCSEL.
 
-Photonic crystal etched in the VCSEL structre breaks its axial symmetry, and, hence, the two-dimensional cylindirical approximation cannot be used any more. Furthermore, strong refractive index contrast between semiconductor layers and photonic crystal pattern causes strong light scattering and a typical linear polarization (LP) approximation is no longer valid. In consequence, application of popular simplified models is impossible, especially in situations where one needs to determine not only the resonant wavelength of the PC-VCSEL cavity, but also the cavity Q-factor or the gain characteristics of the laser.
+Photonic crystal etched in the VCSEL structure breaks its axial symmetry, and, hence, the two-dimensional cylindirical approximation cannot be used any more. Furthermore, strong refractive index contrast between semiconductor layers and photonic crystal pattern causes strong light scattering and a typical linear polarization (LP) approximation is no longer valid. In consequence, application of popular simplified models is impossible, especially in situations where one needs to determine not only the resonant wavelength of the PC-VCSEL cavity, but also the cavity Q-factor or the gain characteristics of the laser.
 
 .. _fig-tutorial5-pc-vcsel:
 .. figure:: tutorial5-pc-vcsel.*
@@ -44,7 +44,7 @@ The photonic crystal is etched in the structure and consists of three rings of a
 Epitaxial layers
 ~~~~~~~~~~~~~~~~
 
-Defining epitaxial layers is very similar to the previous tutorials. However, this time we operate in 3D, which means we will have sligtly different geometrical objects and we will need to specify three coordinates or dimensions instead of two.
+Defining epitaxial layers is very similar to the previous tutorials. However, this time we operate in 3D, which means we will have slightly different geometrical objects and we will need to specify three coordinates or dimensions instead of two.
 
 Before you begin defining the geometry, open new PLaSK window and switch to the *Defines* tab, and define the following parameters:
 
@@ -145,11 +145,11 @@ This will make triangular lattice. The last thing to do is to specify the lattic
    :width: 100%
    :align: center
 
-    Lattice boudaries in the visual editor.
+    Lattice boundaries in the visual editor.
 
 Once you click ``Ok`` on the editor, the lattice is completed. You should see the vertical lines in the top DBR region indicating the edges of the holes. You can cat a better preview, by selecting ``x-y`` plane in the geometry preview toolbar and by clicking |lock-screen| next to it, to set equal ratio for both axes. You should see a regular lattice of photonic crystal holes.
 
-The last thing to do is cutting only one forth of the geometry. As the ``main`` geometry has its left and back edge symmetric, we must clip the geometry to the front-right quarter. To do this, right-click the topmost ``Align`` object (the one containg bot VCSEL and the photonic crystal lattice), choose ``Insert into``, and select a ``Clip`` object. In the *Clipping Box* settings set *Left* and *Back* to 0. You should see your structure being clipped in the preview. Don't worry: PLaSK will automatically create the mirror reflections.
+The last thing to do is cutting only one forth of the geometry. As the ``main`` geometry has its left and back edge symmetric, we must clip the geometry to the front-right quarter. To do this, right-click the topmost ``Align`` object (the one containing bot VCSEL and the photonic crystal lattice), choose ``Insert into``, and select a ``Clip`` object. In the *Clipping Box* settings set *Left* and *Back* to 0. You should see your structure being clipped in the preview. Don't worry: PLaSK will automatically create the mirror reflections.
 
 
 

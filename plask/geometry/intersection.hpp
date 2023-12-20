@@ -39,7 +39,7 @@ template <int dim> struct PLASK_API Intersection : public GeometryObjectTransfor
     using GeometryObjectTransform<dim>::getChild;
 
     /**
-     * Cliping shape.
+     * Clipping shape.
      */
     shared_ptr<ChildType> envelope;
 
@@ -55,7 +55,7 @@ template <int dim> struct PLASK_API Intersection : public GeometryObjectTransfor
 
     /**
      * @param child child geometry object to Intersection
-     * @param clipShape shape to which the child will be cliped, can have undefined materials in leafs
+     * @param clipShape shape to which the child will be clipped, can have undefined materials in leafs
      */
     explicit Intersection(shared_ptr<GeometryObjectD<dim>> child = shared_ptr<GeometryObjectD<dim>>(),
                           shared_ptr<GeometryObjectD<dim>> clipShape = shared_ptr<GeometryObjectD<dim>>())
@@ -98,7 +98,7 @@ template <int dim> struct PLASK_API Intersection : public GeometryObjectTransfor
     shared_ptr<GeometryObject> shallowCopy() const override;
 
     /**
-     * Get shallow copy of this with diffrent clipping shape.
+     * Get shallow copy of this with different clipping shape.
      * @param clipShape shape to which the child will of result will be clipped, can have undefined materials in leafs
      * @return shallow copy of this with clipping shape equals to @p clipShape
      */

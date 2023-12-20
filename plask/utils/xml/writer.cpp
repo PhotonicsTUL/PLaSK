@@ -54,7 +54,7 @@ struct CFileOutput: public XMLWriter::Output {
 
     void write(const char *buffer, std::size_t n) override {
         if (std::fwrite(buffer, 1, n, file) != n)
-            throw XMLWriterException("xML writter can't write to C file descriptor.");
+            throw XMLWriterException("xML writer can't write to C file descriptor.");
     }
 
     /*void put(char c) {

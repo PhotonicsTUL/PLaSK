@@ -805,7 +805,7 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
 
   private:
 
-    // Common code for: left, right, bottom, top boundries:
+    // Common code for: left, right, bottom, top boundaries:
     struct BoundaryIteratorImpl: public BoundaryNodeSetImpl::IteratorImpl {
 
         const RectangularMesh2D &mesh;

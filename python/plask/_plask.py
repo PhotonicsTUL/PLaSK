@@ -32,9 +32,9 @@ def Data(array, mesh):
 
         Data returned by field providers.
 
-        This class is returned by field providers and receivers and cointains the values
+        This class is returned by field providers and receivers and contains the values
         of the computed field at specified mesh points. It can be passed to the field
-        plotting and saving functions or even feeded to some receivers. Also, if the
+        plotting and saving functions or even fed to some receivers. Also, if the
         mesh is a rectangular one, the data can be converted into an multi-dimensional
         numpy array.
 
@@ -169,11 +169,11 @@ class Manager(_plask.Manager):
     Main input manager.
 
     Object of this class provides methods to read the XML file and fetch geometry
-    objects, pathes, meshes, and generators by name. It also allows to access
+    objects, paths, meshes, and generators by name. It also allows to access
     solvers defined in the XPL file.
 
     Some global PLaSK function like :func:`~plask.loadxpl` or :func:`~plask.runxpl`
-    create a default manager and use it to load the data from XPL into ther global
+    create a default manager and use it to load the data from XPL into the global
     namespace.
 
     Manager(materials=None, draft=False)
@@ -211,7 +211,7 @@ class Manager(_plask.Manager):
     Flag indicating draft mode. If True then dummy material is created if the proper
     one cannot be found in the database.
      Also some objects do not need to have all
-    the atttributes set, which are then filled with some reasonable defaults.Otherwise an exception is raised.
+    the attributes set, which are then filled with some reasonable defaults.Otherwise an exception is raised.
     """
 
     def export(self, target):
@@ -267,9 +267,9 @@ class Manager(_plask.Manager):
 
     overrites = None
     """
-    Overriden local defines.
+    Overridden local defines.
 
-    This is a list of local defines that have been overriden in a ``plask`` command
+    This is a list of local defines that have been overridden in a ``plask`` command
     line or specified as a ``vars`` argument to the :meth:`~plask.Manager.load`
     method.
     """
@@ -413,7 +413,7 @@ class Solver:
 
             Load configuration from XPL reader.
 
-            This method should be overriden in custom Python solvers.
+            This method should be overridden in custom Python solvers.
 
             Example:
               .. code-block:: python
@@ -594,7 +594,7 @@ def print_log(*args, **kwargs):
 
         Args:
             level (str): Log level to print the message to.
-            args: Items to print. They are concatenated togeter and separated by space,
+            args: Items to print. They are concatenated together and separated by space,
                   similarly to the ``print`` function.
     """
 

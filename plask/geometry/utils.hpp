@@ -17,7 +17,7 @@
 #include "object.hpp"
 
 /** @file
-This file contains some utils usefull with geometry classes.
+This file contains some utils useful with geometry classes.
 */
 
 namespace plask {
@@ -48,8 +48,8 @@ private:
 public:
 
     /**
-     * Get bouding box of connected object. Read it from cache if it's possible or update cache.
-     * @return bouding box of connected object
+     * Get bounding box of connected object. Read it from cache if it's possible or update cache.
+     * @return bounding box of connected object
      * @throw Exception if no object is connected
      */
     const BoundingBoxT& operator()();
@@ -91,7 +91,7 @@ public:
     }
 
     /**
-     * Construct bouding box cache connected with given object
+     * Construct bounding box cache connected with given object
      * @param object object for which bounding box should be cached, can be nullptr (typically you should later call setObject in such cache)
      */
     BoundingBoxCache(GeometryObjectD<dims>* object = 0): object(object), isFresh(false) {
@@ -99,7 +99,7 @@ public:
     }
 
     /**
-     * Construct bouding box cache connected with given object
+     * Construct bounding box cache connected with given object
      * @param object object for which bounding box should be cached
      */
     BoundingBoxCache(GeometryObjectD<dims>& object): object(&object), isFresh(false) {
@@ -107,7 +107,7 @@ public:
     }
 
     /**
-     * Construct bouding box cache connected with given object
+     * Construct bounding box cache connected with given object
      * @param object object for which bounding box should be cached
      */
     BoundingBoxCache(shared_ptr< GeometryObjectD<dims> > object): object(object.get()), isFresh(false) {

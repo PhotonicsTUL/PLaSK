@@ -72,7 +72,7 @@ Container in first geometry (described by the \c container2D tag), has name "tra
 They are actually the same rectangular block (\c rectangle tag) with name "block_5_3" and size 5x3 (see \c x and \c y attributes).
 Its first instance is locates at point (0, 0) (which is a default), and the second one is located at point (3, 3) (which is given in the \c child tag attributes).
 Second appearance of the block in container is given by the \c again tag.
-This tag represents reference to an ealier defined object and it requires only one attribute,
+This tag represents reference to an earlier defined object and it requires only one attribute,
 namely the name of the object which was earlier defined.
 
 Container in second geometry is described by a tag \c stack2D and is named "mystack". Because it has a \c repeat attribute it will be

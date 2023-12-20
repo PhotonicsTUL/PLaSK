@@ -182,7 +182,7 @@ class PLASK_API GeometryReader {
     /**
      * Get material from material source (typically material database) connected with this reader.
      *
-     * Throw excpetion if can't get material (no material with given name, etc.).
+     * Throw exception if can't get material (no material with given name, etc.).
      * @param material_full_name full material name to get
      * @return material with name @p material_full_name
      */
@@ -236,7 +236,7 @@ class PLASK_API GeometryReader {
     /**
      * Helper function to read objects which have exactly one child (typically: transform).
      *
-     * Befor call source reader should point to parent object tag (typically transform object)
+     * Before call source reader should point to parent object tag (typically transform object)
      * and after call it will be point to end of parent object tag.
      * @return child object which was read and create or to which reference was read, or an empty pointer if there is no child and required is true
      */
@@ -269,7 +269,7 @@ class PLASK_API GeometryReader {
     shared_ptr<Geometry> readGeometry();
 
     /**
-     * Get named objects. It support boths: named objects (from manager) and auto-named objects.
+     * Get named objects. It support both: named objects (from manager) and auto-named objects.
      * @param name object name (can be auto-generated: in form '#'+number)
      * @return object with given name
      * @throw NoSuchGeometryObject if object was not found
@@ -277,7 +277,7 @@ class PLASK_API GeometryReader {
     shared_ptr<GeometryObject> requireObjectWithName(const std::string& name) const;
 
     /**
-     * Get objects from attribute. It support boths: named objects (from manager) and auto-named objects.
+     * Get objects from attribute. It support both: named objects (from manager) and auto-named objects.
      * @param attr attribute holding object name
      * @return object with given name
      * @throw NoSuchGeometryObject if object was not found
@@ -294,7 +294,7 @@ class PLASK_API GeometryReader {
     /**
      * Add name of object to register.
      *
-     * It throws excepetion in case of names conflict.
+     * It throws exception in case of names conflict.
      * @param name name of given @p object (can be auto-generated: in form '#'+number)
      * @param object geometry object which should be available by given @p name
      */
@@ -303,7 +303,7 @@ class PLASK_API GeometryReader {
     /**
      * Add name of object to register. Do nothing if @p name has no value.
      *
-     * It throws excepetion in case of names conflict.
+     * It throws exception in case of names conflict.
      * @param name name of given @p object (can be auto-generated: in form '#'+number)
      * @param object geometry object which should be available by given @p name
      */
@@ -314,7 +314,7 @@ class PLASK_API GeometryReader {
     /**
      * Add name of object to register. Do nothing if @p name has no value.
      *
-     * It throws excepetion in case of names conflict.
+     * It throws exception in case of names conflict.
      * @param name name of given @p object (can be auto-generated: in form '#'+number)
      * @param object geometry object which should be available by given @p name
      */
@@ -327,7 +327,7 @@ class PLASK_API GeometryReader {
      * Add name of object to register. Read name from current, XML source tag.
      * Do nothing if name attribute is not available.
      *
-     * It throws excepetion in case of names conflict.
+     * It throws exception in case of names conflict.
      * @param object geometry object which should be available by name which was read from current tag
      */
     void registerObjectNameFromCurrentNode(shared_ptr<GeometryObject> object) {

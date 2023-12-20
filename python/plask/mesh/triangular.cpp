@@ -109,7 +109,7 @@ void register_mesh_triangular() {
             .add_property("center", /*Vec<2,double>*/ &TriangularMesh2D::Element::getMidpoint,
                           u8"Position of the element center")
             .add_property("node_indexes", &TriangularMesh2D::Element::triangleNodes,
-                          u8"Indices of the element (triangle) vertices on the orignal mesh.")
+                          u8"Indices of the element (triangle) vertices on the original mesh.")
             .add_property("nodes", element_nodes, "coordinates of the element (triangle) vertices")
             .def("node", &TriangularMesh2D::Element::getNode, py::arg("index"),
                  py::return_value_policy<py::return_by_value>(), "coordinate of the element (triangle) vertex")

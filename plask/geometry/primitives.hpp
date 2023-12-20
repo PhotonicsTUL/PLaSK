@@ -445,7 +445,7 @@ struct PLASK_API Box3D {
 
     /**
      * Ensure that lower[0] <= upper.c0, lower[1] <= upper[1], and lower[2] <= upper[3].
-     * Excange components of lower and upper if necessary.
+     * Exchange components of lower and upper if necessary.
      */
     void fix();
 
@@ -868,7 +868,7 @@ template <> struct DirectionWithout<3, Primitive<3>::DIRECTION_LONG> {
     static const Primitive<3>::Direction valueLower = Primitive<3>::DIRECTION_TRAN;
     static const Primitive<3>::Direction valueHigher = Primitive<3>::DIRECTION_VERT;
 
-    // should be not usedm but sometimes it is usefull to make compilation possible
+    // should be not usedm but sometimes it is useful to make compilation possible
     static const Primitive<2>::Direction value2D =
         Primitive<2>::Direction(Primitive<2>::DIRECTION_VERT | Primitive<2>::DIRECTION_VERT);
 };

@@ -269,7 +269,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
 
         fill (bool): If True, ``contourf`` is used to plot the field i.e. the bands
                      are filled. Otherwise the coutours are plotted with
-                     ``countour``.
+                     ``contour``.
 
         antialiased (bool): If True, the antialiasing is enabled.
 

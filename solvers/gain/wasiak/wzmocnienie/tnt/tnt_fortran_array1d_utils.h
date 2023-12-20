@@ -51,7 +51,7 @@ std::ostream& operator<<(std::ostream &s, const Fortran_Array1D<T> &A)
 /**
 	Read an array from a character stream.  Input format
 	is one integer, denoting the dimension (n), followed
-	by n whitespace-separated elments.  Newlines are ignored
+	by n whitespace-separated elements.  Newlines are ignored
 
 	<p>
 	Note: the array being read into references new memory

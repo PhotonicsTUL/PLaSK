@@ -26,9 +26,9 @@ namespace plask {
 /**
  * Base class for strategy of removing from cache.
  *
- * Sublass should has method:
+ * Subclass should have method:
  * <code>void onEvent(typename Key::Event& evt)</code>
- * which eventualy (depends from event details) removes from map a source of event.
+ * which eventually (depends from event details) removes from map a source of event.
  *
  * Used by @ref WeakCache and @ref StrongCache.
  */
@@ -105,7 +105,7 @@ struct CacheBase: public DeleteStrategy<Key, ValuePtr> {
     /**
      * Construct shared pointer to value and append cache entry which consists of given index and constructed shared pointer.
      *
-     * This is usefull in methods which wants to append new value to cache and return it:
+     * This is useful in methods which wants to append new value to cache and return it:
      * @code
      * plask::shared_ptr<Value> get(plask::shared_ptr<Key> index) {
      *   if (auto res = my_cache.get(index))
@@ -126,7 +126,7 @@ struct CacheBase: public DeleteStrategy<Key, ValuePtr> {
     /**
      * Append cache entry which consists of given index and value and return value.
      *
-     * This is usefull in methods which wants to append new value to cache and return it:
+     * This is useful in methods which wants to append new value to cache and return it:
      * @code
      * plask::shared_ptr<Value> get(plask::shared_ptr<Key> index) {
      *   if (auto res = my_cache.get(index))
@@ -146,7 +146,7 @@ struct CacheBase: public DeleteStrategy<Key, ValuePtr> {
     /**
      * Construct shared pointer to value and append cache entry which consists of given index and constructed shared pointer.
      *
-     * This is usefull in methods which wants to append new value to cache and return it:
+     * This is useful in methods which wants to append new value to cache and return it:
      * @code
      * plask::shared_ptr<Value> get(plask::shared_ptr<Key> index) {
      *   if (auto res = my_cache.get(index))
@@ -167,7 +167,7 @@ struct CacheBase: public DeleteStrategy<Key, ValuePtr> {
     /**
      * Construct shared pointer to value and append cache entry which consists of given index and constructed shared pointer.
      *
-     * This is usefull in methods which wants to append new value to cache and return it:
+     * This is useful in methods which wants to append new value to cache and return it:
      * @code
      * plask::shared_ptr<Value> get(plask::shared_ptr<Key> index) {
      *   if (auto res = my_cache.get(index))
@@ -199,7 +199,7 @@ struct CacheBase: public DeleteStrategy<Key, ValuePtr> {
  * Cache values of type Value using Key type to index it.
  *
  * It sores only weak_ptr to values, so it not prevent values from deletion.
- * Cache entires are removed on key changes (see @p deleteStrategy) or when value expires (only at moment of getting from non-const cache or calling cleanDeleted).
+ * Cache entries are removed on key changes (see @p deleteStrategy) or when value expires (only at moment of getting from non-const cache or calling cleanDeleted).
  * @tparam Key type using as index in cache (pointer to this type will be used), must be able to emit events;
  * @tparam Value type for cache values, will be stored in weak_ptr;
  * @tparam deleteStrategy when cache entries should be deleted:
@@ -284,7 +284,7 @@ struct WeakCache: public CacheBase<Key, plask::weak_ptr<Value>, DeleteStrategy> 
  * Cache values of type Value using Key type to index it.
  *
  * It stores shared_ptr to values, so each value will be live when it's only is included in cache.
- * Cache entires are removed on key changes (see @p deleteStrategy).
+ * Cache entries are removed on key changes (see @p deleteStrategy).
  * @tparam Key type using as index in cache (pointer to this type will be used), must be able to emit events;
  * @tparam Value type for cache values, will be stored in shared_ptr;
  * @tparam deleteStrategy when cache entries should be deleted:

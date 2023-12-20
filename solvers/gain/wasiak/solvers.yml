@@ -33,7 +33,7 @@
       mesh types: [ Ordered, Regular ]
       label: Mesh
       help: >
-        Name of the exisiting Ordered or Regular mesh used by this solver.
+        Name of the existing Ordered or Regular mesh used by this solver.
   - &config
     tag: config
     help: Some important gain parameters.
@@ -149,7 +149,7 @@
       mesh types: [ Ordered, Regular ]
       label: Mesh
       help: >
-        Name of the exisiting Ordered or Regular mesh used by this solver.
+        Name of the existing Ordered or Regular mesh used by this solver.
   - *config
   providers: *providers
   receivers: *receivers

@@ -79,7 +79,7 @@ class PythonXMLFilter {
 
     std::string operator()(const std::string& in) const {
         std::string result;
-        result.reserve(in.size());  // we guess that output will have the simillar size as input
+        result.reserve(in.size());  // we guess that output will have the similar size as input
         for (std::string::size_type pos = 0; pos < in.size(); ++pos) {
             if (in[pos] == '{') {
                 ++pos;
@@ -97,7 +97,7 @@ class PythonXMLFilter {
                     ++close_pos;
                 }
                 if (close_pos == in.size() && level != 0)
-                    throw plask::Exception("Cannot find '}' mathing to '{' at position {0} in: {1}", pos-1, in);
+                    throw plask::Exception("Cannot find '}' matching to '{' at position {0} in: {1}", pos-1, in);
                 result += eval(in.substr(pos, close_pos-1 - pos));
                 pos = close_pos-1;    // pos with '}' that will be skipped
             } else if (in[pos] == '}' && in[pos+1] == '}') {
@@ -673,7 +673,7 @@ void register_manager() {
         .def_readwrite("draft", &Manager::draft,
                        u8"Flag indicating draft mode. If True then dummy material is created if the proper\n"
                        u8"one cannot be found in the database. Also some objects do not need to have all\n"
-                       u8"the atttributes set, which are then filled with some reasonable defaults."
+                       u8"the attributes set, which are then filled with some reasonable defaults."
                        u8"Otherwise an exception is raised.")
         .add_property("errors", &Manager_errors, u8"List of errors that occurred during loading in draft mode.")
         .def_readonly("_scriptline", &Manager::scriptline, "First line of the script.")
@@ -686,11 +686,11 @@ void register_manager() {
         u8"Main input manager.\n\n"
 
         u8"Object of this class provides methods to read the XML file and fetch geometry\n"
-        u8"objects, pathes, meshes, and generators by name. It also allows to access\n"
+        u8"objects, paths, meshes, and generators by name. It also allows to access\n"
         u8"solvers defined in the XPL file.\n\n"
 
         u8"Some global PLaSK function like :func:`~plask.loadxpl` or :func:`~plask.runxpl`\n"
-        u8"create a default manager and use it to load the data from XPL into ther global\n"
+        u8"create a default manager and use it to load the data from XPL into the global\n"
         u8"namespace.\n\n"
 
         u8"Manager(materials=None, draft=False)\n\n"
@@ -720,8 +720,8 @@ void register_manager() {
                        u8":meth:`~plask.Manager.load` method.\n"
                       )
         .def_readonly("overrites", &PythonManager::overrites,
-                      u8"Overriden local defines.\n\n"
-                      u8"This is a list of local defines that have been overriden in a ``plask`` command\n"
+                      u8"Overridden local defines.\n\n"
+                      u8"This is a list of local defines that have been overridden in a ``plask`` command\n"
                       u8"line or specified as a ``vars`` argument to the :meth:`~plask.Manager.load`\n"
                       u8"method.\n"
                      )

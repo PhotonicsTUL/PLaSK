@@ -66,7 +66,7 @@ class FormatPythonAction(QAction):
         except Exception as err:
             msgbox = QMessageBox()
             msgbox.setWindowTitle("Python Formatting Error")
-            msgbox.setText("There was an error while formating your script!")
+            msgbox.setText("There was an error while formatting your script!")
             msgbox.setDetailedText(str(err))
             msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
             msgbox.setIcon(QMessageBox.Icon.Critical)

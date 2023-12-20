@@ -408,7 +408,7 @@ private:
     }
 
     /**
-     * Load constants defintions from the @p reader.
+     * Load constants definitions from the @p reader.
      * @param reader XMLreader to load from, should point to @c \<defines> tag, after read it will be point to @c \</defines> tag
      */
     virtual void loadDefines(XMLReader& reader);
@@ -653,7 +653,7 @@ inline shared_ptr<Geometry> Manager::getGeometry<Geometry>(const std::string& na
  * Parse condition from XML tag.
  *
  * Default implementation just read it from "value" attribute which use boost::lexical_cast to convert it to given type @p ConditionT.
- * Specializations for choosen types can require other attributes.
+ * Specializations for chosen types can require other attributes.
  * @param tag_with_value XML tag to parse
  * @return parsed condition
  * @tparam ConditionT type of condition to parse

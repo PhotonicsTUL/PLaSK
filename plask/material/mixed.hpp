@@ -171,7 +171,7 @@ struct PLASK_API MixedMaterial: public Material {
 private:
 
     /**
-     * Calulate weighted sums of materials (from materials vector) properties.
+     * Calculate weighted sums of materials (from materials vector) properties.
      * @param f functore which calculate property value for given material
      * @return calculated sum, with the same type which return functor
      * @tparam Functor type of functor which can take const Material& argument, and return something which can be multiple by scalar, added, and assigned
@@ -186,7 +186,7 @@ private:
     }
 
     /**
-     * Calulate weighted sums of materials (from materials vector) properties.
+     * Calculate weighted sums of materials (from materials vector) properties.
      * @param f functore which calculate property value for given material
      * @return calculated sum, with the same type which return functor
      * @tparam Functor type of functor which can take const Material& argument, and return something which can be multiple by scalar, added, and assigned

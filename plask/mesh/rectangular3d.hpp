@@ -111,7 +111,7 @@ class PLASK_API RectangularMesh3D: public RectilinearMesh3D {
     const shared_ptr<MeshAxis>& rad_phi() const { return axis[1]; }
 
     /**
-     * Get thirs coordinate of points in this mesh.
+     * Get third coordinate of points in this mesh.
      * @return axis2
      */
     const shared_ptr<MeshAxis>& rad_z() const { return axis[2]; }

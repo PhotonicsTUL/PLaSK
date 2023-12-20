@@ -357,7 +357,7 @@ CONFIG_WIDGETS = {
                                                step=0.1, min=0.1,
                                                help="Line width of the local origin mark.")),
             ("Show geometry edges", CheckBox('geometry/show_edges',
-                                             "Show how the current geometry is interpretted outside its boundaries.")),
+                                             "Show how the current geometry is interpreted outside its boundaries.")),
             ("Edges opacity", FloatSpinBox('geometry/edges_alpha',
                                            step=0.1, min=0.0, max=1.0,
                                            help="Opacity geometry edges.")),

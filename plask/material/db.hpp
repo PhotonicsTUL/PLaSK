@@ -117,7 +117,7 @@ struct PLASK_API MaterialsDB {
         virtual shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const = 0;
 
         /**
-         * @return @c true only if this contructor creates simple material (does not use composition)
+         * @return @c true only if this constructor creates simple material (does not use composition)
          */
         virtual bool isAlloy() const = 0;
 
@@ -346,7 +346,7 @@ public:
     const_iterator end() const { return iterator(constructors.end()); }
 
     /**
-     * Throw excpetion if given composition is empty.
+     * Throw exception if given composition is empty.
      * @param composition composition to check
      */
     static void ensureCompositionIsNotEmpty(const Material::Composition& composition);
@@ -610,7 +610,7 @@ public:
     void remove() { remove<Material>(MaterialType::static_name); }
 
     /**
-     * Check if a material (given without patameters) is simple.
+     * Check if a material (given without parameters) is simple.
      * @param name_without_composition material name, without encoded parameters, in format composition[:dopant]
      * @return @c true only if the material is simple
      * @throw NoSuchMaterial if database doesn't know the material with name @p name_without_composition
@@ -632,8 +632,8 @@ private:
     /**
      * Get material constructor object.
      * @param dbKey key in database (format: name[_label] or normalized_composition[_label])
-     * @param composition objects composition, empty composition for simple materials, used for error checking and mesages
-     * @param allow_complex_without_composition if true complex material can be obtained if composition is empty (if false exception will be throwed in such situation when dbKey is not simple material)
+     * @param composition objects composition, empty composition for simple materials, used for error checking and messages
+     * @param allow_complex_without_composition if true complex material can be obtained if composition is empty (if false exception will be thrown in such situation when dbKey is not simple material)
      */
     shared_ptr<const MaterialConstructor> getConstructor(const std::string& dbKey, const Material::Composition& composition, bool allow_complex_without_composition = false) const;
 

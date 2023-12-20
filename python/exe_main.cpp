@@ -515,7 +515,7 @@ int
 #endif
     }
 
-    // Initalize python and load the plask module
+    // Initialize python and load the plask module
     try {
         initPlask(argc - 1, argv + 1, banner);
     } catch (plask::CriticalException&) {

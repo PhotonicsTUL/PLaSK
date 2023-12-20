@@ -286,7 +286,7 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
         .def("__abs__", (double (*)(const Vec<dim,T>&))&abs<dim,T>)
         .def("copy", &copy_vec<dim,T>,
              u8"Copy of the vector. Normally vectors behave like Python containers, and\n"
-             u8"assignement operation makes shallow copy only. Use this method if you want\n"
+             u8"assignment operation makes shallow copy only. Use this method if you want\n"
              u8"to modify the copy without changing the source.\n")
         .add_static_property("dtype", &vec_dtype<dim,T>,
              u8"Type od the vector components. This is always either ``float`` or ``complex``.\n")

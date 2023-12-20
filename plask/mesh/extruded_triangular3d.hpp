@@ -208,7 +208,7 @@ struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
     Vec<3, double> at(std::size_t longTranIndex, std::size_t vertIndex) const;
 
     /**
-     * Calculate index of this mesh using indexes of embeded meshes.
+     * Calculate index of this mesh using indexes of embedded meshes.
      * @param longTranIndex index of longTranMesh
      * @param vertIndex index of vertAxis
      * @return the index of this mesh
@@ -220,7 +220,7 @@ struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
     }
 
     /**
-     * Calculate indexes of embeded meshes from index of this mesh.
+     * Calculate indexes of embedded meshes from index of this mesh.
      * @param index index of this mesh
      * @return a pair: (index of longTranMesh, index of vertAxis)
      */
@@ -234,7 +234,7 @@ struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
     std::size_t vertIndex(std::size_t index) const;
 
     /**
-     * Calculate element index of this mesh using element indexes of embeded meshes.
+     * Calculate element index of this mesh using element indexes of embedded meshes.
      * @param longTranIndex index of longTranMesh element
      * @param vertIndex index of vertAxis element
      * @return the element index of this mesh

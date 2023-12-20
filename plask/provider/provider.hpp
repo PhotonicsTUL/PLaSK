@@ -62,7 +62,7 @@ physical property. It can be easy obtain by subclass instantiation of one of tem
 This subclass can include static field and methods:
 - <code>static constexpr const char* NAME = "(lowercase) name of the property"</code>,
 - <code>static inline ValueType getDefaultValue() { return ...; }</code> -
-  construct and return initial/default instance of varible with provided type (default implementation returns <code>ValueType()</code>),
+  construct and return initial/default instance of variable with provided type (default implementation returns <code>ValueType()</code>),
 - <code>static inline ValueType2D getDefaultValue2D() { return ...; }</code> and <code>static inline ValueType3D getDefaultValue3D() { return ...; }</code> -
   like above for properties which uses different types in 2D and 3D spaces (e.g. plask::VectorFieldProperty),
 - <code>static const ValueType2D& value3Dto2D(const ValueType3D& v) { return ...; }</code> (convert v to 2D) and
@@ -219,7 +219,7 @@ struct PLASK_API Provider {
 
 /**
  * Common non-template base for all receivers.
- * This class is usefull for metaprogramming and also can be used for holding pointers to receivers.
+ * This class is useful for metaprogramming and also can be used for holding pointers to receivers.
  */
 struct PLASK_API ReceiverBase {
 
@@ -242,7 +242,7 @@ struct PLASK_API ReceiverBase {
  * For most providers types, Receiver type can be defined as: <code>Receiver<ProviderClass>;</code>
  * (where <code>ProviderClass</code> is type of provider class)
  *
- * @tparam ProviderT type of provider, can has defined ProviderT::ConstProviderType to reciver setConst method work.
+ * @tparam ProviderT type of provider, can has defined ProviderT::ConstProviderType to receiver setConst method work.
  *
  * @see @ref providers
  */
@@ -609,7 +609,7 @@ struct MultiFieldProvider: public Provider {
     }
 
     /**
-     * Call this->operator()(0, dst_mesh, methos).
+     * Call this->operator()(0, dst_mesh, method).
      * @param dst_mesh set of requested points
      * @param extra_args additional provider arguments
      * @param method method which should be use to do interpolation

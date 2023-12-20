@@ -92,7 +92,7 @@ struct CompressedSetOfNumbers {
     /**
      * Facade which help to develop iterators over CompressedSetOfNumbers.
      *
-     * Finall iterator (Derived) can iterate over numbers in set or other classes, and should (directly or indirectly) hold reference to the set.
+     * Final iterator (Derived) can iterate over numbers in set or other classes, and should (directly or indirectly) hold reference to the set.
      *
      * Derived must have set() method which returns <code>const CompressedSetOfNumbers<number_t>&</code>.
      * It may also have dereference() method which returnce @c Reference.
@@ -335,7 +335,7 @@ struct CompressedSetOfNumbers {
 
     /**
      * Assign a range [num_beg, num_end) to *this.
-     * @param num_beg, num_end the range to assing
+     * @param num_beg, num_end the range to assign
      */
     void assignRange(number_t num_beg, number_t num_end) {
         segments.resize(1);
@@ -345,7 +345,7 @@ struct CompressedSetOfNumbers {
 
     /**
      * Assign a range [0, num_end) to *this.
-     * @param num_end end of the range to assing
+     * @param num_end end of the range to assign
      */
     void assignRange(number_t num_end) {
         segments.resize(1);
@@ -420,7 +420,7 @@ struct CompressedSetOfNumbers {
 private:
 
     /**
-     * Try append an end frament of @p a_segment to @p result (if it is included in current segment of B) and update both @p a_segment and @p a_first_number.
+     * Try append an end fragment of @p a_segment to @p result (if it is included in current segment of B) and update both @p a_segment and @p a_first_number.
      * @param result where to append resulted segment
      * @param a_segment segment in the set A; must meet: a_segment->numberEnd <= numberEnd of current segment of B; it is advanced by this method
      * @param a_segment_end end iterator of the set A
@@ -448,7 +448,7 @@ public:
     CompressedSetOfNumbers<number_t> intersection(const CompressedSetOfNumbers<number_t>& other) const {
         if (this->empty() || other.empty()) return CompressedSetOfNumbers<number_t>();
         CompressedSetOfNumbers<number_t> result;
-        result.reserve(this->size() + other.size());    // enought for sure
+        result.reserve(this->size() + other.size());    // enough for sure
         auto this_segment = this->segments.begin();
         auto this_first_number = this_segment->numberEnd - this_segment->indexEnd;
         auto other_segment = other.segments.begin();
@@ -479,7 +479,7 @@ public:
      *
      * Time complexity: linear in number of segments.
      * @param positions_count number of positions to shift
-     * @return set with numbers of @c this decreased by @p positions_count (numbers which became negative are skiped)
+     * @return set with numbers of @c this decreased by @p positions_count (numbers which became negative are skipped)
      */
     CompressedSetOfNumbers<number_t> shiftedLeft(number_t positions_count) const {
         auto seg_it = std::upper_bound(segments.begin(), segments.end(), positions_count, Segment::compareByNumberEnd);

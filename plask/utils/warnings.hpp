@@ -27,7 +27,7 @@ This file contains portable utils to manage (mainly disable for a given fragment
 
 // this helps disable warning about unusing parameter in doxygen-friendly way
 #ifdef DOXYGEN
-    /// mark that the function paramater is unused and prevent compiler from warning about it
+    /// mark that the function parameter is unused and prevent compiler from warning about it
     #define PLASK_UNUSED(arg) arg
 #else
     #define PLASK_UNUSED(arg)
@@ -65,12 +65,12 @@ This file contains portable utils to manage (mainly disable for a given fragment
 
 
 
-#else   // ----------- unkown compiler -----------
+#else   // ----------- unknown compiler -----------
 
-/// beggining from the place this macro is put, disable warnings about possibly danger conversions (with precision loss, etc.)
+/// beginning from the place this macro is put, disable warnings about possibly danger conversions (with precision loss, etc.)
 #define PLASK_NO_CONVERSION_WARNING_BEGIN
 
-/// beggining from the place this macro is put, disable warnings about unused variables
+/// beginning from the place this macro is put, disable warnings about unused variables
 #define PLASK_NO_UNUSED_VARIABLE_WARNING_BEGIN
 
 /// ends the fragment where some warnings were disabled by PLASK_NO_*_WARNING_BEGIN macro (must be used twice to end two successive PLASK_NO_*_WARNING_BEGIN)

@@ -36,7 +36,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, "GeometryObjectLeaf", "Base cla
         .add_property("representative_material", &GeometryObjectLeaf<dim>::getRepresentativeMaterial);
 }
 
-/// Class providing custom material from realtive position and Python callable
+/// Class providing custom material from relative position and Python callable
 template <int dim> struct PythonMaterialProvider : public GeometryObjectLeaf<dim>::MaterialProvider {
     typedef typename GeometryObjectLeaf<dim>::DVec DVec;
     typedef typename GeometryObjectLeaf<dim>::Box Box;

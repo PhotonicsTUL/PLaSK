@@ -15,7 +15,7 @@ import re
 
 
 def empty_to_none(str):
-    """ :param str str: sring
+    """ :param str str: string
         :return: None if str is empty or consists only with white characters, str in other cases"""
     return None if str is None or len(str) == 0 or str.isspace() else str
 

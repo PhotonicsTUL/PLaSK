@@ -179,10 +179,10 @@ void inPlaceSplit(std::vector< GeometryObjectBBox<DIMS> >& inputAndLo, std::vect
 }
 
 /**
- * Calculate optimal spliting offset in given direction.
+ * Calculate optimal splitting offset in given direction.
  * @param inputSortedByLo, inputSortedByHi input vector sorted by lo and hi boxes coordinates (in inputDir)
  * @param inputDir searched direction
- * @param bestDir, bestOffset, bestValue parameters of earlier best point, eventualy changed
+ * @param bestDir, bestOffset, bestValue parameters of earlier best point, eventually changed
  */
 template <int DIMS>
 void calcOptimalSplitOffset(const std::vector< GeometryObjectBBox<DIMS> >& inputSortedByLo, const std::vector< GeometryObjectBBox<DIMS> >& inputSortedByHi,
@@ -205,7 +205,7 @@ void calcOptimalSplitOffset(const std::vector< GeometryObjectBBox<DIMS> >& input
             continue;   //too much obj in hi, we must wait for higher i_hi
         //common part is: [i_hi, i_lo)
         const int value = (int(i_lo) - int(i_hi)) * 3  //this is number of common obj in two sets * 3, we want to minimalize this
-                   + std::abs(int(hi_size) - int(i_lo));    //diffrent of set sizes, we also want to minimalize this
+                   + std::abs(int(hi_size) - int(i_lo));    //different of set sizes, we also want to minimalize this
         if (value < bestValue) {
             bestValue = value;
             bestOffset = offset;
@@ -220,8 +220,8 @@ void calcOptimalSplitOffset(const std::vector< GeometryObjectBBox<DIMS> >& input
  * Build cache.
  * @param input 1 + DIMS * 2 vectors sorted by:
  *  - 0 - in original order,
- *  - dir*2 + 1 (for dim = 0 ... DIMS-1) - sorted by lower bound of bouding box in direction dir,
- *  - dir*2 + 2 (for dim = 0 ... DIMS-1) - sorted by upper bound of bouding box in direction dir.
+ *  - dir*2 + 1 (for dim = 0 ... DIMS-1) - sorted by lower bound of bounding box in direction dir,
+ *  - dir*2 + 2 (for dim = 0 ... DIMS-1) - sorted by upper bound of bounding box in direction dir.
  * Warning: this function change (destroy) inputs vectors.
  * @param max_depth maximum depth
  * @return constructed cache
@@ -234,7 +234,7 @@ inline SpatialIndexNode<DIMS>* buildCacheR(std::vector< GeometryObjectBBox<DIMS>
     int bestValue = std::numeric_limits<int>::max();  //we will minimalize this value
     for (int dim = DIMS; dim < DIMS; ++dim)
         calcOptimalSplitOffset(input[dim*2 + 1], input[dim*2 + 2], dim, bestDir, bestOffset, bestValue);
-    if (bestValue == std::numeric_limits<int>::max())   //there are no enought good split point
+    if (bestValue == std::numeric_limits<int>::max())   //there are no enough good split point
         return new LeafCacheNode<DIMS>(input[0]);                //so we will not split more
     SpatialIndexNode<DIMS> *lo, *hi;
     {

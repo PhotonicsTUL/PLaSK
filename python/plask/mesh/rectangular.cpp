@@ -1260,7 +1260,7 @@ void register_mesh_rectangular() {
             .add_property("area", /*double*/ &RectangularMesh2D::Element::getArea, u8"Area of the element")
             .add_property("volume", /*double*/ &RectangularMesh2D::Element::getVolume, u8"Alias for :attr:`area`")
             .add_property("nodes", &RectangularMesh2D_Element_nodes,
-                          u8"Indices of the element vertices on the orignal mesh\n\n"
+                          u8"Indices of the element vertices on the original mesh\n\n"
                           u8"Order of the vertices is bottom left, bottom right, top left, and top right.")
             .def("__contains__", &RectangularMesh2D::Element::contains,
                  "check if given point is included in this element")
@@ -1483,7 +1483,7 @@ void register_mesh_rectangular() {
             .add_property("box", /*Box3D*/ &RectangularMesh3D_Element_box, u8"Bounding box of the element")
             .add_property("volume", /*double*/ &RectangularMesh3D_Element_volume, u8"Volume of the element")
             .add_property("nodes", &RectangularMesh3D_Element_nodes,
-                          u8"Indices of the element vertices on the orignal mesh\n\n"
+                          u8"Indices of the element vertices on the original mesh\n\n"
                           u8"Order of the vertices is back bottom left, back  bottom right, top left,\n"
                           u8"back top right, front bottom left, front bottom right, front top left,\n"
                           u8"and front top right.")

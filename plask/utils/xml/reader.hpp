@@ -57,7 +57,7 @@ public:
     /**
      * Construct StringInterpreter which uses given parsers for types returned by this parsers, and boost::lexical_cast for other types.
      * @param parsers 0 or more custom parsers, functors which can take std::string and return value of some type,
-     *                  or throw excpetion in case of parsing error
+     *                  or throw exception in case of parsing error
      */
     template <typename... Functors>
     StringInterpreter(Functors... parsers) { set(parsers...); }
@@ -70,7 +70,7 @@ public:
     /**
      * Parse given text @a str, interpret it as type @p RequiredType.
      *
-     * For parsing, it uses registred interpreter or boost::lexical_cast.
+     * For parsing, it uses registered interpreter or boost::lexical_cast.
      *
      * It throws exception in case of parsing error.
      * @param str text to parse
@@ -87,7 +87,7 @@ public:
     /**
      * Set parsers to use (interpret attributes values, etc.) for conversion from std::string to type returned by each @a parser.
      * @param parser1, rest_parsers 1 or more functors which can take std::string and return value of some type,
-     *                  or throw excpetion in case of parsing error
+     *                  or throw exception in case of parsing error
      */
     template <typename Functor1, typename... Functors>
     void set(Functor1 parser1, Functors... rest_parsers) {
@@ -272,7 +272,7 @@ class PLASK_API XMLReader {
      * XMLReader::CheckTagDuplication dub_check;
      * dub_checke(reader);
      * reader.require_next();
-     * dub_checke(reader);  //throw if tag has the same name as previouse one
+     * dub_checke(reader);  //throw if tag has the same name as previous one
      * </code>
      */
     class PLASK_API CheckTagDuplication {
@@ -380,7 +380,7 @@ class PLASK_API XMLReader {
      */
     State& appendState(NodeType type, const std::string& text);
 
-    /// Parsed states (if last one is NODE_TEXT than in can be not complatly parsed).
+    /// Parsed states (if last one is NODE_TEXT than in can't be completely parsed).
     std::deque<State> states;
 
     /// XML reader/parser, low level.
@@ -485,7 +485,7 @@ private:
 
     /**
      * Throw XMLUnexpectedElementException.
-     * @param args... XMLUnexpectedElementException constructor arguments to use, exluding the first one
+     * @param args... XMLUnexpectedElementException constructor arguments to use, excluding the first one
      */
     template <typename... Args>
     void throwUnexpectedElementException(Args&&... args) const { throw XMLUnexpectedElementException(*this, std::forward<Args>(args)...); }
@@ -494,7 +494,7 @@ private:
      * Throw XMLUnexpectedElementException if node type is not included in required_types or
      * (only when new_tag_name is given) node type is NODE_ELEMENT and name is not equal to new_tag_name.
      * @param required_types bit sum of NodeType-s
-     * @param new_tag_name (optional) name of required tag (ingored if NODE_ELEMENT is not included in required_types)
+     * @param new_tag_name (optional) name of required tag (ignored if NODE_ELEMENT is not included in required_types)
      * @return type of current node
      */
     NodeType ensureNodeTypeIs(int required_types, const char* new_tag_name = nullptr) const;
@@ -537,7 +537,7 @@ private:
     XMLReader(XMLReader&& to_move);
 
     /**
-     * Move assigment operator.
+     * Move assignment operator.
      * @param to_move object to move from, should not be used but only deleted after move
      * @return *this
      */
@@ -589,7 +589,7 @@ private:
     /*
      * Check if node is empty, like \<foo /\>.
      *
-     * Note that empty nodes are comunicate by parser two times: as NODE_ELEMENT and next as NODE_ELEMENT_END.
+     * Note that empty nodes are communicate by parser two times: as NODE_ELEMENT and next as NODE_ELEMENT_END.
      * So for \<foo /\> parser work just like for \<foo>\</foo> and only this method allow to check which notation was used.
      * @return if an element is an empty element, like \<foo /\>
      */
@@ -629,7 +629,7 @@ private:
     void ignoreAttribute(const std::string& name) { getAttribute(name); }
 
     /**
-     * Allow to have unread attributes in currect tag.
+     * Allow to have unread attributes in current tag.
      */
     void ignoreAllAttributes() const { check_if_all_attributes_were_read = false; }
 
@@ -678,7 +678,7 @@ private:
     std::string getTextContent() const;
 
     /**
-     * Check if current node is NODE_TEXT (throw excpetion if it's not) and get node data (text content).
+     * Check if current node is NODE_TEXT (throw exception if it's not) and get node data (text content).
      * @return data of the current node casted (by lexical_cast) to given type T
      */
     template <typename T>
@@ -753,7 +753,7 @@ private:
     /**
      * Go to next element.
      * @param required_types bit sum of NodeType-s
-     * @param new_tag_name (optional) name of required tag (ingored if NODE_ELEMENT is not included in required_types)
+     * @param new_tag_name (optional) name of required tag (ignored if NODE_ELEMENT is not included in required_types)
      * @return type of new current node
      * @throw XMLUnexpectedElementException if node type is not included in @p required_types or
      * (only when new_tag_name is given) node type is @c NODE_ELEMENT and name is not equal to @p new_tag_name.

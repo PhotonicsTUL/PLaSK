@@ -82,9 +82,9 @@ MATERIALS_PROPERTES = {
     'D': (u'Ambipolar diffusion coefficient <i>D</i>', u'cm<sup>2</sup>/s', [(u'T', u'temperature', u'K')]),
     'dens': (u'Density', u'kg/m<sup>3</sup>', [(u'T', u'temperature', u'K')]),
     'Dso': (u'Split-off energy <i>D</i><sub>so</sub>', u'eV', [(u'T', u'temperature', u'K'), (u'e', u'lateral strain', '-')]),
-    'e13': (u'Piezoelectric coeffcient <i>e<sub>13</sub></i>', u'C/m<sup>2</sup>', [(u'T', u'temperature', u'K')]),
-    'e15': (u'Piezoelectric coeffcient <i>e<sub>15</sub></i>', u'C/m<sup>2</sup>', [(u'T', u'temperature', u'K')]),
-    'e33': (u'Piezoelectric coeffcient <i>e<sub>33</sub></i>', u'C/m<sup>2</sup>', [(u'T', u'temperature', u'K')]),
+    'e13': (u'Piezoelectric coefficient <i>e<sub>13</sub></i>', u'C/m<sup>2</sup>', [(u'T', u'temperature', u'K')]),
+    'e15': (u'Piezoelectric coefficient <i>e<sub>15</sub></i>', u'C/m<sup>2</sup>', [(u'T', u'temperature', u'K')]),
+    'e33': (u'Piezoelectric coefficient <i>e<sub>33</sub></i>', u'C/m<sup>2</sup>', [(u'T', u'temperature', u'K')]),
     'EactA': (u'Acceptor ionization energy <i>E</i><sub>actA</sub>', u'eV', [(u'T', u'temperature', u'K')]),
     'EactD': (u'Donor ionization energy <i>E</i><sub>actD</sub>', u'eV', [(u'T', u'temperature', u'K')]),
     'Eg': (
@@ -95,20 +95,20 @@ MATERIALS_PROPERTES = {
     'lattC': (u'Lattice constant', u'Å', [(u'T', u'temperature', u'K'), (u'x', u'lattice parameter', '-')]),
     'Me': (
         u'Electron effective mass <i>M</i><sub><i>e</i></sub> in lateral '
-        u'and verical directions', u'<i>m</i><sub>0</sub>', [(u'T', u'temperature', u'K'), (u'e', u'lateral strain', '-'),
+        u'and vertical directions', u'<i>m</i><sub>0</sub>', [(u'T', u'temperature', u'K'), (u'e', u'lateral strain', '-'),
                                                              (u'point', u'point in the irreducible Brillouin zone', '-')]
     ),
     'Mh': (
         u'Hole effective mass <i>M</i><sub><i>h</i></sub> in lateral '
-        u'and verical directions', u'<i>m</i><sub>0</sub>', [(u'T', u'temperature', u'K'), (u'e', u'lateral strain', '-')]
+        u'and vertical directions', u'<i>m</i><sub>0</sub>', [(u'T', u'temperature', u'K'), (u'e', u'lateral strain', '-')]
     ),
     'Mhh': (
         u'Heavy hole effective mass <i>M<sub>hh</sub></i> in lateral '
-        u'and verical directions', u'<i>m</i><sub>0</sub>', [(u'T', u'temperature', u'K'), (u'e', u'lateral strain', '-')]
+        u'and vertical directions', u'<i>m</i><sub>0</sub>', [(u'T', u'temperature', u'K'), (u'e', u'lateral strain', '-')]
     ),
     'Mlh': (
         u'Light hole effective mass <i>M<sub>lh</sub></i> in lateral '
-        u'and verical directions', u'<i>m</i><sub>0</sub>', [(u'T', u'temperature', u'K'), (u'e', u'lateral strain', '-')]
+        u'and vertical directions', u'<i>m</i><sub>0</sub>', [(u'T', u'temperature', u'K'), (u'e', u'lateral strain', '-')]
     ),
     'mob': (
         u'Majority carriers mobility <i>µ</i> in lateral and vertical directions', u'cm<sup>2</sup>/Vs',

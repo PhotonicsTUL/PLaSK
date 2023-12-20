@@ -109,7 +109,7 @@ struct PLASK_API BadInput: public Exception {
     /**
      * @param where name of class/function/operation doing the computations
      * @param msg error message (format)
-     * @param params formating parmeters for msg
+     * @param params formatting parmeters for msg
      */
     template <typename... Params>
     BadInput(const std::string& where, const std::string& msg, Params... params)
@@ -123,7 +123,7 @@ struct PLASK_API DataError: public Exception {
 
     /**
      * @param msg error message (format)
-     * @param params formating parmeters for msg
+     * @param params formatting parmeters for msg
      */
     template <typename... Params>
     DataError(const std::string& msg, Params... params)
@@ -139,7 +139,7 @@ struct PLASK_API ComputationError: public Exception {
     /**
      * @param where name of class/function/operation doing the computations
      * @param msg error message
-     * @param params formating parmeters for msg
+     * @param params formatting parmeters for msg
      */
     template <typename... Params>
     ComputationError(const std::string& where, const std::string& msg, Params... params)
@@ -147,7 +147,7 @@ struct PLASK_API ComputationError: public Exception {
 };
 
 /**
- * This is throwed if name is bad id.
+ * This is thrown if name is bad id.
  */
 struct PLASK_API BadId: public Exception {
 
@@ -400,7 +400,7 @@ struct PLASK_API BadMesh: public Exception {
     /**
      * @param where name of class/function/operation doing the computations
      * @param msg error message (format)
-     * @param params paramters for @p msg
+     * @param params parameters for @p msg
      */
     template <typename... Params>
     BadMesh(const std::string& where, const std::string& msg, Params... params)

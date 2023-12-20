@@ -653,7 +653,7 @@ BOOST_PYTHON_MODULE(_plask)
              u8":attr:`initialized` to *False*.")
         .def("load_xpl", &plask::Solver::loadConfiguration, (py::arg("xpl"), "manager"),
              u8"Load configuration from XPL reader.\n\n"
-             u8"This method should be overriden in custom Python solvers.\n\n"
+             u8"This method should be overridden in custom Python solvers.\n\n"
              u8"Example:\n"
              u8"  .. code-block:: python\n\n"
              u8"     def load_xpl(self, xpl, manager):\n"

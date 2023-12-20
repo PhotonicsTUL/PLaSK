@@ -111,7 +111,7 @@ shared_ptr<MeshD<2>> TriangleGenerator::generate(const shared_ptr<GeometryObject
     trifree(out.edgemarkerlist);
     trifree(out.normlist);
 
-    // this will free rest of memory allocated by triangulate (even if an exception will be throwed):
+    // this will free rest of memory allocated by triangulate (even if an exception will be thrown):
     std::unique_ptr<REAL[], TrifreeCaller> out_points(out.pointlist);
     std::unique_ptr<int[], TrifreeCaller> out_triangles(out.trianglelist);
 

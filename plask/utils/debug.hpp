@@ -15,7 +15,7 @@
 #define PLASK__UTILS_DEBUG_H
 
 /** @file
-This file contains debuging utils. For internal use only.
+This file contains debugging utils. For internal use only.
 */
 
 #include <plask/config.hpp>

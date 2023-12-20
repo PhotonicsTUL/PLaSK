@@ -104,7 +104,7 @@ inline Vec<dst_dim, T> vec(const Vec<src_dim, T>& src) {
 /** @relates Vec
  * Convert vector 2D to 3D space.
  * @param src source vector
- * @param lon longitute coordinate
+ * @param lon longitude coordinate
  * @return @p src vector in destination space and given @p lon coordinate
  */
 template <typename T>

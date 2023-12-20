@@ -76,7 +76,7 @@ StackContainerBaseImpl<dim, growingDirection>::getChildForHeight(
     }
     if (it == stackHeights.begin()) {  // stackHeights.front() >= height
         if (is_zero(stackHeights.front() - height,
-                    16 * SMALL))  // children.empty() now imposible - then it == stackHeights.end()
+                    16 * SMALL))  // children.empty() now impossible - then it == stackHeights.end()
             return children[0];
         else
             return shared_ptr<TranslationT>();
@@ -124,7 +124,7 @@ GeometryObject::Subtree StackContainerBaseImpl<dim, growingDirection>::getPathsA
         GeometryObject::Subtree child_path = c->getPathsAt(point, all);
         if (!child_path.empty()) {
             result.children.push_back(std::move(child_path));
-            if (!all) {  // one is enought
+            if (!all) {  // one is enough
                 result.object = this->shared_from_this();
                 return result;
             }

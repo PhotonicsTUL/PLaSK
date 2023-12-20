@@ -78,9 +78,9 @@ namespace python {
 static const char* DATA_DOCSTRING =
     u8"Data returned by field providers.\n\n"
 
-    u8"This class is returned by field providers and receivers and cointains the values\n"
+    u8"This class is returned by field providers and receivers and contains the values\n"
     u8"of the computed field at specified mesh points. It can be passed to the field\n"
-    u8"plotting and saving functions or even feeded to some receivers. Also, if the\n"
+    u8"plotting and saving functions or even fed to some receivers. Also, if the\n"
     u8"mesh is a rectangular one, the data can be converted into an multi-dimensional\n"
     u8"numpy array.\n\n"
 
@@ -283,7 +283,7 @@ template <typename MeshT> struct PythonDataVector_SliceBase {
                 length[id] = PySlice_AdjustIndices(size, start + id, stop + id, step[id]);
 #endif
             }
-            if (step[id] < 0) throw ValueError("negative slice steps are not suported for Data");
+            if (step[id] < 0) throw ValueError("negative slice steps are not supported for Data");
             std::vector<double> points;
             points.reserve(length[id]);
             auto src_axis = src_mesh->getAxis(ax);
@@ -712,9 +712,9 @@ static inline py::class_<PythonDataVector<const T, dim>, shared_ptr<PythonDataVe
                       u8"This attribute is available only if the :attr:~plask.Data.mesh` is a rectangular one. It\n"
                       u8"contains the held data reshaped to match the shape of the mesh (i.e. the first\n"
                       u8"dimension is equal the size of the first mesh axis and so on). If the data type\n"
-                      u8"is :class:`plask.vec` then the array has one additional dimention equal to 2 for\n"
+                      u8"is :class:`plask.vec` then the array has one additional dimension equal to 2 for\n"
                       u8"2D vectors and 3 for 3D vectors. The vector components are stored in this\n"
-                      u8"dimention.\n\n"
+                      u8"dimension.\n\n"
 
                       u8"Example:\n"
                       u8"    >>> msh = plask.mesh.Rectangular2D(plask.mesh.Rectilinear([1, 2]),\n"

@@ -83,7 +83,7 @@ shared_ptr<const GeometryObject> Translation<dim>::changedVersion(const Geometry
     shared_ptr<const GeometryObject> new_child = this->getChild()->changedVersion(changer, &returned_translation);
     Vec<dim, double> translation_we_will_do = vec<dim, double>(returned_translation);
     if (new_child == getChild() && translation_we_will_do == Primitive<dim>::ZERO_VEC) return result;
-    if (translation)  // we will change translation (partially if dim==2) internaly, so we recommend no extra
+    if (translation)  // we will change translation (partially if dim==2) internally, so we recommend no extra
                       // translation
         *translation = returned_translation -
                        vec<3, double>(translation_we_will_do);  // still we can recommend translation in third direction

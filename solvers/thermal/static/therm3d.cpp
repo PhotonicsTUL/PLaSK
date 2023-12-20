@@ -131,7 +131,7 @@ void ThermalFem3DSolver::setAlgorithm(FemMatrixAlgorithm alg) {
     * Boundary conditions must be set for both nodes at the element edge.
     * \param boundary_conditions boundary conditions holder
     * \param idx indices of the element nodes
-    * \param dx, dy, dz dimentions of the element
+    * \param dx, dy, dz dimensions of the element
     * \param[out] F the load vector
     * \param[out] K stiffness matrix
     * \param F_function function returning load vector component

@@ -233,7 +233,7 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
 
         /**
          * Add a triangle to the mesh.
-         * @param e a trianglular element (from another mesh) which defines the triangle to add
+         * @param e a triangular element (from another mesh) which defines the triangle to add
          * @return <code>*this</code>
          */
         Builder& add(const Element& e) { return add(e.getNode(0), e.getNode(1), e.getNode(2)); }
@@ -283,14 +283,14 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
         static constexpr std::size_t INDEX_NOT_FOUND = std::numeric_limits<std::size_t>::max();
 
         /**
-         * Get index of element which incldes point @p p.
+         * Get index of element which includes point @p p.
          * @param p point to find
          * @return index of element which includes @p p or INDEX_NOT_FOUND if there is no element includes @p p.
          */
         std::size_t getIndex(Vec<2, double> p) const;
 
         /**
-         * Get element which incldes point @p p.
+         * Get element which includes point @p p.
          * @param p point to find
          * @return element which includes @p p or empty optional if no element includes @p p.
          */
@@ -311,7 +311,7 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
         return nodes.empty();
     }
 
-    // ---- Faster iterators used when exact type of mesh is known; they hide polimorphic iterators of parent class ----
+    // ---- Faster iterators used when exact type of mesh is known; they hide polymorphic iterators of parent class ----
     const_iterator begin() const { return nodes.begin(); }
     const_iterator end() const { return nodes.end(); }
 

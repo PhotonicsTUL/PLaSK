@@ -40,7 +40,7 @@ struct chooseType {
 
 //TODO better impl. but not compilable with GCC 4.6 (unimplemented)
 /*template <int nr, typename firstType, typename... restTypes> struct chooseType {
-    ///Choosed type.
+    ///Choose type.
     typedef typename chooseType<nr-1, restTypes...>::type type;
 };
 

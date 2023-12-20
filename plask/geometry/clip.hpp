@@ -78,7 +78,7 @@ template <int dim> struct PLASK_API Clip : public GeometryObjectTransform<dim> {
     shared_ptr<GeometryObject> shallowCopy() const override;
 
     /**
-     * Get shallow copy of this with diffrent clip box.
+     * Get shallow copy of this with different clip box.
      * @param new_clip clip box for new Clip object
      * @return shallow copy of this with clip box equal to @p new_clip
      */

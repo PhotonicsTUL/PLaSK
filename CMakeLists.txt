@@ -349,7 +349,7 @@ if(WIN32)
     else()
         install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core)
     endif()
-    if(MSVC)    # default "plask.pdb" is overriden by file for plask.exe, so we use different name ("libplask.pdb")
+    if(MSVC)    # default "plask.pdb" is overridden by file for plask.exe, so we use different name ("libplask.pdb")
         set_target_properties (libplask PROPERTIES PDB_NAME libplask)
     endif(MSVC)
 else()
@@ -361,7 +361,7 @@ if(PLASK_EXPORTS_FMT)
     target_compile_definitions(libplask PRIVATE FMT_EXPORT INTERFACE FMT_SHARED)
 endif()
 
-#if (NOT WIN32) # can be usefull if more thread libraries will be used
+#if (NOT WIN32) # can be useful if more thread libraries will be used
 #    target_link_libraries(sdsolver "pthread")
 #endif()
 

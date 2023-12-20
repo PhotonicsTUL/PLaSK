@@ -84,7 +84,7 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
         TYPE_SPACE_CHANGER = 2,  ///< transform object which changes its space (has one child)
         TYPE_CONTAINER = 3,      ///< container (can have more than one child)
         TYPE_GEOMETRY = 4,       ///< geometry / space
-        TYPE_SEPARATOR = 5       ///< objects of this type are used internaly, mainly as separators
+        TYPE_SEPARATOR = 5       ///< objects of this type are used internally, mainly as separators
     };
 
     /**
@@ -92,7 +92,7 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
      *
      * Subroles of this can contains additional information about specific type of event.
      *
-     * Note: when object is being deleted (isDelete() returns @c true), source() can't be succesfully dynamic cast to
+     * Note: when object is being deleted (isDelete() returns @c true), source() can't be successfully dynamic cast to
      * subroles of GeometryObject, because source() is already partially deleted.
      */
     class PLASK_API Event : public EventWithSourceAndFlags<GeometryObject, unsigned> {
@@ -289,16 +289,16 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
         }
 
         /**
-         * Check if this subtree inludes more than one branch (has more than one children or has one child which has
+         * Check if this subtree includes more than one branch (has more than one children or has one child which has
          * more than one branch).
-         * @return @c true only if this subtree inludes branches, @c false if it is linear path
+         * @return @c true only if this subtree includes branches, @c false if it is linear path
          */
         bool hasBranches() const;
 
         /**
          * Convert this subtree to linear path: object, child[0].object, child[0].child[0].object, ...
          *
-         * Throw excpetion if this subtree is not linear path (inludes more than one branch).
+         * Throw exception if this subtree is not linear path (includes more than one branch).
          * @return linear path represented by this
          */
         Path toLinearPath() const;
@@ -327,7 +327,7 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
 
         /**
          * Try to apply changes.
-         * @param[in,out] to_change pointer to object which eventualy will be changed (in such case pointer after call
+         * @param[in,out] to_change pointer to object which eventually will be changed (in such case pointer after call
          * can point to another geometry object)
          * @param[out] translation optional, extra translation for object after change (in case of 2d object caller
          * reads only @a tran and @a up components of this vector)
@@ -388,7 +388,7 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
         /// Translation to return by apply.
         Vec<3, double> translation;
 
-        /// Construct uninitilized changer.
+        /// Construct uninitialized changer.
         ReplaceChanger() {}
 
         /**
@@ -455,7 +455,7 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
      * Base class for callbacks used by save() method to get names of objects and paths.
      *
      * Default implementation just returns empty names and list of names.
-     * It is enought to save geometry tree without any names or with all names auto-generated (see @ref
+     * It is enough to save geometry tree without any names or with all names auto-generated (see @ref
      * prerareToAutonaming).
      *
      * Example (save vector of objects to dest XML in "geometry" section):
@@ -463,7 +463,7 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
      * // std::vector<const plask::GeomtryObject*> to_save; //root of trees to save
      * // XMLWriter dest;               // destination, output XML
      * WriteXMLCallback namer;          // or subclass of WriteXMLCallback
-     * // this is required only if elments should have auto-generated names:
+     * // this is required only if elements should have auto-generated names:
      * for (auto e: to_save) namer.prerareToAutonaming(*e);
      * // writting:
      * XMLWriter::Element geom_section(dest, "geometry");   // section tag
@@ -475,7 +475,7 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
         /**
          * Names of already saved objects.
          *
-         * Used to contruct \<again ...> tags.
+         * Used to construct \<again ...> tags.
          */
         std::map<const GeometryObject*, std::string> names_of_saved;
 
@@ -515,7 +515,7 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
                                                       std::size_t index_of_child_in_parent) const;
 
         /**
-         * Append to XML tag, with optional name (obtain by getName), and axes attribiute.
+         * Append to XML tag, with optional name (obtain by getName), and axes attribute.
          *
          * It is also possible that this creates a reference tag, and this case should be checked by @ref isRef method.
          * @param parent_tag parent XML tag
@@ -642,7 +642,7 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
     /**
      * Write geometry tree branch rooted by this to XML.
      *
-     * Default implementation write XML tag for this (with eventual name and axes attribiutes) call writeXMLAttr to
+     * Default implementation write XML tag for this (with eventual name and axes attributes) call writeXMLAttr to
      * append extra atribiutes, and write all real children. Typically you should overwrite only writeXMLAttr method.
      * @param parent_xml_object destination, parent XML object
      * @param write_cb write callback, used to get names for objects and paths
@@ -770,8 +770,8 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
     void clearRoles() { roles.clear(); }
 
     /**
-     * Get number of dimentions.
-     * @return number of dimentions
+     * Get number of dimensions.
+     * @return number of dimensions
      */
     virtual int getDimensionsCount() const = 0;
 
@@ -810,7 +810,7 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
     virtual Subtree getPathsTo(const GeometryObject& el, const PathHints* pathHints = 0) const = 0;
 
     /**
-     * Append all objects from subtree with this in root, which fullfil predicate to vector @p dest.
+     * Append all objects from subtree with this in root, which fulfill predicate to vector @p dest.
      * @param predicate predicate required to match
      * @param dest destination vector
      * @param path (optional) path hints which limits search space
@@ -820,7 +820,7 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
                                  const PathHints* path = 0) const = 0;
 
     /**
-     * Append all objects from subtree with this in root, which fullfil predicate to vector @p dest.
+     * Append all objects from subtree with this in root, which fulfill predicate to vector @p dest.
      * @param predicate predicate required to match
      * @param dest destination vector
      * @param path path hints which limits search space
@@ -832,10 +832,10 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
     }
 
     /**
-     * Get vector of all objects from subtree with this in root, which fullfil predicate.
+     * Get vector of all objects from subtree with this in root, which fulfill predicate.
      * @param predicate predicate required to match
      * @param path (optional) path hints which limits search space
-     * @return vector of all objects from subtree with this in root, which fullfil predicate
+     * @return vector of all objects from subtree with this in root, which fulfill predicate
      */
     std::vector<shared_ptr<const GeometryObject>> getObjects(const Predicate& predicate,
                                                              const PathHints* path = 0) const {
@@ -845,10 +845,10 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
     }
 
     /**
-     * Get vector of all objects from subtree with this in root, which fullfil predicate.
+     * Get vector of all objects from subtree with this in root, which fulfill predicate.
      * @param predicate predicate required to match
      * @param path path hints which limits search space
-     * @return vector of all objects from subtree with this in root, which fullfil predicate
+     * @return vector of all objects from subtree with this in root, which fulfill predicate
      */
     std::vector<shared_ptr<const GeometryObject>> getObjects(const Predicate& predicate, const PathHints& path) const {
         return getObjects(predicate, &path);
@@ -944,7 +944,7 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
      * This is unsafe but fast version, it doesn't check index and doesn't call fireChildrenChanged() to inform
      * listeners about this object changes. Caller should do this manually or call removeAt(std::size_t) instead.
      *
-     * Default implementation throw excption but this method is overwritten in subroles.
+     * Default implementation throw exception but this method is overwritten in subroles.
      * @param index index of real child to remove
      */
     virtual void removeAtUnsafe(std::size_t index);
@@ -1009,7 +1009,7 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
 
     /**
      * Get this or copy of this with some changes in subtree.
-     * @param[in] changer changer which will be aplied to subtree with this in root
+     * @param[in] changer changer which will be applied to subtree with this in root
      * @param[out] translation optional, if non-null, recommended translation of this after change will be stored
      * @return pointer to this (if nothing was changed) or copy of this with some changes in subtree
      */
@@ -1059,17 +1059,17 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
 
   protected:
     /**
-     * Append XML attribiutes of this to @p dest_xml_object.
+     * Append XML attributes of this to @p dest_xml_object.
      *
      * By default do nothing.
-     * @param dest_xml_object XML tag where attribiutes should be append
-     * @param axes choosen name of axes
+     * @param dest_xml_object XML tag where attributes should be append
+     * @param axes chosen name of axes
      */
     virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
 
     /**
      * Append all children of this to XML @p dest_xml_object..
-     * @param dest_xml_object XML tag where attribiutes should be append
+     * @param dest_xml_object XML tag where attributes should be append
      * @param write_cb write callback, used to get names for objects and paths
      * @param axes chosen name of axes
      */
@@ -1080,8 +1080,8 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
     /**
      * Check if given @p index is valid child index and throw exception of it is not.
      * @param child_no index to check
-     * @param method_name caller method name which is used to format excption message
-     * @param arg_name name of index argument in caller method, used to format excption message
+     * @param method_name caller method name which is used to format exception message
+     * @param arg_name name of index argument in caller method, used to format exception message
      * @throw OutOfBoundsException if index is not valid
      */
     void ensureIsValidChildNr(std::size_t child_no,
@@ -1095,8 +1095,8 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
     /**
      * Check if given @p index is valid insert index and throw exception of it is not.
      * @param child_no index to check
-     * @param method_name caller method name which is used to format excption message
-     * @param arg_name name of index argument in caller method, used to format excption message
+     * @param method_name caller method name which is used to format exception message
+     * @param arg_name name of index argument in caller method, used to format exception message
      * @throw OutOfBoundsException if index is not valid
      */
     void ensureIsValidInsertPosition(std::size_t child_no,
@@ -1195,7 +1195,7 @@ template <int dim> struct PLASK_API GeometryObjectD : public GeometryObject {
     /**
      * Calculate minimal rectangle which contains all points of real geometry object.
      *
-     * This box can be diffrent from getBoundingBox() only for objects which have virtual children, like multple-stack.
+     * This box can be different from getBoundingBox() only for objects which have virtual children, like multple-stack.
      * Returned box is always included in (in most cases: equal to) box returned by getBoundingBox().
      *
      * Default implementation returns result of getBoundingBox() call.
@@ -1571,7 +1571,7 @@ template <int dim> struct PLASK_API GeometryObjectD : public GeometryObject {
     // }
 
     // /*
-    //  * Get instances of the object withing subtree with root in this. Returned intances
+    //  * Get instances of the object withing subtree with root in this. Returned 
     //  * are wrapped in transformations, which transform them to the root coordinates.
     //  * @param object object to extract
     //  * @param path

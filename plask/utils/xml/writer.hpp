@@ -62,8 +62,8 @@ struct PLASK_API XMLWriter {
         /**
          * Write @p n - 1 bytes from @p str.
          *
-         * Usefull to writing const char[] literals.
-         * @param str string, typicaly const char[] literal
+         * Useful to writing const char[] literals.
+         * @param str string, typically const char[] literal
          */
         template <int n>
         void puts(const char (&str)[n]) { write(str, n-1); }
@@ -250,8 +250,8 @@ struct PLASK_API XMLWriter {
         const std::string& getName() const { return name; }
 
         /**
-         * Get writter used by this.
-         * @return writter used by this
+         * Get writer used by this.
+         * @return writer used by this
          */
         XMLWriter* getWriter() const { return writer; }
 
@@ -266,7 +266,7 @@ struct PLASK_API XMLWriter {
 
         void writeClosing();    ///< called by destructor, write element closing and set parent of this as current
 
-        bool disallowAttributes(); ///< set attributesStillAlowed to false, and put '>' in out if necessary, return true if attributes was alowed before call this
+        bool disallowAttributes(); ///< set attributesStillAlowed to false, and put '>' in out if necessary, return true if attributes was allowed before call this
 
         void ensureIsCurrent(); ///< throw exception if this is not current element
     };
@@ -292,7 +292,7 @@ public:
 
     /**
      * Construct XML writer which will write content to given @p out stream.
-     * @param out ouptut stream which will be used as destination to XML content, will be not closed by this writer
+     * @param out output stream which will be used as destination to XML content, will be not closed by this writer
      * @param indentation indentation for each tag level
      */
     XMLWriter(std::ostream& out, std::size_t indentation=2);
@@ -307,7 +307,7 @@ public:
     /**
      * Construct XML writer which will write content to given C file.
      *
-     * Writter will not close given descriptor.
+     * Writer will not close given descriptor.
      * @param cfile opened, C file descriptor, writer will not close it
      * @param indentation indentation for each tag level
      */
@@ -315,7 +315,7 @@ public:
 
     /**
      * Construct XML writer which will write content to given @p out.
-     * @param out ouptut which will be used as destination to XML content, will be delete (with @c delete operator) by writer destructor
+     * @param out output which will be used as destination to XML content, will be delete (with @c delete operator) by writer destructor
      * @param indentation indentation for each tag level
      */
     XMLWriter(Output* out, std::size_t indentation=2);
@@ -374,7 +374,7 @@ public:
 
     /**
      * Get current element.
-     * @return current elment or @p nullptr if there are no elements (root was not open jet or was already closed)
+     * @return current element or @p nullptr if there are no elements (root was not open jet or was already closed)
      */
     Element* getCurrent() {
         return current;

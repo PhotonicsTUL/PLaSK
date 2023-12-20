@@ -183,8 +183,8 @@ struct GeometryObjectTransform : public GeometryObjectD<dim> {
     void removeAtUnsafe(std::size_t) override { _child.reset(); }
 
     /**
-     * Conver bounding box from child's to this's coordinates.
-     * @param child_bbox bouding box of child
+     * Convert bounding box from child's to this's coordinates.
+     * @param child_bbox bounding box of child
      * @return @p child_bbox converted to this's coordinates
      */
     virtual Box fromChildCoords(const typename ChildType::Box& child_bbox) const = 0;
@@ -219,7 +219,7 @@ struct GeometryObjectTransform : public GeometryObjectD<dim> {
 
     /**
      * Possible implementation for getPositionsToVec, which does not change children position and is used by many
-     * subclasses. This is a tamplate since this code is not proper for space changer.
+     * subclasses. This is a template since this code is not proper for space changer.
      */
     template <typename ThisType>
     inline static void _getNotChangedPositionsToVec(ThisType _this,
@@ -363,7 +363,7 @@ template <int dim> struct PLASK_API Translation : public GeometryObjectTransform
                                                             Vec<3, double>* translation = 0) const override;
 
     /**
-     * Get shallow copy of this with diffrent translation.
+     * Get shallow copy of this with different translation.
      * @param new_translation translation vector of copy
      */
     shared_ptr<Translation<dim>> copyShallow(const DVec& new_translation) const {

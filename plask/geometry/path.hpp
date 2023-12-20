@@ -23,7 +23,7 @@ namespace plask {
 
 struct GeometryObject;
 
-//TODO redefine to structure which alow to cast to container and translation
+//TODO redefine to structure which allow to cast to container and translation
 typedef std::pair< shared_ptr<GeometryObject>, shared_ptr<GeometryObject> > Edge;
 
 struct Path;
@@ -263,7 +263,7 @@ struct PLASK_API Path {
     Path(GeometryObject::Subtree&& paths)
         : objects(paths.toLinearPath().objects) {}
 
-    // These are the same as default constructors, so can be skiped:
+    // These are the same as default constructors, so can be skipped:
     // Path(const Path& path): objects(path.objects) {}
     // Path(Path&& path): objects(path.objects) {}
 
@@ -307,7 +307,7 @@ struct PLASK_API Path {
      * Append @p paths content to this path.
      *
      * Try complete missing path fragment if necessary, and throw exception it is impossible or ambiguous.
-     * @param path objects to add, exception will be throwed if it have branches
+     * @param path objects to add, exception will be thrown if it have branches
      * @param hints optional path hints which are used to non-ambiguous completion of paths
      */
     Path& append(const GeometryObject::Subtree& path, const PathHints* hints = nullptr);

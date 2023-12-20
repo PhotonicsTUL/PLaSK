@@ -43,7 +43,7 @@ struct PLASK_API Prism : public GeometryObjectLeaf<3> {
     std::string getTypeName() const override;
 
     /**
-     * Contruct a solid triangle with vertexes at points: (0, 0), @p p0, @p p1
+     * Construct a solid triangle with vertexes at points: (0, 0), @p p0, @p p1
      * @param p0, p1 coordinates of the triangle vertexes
      * @param material material inside the whole triangle
      */
@@ -53,7 +53,7 @@ struct PLASK_API Prism : public GeometryObjectLeaf<3> {
                    const shared_ptr<Material>& material = shared_ptr<Material>());
 
     /**
-     * Contruct a triangle with vertexes at points: (0, 0), @p p0, @p p1
+     * Construct a triangle with vertexes at points: (0, 0), @p p0, @p p1
      * @param p0, p1 coordinates of the triangle vertexes
      * @param materialTopBottom describes materials inside the triangle
      */

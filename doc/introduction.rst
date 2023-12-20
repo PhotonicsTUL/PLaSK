@@ -4,12 +4,12 @@
 Introduction
 ************
 
-.. _sec-Instalation:
+.. _sec-Installation:
 
-Instalation
+Installation
 -----------
 
-.. _sec-Instalation-Windows:
+.. _sec-Installation-Windows:
 
 Windows
 ^^^^^^^
@@ -23,7 +23,7 @@ In order to install PLaSK on MS Windows, perform two steps:
 
    PLaSK for Windows is 64-bit now. You must use 64 Windows (most probably you are) and install 64-bit Python to be able to use it!
 
-.. _sec-Instalation-Linux:
+.. _sec-Installation-Linux:
 
 Linux Systems
 ^^^^^^^^^^^^^

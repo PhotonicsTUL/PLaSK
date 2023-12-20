@@ -84,7 +84,7 @@ constexpr const char* docstring_attr_receiver() { return
     u8":class:`~plask.flow.{0}Receiver{1}`.\n\n"
 
     u8"Example:\n"
-    u8"   Connect the reveiver to a provider from some other solver:\n\n"
+    u8"   Connect the receiver to a provider from some other solver:\n\n"
 
     u8"   >>> solver.{5} = other_solver.out{0}\n\n"
 

@@ -24,7 +24,7 @@
 namespace plask {
 
 /// Sequence container that repeats its child over a line shifted by a vector.
-/// You can consider this as a one-dimentional lattice
+/// You can consider this as a one-dimensional lattice
 template <int dim> struct PLASK_API ArrangeContainer : public GeometryObjectTransform<dim> {
     typedef GeometryObjectTransform<dim> BaseClass;
 

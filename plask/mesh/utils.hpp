@@ -17,13 +17,13 @@
 #include "mesh.hpp"
 
 /** @file
-This file contains some utils usefull with mesh classes.
+This file contains some utils useful with mesh classes.
 */
 
 namespace plask {
 
 /**
- * Object of this class alows for checking if a given mesh is the same mesh which has been used recently.
+ * Object of this class allows for checking if a given mesh is the same mesh which has been used recently.
  */
 struct PLASK_API SameMeshChecker {
 

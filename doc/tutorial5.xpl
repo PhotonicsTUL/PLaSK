@@ -95,14 +95,14 @@ vmsh = mesh.Rectangular3D([0.], yy, zz)
 
 
 # Depending on the ‘threshold’ parameter (True of False) we can either look for the threshold (where
-# imaginary part of the wavelength is always 0), or just the wavelenght (with some imaginary part,
+# imaginary part of the wavelength is always 0), or just the wavelength (with some imaginary part,
 # denoting optical losses).
 
 if not threshold:  # ‘threshold’ is False, so we want just an eigenmode...
 
     # For an eigenmode, the returned value of ‘FOURIER.get_determinant’ method must be 0 (both real and
     # imaginary part). ‘FOURIER.find_mode’ uses Broyden or Muller method (depening on the configuration
-    # in ‘Solvers’ tab) to find such root, altering its argument — wavelenght (lam) in this case.
+    # in ‘Solvers’ tab) to find such root, altering its argument — wavelength (lam) in this case.
     # Once it finds the eigenmode it stores its parameters in the ‘FOURIER.modes’ list and returns the index
     # of the found mode in this array.
     m = FOURIER.find_mode(lam=start)
@@ -122,7 +122,7 @@ else: # Looking for the threshold...
     # PLaSK internal root finding loop, and do it manually (actually we use external Python function
     # from SciPy package for this purpose).
 
-    # First we need to create R²->R² function that takes the wavelenght (real) and the gain and return
+    # First we need to create R²->R² function that takes the wavelength (real) and the gain and return
     # Real and complex parts of the determinant.
     def fun(arg):
         profile[GEO.gain] = arg[1]  # Set the gain given in the second element of the ‘arg’ array.

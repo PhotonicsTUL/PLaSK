@@ -292,7 +292,7 @@ inline static py::class_<Tensor<dim,T>> register_tensor_class(std::string name="
         //      u8"simply returns `self`\n")
         .def("copy", &copy_tensor<dim,T>,
              u8"Copy of the tensor. Normally tensors behave like Python containers, and\n"
-             u8"assignement operation makes shallow copy only. Use this method if you want\n"
+             u8"assignment operation makes shallow copy only. Use this method if you want\n"
              u8"to modify the copy without changing the source.\n")
         .add_static_property("dtype", &tensor_dtype<dim,T>,
              u8"Type od the tensor components. This is always either ``float`` or ``complex``.\n")

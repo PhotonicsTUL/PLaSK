@@ -71,7 +71,7 @@ Once you have your source tree set up, do the following:
    as the first operation.
 -# Optionally implement plask::Solver::getClassDescription method. This method should just return description of your solver.
 -# Write the Python interface to your class using Boost Python. See the Boos Python documentation or take a look into
-   \c solvers/skel/python/solver.cpp (for your convenience we have provided some macros that will faciliate creation
+   \c solvers/skel/python/solver.cpp (for your convenience we have provided some macros that will facilitate creation
    of Python interface).
 -# Write \c solvers.yml file that documents \c xpl configuration of your solver for generating the \c xpl reference in the user manual and
    for automatic configuration panel creation in GUI.
@@ -88,7 +88,7 @@ The solver performs its computation using finite differences method. Hence, we n
 
 To start we create a subdirectory \a solvers/optical/finite_diff under the PLaSK trunk write a file \a finite_differences.h to it.
 Also we need to copy the \a CMakeLists.txt file from \a solvers/skel to our directory. In most cases we will only need to edit
-the line whith the command \c project in this file, unless our solvers uses some external libraries. If for example, our solver
+the line with the command \c project in this file, unless our solvers uses some external libraries. If for example, our solver
 uses LAPACK, the \a CMakeLists.txt should look like this (In the below example all comments are skipped):
 
 The project name should math the pattern \a plask/solvergroup/solverlib, so in our case it will look like \a plask/optical/finite_diff.
@@ -132,7 +132,7 @@ Then, you declare all the fields and methods of the class. We will skip all the 
 computations from this tutorial and focus only on the ones necessary for PLaSK interface. Assume, that \b FiniteDifferencesSolver
 needs a temperature distribution and wavelength as an input, and outputs effective index of the waveguide and the optical
 field intensity.
-Additionaly, boundary conditions of the first kind on temperature is needed.
+Additionally, boundary conditions of the first kind on temperature is needed.
 Hence, we declare the following \link providers providers, receivers\endlink and \link boundaries boundary conditions\endlink:
 
 \code

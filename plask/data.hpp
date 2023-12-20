@@ -376,7 +376,7 @@ struct DataVector {
      */
     void reset(std::size_t size) {
         //TODO to consider: (when clang will be fixed, now it has no std::is_default_constructible but only non-standard std::has_trivial_default_constructor)
-        //if (std::is_default_constructible<T>::value &&   //this is known at compile time and I belive that compiler optimize-out whole if when it is false
+        //if (std::is_default_constructible<T>::value &&   //this is known at compile time and I believe that compiler optimize-out whole if when it is false
         //    size == size_ && gc_ && gc_->count == 1 && ! gc_->deleter) return;
         dec_ref();
         data_ = aligned_malloc<T>(size);
@@ -488,8 +488,8 @@ struct DataVector {
     }
 
     /**
-     * Allow to remove const qualifer from data, must be
-     * @return non-const version of this which refere to the same data
+     * Allow to remove const qualifier from data, must be
+     * @return non-const version of this which refer to the same data
      */
     DataVector<VT> remove_const() const {
         DataVector<VT> result(const_cast<VT*>(this->data()), this->size());

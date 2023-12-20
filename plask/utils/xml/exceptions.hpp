@@ -57,13 +57,13 @@ struct PLASK_API XMLException: public std::runtime_error {
     /**
      * @param where indication where the error appeared
      * @param msg error message
-     * @param line line in which the error occured
+     * @param line line in which the error occurred
      */
     XMLException(const std::string& where, const std::string& msg, int line = -1);
 
     /**
      * @param msg error message
-     * @param line line in which the error occured
+     * @param line line in which the error occurred
      */
     XMLException(const std::string& msg, int line = -1);
 
@@ -156,17 +156,17 @@ struct PLASK_API XMLDuplicatedElementException: public XMLException {
      * @param duplicated name of duplicated thing
      */
     XMLDuplicatedElementException(const XMLReader& reader, const std::string& duplicated):
-        XMLException(reader, duplicated + " should apprear only once in the current scope") {}
+        XMLException(reader, duplicated + " should appear only once in the current scope") {}
     /**
      * @param parent name of the parent tag
      * @param duplicated name of duplicated thing
      */
     XMLDuplicatedElementException(const std::string& parent, const std::string& duplicated):
-        XMLException(parent, duplicated + " should apprear only once in the current scope") {}
+        XMLException(parent, duplicated + " should appear only once in the current scope") {}
 };
 
 /**
- * Exceptions of this class are thown if two optional attributes in XML conflict with each other.
+ * Exceptions of this class are thrown if two optional attributes in XML conflict with each other.
  */
 struct PLASK_API XMLConflictingAttributesException: public XMLException {
     /**

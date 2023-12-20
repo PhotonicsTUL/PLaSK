@@ -264,7 +264,7 @@ PyCodeObject* compilePythonFromXml(XMLReader& reader, Manager& manager, bool exe
 //     /**
 //      * Go to next element.
 //      * @param required_types bit sum of NodeType-s
-//      * @param new_tag_name (optional) name of required tag (ingored if NODE_ELEMENT is not included in required_types)
+//      * @param new_tag_name (optional) name of required tag (ignored if NODE_ELEMENT is not included in required_types)
 //      * @return type of new current node
 //      * @throw XMLUnexpectedElementException if node type is not included in @p required_types or
 //      * (only when new_tag_name is given) node type is @c NODE_ELEMENT and name is not equal to @p new_tag_name.

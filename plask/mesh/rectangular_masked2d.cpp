@@ -48,7 +48,7 @@ void RectangularMaskedMesh2D::initNodesAndElements(const RectangularMaskedMesh2D
             /*boundaryIndex[0].improveLo(el_it->getLowerIndex0());
             boundaryIndex[0].improveUp(el_it->getUpperIndex0());
             boundaryIndex[1].improveLo(el_it->getLowerIndex1());
-            boundaryIndex[1].improveUp(el_it->getUpperIndex1());*/  // this is initilized lazy
+            boundaryIndex[1].improveUp(el_it->getUpperIndex1());*/  // this is initialized lazy
         }
     nodeSet.shrink_to_fit();
     elementSet.shrink_to_fit();

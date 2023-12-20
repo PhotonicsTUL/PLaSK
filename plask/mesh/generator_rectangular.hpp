@@ -530,7 +530,7 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshDivideGenerator<3>)
 
 
 /**
- * Dense-edge genereator that has very dense sampling near edges and gradually gets wider towards the center.
+ * Dense-edge generator that has very dense sampling near edges and gradually gets wider towards the center.
  */
 template <int dim>
 struct PLASK_API RectangularMeshSmoothGenerator: public RectangularMeshRefinedGenerator<dim> {

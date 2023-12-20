@@ -1204,7 +1204,7 @@ inline void export_base(Class solver) {
                         "Reference wavelength.\n\n"
                         "This is a wavelength at which refractive index is retrieved from the structure.\n"
                         "If this parameter is None, material parameters are computed each time,\n"
-                        "the wavelenght changes even slightly (this is most accurate, but can be very\n"
+                        "the wavelength changes even slightly (this is most accurate, but can be very\n"
                         "inefficient.\n"
                        );
     solver.def_readwrite("update_gain", &Solver::always_recompute_gain,

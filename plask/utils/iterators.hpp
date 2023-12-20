@@ -36,7 +36,7 @@ In such case <code>const ValueT</code> can be a better choice.
 template <typename ValueT, typename ReferenceT = ValueT&>
 struct PolymorphicForwardIteratorImpl {
 
-    // some typedefs compatibile with stl:
+    // some typedefs compatible with stl:
 
     /// Type of objects pointed by the iterator.
     typedef ValueT value_type;
@@ -77,7 +77,7 @@ struct PolymorphicForwardIteratorImpl {
 /**
 Base class for forward, polymorphic iterators implementations which allow to get index of current position.
 
-It is simillar to PolymorphicForwardIteratorImpl but has getIndex method.
+It is similar to PolymorphicForwardIteratorImpl but has getIndex method.
 @tparam ValueT Type to iterate over.
 @tparam ReferenceT Type returned by dereference operation.
 Note that default type is not good if dereference returns temporary object.
@@ -94,7 +94,7 @@ struct PolymorphicForwardIteratorWithIndexImpl: public PolymorphicForwardIterato
 };
 
 /**
- * Polymorphic iterator that wrap another (usually not polimorphic) iterator (of type wrapped_iterator_type).
+ * Polymorphic iterator that wrap another (usually not polymorphic) iterator (of type wrapped_iterator_type).
  */
 template <typename wrapped_iterator_type, typename ValueT, typename ReferenceT = ValueT&>
 struct PolymorphicForwardIteratorWrapperImpl: public PolymorphicForwardIteratorImpl<ValueT, ReferenceT> {
@@ -334,7 +334,7 @@ struct FunctorIndexedIterator: public boost::iterator_facade< FunctorIndexedIter
     /**
      * Construct iterator which point to given in index in given container.
      * @param functor functor
-     * @param index index for which this iterator should refere, argument for functor
+     * @param index index for which this iterator should refer, argument for functor
      */
     FunctorIndexedIterator(FunctorType functor, std::size_t index): functor(functor), index(index) {}
 
@@ -446,7 +446,7 @@ inline FunctorIndexedIterator<Functor> makeFunctorIndexedIterator(Functor f, std
 
 /**
  * ReindexedContainer instantiation is class which objects have reference to original container and operator[].
- * All calls to operator[] are delegated to original container, but argument of call is chenged (reindexed) using formula: firstIndex + given_index * delta
+ * All calls to operator[] are delegated to original container, but argument of call is changed (reindexed) using formula: firstIndex + given_index * delta
  * where:
  * - given_index is call parameter,
  * - firstIndex and delta are paremeters stored in ReindexedContainer.
