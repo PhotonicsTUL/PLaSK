@@ -40,7 +40,7 @@ void checkCompositionSimilarity(const Material::Composition& material1compositio
 
 MaterialsDB::MixedCompositionOnlyFactory::MixedCompositionOnlyFactory(shared_ptr<const MaterialConstructor> constructor, const Material::Composition& material1composition, const Material::Composition& material2composition, double shape)
     : MaterialsDB::MixedCompositionFactory::MixedCompositionFactory(constructor), material1composition(material1composition), material2composition(material2composition), shape(shape) {
-    //check if compositions are fine and simillar:
+    //check if compositions are fine and similar:
     checkCompositionSimilarity(material1composition, material2composition);
     checkCompositionSimilarity(material2composition, material1composition);
     Material::completeComposition(material1composition);

@@ -16,7 +16,7 @@
 #ifndef NOMINMAX
     #define NOMINMAX    //prevents windows.h from defining min, max macros, see http://stackoverflow.com/questions/1904635/warning-c4003-and-errors-c2589-and-c2059-on-x-stdnumeric-limitsintmax
 #endif
-#include <windows.h>    //we include whole windows.h, as plask/minimal_windows.h is not enought for gui_main
+#include <windows.h>    //we include whole windows.h, as plask/minimal_windows.h is not enough for gui_main
 #pragma pop_macro("NOMINMAX")
 #endif
 

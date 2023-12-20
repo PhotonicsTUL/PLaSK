@@ -45,7 +45,7 @@ struct PLASK_SOLVER_API Forward1D {
     Forward1D(Forward1D&& old);
     /// Assignment operator
     Forward1D& operator=(Forward1D&& old);
-    /** Init transfrom
+    /** Init transform
      * \param strid data stride
      * \param n size of a single array
      * \param symmetry symmetry of the transform
@@ -76,7 +76,7 @@ struct PLASK_SOLVER_API Forward2D {
     Forward2D(Forward2D&& old);
     /// Assignment operator
     Forward2D& operator=(Forward2D&& old);
-    /** Init transfrom
+    /** Init transform
      * \param strid data stride
      * \param n1,n2 dimensions of a single array
      * \param symmetry1,symmetry2 symmetry of the transform
@@ -108,7 +108,7 @@ struct PLASK_SOLVER_API Backward1D {
     Backward1D(Backward1D&& old);
     /// Assignment operator
     Backward1D& operator=(Backward1D&& old);
-    /** Init transfrom
+    /** Init transform
      * \param strid data stride
      * \param n size of a single array
      * \param symmetry symmetry of the transform
@@ -139,7 +139,7 @@ struct PLASK_SOLVER_API Backward2D {
     Backward2D(Backward2D&& old);
     /// Assignment operator
     Backward2D& operator=(Backward2D&& old);
-    /** Init transfrom
+    /** Init transform
      * \param strid data stride
      * \param n1,n2 dimensions of a single array
      * \param symmetry1,symmetry2 symmetry of the transform

@@ -22,7 +22,7 @@ namespace plask {
  * Rectangular mesh which uses (and indexes) only chosen elements and all nodes in their corners.
  *
  * Objects of this class can be constructed from instences of full rectangular mesh (RectangularMaskedMesh2D)
- * and they can use the same boundary conditions (BoundaryConditions instance for full mesh accepts also objets of this class).
+ * and they can use the same boundary conditions (BoundaryConditions instance for full mesh accepts also objects of this class).
  * Interpolation methods return NaN-s for all elements which have not been chosen.
  */
 struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
@@ -257,7 +257,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
     };  // struct ElementMesh
 
     /**
-     * Construct empty/unitialized mesh. One should call reset() or selectAll() method before using this.
+     * Construct empty/uninitialized mesh. One should call reset() or selectAll() method before using this.
      */
     RectangularMaskedMesh2D() = default;
 
@@ -531,7 +531,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
 
   protected:  // boundaries code:
 
-    // Common code for: left, right, bottom, top boundries:
+    // Common code for: left, right, bottom, top boundaries:
     template <int CHANGE_DIR>
     struct BoundaryIteratorImpl: public plask::BoundaryNodeSetImpl::IteratorImpl {
 

@@ -28,7 +28,7 @@ struct DataSourceImpl {
     static_assert(propertyType != SINGLE_VALUE_PROPERTY, "space change filter data sources can't be use with single value properties (it can be use only with fields properties)");
 };
 
-//This class is simillar to field provider, but in each point it returns optional value
+//This class is similar to field provider, but in each point it returns optional value
 template <typename PropertyT, typename OutputSpaceT, typename... ExtraArgs>
 class DataSourceImpl<PropertyT, FIELD_PROPERTY, OutputSpaceT, VariadicTemplateTypesHolder<ExtraArgs...>>
 //: public FieldProvider<plask::optional<typename PropertyAt<PropertyT, OutputSpaceType>::ValueType>, OutputSpaceType, ExtraArgs...>    //inharistance only for change signal, not neccessery
@@ -60,7 +60,7 @@ public:
     typedef typename PropertyAt<PropertyT, OutputSpaceType>::ValueType ValueType;
 
     /*
-     * Check if this source can provide value for given point and eventualy return this value.
+     * Check if this source can provide value for given point and eventually return this value.
      * @param p point (in outer space coordinates)
      * @param extra_args
      * @param method interpolation method to use
@@ -89,7 +89,7 @@ private:
 
 };
 
-//This class is simillar to field provider, but in each point it returns optional value
+//This class is similar to field provider, but in each point it returns optional value
 template <typename PropertyT, typename OutputSpaceT, typename... ExtraArgs>
 class DataSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, OutputSpaceT, VariadicTemplateTypesHolder<ExtraArgs...>>
 //: public FieldProvider<plask::optional<typename PropertyAt<PropertyT, OutputSpaceType>::ValueType>, OutputSpaceType, ExtraArgs...>    //inharistance only for change signal, not neccessery
@@ -122,7 +122,7 @@ public:
     typedef typename PropertyAt<PropertyT, OutputSpaceType>::ValueType ValueType;
 
     /*
-     * Check if this source can provide value for given point and eventualy return this value.
+     * Check if this source can provide value for given point and eventually return this value.
      * @param p point (in outer space coordinates)
      * @param extra_args
      * @param method interpolation method to use
@@ -272,7 +272,7 @@ struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
     }
 
     /**
-     * Find region that has @p p inside bouding-box and fulfill predicate @p pred.
+     * Find region that has @p p inside bounding-box and fulfill predicate @p pred.
      */
     template <typename Predicate>
     const Region* findRegion(const OutVec& p, Predicate pred) const {

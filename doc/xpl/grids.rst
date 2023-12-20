@@ -230,7 +230,7 @@ Possible <generator> contents for different types and methods
 
    .. xml:tag:: <boundaries/> [in ordered, regular generator]
 
-      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinous material parameters. Defaults to ‘no’. (bool)
+      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinuous material parameters. Defaults to ‘no’. (bool)
 
 
 .. xml:tag:: <generator type="ordered" method="simple"> [ordered, simple]
@@ -239,7 +239,7 @@ Possible <generator> contents for different types and methods
 
    .. xml:tag:: <boundaries/> [in ordered, simple generator]
 
-      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinous material parameters. Defaults to ‘no’. (bool)
+      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinuous material parameters. Defaults to ‘no’. (bool)
 
 
 .. xml:tag:: <generator type="ordered" method="smooth"> [ordered, smooth]
@@ -250,7 +250,7 @@ Possible <generator> contents for different types and methods
 
       .. xml:tag:: <steps/> [in ordered, smooth generator]
 
-         Parametrs specifying element size.
+         Parameters specifying element size.
 
          :attr small: Maximum size of the smallest elements near objects edges.
 
@@ -340,7 +340,7 @@ Possible <generator> contents for different types and methods
 
    .. xml:tag:: <boundaries/> [in rectangular2d, regular generator]
 
-      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinous material parameters. Defaults to ‘no’. (bool)
+      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinuous material parameters. Defaults to ‘no’. (bool)
 
 
 .. xml:tag:: <generator type="rectangular2d" method="simple"> [rectangular2d, simple]
@@ -349,7 +349,7 @@ Possible <generator> contents for different types and methods
 
    .. xml:tag:: <boundaries/> [in rectangular2d, simple generator]
 
-      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinous material parameters. Defaults to ‘no’. (bool)
+      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinuous material parameters. Defaults to ‘no’. (bool)
 
 
 .. xml:tag:: <generator type="rectangular2d" method="smooth"> [rectangular2d, smooth]
@@ -486,7 +486,7 @@ Possible <generator> contents for different types and methods
 
    .. xml:tag:: <boundaries/> [in rectangular3d, regular generator]
 
-      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinous material parameters. Defaults to ‘no’. (bool)
+      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinuous material parameters. Defaults to ‘no’. (bool)
 
 
 .. xml:tag:: <generator type="rectangular3d" method="simple"> [rectangular3d, simple]
@@ -495,7 +495,7 @@ Possible <generator> contents for different types and methods
 
    .. xml:tag:: <boundaries/> [in rectangular3d, simple generator]
 
-      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinous material parameters. Defaults to ‘no’. (bool)
+      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinuous material parameters. Defaults to ‘no’. (bool)
 
 
 .. xml:tag:: <generator type="rectangular3d" method="smooth"> [rectangular3d, smooth]

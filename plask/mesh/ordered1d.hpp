@@ -56,7 +56,7 @@ public:
     /// Should a warning be issued if the points are too close
     bool warn_too_close;
 
-    /// Maximum difference between the points, so they are threated as one
+    /// Maximum difference between the points, so they are treated as one
     constexpr static double MIN_DISTANCE = 1e-6; // 1 picometer
 
     /// Type of points in this mesh.

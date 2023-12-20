@@ -73,7 +73,7 @@ inline bool getIndexesInBounds(std::size_t& begInd, std::size_t& endInd, const M
     if(box_lower > box_upper) return false;
     begInd = axis.findIndex(box_lower);
     endInd = axis.findIndex(box_upper);
-    if (endInd != axis.size() && axis[endInd] == box_upper) ++endInd;    // endInd is exluded
+    if (endInd != axis.size() && axis[endInd] == box_upper) ++endInd;    // endInd is excluded
     return begInd != endInd;
 }
 

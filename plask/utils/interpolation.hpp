@@ -35,7 +35,7 @@ namespace plask { namespace interpolation {
 
     /**
      * Calculate blilinear interpolation (in 2D space).
-     * @param p_l, p_r, p_b, p_t left, right, bottom, top postions, must fulfill: p_l < p_r, p_b < p_t
+     * @param p_l, p_r, p_b, p_t left, right, bottom, top positions, must fulfill: p_l < p_r, p_b < p_t
      * @param d_lb, d_rb, d_rt, d_lt value in points: left-bottom, right-bottom, right-top, left-top
      * @param p_x, p_y requested point
      * @return interpolated value, calculated for requested point @a p_x, @a p_y
@@ -53,7 +53,7 @@ namespace plask { namespace interpolation {
 
     /**
      * Calculate trililinear interpolation (in 3D space).
-     * @param p_l, p_r, p_b, p_t left, right, bottom, top postions, must fulfill: p_l < p_r, p_b < p_t
+     * @param p_l, p_r, p_b, p_t left, right, bottom, top positions, must fulfill: p_l < p_r, p_b < p_t
      * @param p_lo, p_hi positions of points in thirth direction, must fulfill p_lo < p_hi
      * @param lo_d_lb, lo_d_rb, lo_d_rt, lo_d_lt value in points: lo-left-bottom, lo-right-bottom, lo-right-top, lo-left-top
      * @param hi_d_lb, hi_d_rb, hi_d_rt, hi_d_lt value in points: hi-left-bottom, hi-right-bottom, hi-right-top, hi-left-top

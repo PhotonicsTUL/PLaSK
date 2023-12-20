@@ -89,7 +89,7 @@ We have also added a substrate on the bottom side. It will be also used as the b
      </stack>
    </cylindrical2d>
 
-In this geometry we have a thicker substrate and and a copper heatsink. The new tag ``<again>`` tells PLaSK to simply repeat the whole stack named ``VCSEL``. This geometry has it's own coordinates with the origin located at it's bottom left corner, therefore adding ``<zero/>`` at a corresponding location in the ``GeoE`` makes these geometries compatible. Mind also that we have added a top contact once again to match it with the electrical geometry. However, istead of using the shelf with a gap, we have simply specified horizontal alignment ot the object individually (by putting it in the ``<item>`` and specifying the right edge position).
+In this geometry we have a thicker substrate and and a copper heatsink. The new tag ``<again>`` tells PLaSK to simply repeat the whole stack named ``VCSEL``. This geometry has it's own coordinates with the origin located at it's bottom left corner, therefore adding ``<zero/>`` at a corresponding location in the ``GeoE`` makes these geometries compatible. Mind also that we have added a top contact once again to match it with the electrical geometry. However, instead of using the shelf with a gap, we have simply specified horizontal alignment ot the object individually (by putting it in the ``<item>`` and specifying the right edge position).
 
 We need to define another geometry for optical calculations:
 

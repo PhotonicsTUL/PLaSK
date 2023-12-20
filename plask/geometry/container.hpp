@@ -109,7 +109,7 @@ template <int dim> struct PLASK_API GeometryObjectContainer : public GeometryObj
     void disconnectOnChildChanged(Translation<dim>& child);
 
     /**
-     * Get phisicaly stored children (with translations).
+     * Get physically stored children (with translations).
      * @return vector of translations object, each include children
      */
     const TranslationVector& getChildrenVector() const { return children; }

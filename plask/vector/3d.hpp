@@ -136,7 +136,7 @@ struct Vec<3,T> {
     /**
      * Construct vector with components read from input iterator (including C array).
      * @param inputIt input iterator with minimum 3 objects available
-     * @tparam InputIteratorType input iterator type, must allow for postincrementation and derefrence operation
+     * @tparam InputIteratorType input iterator type, must allow for postincrementation and dereference operation
      */
     template <typename InputIteratorType>
     static inline Vec<3,T> fromIterator(InputIteratorType inputIt) {

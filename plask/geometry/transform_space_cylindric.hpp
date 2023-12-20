@@ -30,7 +30,7 @@ struct PLASK_API Revolution : public GeometryObjectTransformSpace<3, 2> {
 
     /**
      * @param child object to revolve
-     * @param auto_clip if false child must have getBoundingBox().lower.tran() >= 0, if true it will be cliped
+     * @param auto_clip if false child must have getBoundingBox().lower.tran() >= 0, if true it will be clipped
      */
     Revolution(shared_ptr<ChildType> child = shared_ptr<ChildType>(), bool auto_clip = false)
         : GeometryObjectTransformSpace<3, 2>(child),
@@ -38,7 +38,7 @@ struct PLASK_API Revolution : public GeometryObjectTransformSpace<3, 2> {
           rev_min_step_size(PLASK_GEOMETRY_MIN_STEP_SIZE) {
         if (!auto_clip && childIsClipped())
             throw Exception(
-                "Child of Revolution must have bouding box with possitive tran. coordinates (when auto clipping is "
+                "Child of Revolution must have bounding box with positive tran. coordinates (when auto clipping is "
                 "off).");
     }
 

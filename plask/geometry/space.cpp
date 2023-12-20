@@ -47,7 +47,7 @@ void Geometry::setEdges(const std::function<plask::optional<std::string>(const s
         try {
             v_lo = borderValuesGetter(axis_name + "-lo");
             if ((v = borderValuesGetter(alternativeDirectionName(dir_nr, 0)))) {
-                if (v_lo) throw BadInput("setEdges", "Egde specified by both '{0}-lo' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 0));
+                if (v_lo) throw BadInput("setEdges", "Edge specified by both '{0}-lo' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 0));
                 else v_lo = v;
             }
         } catch (...) {
@@ -57,7 +57,7 @@ void Geometry::setEdges(const std::function<plask::optional<std::string>(const s
         try {
             v_hi = borderValuesGetter(axis_name + "-hi");
             if ((v = borderValuesGetter(alternativeDirectionName(dir_nr, 1)))) {
-                if (v_hi) throw BadInput("setEdges", "Egde specified by both '{0}-hi' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 1));
+                if (v_hi) throw BadInput("setEdges", "Edge specified by both '{0}-hi' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 1));
                 else v_hi = v;
             }
         } catch (...) {
@@ -105,7 +105,7 @@ void Geometry::storeEdgeInXML(XMLWriter::Element &dest_xml_object, Geometry::Dir
 template <int dim>
 void GeometryD<dim>::onChildChanged(const GeometryObject::Event &evt) {
     if (evt.isResize()) cachedBoundingBox = getChild()->getBoundingBox();
-    //comipler should optimized out dim == 2 condition checking
+    //compiler should optimized out dim == 2 condition checking
     fireChanged(evt.originalSource(), dim == 2 ? evt.flagsForParentWithChildrenWasChangedInformation() : evt.flagsForParent());
 }
 

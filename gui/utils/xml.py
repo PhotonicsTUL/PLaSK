@@ -135,7 +135,7 @@ def get_text_unindent(element):
 
 def make_indented_text(text, level):
     """Make text element addind indentation
-    :param text: Tekst to insert into XML
+    :param text: Text to insert into XML
     :param level: Tag level
     :return: read text or CDATA
     """

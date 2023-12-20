@@ -239,7 +239,7 @@ void ImpedanceTransfer::determineFields()
             // E0 = y1 * H0 + y2 * Hd
             // for (int i = 0; i < N; i++)
             //     fields[n].E0[i] = y1[i] * fields[n].H0[i]  +  y2[i] * fields[n].Hd[i];
-            // However in some cases this can make the electric field discontinous.
+            // However in some cases this can make the electric field discontinuous.
         }
         if (start != end) {
             // Zero electric field at the end

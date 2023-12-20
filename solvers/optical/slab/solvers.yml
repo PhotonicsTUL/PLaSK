@@ -22,7 +22,7 @@
       unit: nm
       help: >
         This is a wavelength at which refractive index is retrieved from the structure. If this parameter
-        is None, material parameters are computed each time, the wavelenght changes even slightly (this
+        is None, material parameters are computed each time, the wavelength changes even slightly (this
         is most accurate, but can be very inefficient.
     - &update-gain
       attr: update-gain
@@ -651,7 +651,7 @@
       type: float
       help: >
         This is a wavelength at which refractive index is retrieved from the structure. If this parameter
-        is None, material parameters are computed each time, the wavelenght changes even slightly (this
+        is None, material parameters are computed each time, the wavelength changes even slightly (this
         is most accurate, but can be very inefficient.
     - *update-gain
     - attr: domain

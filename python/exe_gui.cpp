@@ -359,7 +359,7 @@ int system_main(int argc, const system_char* argv[]) {
     // plask::python::createPythonLogger();
     plask::createDefaultLogger();
 
-    // Initalize python and load the plask module
+    // Initialize python and load the plask module
     try {
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(SHOW_SPLASH)
         py::scope _plask = initPlask(argc, argv);

@@ -140,7 +140,7 @@ void register_geometry_container_stack()
         u8"                      ``#center``, and ``#`` where `#` is the horizontal axis\n"
         u8"                      name. The corresponding value is the position of the given\n"
         u8"                      edge/center/origin of the item. This alignment can be\n"
-        u8"                      overriden while adding the objects to the stack.\n"
+        u8"                      overridden while adding the objects to the stack.\n"
         u8"                      By default the alignment is ``{'left': 0}``.\n"
         u8"See also:\n"
         u8"    Function :func:`plask.geometry.Stack2D`.\n", py::no_init)
@@ -184,7 +184,7 @@ void register_geometry_container_stack()
             "set_zero_below", &StackContainer<2>::setZeroBefore, (py::arg("item"), py::arg("path")=py::object()),
              u8"Set zero below the specified item.\n\n"
              u8"This method shifts the local coordinates of the stack vertically. The vertical\n"
-             u8"coordinate of the stack origin is placed at the bootom edge of the specified\n"
+             u8"coordinate of the stack origin is placed at the bottom edge of the specified\n"
              u8"item.\n\n"
              u8"Args:\n"
              u8"    item: Stack item which lower edge should lie at height 0.\n"
@@ -231,7 +231,7 @@ void register_geometry_container_stack()
         u8"                       ``#center``, and ``#`` where `#` are the horizontal axis\n"
         u8"                       names. The corresponding value is the position of the\n"
         u8"                       given edge/center/origin of the item. This alignment can\n"
-        u8"                       be overriden while adding the objects to the stack.\n"
+        u8"                       be overridden while adding the objects to the stack.\n"
         u8"                       By default the alignment is ``{'left': 0, 'back': 0}``.\n"
         u8"See also:\n"
         u8"    Function :func:`plask.geometry.Stack3D`.\n", py::no_init)
@@ -281,7 +281,7 @@ void register_geometry_container_stack()
             "set_zero_below", &StackContainer<3>::setZeroBefore, (py::arg("item"), py::arg("path")=py::object()),
              u8"Set zero below the specified item.\n\n"
              u8"This method shifts the local coordinates of the stack vertically. The vertical\n"
-             u8"coordinate of the stack origin is placed at the bootom edge of the specified\n"
+             u8"coordinate of the stack origin is placed at the bottom edge of the specified\n"
              u8"item.\n\n"
              u8"Args:\n"
              u8"    item: Stack item which lower edge should lie at height 0.\n"
@@ -315,7 +315,7 @@ void register_geometry_container_stack()
                       py::make_setter(&StackContainer<3>::default_aligner, py::return_value_policy<py::return_by_value>()), u8"Default alignment for new stack items")
     ;
 
-    // Multi-stack constainer
+    // Multi-stack container
 
     py::class_<MultiStackContainer<plask::StackContainer<2>>, shared_ptr<MultiStackContainer<plask::StackContainer<2>>>, py::bases<StackContainer<2>>, boost::noncopyable>("MultiStack2D",
         u8"MultiStack2D(repeat=1, shift=0, **alignment)\n\n"
@@ -331,7 +331,7 @@ void register_geometry_container_stack()
         u8"                      ``#center``, and ``#`` where `#` is the horizontal axis\n"
         u8"                      name. The corresponding value is the position of the given\n"
         u8"                      edge/center/origin of the item. This alignment can be\n"
-        u8"                      overriden while adding the objects to the stack.\n"
+        u8"                      overridden while adding the objects to the stack.\n"
         u8"                      By default the alignment is ``{'left': 0}``.\n"
         u8"See also:\n"
         u8"   Function :func:`plask.geometry.Stack2D`.\n", py::no_init)
@@ -354,7 +354,7 @@ void register_geometry_container_stack()
         u8"                       ``#center``, and ``#`` where `#` are the horizontal axis\n"
         u8"                       names. The corresponding value is the position of the\n"
         u8"                       given edge/center/origin of the item. This alignment can\n"
-        u8"                       be overriden while adding the objects to the stack.\n"
+        u8"                       be overridden while adding the objects to the stack.\n"
         u8"                       By default the alignment is ``{'left': 0, 'back': 0}``.\n"
         u8"See also:\n"
         u8"   Function :func:`plask.geometry.Stack3D`.\n", py::no_init)

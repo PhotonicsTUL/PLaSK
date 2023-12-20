@@ -282,7 +282,7 @@ inline long double fma(long double to_mult_1, long double to_mult_2, long double
 #ifdef __GNUC__
 /**
  * Array type for SIMD operations. It contains two 64-bit doubles.
- * TODO: not portable, make falback to struct{double,double}
+ * TODO: not portable, make fallback to struct{double,double}
  */
 typedef double v2double __attribute__((vector_size(16)));
 /// View allowing access to elements of v2double
@@ -290,7 +290,7 @@ typedef union { v2double simd; double v[2]; } v2double_view;
 #endif
 
 
-// Total order double comparision with NaN greater than all other numbers:
+// Total order double comparison with NaN greater than all other numbers:
 
 /**
  * Check if two doubles are equals.

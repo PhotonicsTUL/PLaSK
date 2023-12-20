@@ -352,7 +352,7 @@ extern PLASK_PYTHON_API OmpNestLock python_omp_lock;
 // Virtual functions overriding
 
 /**
- * Base class for methods that can be overriden form Python
+ * Base class for methods that can be overridden form Python
  */
 template <typename T>
 struct Overriden
@@ -441,7 +441,7 @@ struct Overriden
 // ----------------------------------------------------------------------------------------------------------------------
 // Helper for XML reads
 
-/// Evalueate common Python types
+/// Evaluate common Python types
 inline static py::object eval_common_type(const std::string& value) {
     if (value == "" || value == "None") return py::object();
     if (value == "yes" || value == "true" || value == "True") return py::object(true);

@@ -236,7 +236,7 @@ void register_geometry_path()
              u8"                     already present in the path.\n"
              u8"    subtree (Subtree): Subtree to add to the path. It must somehow be connected\n"
              u8"                       with it.\n"
-             u8"    path (Path): Another path to join with the exising one. There must be some\n"
+             u8"    path (Path): Another path to join with the existing one. There must be some\n"
              u8"                 connection between the two paths.\n"
              u8"    hints (PathHint, optional): Optional hints used for resolving ambiguities.\n"
             )
@@ -251,7 +251,7 @@ void register_geometry_path()
 
     py::class_<GeometryObject::Subtree, shared_ptr<GeometryObject::Subtree>>("Subtree", u8"A selected part of a geometry tree.", py::no_init)
         .def("__nonzero__", &Subtree__nonzero__)
-        .add_property("brached", &GeometryObject::Subtree::hasBranches, u8"Bool indicating whether the subtree has more than one branch.")
+        .add_property("branched", &GeometryObject::Subtree::hasBranches, u8"Bool indicating whether the subtree has more than one branch.")
         .add_property("last_path", &GeometryObject::Subtree::getLastPath, u8"Last (topmost) branch of the subtree.")
         .def("__eq__", __is__<GeometryObject::Subtree>)
         .def("__hash__", __hash__<GeometryObject::Subtree>)

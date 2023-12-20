@@ -65,7 +65,7 @@ struct PLASK_SOLVER_API DynamicThermalFem3DSolver: public FemSolverWithMaskedMes
     double methodparam;   ///< Initial parameter determining the calculation method (0.5 - Crank-Nicolson, 0 - explicit, 1 - implicit)
     double timestep;       ///< Time step in nanoseconds
     double elapstime;    ///< Calculations elapsed time
-    bool lumping;          ///< Wheter use lumping for matrices?
+    bool lumping;          ///< Whether use lumping for matrices?
     size_t rebuildfreq;    ///< Frequency of mass matrix rebuilding
     size_t logfreq;        ///< Frequency of iteration progress reporting
 

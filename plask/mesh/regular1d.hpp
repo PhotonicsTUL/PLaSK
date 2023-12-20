@@ -58,7 +58,7 @@ class PLASK_API RegularAxis: public MeshAxis {
         lo(src.lo), _step(src._step), points_count(src.points_count) {}
 
     /**
-     * Construct mesh with given paramters.
+     * Construct mesh with given parameters.
      * @param first coordinate of first point in mesh
      * @param last coordinate of last point in mesh
      * @param points_count number of points in mesh

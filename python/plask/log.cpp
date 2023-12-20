@@ -438,7 +438,7 @@ void register_python_log()
             u8"Print log message into a specified log level.\n\n"
             u8"Args:\n"
             u8"    level (str): Log level to print the message to.\n"
-            u8"    args: Items to print. They are concatenated togeter and separated by space,\n"
+            u8"    args: Items to print. They are concatenated together and separated by space,\n"
             u8"          similarly to the ``print`` function.\n"
            );
 

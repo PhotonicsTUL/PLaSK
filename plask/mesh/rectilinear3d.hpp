@@ -220,12 +220,12 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
         typedef IndexedIterator<const RectilinearMesh3D, Element, deref> const_iterator;
         typedef const_iterator iterator;
 
-        /// Mesh which elements will be accessable by this.
+        /// Mesh which elements will be accessible by this.
         const RectilinearMesh3D* mesh;
 
         /**
          * Create wrapper which allow to access to FEM-like elements of given @p mesh.
-         * @param mesh mesh which elements will be accessable by this
+         * @param mesh mesh which elements will be accessible by this
          */
         Elements(const RectilinearMesh3D* mesh): mesh(mesh) {}
 
@@ -732,7 +732,7 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
     }
 
     /**
-     * Conver element index to mesh index of bottom, left, front element corner.
+     * Convert element index to mesh index of bottom, left, front element corner.
      * @param element_index index of element, from 0 to getElementsCount()-1
      * @return mesh index
      */
@@ -762,7 +762,7 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
     }
 
     /**
-     * Conver mesh index of bottom, left, front element corner to this element index.
+     * Convert mesh index of bottom, left, front element corner to this element index.
      * @param mesh_index_of_el_bottom_left mesh index
      * @return index of the element, from 0 to getElementsCount()-1
      */

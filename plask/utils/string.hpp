@@ -90,7 +90,7 @@ PLASK_API std::pair<std::string, std::string> splitString2(const std::string& to
  * Calculate copy of string @p str without some characters.
  * @param str string to filter
  * @param pred predictad which return @c true for chars which should stay, and @c false for char which should be removed
- * @return copy of @a str wich contains only chars for which Pred is @c true
+ * @return copy of @a str which contains only chars for which Pred is @c true
  * @tparam Pred functor which take one argument (char) and return bool
  */
 template <typename Pred>
@@ -103,7 +103,7 @@ std::string filterChars(const std::string& str, Pred pred) {
 /**
  * Calculate copy of string @p str with some characters replaced by other.
  * @param str string
- * @param repl functor which return new character or string for each inpu character
+ * @param repl functor which return new character or string for each input character
  * @return copy of @a str witch replaced all characters by results of @p repl
  * @tparam CharReplacer functor which take one argument (char) and return char or string
  */
@@ -143,8 +143,8 @@ typedef boost::tokenizer< boost::escaped_list_separator<char> > split_esc_tokeni
  * Split @p str to sequence of tokens. White spaces on beginning and ending of each token are removed.
  * @param str input string
  * @param splitter character which separate tokents, typically ',' or ';'
- * @param quote_char the character to use for the quote, alow to insert separate character in token (if token is quoted)
- * @param esc_char escape character which alow to insert separate character in token, typically '\\'
+ * @param quote_char the character to use for the quote, allow to insert separate character in token (if token is quoted)
+ * @param esc_char escape character which allow to insert separate character in token, typically '\\'
  * @return tokenizer which allow to iterate over tokens
  */
 PLASK_API split_esc_tokenizer splitEscIterator(const std::string& str, char splitter, char quote_char = '\'', char esc_char = '\\');
@@ -153,8 +153,8 @@ PLASK_API split_esc_tokenizer splitEscIterator(const std::string& str, char spli
  * Split @p str to sequence of tokens. White spaces on beginning and ending of each token are removed.
  * @param str input string
  * @param splitter character which separate tokents, typically ',' or ';'
- * @param quote_char the character to use for the quote also alow to insert separate character in token
- * @param esc_char escape character which alow to insert separate character in token
+ * @param quote_char the character to use for the quote also allow to insert separate character in token
+ * @param esc_char escape character which allow to insert separate character in token
  * @return sequence of token
  */
 PLASK_API std::vector<std::string> splitEsc(const std::string& str, char splitter, char quote_char = '\'', char esc_char = '\\');

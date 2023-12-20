@@ -76,10 +76,10 @@ public:
      */
     DynamicLibrary();
 
-    /// Coping of libary is not alowed
+    /// Coping of library is not allowed
     DynamicLibrary(const DynamicLibrary&) = delete;
 
-    /// Coping of libary is not alowed
+    /// Coping of library is not allowed
     DynamicLibrary& operator=(const DynamicLibrary &) = delete;
 
     /**
@@ -133,7 +133,7 @@ public:
     /**
      * Get symbol from library.
      *
-     * Throw excpetion if library is not opened.
+     * Throw exception if library is not opened.
      * @param symbol_name name of symbol to get
      * @return symbol with given name, or @c nullptr if there is no symbol with given name
      */
@@ -142,7 +142,7 @@ public:
     /**
      * Get symbol from library and cast it to given type.
      *
-     * Throw excpetion if library is not opened.
+     * Throw exception if library is not opened.
      * @param symbol_name name of symbol to get
      * @return symbol with given name casted to given type, or @c nullptr if there is no symbol with given name
      * @tparam SymbolType required type to which symbol will be casted
@@ -160,7 +160,7 @@ public:
     /**
      * Get symbol from library.
      *
-     * Throw excpetion if library is not opened or if there is no symbol with given name.
+     * Throw exception if library is not opened or if there is no symbol with given name.
      * @param symbol_name name of symbol to get
      * @return symbol with given name
      */
@@ -169,7 +169,7 @@ public:
     /**
      * Get symbol from library and cast it to given type.
      *
-     * Throw excpetion if library is not opened or if there is no symbol with given name.
+     * Throw exception if library is not opened or if there is no symbol with given name.
      * @param symbol_name name of symbol to get
      * @return symbol with given name, casted to given type
      * @tparam SymbolType required type to which symbol will be casted
@@ -196,7 +196,7 @@ public:
     /**
      * Release ownership over holded system library handle.
      * This does not close the library.
-     * @return system library handle which ownership has been relased
+     * @return system library handle which ownership has been released
      *          (on windows it can be casted to HINSTANCE)
      */
     handle_t release();

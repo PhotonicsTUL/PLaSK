@@ -310,7 +310,7 @@ protected:
     /**
      * Check if this mesh and @p to_compare represent the same sequence of points (have exactly the same points in the same order).
      *
-     * Default implementation naively compares seqences of points, so its pesimistic complexity is O(size()).
+     * Default implementation naively compares sequences of points, so its pesimistic complexity is O(size()).
      * However subclasses can use extra optimizations.
      * @param to_compare mesh to compare
      * @return @p to_compare represent the same sequence of points as this

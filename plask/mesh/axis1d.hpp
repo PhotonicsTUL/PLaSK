@@ -29,10 +29,10 @@ class PLASK_API MeshAxis: public MeshD<1> {
 public:
 
     /**
-     * Create new mesh wich has copy of data included in @c this.
+     * Create new mesh which has copy of data included in @c this.
      *
-     * By default RectangularMesh is used for result, but subclasses can use another types for less memory usage or better performence.
-     * @return new mesh wich has copy of data included in @c this
+     * By default RectangularMesh is used for result, but subclasses can use another types for less memory usage or better performance.
+     * @return new mesh which has copy of data included in @c this
      */
     virtual shared_ptr<MeshAxis> clone() const;
 

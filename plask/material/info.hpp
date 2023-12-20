@@ -15,7 +15,7 @@
 #define PLASK__MATERIAL_INFO_H
 
 /** @file
-This file contains classes which stores meta-informations about materials.
+This file contains classes which stores meta-information about materials.
 */
 
 #include <string>
@@ -32,9 +32,9 @@ This file contains classes which stores meta-informations about materials.
 namespace plask {
 
 /**
- * Collect meta-informations about material.
+ * Collect meta-information about material.
  *
- * It also namespace for all class connected with collecting meta-informations about materials, like material informations database, etc.
+ * It also namespace for all class connected with collecting meta-information about materials, like material information database, etc.
  */
 struct PLASK_API MaterialInfo {
 
@@ -270,9 +270,9 @@ struct PLASK_API MaterialInfo {
   public:
 
     /**
-     * Override all information about this by informations from @p to_override.
+     * Override all information about this by information from @p to_override.
      *
-     * It can be used to override the information in this by its subclass informations.
+     * It can be used to override the information in this by its subclass information.
      * @param to_override
      */
     void override(const MaterialInfo &to_override);
@@ -331,8 +331,8 @@ struct PLASK_API MaterialInfo {
       public:
 
         /**
-         * Get default database of materials' meta-informations.
-         * @return default database of materials' meta-informations
+         * Get default database of materials' meta-information.
+         * @return default database of materials' meta-information
          */
         static DB& getDefault();
 
@@ -354,7 +354,7 @@ struct PLASK_API MaterialInfo {
         }
 
         /**
-         * Add meta-informations about material to database.
+         * Add meta-information about material to database.
          * @param materialName name of material to add
          * @param parentMaterial parent material, from which all properties all inherited (some may be overwritten)
          * @return material info object which allow to fill detailed information
@@ -362,54 +362,54 @@ struct PLASK_API MaterialInfo {
         MaterialInfo& add(const std::string& materialName, const std::string& parentMaterial);
 
         /**
-         * Add meta-informations about material to database.
+         * Add meta-information about material to database.
          * @param materialName name of material to add
          * @return material info object which allow to fill detailed information
          */
         MaterialInfo& add(const std::string& materialName);
 
         /**
-         * Get meta-informations about material from database.
+         * Get meta-information about material from database.
          * @param materialName name of material to get information about
          * @param with_inherited_info if true (default) returned object will consists also with information inherited from parent, grand-parent, etc. materials
-         * @return meta-informations about material with name @p materialName, no value if meta-informations of requested material are not included in data-base
+         * @return meta-information about material with name @p materialName, no value if meta-information of requested material are not included in data-base
          */
         plask::optional<MaterialInfo> get(const std::string& materialName, bool with_inherited_info = true) const;
 
         /**
-         * Get meta-informations about material's property from database.
+         * Get meta-information about material's property from database.
          * @param materialName, propertyName name of material and its property to get information about
          * @param with_inherited_info if true (default) returned object will consists also with information inherited from parent, grand-parent, etc. materials
-         * @return meta-informations about material's property from database, no value if meta-informations of requested material are not included in data-base
+         * @return meta-information about material's property from database, no value if meta-information of requested material are not included in data-base
          */
         plask::optional<MaterialInfo::PropertyInfo> get(const std::string& materialName, PROPERTY_NAME propertyName, bool with_inherited_info = true) const;
 
-        /// iterator over materials' meta-informations
+        /// iterator over materials' meta-information
         typedef std::map<std::string, MaterialInfo>::iterator iterator;
 
-        /// const iterator over materials' meta-informations
+        /// const iterator over materials' meta-information
         typedef std::map<std::string, MaterialInfo>::const_iterator const_iterator;
 
         /**
-         * Get begin iterator over materials' meta-informations.
+         * Get begin iterator over materials' meta-information.
          * @return begin iterator over  materials' meta-information
          */
         iterator begin() { return materialInfo.begin(); }
 
         /**
-         * Get const begin iterator over materials' meta-informations.
+         * Get const begin iterator over materials' meta-information.
          * @return const begin iterator over  materials' meta-information
          */
         const_iterator begin() const { return materialInfo.begin(); }
 
         /**
-         * Get end iterator over materials' meta-informations.
+         * Get end iterator over materials' meta-information.
          * @return end iterator over  materials' meta-information
          */
         iterator end() { return materialInfo.end(); }
 
         /**
-         * Get const end iterator over materials' meta-informations.
+         * Get const end iterator over materials' meta-information.
          * @return const end iterator over  materials' meta-information
          */
         const_iterator end() const { return materialInfo.end(); }

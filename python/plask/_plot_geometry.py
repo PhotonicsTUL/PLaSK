@@ -108,7 +108,7 @@ class ColorFromDict:
                                      plotted. It is used for retrieving background
                                      color.
         tint_doping: Automatically add tint to doped materials.
-        tertiary: Autmatically create combinations for these tertiary materials.
+        tertiary: Automatically create combinations for these tertiary materials.
     """
 
     DOPING_TINTS = dict(N=array([0.0, 0.2, 0.2]), P=array([0.2, 0.0, 0.0]))

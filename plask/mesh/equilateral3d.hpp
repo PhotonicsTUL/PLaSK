@@ -25,7 +25,7 @@ namespace plask {
 class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
 
   protected:
-    double trans[9];    ///< Transfromation matrix
+    double trans[9];    ///< Transformation matrix
 
   private:
     double inv[9];      ///< Inverse of the transformation matrix
@@ -147,8 +147,8 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
 
     /**
      * Transform point in the real coordinates to mesh coordinates
-     * \param point point to transfrom
-     * \returns transfromed coordinates
+     * \param point point to transform
+     * \returns transformed coordinates
      */
     Vec<3,double> toMeshCoords(Vec<3,double> point) const {
         return Vec<3,double>(inv[0] * point.c0 + inv[1] * point.c1 + inv[2] * point.c2,
@@ -158,8 +158,8 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
 
     /**
      * Transform point in the real coordinates to mesh coordinates
-     * \param c0,c1,c2 point to transfrom
-     * \returns transfromed coordinates
+     * \param c0,c1,c2 point to transform
+     * \returns transformed coordinates
      */
     Vec<3,double> toMeshCoords(double c0, double c1, double c2) const {
         return Vec<3,double>(inv[0] * c0 + inv[1] * c1 + inv[2] * c2,
@@ -169,8 +169,8 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
 
     /**
      * Transform point in mesh coordinates to the real coordinates
-     * \param coords coordinates to transfrom
-     * \returns transfromed coordinates
+     * \param coords coordinates to transform
+     * \returns transformed coordinates
      */
     inline Vec<3,double> fromMeshCoords(Vec<3,double> coords) const {
         return Vec<3,double>(trans[0] * coords.c0 + trans[1] * coords.c1 + trans[2] * coords.c2,
@@ -180,8 +180,8 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
 
     /**
      * Transform point in mesh coordinates to the real coordinates
-     * \param c0,c1,c2 coordinates to transfrom
-     * \returns transfromed coordinates
+     * \param c0,c1,c2 coordinates to transform
+     * \returns transformed coordinates
      */
     inline Vec<3,double> fromMeshCoords(double c0, double c1, double c2) const {
         return Vec<3,double>(trans[0] * c0 + trans[1] * c1 + trans[2] * c2,

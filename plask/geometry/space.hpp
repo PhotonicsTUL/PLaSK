@@ -120,7 +120,7 @@ struct PLASK_API Geometry : public GeometryObject {
 
     /**
      * Set edges using string value which is gotten from @p borderValuesGetter.
-     * @param borderValuesGetter optionaly return edge strategy string for direction(s) given in argument,
+     * @param borderValuesGetter optionally return edge strategy string for direction(s) given in argument,
      *   argument can be one of: "edges", "planar", "<axis_name>", "<axis_name>-lo", "<axis_name>-hi"
      * @param axesNames name of axes, use to create arguments for @p borderValuesGetter
      * @param materialsDB source of materials
@@ -197,7 +197,7 @@ struct PLASK_API Geometry : public GeometryObject {
 
 /**
  * Base class for all geometry trunks in given space.
- * @tparam dim number of speace dimensions
+ * @tparam dim number of space dimensions
  */
 template <int dim> class PLASK_API GeometryD : public Geometry {
     /// Connection object with child. It is necessary since disconnectOnChileChanged doesn't work
@@ -259,7 +259,7 @@ template <int dim> class PLASK_API GeometryD : public Geometry {
     /**
      * Get child geometry.
      *
-     * Throws excpetion if has no child.
+     * Throws exception if has no child.
      * @return child geometry
      */
     virtual shared_ptr<GeometryObjectD<dim>> getChild() const = 0;
@@ -299,7 +299,7 @@ template <int dim> class PLASK_API GeometryD : public Geometry {
     }
 
     /**
-     * Append all objects from subtree with child (see getChild) of this in root, which fullfil predicate to vector @p
+     * Append all objects from subtree with child (see getChild) of this in root, which fulfill predicate to vector @p
      * dest.
      * @param predicate predicate required to match
      * @param dest destination vector
@@ -636,7 +636,7 @@ template <int dim> class PLASK_API GeometryD : public Geometry {
     //  * \param object geometry object within the geometry tree of this subspace or with this space child as its
     //  sub-tree
     //  * \param path hints specifying particular instance of the geometry object
-    //  * \param copyEdges indicates wheter the new space should have the same edges as this one
+    //  * \param copyEdges indicates whether the new space should have the same edges as this one
     //  * \return new space
     //  */
     // virtual GeometryD<DIMS>* getSubspace(const shared_ptr<GeometryObjectD<dim>>& object, const PathHints*
@@ -917,7 +917,7 @@ class PLASK_API Geometry2DCartesian : public GeometryD<2> {
 
     /**
      * Get this or copy of this child with some changes in subtree.
-     * @param[in] changer changer which will be aplied to subtree with this in root
+     * @param[in] changer changer which will be applied to subtree with this in root
      * @param[out] translation optional, if non-null, recommended translation of this after change will be stored
      * @return pointer to this (if nothing was change) or copy of this with some changes in subtree
      */
@@ -1129,7 +1129,7 @@ class PLASK_API Geometry2DCylindrical : public GeometryD<2> {
 
     /**
      * Get this or copy of this child with some changes in subtree.
-     * @param[in] changer changer which will be aplied to subtree with this in root
+     * @param[in] changer changer which will be applied to subtree with this in root
      * @param[out] translation optional, if non-null, recommended translation of this after change will be stored
      * @return pointer to this (if nothing was change) or copy of this with some changes in subtree
      */
@@ -1347,7 +1347,7 @@ class PLASK_API Geometry3D : public GeometryD<3> {
 
     /**
      * Get this or copy of this child with some changes in subtree.
-     * @param[in] changer changer which will be aplied to subtree with this in root
+     * @param[in] changer changer which will be applied to subtree with this in root
      * @param[out] translation optional, if non-null, recommended translation of this after change will be stored
      * @return pointer to this (if nothing was change) or copy of this with some changes in subtree
      */

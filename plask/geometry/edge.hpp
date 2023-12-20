@@ -44,18 +44,18 @@ struct PLASK_API Strategy {
 
     /**
      * Apply strategy to given point @p p.
-     * @param[in] bbox_lo, bbox_hi coordinates of geometry object bounding box in startegy working direction
-     * @param[in,out] p coordinate of point in startegy working direction, it's (must be) lower than @p bbox_lo, this method can move this point
-     * @param[out] result_material optionaly, this method can assign to it material which should be used
+     * @param[in] bbox_lo, bbox_hi coordinates of geometry object bounding box in strategy working direction
+     * @param[in,out] p coordinate of point in strategy working direction, it's (must be) lower than @p bbox_lo, this method can move this point
+     * @param[out] result_material optionally, this method can assign to it material which should be used
      * \param[in] opposite strategy at opposite side (if known)
      */
     virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const = 0;
 
     /**
      * Apply strategy to given point @p p.
-     * @param[in] bbox_lo, bbox_hi coordinates of geometry object bounding box in startegy working direction
-     * @param[in,out] p coordinate of point in startegy working direction, it's (must be) higher than @p bbox_hi, this method can move this point
-     * @param[out] result_material optionaly, this method can assign to it material which should be used
+     * @param[in] bbox_lo, bbox_hi coordinates of geometry object bounding box in strategy working direction
+     * @param[in,out] p coordinate of point in strategy working direction, it's (must be) higher than @p bbox_hi, this method can move this point
+     * @param[out] result_material optionally, this method can assign to it material which should be used
      * \param[in] opposite strategy at opposite side (if known)
      */
     virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const = 0;
@@ -96,7 +96,7 @@ struct PLASK_API Strategy {
     /**
      * Create new strategy (using operator new) described by string @p str.
      *
-     * Throw excption if @p str not describe strategy.
+     * Throw exception if @p str not describe strategy.
      * @param str string which represent strategy, one of: "null", "periodic", "extend", "mirror", or material.
      * @param materialsDB source of materials, typically material database, used to get material
      * @return created strategy
@@ -106,10 +106,10 @@ struct PLASK_API Strategy {
     /**
      * Create new strategy described by string @p str.
      *
-     * Throw excption if @p str not describe strategy.
+     * Throw exception if @p str not describe strategy.
      * @param str string which represent strategy, one of: "null", "periodic", "extend", "mirror", or material.
      * @param materialsDB source of materials, typically material database, used to get material
-     * @return created strategy manged by unique_ptr, same as <code>std::unique_ptr<Strategy>(fromStr(str, materialsDB))</code>
+     * @return created strategy managed by unique_ptr, same as <code>std::unique_ptr<Strategy>(fromStr(str, materialsDB))</code>
      */
     static std::unique_ptr<Strategy> fromStrUnique(const std::string& str, const MaterialsDB& materialsDB = MaterialsDB::getDefault()) {
         return std::unique_ptr<Strategy>(fromStr(str, materialsDB));
@@ -147,7 +147,7 @@ struct PLASK_API SimpleMaterial: public UniversalStrategy {
     shared_ptr<Material> material;
 
     /**
-     * Construct SimpleMaterial strategy wich use given material.
+     * Construct SimpleMaterial strategy which use given material.
      * @param material material which will be assigned to result_material by apply method
      */
     SimpleMaterial(const shared_ptr<Material>& material): material(material) {}
@@ -216,7 +216,7 @@ struct PLASK_API Mirror: public Strategy {
 /**
  * Held edge strategy with given type and:
  * - delegate apply methods to held strategy,
- * - allow to assing strategy to self (using operator=).
+ * - allow to assign strategy to self (using operator=).
  * @tparam direction held strategy working direction (coordinate of vector component)
  * @tparam StrategyType (base) type of held strategy, typically Strategy or UniversalStrategy
  */
@@ -236,7 +236,7 @@ public:
     const StrategyType& getStrategy() const { return *strategy; }
 
     void setStrategy(const StrategyType& strategy) {
-        if (this->strategy == &strategy) return;    //self-assigment protect
+        if (this->strategy == &strategy) return;    //self-assignment protect
         delete this->strategy;
         this->strategy = strategy.clone();
     }

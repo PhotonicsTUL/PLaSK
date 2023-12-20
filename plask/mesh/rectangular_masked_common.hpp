@@ -119,7 +119,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
             const Set& set() const { return maskedMesh->elementSet; }
         };
 
-        /// Iterator over elments. The same as const_iterator, since non-const iterators are not supported.
+        /// Iterator over elements. The same as const_iterator, since non-const iterators are not supported.
         typedef const_iterator iterator;
 
         const MaskedMeshType* maskedMesh;
@@ -175,7 +175,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
             const Set& set() const { return originalMesh->elementSet; }
         };
 
-        /// Iterator over elments. The same as const_iterator, since non-const iterators are not supported.
+        /// Iterator over elements. The same as const_iterator, since non-const iterators are not supported.
         typedef const_iterator iterator;
 
         /// @return iterator referring to the first element
@@ -501,7 +501,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     }
     void calculateElements() {
         boost::lock_guard<boost::mutex> lock((boost::mutex&)writeElementSet);
-        if (elementSetInitialized) return;  // another thread has initilized elementSet just when we waited for mutex
+        if (elementSetInitialized) return;  // another thread has initialized elementSet just when we waited for mutex
         // TODO faster implementation
         for (auto lowNode: nodeSet) {
             if (!fullMesh.isLowIndexOfElement(lowNode)) continue;
@@ -514,7 +514,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     template <int d = DIM>
     typename std::enable_if<d == 2>::type calculateElements() {
         boost::lock_guard<boost::mutex> lock((boost::mutex&)writeMutex);
-        if (elementSetInitialized) return;  // another thread has initilized elementSet just when we waited for mutex
+        if (elementSetInitialized) return;  // another thread has initialized elementSet just when we waited for mutex
 
         if (fullMesh.axis[0]->size() <= 1 || fullMesh.axis[1]->size() <= 1) {
             elementSetInitialized = true;
@@ -539,7 +539,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     template <int d = DIM>
     typename std::enable_if<d == 3>::type calculateElements() {
         boost::lock_guard<boost::mutex> lock((boost::mutex&)writeMutex);
-        if (elementSetInitialized) return;  // another thread has initilized elementSet just when we waited for mutex
+        if (elementSetInitialized) return;  // another thread has initialized elementSet just when we waited for mutex
 
         if (fullMesh.axis[0]->size() <= 1 || fullMesh.axis[1]->size() <= 1 || fullMesh.axis[2]->size() <= 1) {
             elementSetInitialized = true;
@@ -572,7 +572,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     template <int d = DIM>
     typename std::enable_if<d == 2>::type calculateBoundaryIndex() {
         boost::lock_guard<boost::mutex> lock((boost::mutex&)writeMutex);
-        if (boundaryIndexInitialized) return;  // another thread has initilized boundaryIndex just when we waited for mutex
+        if (boundaryIndexInitialized) return;  // another thread has initialized boundaryIndex just when we waited for mutex
 
         const auto minor = fullMesh.minorAxisIndex();
         const auto major = fullMesh.majorAxisIndex();
@@ -596,7 +596,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     template <int d = DIM>
     typename std::enable_if<d == 3>::type calculateBoundaryIndex() {
         boost::lock_guard<boost::mutex> lock((boost::mutex&)writeMutex);
-        if (boundaryIndexInitialized) return;  // another thread has initilized boundaryIndex just when we waited for mutex
+        if (boundaryIndexInitialized) return;  // another thread has initialized boundaryIndex just when we waited for mutex
 
         const auto minor = fullMesh.minorAxisIndex();
         const auto medium = fullMesh.mediumAxisIndex();

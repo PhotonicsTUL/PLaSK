@@ -58,7 +58,7 @@ update_python_scheme()
 
 
 class PythonEditor(TextEditor):
-    """Editor with some features usefult for script editing"""
+    """Editor with some features useful for script editing"""
 
     def __init__(self, parent=None, document=None, line_numbers=True):
         super().__init__(parent, line_numbers)

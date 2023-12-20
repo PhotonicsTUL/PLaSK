@@ -210,7 +210,7 @@ class RectangularBC(SchemaBoundaryConditions):
                     place.append_child(self.place_node_from_xml(el, comments))
                     comments = []
             if len(place.children) > 2:
-                raise ValueError("Excactly two places must be given inside {}".format(place_element.tag))
+                raise ValueError("Exactly two places must be given inside {}".format(place_element.tag))
             for _ in range(2 - len(place.children)):  # we must have exactly two children
                 place.append_child(self.create_default_entry())
                 place.children[-1].comments1 = comments

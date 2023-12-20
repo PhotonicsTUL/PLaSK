@@ -404,7 +404,7 @@ public:
     }
 
     /**
-     * Check if boundary is null (doesn't hold valid creator). Null boundary behaves simillar to empty one.
+     * Check if boundary is null (doesn't hold valid creator). Null boundary behaves similar to empty one.
      * @return @c true only if boundary doesn't hold valid creator
      */
     bool isNull() const {
@@ -924,7 +924,7 @@ struct Manager;
  * template <> inline BoundaryType parseBoundary<BoundaryType>(const std::string& boundary_desc) { ... }
  * @endcode
  * are responsible to parse boundary of type @c BoundaryType from string.
- * @param boundary_desc boundary description, depends on type of boundary (which generaly depends on mesh type)
+ * @param boundary_desc boundary description, depends on type of boundary (which generally depends on mesh type)
  * @param manager geometry manager
  * @return parsed boundary or Boundary() if can't parse given string
  */
@@ -941,7 +941,7 @@ inline Boundary parseBoundary(const std::string& PLASK_UNUSED(boundary_desc), Ma
  * @code
  * template <> inline Boundary parseBoundary<Boundary>(XMLReader& boundary_desc) { ... }
  * @endcode
- * are responsible to parse boundary from XML for this boundary type (which generaly depends on mesh type).
+ * are responsible to parse boundary from XML for this boundary type (which generally depends on mesh type).
  * @param boundary_desc boundary description, depends on type of mesh
  * @param manager geometry manager
  * @return parsed boundary or Boundary() if can't parse given tag

@@ -53,7 +53,7 @@ namespace detail {
 
 /**
  * Converter for Python string to material using default database.
- * Allows to create geometry objects as \c rectange(2,1,"GaAs")
+ * Allows to create geometry objects as \c rectangle(2,1,"GaAs")
  */
 struct MaterialFromPythonString {
 
@@ -1443,7 +1443,7 @@ void initMaterials() {
              u8"    n (float): Injected carriers concentration (1/cm³).\n\n"
              u8".. warning::\n"
              u8"   This parameter is used only by solvers that can consider refractive index\n"
-             u8"   anisotropy properly. It is stronly advised to also define\n"
+             u8"   anisotropy properly. It is strongly advised to also define\n"
              u8"   :meth:`~plask.material.Material.Nr`.\n")
 
         .def("y1", &Material::y1, u8"Get Luttinger parameter γ₁ (-).\n")

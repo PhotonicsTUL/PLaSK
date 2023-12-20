@@ -74,7 +74,7 @@ PLASK_PYTHON_API const char* docstring_receiver_attach =
 
     u8"Note:\n"
     u8"   You may achieve the same effect by using the asignmnent operator\n"
-    u8"   if you put an exisiting provider at the right side of this operator:\n\n"
+    u8"   if you put an existing provider at the right side of this operator:\n\n"
 
     u8"   >>> solver.in{0} = other_solver.out{0}\n";
 
@@ -346,7 +346,7 @@ void register_standard_properties()
         u8"<plask.ReceiverForTemperature3D at 0x44751a0>\n\n"
         u8">>> temp_filter[mygeometry2d.extrusion] = thermal_solver_3d.outTemperature\n\n"
 
-        u8"After connecting the source, the tranlated data can be obtained using the filter\n"
+        u8"After connecting the source, the translated data can be obtained using the filter\n"
         u8"member ``out``, which is a provider that can be connected to other solvers.\n\n"
 
         u8">>> temp_filter.out\n"

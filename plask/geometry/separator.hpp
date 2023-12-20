@@ -26,9 +26,9 @@ namespace plask {
  * Template of base classes for all separator nodes.
  *
  * Separator nodes are mainly used internally by other geometry objects and are hidden in geometry graph:
- * - return empty child/leafs/bouding box vectors, etc.
+ * - return empty child/leafs/bounding box vectors, etc.
  * - return nullptr as material
- * Separator only have bouding box.
+ * Separator only have bounding box.
  * You should never construct separators classes directly.
  * @tparam dim number of dimensions
  * @ingroup GEOMETRY_OBJ

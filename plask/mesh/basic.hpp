@@ -62,7 +62,7 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(OnePointMesh<2>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(OnePointMesh<3>)
 
 /**
- * Mesh which trasnlate another mesh by given vector.
+ * Mesh which translates another mesh by given vector.
  */
 template <int DIM>
 struct PLASK_API TranslatedMesh: public MeshD<DIM> {

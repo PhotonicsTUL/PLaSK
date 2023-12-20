@@ -15,7 +15,7 @@
 #define PLASK__MEMORY_H
 
 /** @file
-This file contains utils connected with memory managment, it contains utils to operate on memory, pointers, smart pointers, etc.
+This file contains utils connected with memory management, it contains utils to operate on memory, pointers, smart pointers, etc.
 It put smart pointers (boost or std ones - dependly of plask build configuration) in plask namespace.
 */
 
@@ -71,7 +71,7 @@ struct Holder {
 
     protected:
 
-    /// Held object. Typically can be nullptr only after move assigment.
+    /// Held object. Typically can be nullptr only after move assignment.
     T* held;
 
     public:
@@ -107,7 +107,7 @@ struct Holder {
      * @param to_copy object to copy
      */
     Holder<T>& operator=(const Holder& to_copy) {
-        if (held == to_copy.held) return *this;   //self-assigment protection
+        if (held == to_copy.held) return *this;   //self-assignment protection
         delete held;
         held = to_copy.held->clone();
         return *this;
@@ -142,7 +142,7 @@ struct HolderRef {
 
     protected:
 
-    /// Hold object. Typically can be nullptr only after move assigment.
+    /// Hold object. Typically can be nullptr only after move assignment.
     shared_ptr<T> held;
 
     public:

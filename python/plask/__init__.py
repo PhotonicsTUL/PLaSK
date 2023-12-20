@@ -23,7 +23,7 @@ import sys
 import os
 import weakref as _weakref
 
-# this buit-ins are overriden by numpy:
+# this buit-ins are overridden by numpy:
 _any = any
 _sum = sum
 
@@ -94,7 +94,7 @@ def Stack2D(repeat=None, shift=0., **kwargs):
                           ``#center``, and ``#`` where `#` is the horizontal axis
                           name. The corresponding value is the position of the given
                           edge/center/origin of the item. This alignment can be
-                          overriden while adding the objects to the stack.
+                          overridden while adding the objects to the stack.
                           By default the alignment is ``{'left': 0}``.
 
     See also:
@@ -125,7 +125,7 @@ def Stack3D(repeat=None, shift=0., **kwargs):
                            ``#center``, and ``#`` where `#` are the horizontal axis
                            names. The corresponding value is the position of the
                            given edge/center/origin of the item. This alignment can
-                           be overriden while adding the objects to the stack.
+                           be overridden while adding the objects to the stack.
                            By default the alignment is ``{'left': 0, 'back': 0}``.
 
     See also:

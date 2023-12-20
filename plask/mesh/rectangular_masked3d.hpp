@@ -355,7 +355,7 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
     };  // struct ElementMesh
 
     /**
-     * Construct empty/unitialized mesh. One should call reset() or selectAll() method before using this.
+     * Construct empty/uninitialized mesh. One should call reset() or selectAll() method before using this.
      */
     RectangularMaskedMesh3D() = default;
 
@@ -648,7 +648,7 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
      *
      * Each increment() changes CHANGE_DIR_FASTER index.
      *
-     * Common code for: left, right, bottom, top boundries.
+     * Common code for: left, right, bottom, top boundaries.
      */
     template <int CHANGE_DIR_SLOWER, int CHANGE_DIR_FASTER>
     struct BoundaryIteratorImpl: public plask::BoundaryNodeSetImpl::IteratorImpl {

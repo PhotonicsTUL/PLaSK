@@ -180,7 +180,7 @@ void DynamicThermalFem2DSolver<Geometry2DCartesian>::setMatrix(
         k42 = k31 = - (kx + ky) / 6.;
         k32 = k41 = (kx - 2. * ky) / 6.;
 
-        //Wheter lumping the mass matrces A, B?
+        //Whether lumping the mass matrices A, B?
         if (lumping)
         {
             A(loleftno, loleftno) += methodparam*k11 + c;
@@ -311,7 +311,7 @@ void DynamicThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(
         k42 = k31 = - (kx + ky) / 6.;
         k32 = k41 = (kx - 2. * ky) / 6.;
 
-        //Wheter lumping the mass matrces A, B?
+        //Whether lumping the mass matrices A, B?
         if (lumping) {
             A(loleftno, loleftno) += methodparam*k11 + c;
             A(lorghtno, lorghtno) += methodparam*k22 + c;

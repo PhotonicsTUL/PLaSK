@@ -621,7 +621,7 @@ template <int dim> shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLR
         read.insert(reader.getNodeName());
         if (reader.getNodeName() == "steps") {
             plask::optional<double> small_op =
-                reader.getAttribute<double>("small");  // dons't use small since some windows haders: #define small char
+                reader.getAttribute<double>("small");  // don't use small since some windows headers: #define small char
             if (small_op) {
                 if (reader.hasAttribute("small0")) throw XMLConflictingAttributesException(reader, "small", "small0");
                 if (reader.hasAttribute("small1")) throw XMLConflictingAttributesException(reader, "small", "small1");

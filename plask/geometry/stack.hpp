@@ -22,7 +22,7 @@ namespace plask {
 
 /**
  * Common code for stack containers (which have children in stack/layers).
- * @tparam dim number of space dimentions
+ * @tparam dim number of space dimensions
  * @tparam growingDirection direction in which stack growing
  * @ingroup GEOMETRY_OBJ
  */
@@ -206,7 +206,7 @@ struct PLASK_API StackContainerBaseImpl: public GeometryObjectContainer<dim> {
     void updateAllHeights();
 
     /**
-     * Resize stackHeights (to be compatibile with children vector) and refresh its value from given index.
+     * Resize stackHeights (to be compatible with children vector) and refresh its value from given index.
      * @param first_child_index index of first child for which stackHeights should be update
      */
     void rebuildStackHeights(std::size_t first_child_index = 0);
@@ -229,7 +229,7 @@ struct PLASK_API ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>
     /// Type of this child.
     typedef typename BaseClass::ChildType ChildType;
 
-    /// Type of translation geometry elment in space of this.
+    /// Type of translation geometry element in space of this.
     typedef typename BaseClass::TranslationT TranslationT;
 
 private:

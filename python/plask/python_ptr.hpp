@@ -50,7 +50,7 @@ public:
 
     /// Call Py_XDECREF.
     ~PyHandle() {
-        if (Py_IsInitialized()) Py_XDECREF(ptr);  // this desctructor may be called after interpretter is finalized
+        if (Py_IsInitialized()) Py_XDECREF(ptr);  // this destructor may be called after interpreter is finalized
     }
 
     /**

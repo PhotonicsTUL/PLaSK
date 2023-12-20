@@ -46,7 +46,7 @@ namespace detail {
     template<typename KeyT>
     struct py_set  {
 
-        // some typedefs for convinience
+        // some typedefs for convenience
         typedef std::set<KeyT> setT;
 
         // object access

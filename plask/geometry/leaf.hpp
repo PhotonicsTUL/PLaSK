@@ -369,10 +369,10 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(Block<2>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Block<3>)
 
 /**
- * Construct Block with the same dimenstion as bouding box of @p to_change.
+ * Construct Block with the same dimenstion as bounding box of @p to_change.
  * @param material material of the constructed Block
  * @param to_change geometry object
- * @param translation[out] set to position (lower corner) of @c to_change bouding box
+ * @param translation[out] set to position (lower corner) of @c to_change bounding box
  * @param draft should draft graded material be created?
  * @return Block<to_change->getDimensionsCount()> object
  */

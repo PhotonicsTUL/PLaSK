@@ -228,7 +228,7 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
             reader_it = objectReaders().find(nodeName + expectedSuffix);
             if (reader_it == objectReaders().end()) throw NoSuchGeometryObjectType(nodeName + "[" + expectedSuffix + "]");
         }
-        new_object = reader_it->second(*this);  // and rest (but while reading this subtree, name is not registred yet)
+        new_object = reader_it->second(*this);  // and rest (but while reading this subtree, name is not registered yet)
     }
 
     if (!new_object) return new_object;

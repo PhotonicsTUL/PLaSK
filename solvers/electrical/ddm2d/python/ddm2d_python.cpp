@@ -61,8 +61,8 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
     solver.def_readwrite("Raug", &__Class__::mRaug, u8"True if Auger recombination is taken into account");
     solver.def_readwrite("Pol", &__Class__::mPol, u8"True if polarization effects are taken into account");
     solver.def_readwrite("FullIon", &__Class__::mFullIon, u8"True if dopants are completely ionized");
-    solver.def_readwrite("SchottkyP", &__Class__::mSchottkyP, u8"Schottky barrier for p-type constact");
-    solver.def_readwrite("SchottkyN", &__Class__::mSchottkyN, u8"Schottky barrier for n-type constact");
+    solver.def_readwrite("SchottkyP", &__Class__::mSchottkyP, u8"Schottky barrier for p-type contact");
+    solver.def_readwrite("SchottkyN", &__Class__::mSchottkyN, u8"Schottky barrier for n-type contact");
     /*METHOD(get_electrostatic_energy, getTotalEnergy,
            u8"Get the energy stored in the electrostatic field in the analyzed structure.\n\n"
            u8"Return:\n"

@@ -25,7 +25,7 @@ endforeach()
 # List of all material groups
 file(GLOB materials RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/ *)
 
-# We will remove old libraries from buid path (therwise the debugging may fail)
+# We will remove old libraries from build path (otherwise the debugging may fail)
 if(WIN32)
     set(lib_suffix dll)
 else()

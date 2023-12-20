@@ -192,7 +192,7 @@ public:
     /**
      * Construct lazy data from size and functor.
      * \param size data size
-     * \param func function returnig dta at point
+     * \param func function returning data at point
      */
     LazyData(std::size_t size, std::function<T(std::size_t)> func):
         impl(new LazyDataDelegateImpl<T>(size, std::move(func))) {}
