@@ -427,6 +427,16 @@ template <int dim> void RectangularMeshRefinedGenerator<dim>::fromXML(XMLReader&
             weak_ptr<GeometryObjectD<RectangularMeshRefinedGenerator<dim>::DIM>> object =
                 manager.requireGeometryObject<GeometryObjectD<RectangularMeshRefinedGenerator<dim>::DIM>>(
                     reader.requireAttribute("object"));
+            if (!object.lock()) {
+                if (manager.draft) {
+                    writelog(LOG_WARNING, "XML line {:d}: geometry object '{}' does not exist", reader.getLineNr(),
+                             reader.requireAttribute("object"));
+                    reader.ignoreAllAttributes();
+                    reader.requireTagEnd();
+                    continue;
+                } else
+                    throw XMLException(reader, format("geometry object '{}' does not exist", reader.requireAttribute("object")));
+            }
             PathHints path;
             if (auto pathattr = reader.getAttribute("path")) path = manager.requirePathHints(*pathattr);
             if (auto by = reader.getAttribute<unsigned>("by")) {
