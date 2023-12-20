@@ -680,6 +680,10 @@ int
                 auto manager = plask::make_shared<plask::python::PythonManager>();
                 py::object omanager(manager);
                 (*globals)["__manager__"] = omanager;
+                // We export some dictionaries that may be useful in XPL parts (like Python geometry)
+                xplGLobals["PTH"] = omanager.attr("pth");
+                xplGLobals["GEO"] = omanager.attr("geo");
+                xplGLobals["MSH"] = omanager.attr("msh");
                 if (realfile)
                     plask::python::loadXpl(omanager, system_str_to_pyobject(filename), locals);
                 else {
