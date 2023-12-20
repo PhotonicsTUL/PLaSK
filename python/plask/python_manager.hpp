@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -67,7 +67,10 @@ struct PLASK_PYTHON_API PythonManager: public Manager {
     /// Locals read from &lt;defines&gt; section and supplied by user
     py::dict defs;
 
-    PythonManager(bool draft=false): Manager(draft) {}
+    /// Globals for XPL materials and geometry section
+    py::dict globals;
+
+    PythonManager(bool draft=false);
 
     shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name) override;
 

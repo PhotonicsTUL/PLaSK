@@ -686,10 +686,10 @@ class GeometryController(Controller):
 
     def select_info(self, info):
         if hasattr(info, 'action'):
-            if isinstance(action, str):
-                getattr(self, action)()
+            if isinstance(info.action, str):
+                getattr(self, info.action)()
             else:
-                action()
+                info.action()
 
         if hasattr(info, 'line'):
             self.document.window.goto_line(info.line)

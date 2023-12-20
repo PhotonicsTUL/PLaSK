@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -105,6 +105,6 @@ def get_manager():
             try: nr = plask.material.get(mat).Nr(lam, T).real
             except: nr = 1.
             return 1e-3 * lam / nr
-        plask._plask.__xpl__globals['wl'] = wl
-        plask._plask.__xpl__globals['phys'].__dict__['wl'] = wl
+        manager.globals['wl'] = wl
+        manager.globals['phys'].__dict__['wl'] = wl
     return manager

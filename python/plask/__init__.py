@@ -474,7 +474,7 @@ del get_material_field
 ## ##  ## ##
 
 import plask.phys
-wl = phys.wl
+wl = plask.phys.wl
 
 ## ##  ## ##
 
@@ -508,7 +508,7 @@ else:
 
 
 ## ##  ## ##
-_plask.__xpl__globals.update(globals())
+__xpl_globals = globals()
 
 
 ## ##  ## ##

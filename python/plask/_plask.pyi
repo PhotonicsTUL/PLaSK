@@ -164,7 +164,7 @@ class LoggingConfig:
 
 
 
-class Manager(_plask.Manager):
+class Manager:
     """
     Main input manager.
 

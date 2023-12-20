@@ -247,15 +247,9 @@ inline static void register_config()
 /// XPL filename
 PLASK_PYTHON_API std::string xplFilename;
 
-/// Globals for XML material
-PLASK_PYTHON_API py::dict* pyXplGlobals;
-
-
 PLASK_PYTHON_API void setCurrentAxes(const AxisNames& axes) { current_axes = axes; }
 
 PLASK_PYTHON_API void setXplFilename(const std::string& filename) { xplFilename = filename; }
-
-PLASK_PYTHON_API py::dict& getXplGlobals() { return *pyXplGlobals; }
 
 PLASK_PYTHON_API PyObject* getXmlErrorClass() { return pyXmlError; }
 
@@ -727,11 +721,6 @@ BOOST_PYTHON_MODULE(_plask)
 
     // PLaSK version
     scope.attr("version") = PLASK_VERSION;
-
-    // Set global namespace for materials
-    plask::python::pyXplGlobals = new py::dict();
-    py::incref(plask::python::pyXplGlobals->ptr()); // HACK: Prevents segfault on exit. I don't know why it is needed.
-    scope.attr("__xpl__globals") = *plask::python::pyXplGlobals;
 
     scope.attr("prefix") = plask::prefixPath();
     scope.attr("lib_path") = plask::plaskLibPath();

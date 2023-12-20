@@ -13,6 +13,7 @@
  */
 #include <plask/plask.hpp>
 #include "../python_globals.hpp"
+#include "../python_manager.hpp"
 
 #define PLASK_GEOMETRY_PYTHON_TAG "python"
 #define RETURN_VARIABLE "__object__"
@@ -20,7 +21,6 @@
 namespace plask { namespace python {
 
 extern AxisNames current_axes;
-extern PLASK_PYTHON_API py::dict* pyXplGlobals;
 
 namespace detail {
     struct SetPythonAxes {
@@ -41,7 +41,10 @@ shared_ptr<GeometryObject> read_python(GeometryReader& reader) {
     detail::SetPythonAxes setPythonAxes(reader);
     py::dict locals;
 
-    PyObject* result = PyEval_EvalCode((PyObject*)code, pyXplGlobals->ptr(), locals.ptr());
+    assert(dynamic_cast<python::PythonManager*>(&reader.manager) != nullptr);
+    python::PythonManager* python_manager = static_cast<python::PythonManager*>(&reader.manager);
+
+    PyObject* result = PyEval_EvalCode((PyObject*)code, python_manager->globals.ptr(), locals.ptr());
     if (!result) {
         if (reader.manager.draft) {
             PyObject *value, *type;

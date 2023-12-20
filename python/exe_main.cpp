@@ -49,7 +49,6 @@ PLASK_PYTHON_API void createPythonLogger();
 PLASK_PYTHON_API void setLoggingColor(std::string color);
 PLASK_PYTHON_API void setCurrentAxes(const AxisNames& axes);
 PLASK_PYTHON_API void setXplFilename(const std::string& filename);
-PLASK_PYTHON_API py::dict& getXplGlobals();
 PLASK_PYTHON_API PyObject* getXmlErrorClass();
 }}  // namespace plask::python
 
@@ -657,9 +656,12 @@ int
                 }
             }
             (*globals)["__file__"] = filename;
-            py::dict& xplGLobals = plask::python::getXplGlobals();
-            xplGLobals["__file__"] = filename;
             plask::python::setXplFilename(system_to_utf8(filename));
+
+            auto manager = plask::make_shared<plask::python::PythonManager>();
+            manager->globals["__file__"] = filename;
+            py::object omanager(manager);
+
 
             if (filetype == FILE_XML) {
                 py::dict locals;
@@ -667,7 +669,7 @@ int
                     auto keyval = plask::splitString2(def, '=');
                     if (keyval.first == "self") throw plask::python::ValueError("Definition name 'self' is reserved");
                     try {
-                        locals[keyval.first] = (plask::python::py_eval(keyval.second, xplGLobals, locals));
+                        locals[keyval.first] = (plask::python::py_eval(keyval.second, manager->globals, locals));
                     } catch (py::error_already_set&) {
                         plask::writelog(plask::LOG_WARNING, "Cannot parse command-line definition '{}' (storing it as string): {}",
                                         keyval.first, plask::python::getPythonExceptionMessage());
@@ -677,13 +679,8 @@ int
                     plask::writelog(plask::LOG_IMPORTANT, "{} = {}", keyval.first, keyval.second);
                 }
 
-                auto manager = plask::make_shared<plask::python::PythonManager>();
-                py::object omanager(manager);
                 (*globals)["__manager__"] = omanager;
                 // We export some dictionaries that may be useful in XPL parts (like Python geometry)
-                xplGLobals["PTH"] = omanager.attr("pth");
-                xplGLobals["GEO"] = omanager.attr("geo");
-                xplGLobals["MSH"] = omanager.attr("msh");
                 if (realfile)
                     plask::python::loadXpl(omanager, system_str_to_pyobject(filename), locals);
                 else {

@@ -30,8 +30,6 @@ namespace plask { namespace python {
 
 PLASK_PYTHON_API std::string getPythonExceptionMessage();
 
-extern PLASK_PYTHON_API py::dict* pyXplGlobals;
-
 extern PLASK_PYTHON_API PyObject* pyXmlError;
 
 class PythonXMLFilter {
@@ -71,7 +69,7 @@ class PythonXMLFilter {
     std::string eval(std::string str) const {
         boost::algorithm::trim(str);
         try {
-            return py::extract<std::string>(py::str(py_eval(str, *pyXplGlobals, manager->defs)));
+            return py::extract<std::string>(py::str(py_eval(str, manager->globals, manager->defs)));
         } catch (py::error_already_set&) {
             throw Exception(getPythonExceptionMessage());
         }
@@ -197,6 +195,11 @@ PLASK_PYTHON_API void loadXpl(py::object self, py::object src, py::dict vars, py
 
     XMLReader reader(std::move(source));
 
+    // Globals
+    manager->globals["PTH"] = self.attr("pth");
+    manager->globals["GEO"] = self.attr("geo");
+    manager->globals["MSH"] = self.attr("msh");
+
     // Variables
 
     manager->overrites = py::tuple(vars.keys());
@@ -237,6 +240,12 @@ PLASK_PYTHON_API void PythonManager_load(py::object self, py::object src, py::di
     }
 }
 
+PythonManager::PythonManager(bool draft): Manager(draft) {
+    py::object plask = py::import("plask");
+    globals = py::dict(plask.attr("__xpl_globals")).copy();
+}
+
+
 void PythonManager::loadDefines(XMLReader& reader)
 {
     std::set<std::string> parsed;
@@ -250,7 +259,7 @@ void PythonManager::loadDefines(XMLReader& reader)
         };
         if (!defs.has_key(name)) {
             try {
-                defs[name] = (py_eval(value, *pyXplGlobals, defs));
+                defs[name] = (py_eval(value, globals, defs));
             } catch (py::error_already_set&) {
                 writelog(LOG_WARNING, u8"Cannot parse XML definition '{}' (storing it as string): {}",
                          name, getPythonExceptionMessage());
@@ -270,7 +279,7 @@ void PythonManager::loadDefines(XMLReader& reader)
             PyErr_Clear();
         }
     }
-    pyXplGlobals->update(defs);
+    globals.update(defs);
 }
 
 
@@ -734,6 +743,16 @@ void register_manager() {
              u8"* meshes and generators (:attr:`~plask.Manager.msh`): ``MSH``,\n\n"
              u8"* custom defines (:attr:`~plask.Manager.defs`): ``DEF``.\n",
              py::arg("target"))
+        .def_readonly("globals", &PythonManager::globals,
+                      u8"Global variables.\n\n"
+                      u8"This is a dictionary of global variables that are available in the XPL file.\n"
+                      u8"By default it contains the following variables:\n\n"
+                      u8"* ``PTH``: dictionary of all named paths,\n\n"
+                      u8"* ``GEO``: dictionary of all named geometries and geometry objects,\n\n"
+                      u8"* ``MSH``: dictionary of all named meshes and generators,\n\n"
+                      u8"* ``DEF``: dictionary of all local defines,\n\n"
+                      u8"* ``self``: the manager object itself.\n"
+                     )
     ;
 
     register_manager_dict<shared_ptr<GeometryObject>>("GeometryObjects");

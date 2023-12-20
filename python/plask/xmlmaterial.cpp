@@ -31,8 +31,6 @@ namespace plask { namespace python {
  */
 class PythonEvalMaterial;
 
-extern PLASK_PYTHON_API py::dict* pyXplGlobals;
-
 struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
 
     MaterialsDB::ProxyMaterialConstructor base;
@@ -46,6 +44,8 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
 
     bool alloy;
 
+    py::object globals;
+
     PyHandle<PyCodeObject>
         lattC, Eg, CB, VB, Dso, Mso, Me, Mhh, Mlh, Mh, ac, av, b, d, c11, c12, c44, eps, chi,
         Na, Nd, Ni, Nf, EactD, EactA, mob, cond, A, B, C, D,
@@ -54,11 +54,12 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
         y1, y2, y3;
 
     template <typename BaseT>
-    PythonEvalMaterialConstructor(const std::string& name, const BaseT& base, bool alloy) :
+    PythonEvalMaterialConstructor(const std::string& name, const BaseT& base, bool alloy, const py::object& globals) :
         MaterialsDB::MaterialConstructor(name),
         base(base),
         kind(Material::GENERIC), condtype(Material::CONDUCTIVITY_UNDETERMINED),
-        alloy(alloy)
+        alloy(alloy),
+        globals(globals)
     {}
 
     inline shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const override;
@@ -92,8 +93,8 @@ class PythonEvalMaterial: public MaterialWithBase
 
     friend struct PythonEvalMaterialConstructor;
 
-    static inline PyObject* py_eval(PyCodeObject *fun, const py::dict& locals) {
-        PyObject* result = PyEval_EvalCode((PyObject*)fun, pyXplGlobals->ptr(), locals.ptr());
+    inline PyObject* py_eval(PyCodeObject *fun, const py::dict& locals) const {
+        PyObject* result = PyEval_EvalCode((PyObject*)fun, cls->globals.ptr(), locals.ptr());
         if (result == Py_None && locals.has_key(RETURN_VARIABLE)) {
             Py_DECREF(result);
             result = PyDict_GetItemString(locals.ptr(), RETURN_VARIABLE);
@@ -363,13 +364,14 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
 void PythonManager::loadMaterial(XMLReader& reader) {
     std::string material_name, base_name;
     bool alloy;
+
     shared_ptr<PythonEvalMaterialConstructor> constructor;
 
     try {
         material_name = reader.requireAttribute("name");
         base_name = reader.requireAttribute("base");
         alloy = reader.getAttribute<bool>("alloy", false);
-        constructor = plask::make_shared<PythonEvalMaterialConstructor>(material_name, base_name, alloy);
+        constructor = plask::make_shared<PythonEvalMaterialConstructor>(material_name, base_name, alloy, globals);
         constructor->self = constructor;
     } catch (py::error_already_set&) {
         if (draft) PyErr_Clear();
@@ -378,7 +380,7 @@ void PythonManager::loadMaterial(XMLReader& reader) {
         throwErrorIfNotDraft(XMLException(reader, err.what()));
     }
     if (!constructor) constructor = plask::make_shared<PythonEvalMaterialConstructor>(
-        material_name, shared_ptr<Material>(new DummyMaterial(base_name)), alloy);
+        material_name, shared_ptr<Material>(new DummyMaterial(base_name)), alloy, globals);
     constructor->self = constructor;
 
 #   define COMPILE_PYTHON_MATERIAL_FUNCTION_(funcname, func) \
@@ -388,7 +390,7 @@ void PythonManager::loadMaterial(XMLReader& reader) {
             py::dict locals; \
             constructor->cache.func.reset( \
                 py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
-                    py::handle<>(PyEval_EvalCode(constructor->func.ptr_cast<PyObject>(), pyXplGlobals->ptr(), locals.ptr())).get() \
+                    py::handle<>(PyEval_EvalCode(constructor->func.ptr_cast<PyObject>(), globals.ptr(), locals.ptr())).get() \
                 ) \
             ); \
             writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '{0}'", material_name); \
