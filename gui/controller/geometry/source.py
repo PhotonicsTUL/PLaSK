@@ -194,7 +194,7 @@ class GeometrySourceController(SourceEditController):
                 self.geometry_view.update_plot(self.plotted_object, set_limits=set_limits, plane=self.checked_plane)
                 self.last_index = index
             except plask.XMLError as e:
-                self.model.add_info_message("Could not update geometry preview: {}".format(str(e)), Info.ERROR, line=e.line)
+                self.geometry_view.set_info_message("Could not update geometry preview: {}".format(str(e)), Info.ERROR, line=e.line)
                 from ... import _DEBUG
                 if _DEBUG:
                     import traceback
@@ -202,7 +202,7 @@ class GeometrySourceController(SourceEditController):
                     sys.stderr.flush()
                 res = False
             except Exception as e:
-                self.model.add_info_message("Could not update geometry preview: {}".format(str(e)), Info.ERROR)
+                self.geometry_view.set_info_message("Could not update geometry preview: {}".format(str(e)), Info.ERROR)
                 from ... import _DEBUG
                 if _DEBUG:
                     import traceback
