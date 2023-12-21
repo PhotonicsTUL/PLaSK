@@ -623,10 +623,6 @@ static void register_manager_dict(const std::string name) {
     ;
     register_manager_dict_getters<T>(c);
 
-    // This swap ensures that in case there is an object with id 'keys', 'values', or 'items' it will take precedence over corresponding method
-    py::object __getattr__ = c.attr("__getattr__");
-    c.attr("__getattr__") = c.attr("__getattribute__");
-    c.attr("__getattribute__") = __getattr__;
     py::delattr(py::scope(), (name+"Dict").c_str());
 
     py::scope scope = c;
