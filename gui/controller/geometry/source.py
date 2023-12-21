@@ -179,7 +179,8 @@ class GeometrySourceController(SourceEditController):
                     manager.pth.clear()
                     manager._roots.clear()
                 text = "<plask><geometry>\n" + self.source.editor.toPlainText() + "\n</geometry></plask>"
-                manager.load("\n"*(self.model.line_in_file-1) + text)
+                line_in_file = self.model.line_in_file or 1
+                manager.load("\n"*(line_in_file-1) + text)
                 self.manager = manager
                 if self._elements is None:
                     self._elements = [e for e in etree.fromstring(text)[0] if e.tag is not etree.Comment]

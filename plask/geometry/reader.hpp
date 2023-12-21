@@ -365,7 +365,7 @@ inline shared_ptr<RequiredObjectType> GeometryReader::readExactlyOneChild() {
         before_cast = readObject();
     else
         require_end = false;
-    if (!before_cast && manager.draft) {
+    if (!require_end && manager.draft) {
         manager.pushError(XMLUnexpectedElementException(source, "new tag"));
         return shared_ptr<RequiredObjectType>();
     }
