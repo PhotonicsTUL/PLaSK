@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -110,7 +110,7 @@ def get_syntax(defines=None, solvers=None, **kwargs):
     if defines is not None:
         defs += [escape(e.name) for e in defines.model.entries]
         syntax['tokens'][PYTHON_DEFAULT_TOKENS].insert(0, ('define', defs, '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'))
-    # current_syntax['tokens'][PYTHON_DEFAULT_TOKENS].insert(0, ('special', '__value__', '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'))
+    # current_syntax['tokens'][PYTHON_DEFAULT_TOKENS].insert(0, ('special', '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'))
     if solvers is not None:
         solvs = [escape(e.name) for e in solvers.model.entries if e.name]
         if solvs:

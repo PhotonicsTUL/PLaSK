@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -33,10 +33,7 @@ from ...utils.texteditor.python import PythonEditor, PythonEditorWidget
 from ...utils.qsignals import BlockQtSignals
 from ...utils.config import CONFIG
 from ...lib.highlighter.plask import SYNTAX, get_syntax
-from ...import APPLICATION
-
-SYNTAX['formats']['geometry_object'] = '{syntax_solver}'
-
+from ... import APPLICATION
 
 WINDOW_TITLE = "Python Geometry Object"
 
@@ -71,10 +68,13 @@ class GNPythonController(GNObjectController):
     def construct_form(self):
         self.construct_group('Python Code')
         weakself = weakref.proxy(self)
-        self.editor = self.construct_text_edit(node_property_name='code', display_property_name="python code",
-                                               editor_class=PythonEditor, document=self.document)
-        self.editor.setToolTip('Type Python code here. You should assign the geometry object to insert here '
-                               'to the variable <tt>__object__</tt>.')
+        self.editor = self.construct_text_edit(
+            node_property_name='code', display_property_name="python code", editor_class=PythonEditor, document=self.document
+        )
+        self.editor.setToolTip(
+            'Type Python code here. You should return the geometry object to insert here '
+            'using Python keyword <tt>return</tt>.'
+        )
         form = self.get_current_form()
         form.addRow(self.editor)
 
@@ -109,8 +109,7 @@ class GNPythonController(GNObjectController):
                 self.window.setWindowTitle(WINDOW_TITLE)
                 widget = PythonEditorWidget(self.window, self.document, line_numbers=False)
                 widget.editor.setDocument(self.editor.document())
-                self.editor.modificationChanged.connect(
-                    lambda mod: self.window.setWindowTitle(WINDOW_TITLE + ('*' if mod else '')))
+                self.editor.modificationChanged.connect(lambda mod: self.window.setWindowTitle(WINDOW_TITLE + ('*' if mod else '')))
                 self.document.window.config_changed.connect(self.reconfig)
                 self.window.setCentralWidget(widget)
                 screen = self.document.window.screen().availableGeometry()
@@ -120,7 +119,7 @@ class GNPythonController(GNObjectController):
                 save_action.triggered.connect(self.window_save)
                 widget.addAction(save_action)
                 self.window.resize(w * 3 // 4, h * 3 // 4)
-                self.window.move(w // 8, h// 8)
+                self.window.move(w // 8, h // 8)
             self.window.show()
             self.window.raise_()
         elif self.window is not None:
@@ -131,6 +130,6 @@ class GNPythonController(GNObjectController):
         # self.document.window.save()
 
     def reconfig(self):
-        self.editor.rehighlight(self.document.defines, geometry_object=['__object__'])
+        self.editor.rehighlight(self.document.defines)
         if self.window is not None:
-            self.window.centralWidget().editor.rehighlight(self.document.defines, geometry_object=['__object__'])
+            self.window.centralWidget().editor.rehighlight(self.document.defines)

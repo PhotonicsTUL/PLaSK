@@ -6,6 +6,7 @@ cmatrix
 coeffs
 cvector
 dcomplex
+dedentation
 diagonalization
 diagonalizer
 Elong

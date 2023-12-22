@@ -9,7 +9,7 @@ PLaSK Python API consists of two parts. The first one is the :mod:`plask` module
 This section contains API reference manual of both these parts. Its content is automatically generated from the in-line Python documentation of all the referenced objects.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    api/plask
    api/solvers

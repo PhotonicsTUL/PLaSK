@@ -29,9 +29,9 @@
     <cond><![CDATA[
       param = aperture * T
       if param > 550:
-          __value__ = param - 500
+          return param - 500
       else:
-          __value__ = 50
+          return 50
     ]]></cond>
     <A><![CDATA[0.1 * T + 0.02 * (T-300)**2 if T < 400. else 1000.]]></A>
     <NR>3.6, 3.6, 3.4, 0.0</NR>
@@ -77,7 +77,7 @@
     <stack name="simple-stack">
       <python name="aaa">
         h = 0.2
-        __object__ = geometry.Rectangle(1, h, 'GaAs')
+        return geometry.Rectangle(1, h, 'GaAs')
       </python>
       <stack repeat="3">
         <rectangle material="Al(0.9)GaAs" dtran="1" dvert="0.3"/>

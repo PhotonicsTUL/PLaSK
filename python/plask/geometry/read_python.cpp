@@ -16,7 +16,6 @@
 #include "../python_manager.hpp"
 
 #define PLASK_GEOMETRY_PYTHON_TAG "python"
-#define RETURN_VARIABLE "__object__"
 
 namespace plask { namespace python {
 
@@ -35,16 +34,19 @@ namespace detail {
 }
 
 shared_ptr<GeometryObject> read_python(GeometryReader& reader) {
-    PyCodeObject* code = compilePythonFromXml(reader.source, reader.manager, true);
-    if (!code) return shared_ptr<GeometryObject>();  // this can happen only in draft mode
-
-    detail::SetPythonAxes setPythonAxes(reader);
-    py::dict locals;
-
     assert(dynamic_cast<python::PythonManager*>(&reader.manager) != nullptr);
     python::PythonManager* python_manager = static_cast<python::PythonManager*>(&reader.manager);
 
-    PyObject* result = PyEval_EvalCode((PyObject*)code, python_manager->globals.ptr(), locals.ptr());
+    PyObject* code = compilePythonFromXml(reader.source, reader.manager, "", python_manager->globals);
+    if (!code) return shared_ptr<GeometryObject>();  // this can happen only in draft mode
+
+    detail::SetPythonAxes setPythonAxes(reader);
+
+    PyObject* result = nullptr;
+    if (PyCode_Check(code))
+        result = PyEval_EvalCode(code, python_manager->globals.ptr(), nullptr);
+    else
+        result = PyObject_CallFunctionObjArgs(code, nullptr);
     if (!result) {
         if (reader.manager.draft) {
             PyObject *value, *type;
@@ -102,17 +104,11 @@ shared_ptr<GeometryObject> read_python(GeometryReader& reader) {
     }
 
     if (result == Py_None) {
-        Py_DECREF(result);
-        if (locals.has_key(RETURN_VARIABLE)) {
-            result = PyDict_GetItemString(locals.ptr(), RETURN_VARIABLE);
-            Py_INCREF(result);
-        } else {
-            reader.manager.throwErrorIfNotDraft(XMLException(reader.source, "No geometry item defined"));
-            return shared_ptr<GeometryObject>();
-        }
+        reader.manager.throwErrorIfNotDraft(XMLException(reader.source, "No geometry item defined"));
+        return shared_ptr<GeometryObject>();
     }
-    py::handle<> hres(result);
 
+    py::handle<> hres(result);
     return py::extract<shared_ptr<GeometryObject>>(result);
 }
 

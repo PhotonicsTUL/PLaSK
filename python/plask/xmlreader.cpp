@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#include <limits>
 #include <boost/algorithm/string.hpp>
+#include <limits>
 
 #include "plask/utils/xml/reader.hpp"
 
@@ -22,53 +22,63 @@ namespace plask { namespace python {
 
 extern PLASK_PYTHON_API std::string xplFilename;
 
-
-void removeIndent(std::string& text, unsigned xmlline, const char* tag) {
-    auto line =  boost::make_split_iterator(text, boost::token_finder(boost::is_any_of("\n"), boost::token_compress_off));
+std::string dedent(const std::string& text, unsigned xmlline, const char* tag, unsigned indent) {
+    auto line = boost::make_split_iterator(const_cast<std::string&>(text),
+                                           boost::token_finder(boost::is_any_of("\n"), boost::token_compress_off));
     const boost::algorithm::split_iterator<std::string::iterator> endline;
     auto firstline = line;
     size_t strip;
     std::string::iterator beg;
+    std::string indentation(indent, ' ');
     bool cont;
-    do { // Search for the first non-empty line to get initial indentation
+    do {  // Search for the first non-empty line to get initial indentation
         strip = 0;
         for (beg = line->begin(); beg != line->end() && (*beg == ' ' || *beg == '\t'); ++beg) {
-            if (*beg == ' ') ++strip;
-            else { strip += 8; strip -= strip % 8; } // add to closest full tab-stop
+            if (*beg == ' ')
+                ++strip;
+            else {
+                strip += 8;
+                strip -= strip % 8;
+            }  // add to closest full tab-stop
         }
         cont = beg == line->end();
         line++;
     } while (cont && line != endline);
     if (beg == line->begin() || line == endline) {
-        boost::trim_left(text);
-        return;
+        return boost::trim_left_copy(text);
     }
     std::string result;
     line = firstline;
-    for (size_t lineno = 1; line != endline; ++line, ++lineno) { // indent all lines
+    for (size_t lineno = 1; line != endline; ++line, ++lineno) {  // indent all lines
         size_t pos = 0;
         for (beg = line->begin(); beg != line->end() && (pos < strip); ++beg) {
-            if (*beg == ' ') ++pos;
-            else if (*beg == '\t') { pos += 8; pos -= pos % 8; } // add to closest full tab-stop
-            else if (*beg == '#') { break; } // allow unidentation for comments
+            if (*beg == ' ')
+                ++pos;
+            else if (*beg == '\t') {
+                pos += 8;
+                pos -= pos % 8;
+            }  // add to closest full tab-stop
+            else if (*beg == '#') {
+                break;
+            }  // allow dedentation for comments
             else {
                 ptrdiff_t d = std::distance(line->begin(), beg);
-                throw XMLException(format(u8"XML line {0}{5}: Python line indentation ({1} space{2}) is less than the indentation of the first line ({3} space{4})",
-                                          xmlline+lineno, d, (d==1)?"":"s", strip, (strip==1)?"":"s",
-                                          tag? format(" in <{}>", tag) : ""));
+                throw XMLException(format(
+                    u8"XML line {0}{5}: Python line indentation ({1} space{2}) is less than the indentation of the first line ({3} "
+                    u8"space{4})",
+                    xmlline + lineno, d, (d == 1) ? "" : "s", strip, (strip == 1) ? "" : "s", tag ? format(" in <{}>", tag) : ""));
             }
         }
-        result += std::string(beg, line->end());
+        result += indentation + std::string(beg, line->end());
         result += "\n";
     }
-    text = std::move(result);
+    return result;
 }
 
-
-PyCodeObject* compilePythonFromXml(XMLReader& reader, Manager& manager, bool exec) {
-    size_t lineno  = reader.getLineNr();
+PyObject* compilePythonFromXml(XMLReader& reader, Manager& manager, const char* args, const py::dict& globals) {
+    size_t lineno = reader.getLineNr();
     const std::string tag = reader.getNodeName();
-    const std::string name = xplFilename.empty()? format("<{}>", tag) : format("{} in <{}>, XML", xplFilename, tag);
+    const std::string name = xplFilename.empty() ? format("<{}>", tag) : format("{} in <{}>, XML", xplFilename, tag);
 
     std::string text = reader.requireTextInCurrentTag();
     boost::trim_right_if(text, boost::is_any_of(" \n\r\t"));
@@ -79,25 +89,36 @@ PyCodeObject* compilePythonFromXml(XMLReader& reader, Manager& manager, bool exe
         size_t i = 0;
         while (std::isspace(*s)) {
             if (*s == '\n') lineno++;
-            ++i; ++s;
+            ++i;
+            ++s;
         }
         result = Py_CompileString((std::string(lineno, '\n') + text.substr(i)).c_str(), name.c_str(), Py_eval_input);
     }
-    if (result == nullptr && exec) {
+    if (result == nullptr) {
         PyErr_Clear();
         size_t start;
         if (text.find('\n') == std::string::npos) {
             boost::trim_left(text);
+            text = "    " + text;
         } else {
             for (start = 0; text[start] != '\n' && start < text.length(); ++start) {
                 if (!std::isspace(text[start]))
-                    throw XMLException(format("XML line {}", lineno),
+                    throw XMLException(
+                        format("XML line {}", lineno),
                         format("Python code must be either a single line or must begin from new line after <{}>", tag), lineno);
             }
-            if (start != text.length()) text = text.substr(start+1);
-            removeIndent(text, lineno, tag.c_str());
+            if (start != text.length()) text = text.substr(start + 1);
+            text = std::move(dedent(text, lineno, tag.c_str(), 4));
         }
-        result = Py_CompileString((std::string(lineno-1, '\n') + text).c_str(), name.c_str(), Py_file_input);
+        text = std::string("def __eval__(") + args + "):\n" + text;
+        result = Py_CompileString((std::string(lineno - 1, '\n') + text).c_str(), name.c_str(), Py_file_input);
+        if (result != nullptr) {
+            Py_XDECREF(PyEval_EvalCode(result, globals.ptr(), nullptr));
+            Py_DECREF(result);
+            result = PyDict_GetItemString(globals.ptr(), "__eval__");
+            Py_INCREF(result);
+            PyDict_DelItemString(globals.ptr(), "__eval__");
+        }
     }
     if (result == nullptr) {
         PyObject *ptype, *pvalue, *ptraceback;
@@ -105,7 +126,9 @@ PyCodeObject* compilePythonFromXml(XMLReader& reader, Manager& manager, bool exe
         Py_XDECREF(ptraceback);
         std::string type, value;
         size_t errline = reader.getLineNr();
-        if (ptype) { type = py::extract<std::string>(py::object(py::handle<>(ptype)).attr("__name__")); }
+        if (ptype) {
+            type = py::extract<std::string>(py::object(py::handle<>(ptype)).attr("__name__"));
+        }
         if (pvalue && PyTuple_Check(pvalue) && PyTuple_Size(pvalue) > 1) {
             py::extract<std::string> evalue(PyTuple_GetItem(pvalue, 0));
             if (evalue.check()) value = ": " + evalue();
@@ -121,7 +144,7 @@ PyCodeObject* compilePythonFromXml(XMLReader& reader, Manager& manager, bool exe
             XMLException(format("XML line {} in <{}>", errline, tag), format("{}{}", type, value), errline));
         return nullptr;
     }
-    return reinterpret_cast<PyCodeObject*>(result);
+    return result;
 }
 
 //     /**
@@ -198,11 +221,13 @@ PyCodeObject* compilePythonFromXml(XMLReader& reader, Manager& manager, bool exe
 //     std::string getTextContent() const;
 //
 //     /**
-//      * Get value of attribute with given @p name, or @p default_value if attribute with given @p name is not defined in current node.
+//      * Get value of attribute with given @p name, or @p default_value if attribute with given @p name is not defined in current
+//      node.
 //      * @param name name of attribute
 //      * @param default_value default value which will be return when attribute with given @p name is not defined
 //      * @return attribute with given @p name, or @p default_value if attribute with given @p name is not defined in current node
-//      * @tparam T required type of value, boost::lexical_cast\<T> or registered parser will be used to obtain value of this type from string
+//      * @tparam T required type of value, boost::lexical_cast\<T> or registered parser will be used to obtain value of this type
+//      from string
 //      */
 //     template <typename T>
 //     inline T getAttribute(const std::string& name, const T& default_value) const {
@@ -216,7 +241,8 @@ PyCodeObject* compilePythonFromXml(XMLReader& reader, Manager& manager, bool exe
 //     /**
 //      * Get value of attribute with given @p name.
 //      * @param name name of attribute to get
-//      * @return plask::optional which represent value of attribute with given @p name or has no value if there is no attribute with given @p name
+//      * @return plask::optional which represent value of attribute with given @p name or has no value if there is no attribute
+//      with given @p name
 //      */
 //     plask::optional<std::string> getAttribute(const std::string& name) const;
 //
@@ -225,8 +251,10 @@ PyCodeObject* compilePythonFromXml(XMLReader& reader, Manager& manager, bool exe
 //      *
 //      * Throws exception if value of attribute given @p name can't be casted to required type T.
 //      * @param name name of attribute to get
-//      * @return plask::optional which represent value of attribute with given @p name or has no value if there is no attribute with given @p name
-//      * @tparam T required type of value, boost::lexical_cast\<T> or registered parser will be used to obtain value of this type from string
+//      * @return plask::optional which represent value of attribute with given @p name or has no value if there is no attribute
+//      with given @p name
+//      * @tparam T required type of value, boost::lexical_cast\<T> or registered parser will be used to obtain value of this type
+//      from string
 //      */
 //     template <typename T>
 //     inline plask::optional<T> getAttribute(const std::string& name) const {
@@ -291,7 +319,8 @@ PyCodeObject* compilePythonFromXml(XMLReader& reader, Manager& manager, bool exe
 //     bool requireTagOrEnd();
 //
 //     /**
-//      * Call requireNext() and next check if current element is tag opening (in such case it also check if it has name equal to given @p name) or closing of tag.
+//      * Call requireNext() and next check if current element is tag opening (in such case it also check if it has name equal to
+//      given @p name) or closing of tag.
 //      * Throw exception if it's not.
 //      * @param name required name of opening tag
 //      * @return true if the next tag was opened
@@ -355,105 +384,99 @@ PyCodeObject* compilePythonFromXml(XMLReader& reader, Manager& manager, bool exe
  *     else:
  *         self.read_xml_tag(tag, manager)
  *
-*/
+ */
 
 namespace detail {
 
-    class XMLIterator {
+class XMLIterator {
+    XMLReader* reader;
+    size_t level;
 
-        XMLReader* reader;
-        size_t level;
+    inline size_t current_level() { return reader->getLevel() - size_t(reader->getNodeType() == XMLReader::NODE_ELEMENT_END); }
 
-        inline size_t current_level() {
-            return reader->getLevel() - size_t(reader->getNodeType() == XMLReader::NODE_ELEMENT_END);
+  public:
+    XMLIterator(XMLReader* reader) : reader(reader), level(reader->getLevel()) {}
+
+    XMLReader* next() {
+        for (size_t i = current_level(); i > level; --i) {
+            reader->requireTagEnd();
         }
-
-      public:
-
-        XMLIterator(XMLReader* reader): reader(reader), level(reader->getLevel()) {}
-
-        XMLReader* next() {
-            for (size_t i = current_level(); i > level; --i) { reader->requireTagEnd(); }
-            if (!reader->requireTagOrEnd()) {
-                PyErr_SetString(PyExc_StopIteration, "");
-                py::throw_error_already_set();
-            }
-            return reader;
+        if (!reader->requireTagOrEnd()) {
+            PyErr_SetString(PyExc_StopIteration, "");
+            py::throw_error_already_set();
         }
-    };
-
-    static XMLIterator XMLReader__iter__(XMLReader* reader) {
-        return XMLIterator(reader);
+        return reader;
     }
+};
 
-    static py::object XMLReader__getitem__(XMLReader* reader, const std::string& key) {
-        return eval_common_type(reader->requireAttribute(key));
-    }
+static XMLIterator XMLReader__iter__(XMLReader* reader) { return XMLIterator(reader); }
 
-    static py::object XMLReader_get(XMLReader* reader, const std::string& key, const py::object& deflt) {
-        auto value = reader->getAttribute(key);
-        if (value) return eval_common_type(*value);
-        else return deflt;
-    }
-
-    static py::object XMLReader_getitem(XMLReader* reader, const py::object& dict, const std::string& key) {
-        return dict[eval_common_type(reader->requireAttribute(key))];
-    }
-
-    static py::object XMLReader_attribs(XMLReader* reader) {
-        py::dict result;
-        for (auto attr: reader->getAttributes())
-            result[attr.first] = eval_common_type(attr.second);
-        return result;
-    }
-
-    static bool XMLReader__eq__(XMLReader* reader, const py::object& other) {
-        py::extract<std::string> name(other);
-        if (name.check()) return reader->getNodeName() == name();
-        py::extract<XMLReader*> other_reader(other);
-        if (other_reader.check()) return reader == other_reader();
-        return false;
-    }
-
-    static std::string XMLReader__str__(const XMLReader& reader) {
-     return "XML line " + boost::lexical_cast<std::string>(reader.getLineNr()) +
-            ((reader.getNodeType() == XMLReader::NODE_ELEMENT)? " in <" + reader.getNodeName() + ">" :
-            (reader.getNodeType() == XMLReader::NODE_ELEMENT_END)? " in </" + reader.getNodeName() + ">" :
-            "");
-    }
-
-    static std::string XMLReader__repr__(const XMLReader* self) {
-        std::stringstream out;
-        out << "<plask.XplReader object at (" << self << ")>";
-        return out.str();
-    }
+static py::object XMLReader__getitem__(XMLReader* reader, const std::string& key) {
+    return eval_common_type(reader->requireAttribute(key));
 }
 
-void register_xml_reader() {
+static py::object XMLReader_get(XMLReader* reader, const std::string& key, const py::object& deflt) {
+    auto value = reader->getAttribute(key);
+    if (value)
+        return eval_common_type(*value);
+    else
+        return deflt;
+}
 
-    py::class_<XMLReader, XMLReader*, boost::noncopyable> xml("XplReader", py::no_init); xml
-        .def("__iter__", &detail::XMLReader__iter__)
+static py::object XMLReader_getitem(XMLReader* reader, const py::object& dict, const std::string& key) {
+    return dict[eval_common_type(reader->requireAttribute(key))];
+}
+
+static py::object XMLReader_attribs(XMLReader* reader) {
+    py::dict result;
+    for (auto attr : reader->getAttributes()) result[attr.first] = eval_common_type(attr.second);
+    return result;
+}
+
+static bool XMLReader__eq__(XMLReader* reader, const py::object& other) {
+    py::extract<std::string> name(other);
+    if (name.check()) return reader->getNodeName() == name();
+    py::extract<XMLReader*> other_reader(other);
+    if (other_reader.check()) return reader == other_reader();
+    return false;
+}
+
+static std::string XMLReader__str__(const XMLReader& reader) {
+    return "XML line " + boost::lexical_cast<std::string>(reader.getLineNr()) +
+           ((reader.getNodeType() == XMLReader::NODE_ELEMENT)       ? " in <" + reader.getNodeName() + ">"
+            : (reader.getNodeType() == XMLReader::NODE_ELEMENT_END) ? " in </" + reader.getNodeName() + ">"
+                                                                    : "");
+}
+
+static std::string XMLReader__repr__(const XMLReader* self) {
+    std::stringstream out;
+    out << "<plask.XplReader object at (" << self << ")>";
+    return out.str();
+}
+}  // namespace detail
+
+void register_xml_reader() {
+    py::class_<XMLReader, XMLReader*, boost::noncopyable> xml("XplReader", py::no_init);
+    xml.def("__iter__", &detail::XMLReader__iter__)
         .def("__eq__", &detail::XMLReader__eq__)
         .add_property("name", &XMLReader::getNodeName, u8"Current tag name.")
-        .add_property("text", (std::string(XMLReader::*)())&XMLReader::requireTextInCurrentTag, u8"Text in the current tag.")
+        .add_property("text", (std::string(XMLReader::*)()) & XMLReader::requireTextInCurrentTag, u8"Text in the current tag.")
         .def("__getitem__", &detail::XMLReader__getitem__)
         .def("get", detail::XMLReader_get, u8"Return tag attribute value or default if the attribute does not exist.",
-             (py::arg("key"), py::arg("default")=py::object()))
-        .def("getitem", detail::XMLReader_getitem, u8"Return tag attribute value as raw string or default if the attribute does not exist.",
-             (py::arg("key"), py::arg("default")=""))
+             (py::arg("key"), py::arg("default") = py::object()))
+        .def("getitem", detail::XMLReader_getitem,
+             u8"Return tag attribute value as raw string or default if the attribute does not exist.",
+             (py::arg("key"), py::arg("default") = ""))
         .add_property("attrs", &detail::XMLReader_attribs, u8"List of all the tag attributes.")
         .def("__contains__", &XMLReader::hasAttribute)
         .def("__str__", detail::XMLReader__str__)
-        .def("__repr__", detail::XMLReader__repr__)
-    ;
+        .def("__repr__", detail::XMLReader__repr__);
 
     py::scope scope(xml);
-    (void) scope;   // don't warn about unused variable scope
+    (void)scope;  // don't warn about unused variable scope
 
     py::class_<detail::XMLIterator>("_Iterator", py::no_init)
-        .def("__next__", &detail::XMLIterator::next, py::return_value_policy<py::reference_existing_object>())
-    ;
+        .def("__next__", &detail::XMLIterator::next, py::return_value_policy<py::reference_existing_object>());
 }
 
-
-}} // namespace plask::python
+}}  // namespace plask::python

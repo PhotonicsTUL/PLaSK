@@ -566,7 +566,7 @@ class TestXmlFile(unittest.TestCase):
             <material name="Exec" base="semiconductor">
               <cond>
                 T2 = 2 * T
-                __value__ = T2 - 500
+                return T2 - 500
               </cond>
             </material>
           </materials>

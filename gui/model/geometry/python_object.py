@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -36,7 +36,7 @@ class GNPython(GNObject):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
-        self.code = "__object__ = "
+        self.code = "return ..."
 
     def tag_name(self, full_name=True):
         return 'python'
@@ -70,7 +70,7 @@ class GNPython(GNObject):
         res = etree.Element(self.tag_name())
         self._attributes_to_xml(res, subtree_conf)
         if self.code is not None:
-            res.text = make_indented_text(self.code, sum(1 for _ in self.path_to_root) - 1)
+            res.text = make_indented_text(self.code, sum(1 for _ in self.path_to_root))
         return res
 
     def stub(self):

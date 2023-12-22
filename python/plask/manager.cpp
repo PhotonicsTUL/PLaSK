@@ -469,7 +469,7 @@ void PythonManager::loadScript(XMLReader &reader) {
     AssignWithBackup<XMLReader::Filter> backup(reader.contentFilter);   // do not filter script content
     unsigned line = reader.getLineNr();
     Manager::loadScript(reader);
-    removeIndent(script, line);
+    script = std::move(dedent(script, line));
 }
 
 
@@ -743,16 +743,7 @@ void register_manager() {
              u8"* meshes and generators (:attr:`~plask.Manager.msh`): ``MSH``,\n\n"
              u8"* custom defines (:attr:`~plask.Manager.defs`): ``DEF``.\n",
              py::arg("target"))
-        .def_readonly("globals", &PythonManager::globals,
-                      u8"Global variables.\n\n"
-                      u8"This is a dictionary of global variables that are available in the XPL file.\n"
-                      u8"By default it contains the following variables:\n\n"
-                      u8"* ``PTH``: dictionary of all named paths,\n\n"
-                      u8"* ``GEO``: dictionary of all named geometries and geometry objects,\n\n"
-                      u8"* ``MSH``: dictionary of all named meshes and generators,\n\n"
-                      u8"* ``DEF``: dictionary of all local defines,\n\n"
-                      u8"* ``self``: the manager object itself.\n"
-                     )
+        .def_readonly("_globals", &PythonManager::globals)
     ;
 
     register_manager_dict<shared_ptr<GeometryObject>>("GeometryObjects");

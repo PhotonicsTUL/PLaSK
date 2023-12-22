@@ -35,9 +35,6 @@ from ..defines import get_defines_completer
 from .plot import show_material_plot
 
 
-SYNTAX['formats']['material_property_value'] = '{syntax_solver}'
-
-
 class ComponentsPopup(QFrame):
 
     def __init__(self, close_cb, name, label, groups, doping, pos=None):
@@ -497,12 +494,9 @@ class MaterialsController(Controller):
         self.splitter.addWidget(self.prop_splitter)
         self.splitter.setSizes([10000, 30000])
 
-    def propedit_rehighlight(self):
-        with BlockQtSignals(self.propedit):
-            self.propedit.rehighlight(self.document.defines, material_property_value=['__value__'])
-
     def reconfig(self):
-        self.propedit_rehighlight()
+        with BlockQtSignals(self.propedit):
+            self.propedit.rehighlight(self.document.defines)
 
     def update_materials_table(self, model):
         if model == self.model and model.rowCount():
@@ -594,7 +588,6 @@ class MaterialsController(Controller):
         except (ValueError, AttributeError):
             self.materials_table.selectRow(0)
         self.materials_table.setFocus()
-        self.propedit_rehighlight()
 
     def select_info(self, info):
         if select_index_from_info(info, self.model, self.materials_table):
