@@ -661,7 +661,7 @@ int
             auto manager = plask::make_shared<plask::python::PythonManager>();
             manager->globals["__file__"] = filename;
             py::object omanager(manager);
-
+            manager->makeWeakRef(omanager);
 
             if (filetype == FILE_XML) {
                 py::dict locals;

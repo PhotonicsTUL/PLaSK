@@ -7,7 +7,7 @@ Introduction
 .. _sec-Installation:
 
 Installation
------------
+------------
 
 .. _sec-Installation-Windows:
 

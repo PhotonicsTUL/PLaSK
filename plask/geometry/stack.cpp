@@ -879,7 +879,7 @@ static shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) 
             if (reader.source.getNodeName() == Gap1D<2, Primitive<2>::DIRECTION_TRAN>::NAME) {
                 plask::optional<double> total_size_attr = reader.source.getAttribute<double>("total");
                 if (total_size_attr) {  // total size provided?
-                    if (total_size_gap) throw XMLException(reader.source, "Total size has been already chosen.");
+                    if (total_size_gap) throw XMLException(reader.source, "total size has been already chosen.");
                     required_total_size = *total_size_attr;
                     total_size_gap = this_gap = static_pointer_cast<Gap1D<2, Primitive<2>::DIRECTION_TRAN>>(
                         static_pointer_cast<Translation<2>>(result->addGap(0.0).second)->getChild());
@@ -901,7 +901,7 @@ static shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) 
     if (total_size_gap) {
         if (required_total_size < result->getHeight()) {
             reader.manager.throwErrorIfNotDraft(
-                XMLException(reader.source, "Required total width of shelf is lower than sum of children widths"));
+                XMLException(reader.source, "required total width of shelf is lower than sum of children widths"));
             total_size_gap->setSize(0);
         } else
             total_size_gap->setSize(required_total_size - result->getHeight());

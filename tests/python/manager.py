@@ -23,10 +23,13 @@ class ManagerTest(unittest.TestCase):
         self.manager = plask.Manager()
         self.manager.load('''
         <plask>
+          <defines>
+            <define name="y" value="2"/>
+          </defines>
           <geometry>
             <cartesian2d name="Space-1" axes="xy">
               <stack name="Stack-2">
-                <item path="Path-4"><rectangle name="Block-3" dx="5" dy="2" material="GaN" /></item>
+                <item path="Path-4"><rectangle name="Block-3" dx="5" dy="{y}" material="GaN" /></item>
                 <again ref="Block-3"/>
               </stack>
             </cartesian2d>
@@ -39,6 +42,10 @@ class ManagerTest(unittest.TestCase):
             <mesh type="rectangular2d" name="reg">
               <axis0 start="10" stop="30" num="3"/>
               <axis1 start="1" stop="3" num="3"/>
+            </mesh>
+            <mesh type="rectangular2d" name="geo">
+              <axis0 start="0" stop="{self.geo.Block_3.width}" num="3"/>
+              <axis1 start="0" stop="{GEO.Block_3.height}" num="1"/>
             </mesh>
             <generator type="rectangular2d" method="divide" name="test">
               <prediv by="4"/>
@@ -55,6 +62,8 @@ class ManagerTest(unittest.TestCase):
         </plask>
         ''')
 
+    def testRefcount(self):
+        self.assertEqual(sys.getrefcount(self.manager), 2)
 
     def testGeometry(self):
         self.assertEqual(len(self.manager.geo), 3)
@@ -65,24 +74,20 @@ class ManagerTest(unittest.TestCase):
         self.assertEqual(len(self.manager.pth), 1)
         with self.assertRaises(KeyError): self.manager.geo["nonexistent"]
 
-
     def testDictionaries(self):
         self.assertEqual(list(self.manager.geo), ["Block_3", "Space_1", "Stack_2"])
-
 
     def testExport(self):
         self.manager.export(globals())
         self.assertIn("Space-1", GEO)
         self.assertEqual(type(GEO.Space_1), plask.geometry.Cartesian2D)
 
-
     def testMesh(self):
-        self.assertEqual(len(self.manager.msh), 4)
+        self.assertEqual(len(self.manager.msh), 5)
         self.assertEqual(self.manager.msh.lin.axis0 , [1, 2, 3])
         self.assertEqual(self.manager.msh.lin.axis1 , [10, 20, 30])
         self.assertEqual(list(self.manager.msh["reg"].axis1) , [1, 2, 3])
         self.assertEqual(list(self.manager.msh["reg"].axis0) , [10, 20, 30])
-
 
     def testGenerators(self):
         self.assertEqual(tuple(self.manager.msh.test.prediv), (4,4))
@@ -91,7 +96,6 @@ class ManagerTest(unittest.TestCase):
         mesh = self.manager.msh.refined.generate(self.manager.geo.Stack_2)
         self.assertEqual(mesh.axis1, [0., 2., 3., 4.])
         self.assertEqual(mesh.axis0, [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0])
-
 
     def testException(self):
         manager = plask.Manager()
@@ -148,7 +152,6 @@ class ManagerTest(unittest.TestCase):
             </plask>
             ''')
 
-
     def testSolverConnections(self):
         manager = plask.Manager()
         manager.load('''
@@ -164,7 +167,6 @@ class ManagerTest(unittest.TestCase):
         ''')
         self.assertEqual(manager.solvers.output.inWavelength(0), 2)
         self.assertEqual(manager.solvers.input.inWavelength(0), 5)
-
 
     def testMaterials(self):
         manager = plask.Manager()
@@ -203,7 +205,6 @@ class ManagerTest(unittest.TestCase):
 
         mad20 = plask.material.XmlMatMg20()
         self.assertEqual(mad20.cond(300), material.GaN(dopant="Mg", doping=1e20).cond(300))
-
 
     def testVariables(self):
         manager = plask.Manager()

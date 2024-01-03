@@ -47,6 +47,7 @@ shared_ptr<GeometryObject> read_python(GeometryReader& reader) {
         result = PyEval_EvalCode(code, python_manager->globals.ptr(), nullptr);
     else
         result = PyObject_CallFunctionObjArgs(code, nullptr);
+    Py_DECREF(code);
     if (!result) {
         if (reader.manager.draft) {
             PyObject *value, *type;
@@ -104,7 +105,7 @@ shared_ptr<GeometryObject> read_python(GeometryReader& reader) {
     }
 
     if (result == Py_None) {
-        reader.manager.throwErrorIfNotDraft(XMLException(reader.source, "No geometry item defined"));
+        reader.manager.throwErrorIfNotDraft(XMLException(reader.source, "no geometry item returned by <python> tag"));
         return shared_ptr<GeometryObject>();
     }
 

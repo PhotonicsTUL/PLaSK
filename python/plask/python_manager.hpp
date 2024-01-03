@@ -72,6 +72,8 @@ struct PLASK_PYTHON_API PythonManager: public Manager {
 
     PythonManager(bool draft=false);
 
+    void makeWeakRef(const py::object& self);
+
     shared_ptr<Solver> loadSolver(const std::string& category, const std::string& lib, const std::string& solver_name, const std::string& name) override;
 
     void loadDefines(XMLReader& reader) override;
