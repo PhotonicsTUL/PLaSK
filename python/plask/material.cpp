@@ -1106,9 +1106,15 @@ void initMaterials() {
              u8"Args:\n"
              u8"    src: Source database.\n")
         .def("__call__", py::raw_function(&MaterialsDB_get), ":rtype: Material\n")
+        .def("__len__", &MaterialsDB::size)
         .def("__iter__", &MaterialsDBIterator::iter, py::return_value_policy<py::manage_new_object>())
         .def("__contains__", &MaterialsDB_contains)
         .def("__copy__", &MaterialsDB_copy, py::return_value_policy<py::manage_new_object>())
+        .def("remove", &MaterialsDB::remove, py::arg("name"),
+             u8"Remove material of given name and doping from database.\n\n"
+             u8"Args:\n"
+             u8"    name (str): material name without doping amount and composition.\n"
+             u8"                (e.g. 'GaAs:Si', 'AlGaAs').")
         .def("material_with_params", py::raw_function(&MaterialsDB_const),
              u8"Get material with constant parameters specified as kwargs\n\n"
              u8":rtype: Material\n")

@@ -166,7 +166,7 @@ struct PLASK_API MaterialsDB {
     };
 
     /**
-     * Factory of complex material which construct it version with mixed version of two compositions (for materials without dopants).
+     * Factory of alloy material which construct it version with mixed version of two compositions (for materials without dopants).
      */
     //TODO cache: double -> constructed material
     struct PLASK_API MixedCompositionOnlyFactory: public MixedCompositionFactory {    //TODO nonlinear mixing with functor double [0.0, 1.0] -> double [0.0, 1.0]
@@ -209,7 +209,7 @@ struct PLASK_API MaterialsDB {
     };
 
     /**
-     * Factory of complex material which construct its versions with mixed version of two compositions and dopants.
+     * Factory of alloy material which construct its versions with mixed version of two compositions and dopants.
      */
     struct PLASK_API MixedCompositionAndDopantFactory: public MixedCompositionOnlyFactory {
       protected:
@@ -245,7 +245,7 @@ struct PLASK_API MaterialsDB {
     };
 
     /**
-     * Factory of complex material which construct its versions with mixed versions of two dopants (for material with same compositions).
+     * Factory of alloy material which construct its versions with mixed versions of two dopants (for material with same compositions).
      */
     struct PLASK_API MixedDopantFactory: public MixedCompositionFactory {
       protected:
@@ -344,6 +344,17 @@ public:
      * @return iterator which refer just after last record in database
      */
     const_iterator end() const { return iterator(constructors.end()); }
+
+    /**
+     * Get number of material types in database.
+     *
+     * This is not the same as number of materials in database,
+     * because one material type can have many materials with different compositions and dopants.
+     * \return number of material types in database
+     */
+    size_t size() const {
+        return constructors.size();
+    }
 
     /**
      * Throw exception if given composition is empty.
@@ -521,13 +532,13 @@ public:
     void addSimple(shared_ptr<MaterialConstructor> constructor);
 
     /*
-     * Add complex material (which require composition parsing) to DB. Replace existing material if there is one already in DB.
+     * Add alloy material (which require composition parsing) to DB. Replace existing material if there is one already in DB.
      * @param constructor object which can create material instance; must be created by operator new and material DB will call delete for it
      */
     //void addAlloy(const MaterialConstructor* constructor);
 
     /**
-     * Add complex material (which require composition parsing) to DB. Replace existing material if there is one already in DB.
+     * Add alloy material (which require composition parsing) to DB. Replace existing material if there is one already in DB.
      * @param constructor object which can create material instance
      */
     void addAlloy(shared_ptr<MaterialConstructor> constructor);
@@ -570,44 +581,12 @@ public:
     void add() { add<MaterialType>(MaterialType::NAME); }
 
     /**
-     * Remove simple material (which not require composition parsing) from DB.
-     * @param name material name, in format name[:dopant]
-     */
-    void removeSimple(const std::string& name);
-
-    /**
-     * Remove complex material (which require composition parsing) from DB.
-     * @param name material name, in format name[:dopant]
-     */
-    void removeComplex(const std::string& name);
-
-    /**
-     * Remove material from DB.
-     * @param name material name, in format name[:dopant]
-     * @tparam @c true only if material is complex, @c false if it's simple
-     */
-    template <bool isComplex>
-    void remove(const std::string& name) {
-        if (isComplex) removeComplex(name); else removeSimple(name);
-    }
-
-    /**
      * Remove material from DB.
      *
-     * Deduce from constructors if material is either complex or simple.
+     * Deduce from name if material is either alloy or simple.
      * @param name material name (with dopant after ':')
      */
-    template <typename MaterialType>
-    void remove(const std::string& name) { remove<Material::is_with_composition<MaterialType>::value>(name); }
-
-    /**
-     * Remove material from DB.
-     *
-     * Deduce from constructors if material is either complex or simple.
-     * Material name is read from static field MaterialType::static_name.
-     */
-    template <typename MaterialType>
-    void remove() { remove<Material>(MaterialType::static_name); }
+    void remove(const std::string& name);
 
     /**
      * Check if a material (given without parameters) is simple.
@@ -618,13 +597,13 @@ public:
     bool isAlloy(const std::string& material_name) const;
 
     /*
-     * Get complex material constructor object.
+     * Get alloy material constructor object.
      * @param composition objects composition
      * @param dopant_name name of dopant (if any)
      */
     shared_ptr<const MaterialConstructor> getConstructor(const Material::Composition& composition, const std::string& label = "", const std::string& dopant_name = "") const;
 
-    shared_ptr<const MaterialConstructor> getConstructor(const Material::Parameters& material, bool allow_complex_without_composition = false) const;
+    shared_ptr<const MaterialConstructor> getConstructor(const Material::Parameters& material, bool allow_alloy_without_composition = false) const;
 
 private:
 
@@ -633,9 +612,9 @@ private:
      * Get material constructor object.
      * @param dbKey key in database (format: name[_label] or normalized_composition[_label])
      * @param composition objects composition, empty composition for simple materials, used for error checking and messages
-     * @param allow_complex_without_composition if true complex material can be obtained if composition is empty (if false exception will be thrown in such situation when dbKey is not simple material)
+     * @param allow_alloy_without_composition if true alloy material can be obtained if composition is empty (if false exception will be thrown in such situation when dbKey is not simple material)
      */
-    shared_ptr<const MaterialConstructor> getConstructor(const std::string& dbKey, const Material::Composition& composition, bool allow_complex_without_composition = false) const;
+    shared_ptr<const MaterialConstructor> getConstructor(const std::string& dbKey, const Material::Composition& composition, bool allow_alloy_without_composition = false) const;
 
     //      * @param dopant_name name of dopant (if any)
     /**

@@ -11,7 +11,7 @@ BOOST_AUTO_TEST_SUITE(material) // MUST be the same as the file name
         db.add<DumbMaterial>("Al");
         BOOST_CHECK_NO_THROW(db.get("Al"));
 
-        db.remove<DumbMaterial>("Al");
+        db.remove("Al");
         BOOST_CHECK_THROW(db.get("Al"), plask::NoSuchMaterial);
     }
 

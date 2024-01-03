@@ -97,8 +97,8 @@ std::string alloyDbKey(const std::string& name, const std::string& label, const 
     return alloyDbKey(Material::parseObjectsNames(name), label, dopant_name);
 }
 
-std::string alloyDbKey(const std::string& fullComplexName) {
-    auto fullname_dopant = splitString2(fullComplexName, ':');
+std::string alloyDbKey(const std::string& fullAlloyName) {
+    auto fullname_dopant = splitString2(fullAlloyName, ':');
     auto name_label = splitString2(fullname_dopant.first, '_');
     return alloyDbKey(name_label.first, name_label.second, fullname_dopant.second);
 }
@@ -200,11 +200,11 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
     auto it = constructors.find(db_Key);
     if (it == constructors.end()) {
         if (composition.empty()) {
-            // check if material is complex, but user forgot to provide composition:
-            std::string complex_DbKey;
-            try { complex_DbKey = alloyDbKey(db_Key); } catch (std::exception&) {}
-            auto c = constructors.find(complex_DbKey);
-            if (c != constructors.end()) { //material is complex
+            // check if material is alloy, but user forgot to provide composition:
+            std::string alloy_DbKey;
+            try { alloy_DbKey = alloyDbKey(db_Key); } catch (std::exception&) {}
+            auto c = constructors.find(alloy_DbKey);
+            if (c != constructors.end()) { //material is alloy
                 if (allow_alloy_without_composition)
                     return c->second;
                 else
@@ -260,7 +260,7 @@ shared_ptr<Material> MaterialsDB::get(const std::string& name_with_dopant, doubl
 shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const std::string& name_without_composition) const {
     auto it = constructors.find(name_without_composition);  // try get as simple
     if (it != constructors.end()) return it->second;
-    it = constructors.find(alloyDbKey(name_without_composition)); // try get as complex
+    it = constructors.find(alloyDbKey(name_without_composition)); // try get as alloy
     if (it != constructors.end()) return it->second;
     throw NoSuchMaterial(name_without_composition);
 }
@@ -288,14 +288,14 @@ shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const s
             throw MaterialParseException("cannot mix different materials: '{0}' and '{1}'", material1_fullname, material2_fullname);
 
         if (!m1.hasDoping()) //??
-            throw MaterialParseException("{0}: only complex or doped materials with different doping concentrations can be mixed", material1_fullname);
+            throw MaterialParseException("{0}: only alloy or doped materials with different doping concentrations can be mixed", material1_fullname);
 
         return shared_ptr<MaterialsDB::MixedCompositionFactory>(
                     new MixedDopantFactory(getConstructor(m1), m1.doping, m2.doping, shape)
                     );
     }
 
-    //complex materials:
+    //alloy materials:
     if (m1.hasDoping()) //both dopped
         return shared_ptr<MaterialsDB::MixedCompositionFactory>(
                     new MixedCompositionAndDopantFactory(getConstructor(m1),
@@ -325,13 +325,20 @@ void MaterialsDB::addAlloy(shared_ptr<MaterialConstructor> constructor) {
     constructors[alloyDbKey(constructor->materialName)] = constructor;
 }
 
-void MaterialsDB::removeSimple(const std::string& name) {
-    constructors.erase(name);
+void MaterialsDB::remove(const std::string& name) {
+    auto it = constructors.find(name);  // try get as simple
+    if (it != constructors.end()) {
+        constructors.erase(it);
+        return;
+    }
+    it = constructors.find(alloyDbKey(name)); // try get as alloy
+    if (it != constructors.end()) {
+        constructors.erase(it);
+        return;
+    }
+    throw NoSuchMaterial(name);
 }
 
-void MaterialsDB::removeComplex(const std::string& name) {
-    constructors.erase(alloyDbKey(name));
-}
 
 bool MaterialsDB::isAlloy(const std::string &material_name) const { return getConstructor(material_name)->isAlloy(); }
 

@@ -20,7 +20,7 @@ import plask
 from plask import material, geometry
 import plasktest as ptest
 
-class Material(unittest.TestCase):
+class TestMaterial(unittest.TestCase):
 
     @material.alloy('AlGaAs')
     class AlGaAs_fake(material.Material):
@@ -77,7 +77,7 @@ class Material(unittest.TestCase):
         self.assertIn("AlGaAs", material.db)
         self.assertIn("AlGaAs_fake", material.db)
 
-        m = Material.AlGaAs_fake(Al=0.1)
+        m = TestMaterial.AlGaAs_fake(Al=0.1)
         self.assertEqual(m.name, "AlGaAs_fake")
         self.assertEqual(m.VB(1.0), 2.0)
         self.assertEqual(m.nr(980., 300.), 3.5)
@@ -95,7 +95,7 @@ class Material(unittest.TestCase):
 
         print(list(material.db))
         m1 = material.get("Al(0.2)GaAs:Dp=3.0")
-        self.assertEqual(m1.__class__, Material.AlGaAsDp)
+        self.assertEqual(m1.__class__, TestMaterial.AlGaAsDp)
         self.assertEqual(m1.name, "AlGaAs:Dp")
         self.assertEqual(m1.VB(1.0), 3.0)
         self.assertAlmostEqual(m1.CB(1.0), 0.8)
@@ -103,7 +103,7 @@ class Material(unittest.TestCase):
         self.assertEqual(tuple(ptest.NR(m1)), (3.5, 3.6, 3.7, 0.1))
 
         with(self.assertRaisesRegex(TypeError, "'N' not allowed in material AlGaAs:Dp")):
-            mx = Material.AlGaAsDp(Al=0.2, N=0.9, doping=1e18)
+            mx = TestMaterial.AlGaAsDp(Al=0.2, N=0.9, doping=1e18)
 
         m2 = material.AlGaAs(Al=0.2, dopant="Dp", doping=5.0)
         self.assertEqual(m2.name, "AlGaAs:Dp")
@@ -118,7 +118,7 @@ class Material(unittest.TestCase):
         self.assertEqual(ptest.material_name("Al(0.2)GaAs:Dp=3.0", material.db), "AlGaAs:Dp")
         self.assertEqual(ptest.material_VB("Al(0.2)GaAs:Dp=3.0", material.db, 1.0), 3.0)
 
-        c = Material.WithChar()
+        c = TestMaterial.WithChar()
         self.assertEqual(c.name, "WithChar")
         with self.assertRaisesRegex(NotImplementedError, "Method not implemented"): c.VB(1.0)
         self.assertEqual( ptest.call_chi(c, 'A'), 1.5)
@@ -206,7 +206,6 @@ class Material(unittest.TestCase):
 
         with(self.assertRaises(ValueError)): plask.geometry.Rectangle(2,2, "Al(0.2)GaAs:Ja=3.0").get_material(0,0)
 
-
     def testThermK(self):
         @material.simple()
         class Therm(material.Material):
@@ -214,7 +213,6 @@ class Material(unittest.TestCase):
 
         self.assertEqual(ptest.material_thermk("Therm", material.db, 300.), (infty,infty))
         self.assertEqual(ptest.material_thermk("Therm", material.db, 300., 2.), (302.,302.))
-
 
     def testComparison(self):
         @material.simple('GaAs')
@@ -352,6 +350,16 @@ class Material(unittest.TestCase):
             self.assertEqual(material.get('Test').A(), 2)
             self.assertEqual(saved.get('Test').A(), 1)
         self.assertEqual(material.get('Test').A(), 1)
+
+    def testDBremoval(self):
+        n = len(material.db)
+        @material.simple('semiconductor')
+        class Test(material.Material):
+            def A(self, T=300.):
+                return 1
+        self.assertEqual(n+1, len(material.db))
+        material.db.remove('Test')
+        self.assertEqual(n, len(material.db))
 
     def testMaterialWithParams(self):
         m1 = material.get('[nr=2.5 absp=2e5]')
