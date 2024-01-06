@@ -100,6 +100,7 @@ else()
         set(PLASK_VERSION "$ENV{PLASK_VERSION}.${plask_version_suffix}")
     endif()
 endif()
+string(TIMESTAMP CURRENT_YEAR "%Y")
 message(STATUS "PLaSK version ${PLASK_VERSION}")
 
 # ---------- Configurable options --------------------------------------------

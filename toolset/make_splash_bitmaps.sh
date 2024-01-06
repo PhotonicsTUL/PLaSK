@@ -14,6 +14,8 @@
 guidir=$(realpath $(dirname ${0})/../gui)
 utilsdir=$(realpath $(dirname ${0})/../utils)
 
+CURRENT_YEAR=$(date '+%Y')
+
 for s in 620 868 1116; do
-    rsvg-convert -o ${guidir}/splash${s}.png -w ${s} ${utilsdir}/splash.svg
+    sed "s/{CURRENT_YEAR}/${CURRENT_YEAR}/" ${utilsdir}/splash.svg | rsvg-convert -o ${guidir}/splash${s}.png -w ${s}
 done

@@ -17,6 +17,7 @@ import re
 import subprocess
 import pkgutil
 import traceback
+from datetime import date
 
 from lxml import etree
 from uuid import getnode
@@ -789,8 +790,13 @@ class MainWindow(QMainWindow):
             horizontal.addWidget(icon_label)
             horizontal.setAlignment(icon_label, Qt.AlignmentFlag.AlignTop)
 
-            label = QLabel(u"<b>PLaSK — Photonic Laser Simulation Kit</b><br/>\n"
-                           u"© 2014-2023 Lodz University of Technology, Photonics Group<br/><br/>" + text)
+            if VERSION is not None:
+                year = VERSION[:4]
+            else:
+                year = date.today().strftime("%Y")
+
+            label = QLabel(f"<b>PLaSK — Photonic Laser Simulation Kit</b><br/>\n"
+                           f"© 2014-{year} Lodz University of Technology, Photonics Group<br/><br/>" + text)
             label.setTextFormat(Qt.TextFormat.RichText)
             label.setWordWrap(True)
             horizontal.addWidget(label)
