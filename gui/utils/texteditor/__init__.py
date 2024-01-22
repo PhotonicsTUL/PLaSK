@@ -10,7 +10,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-
 import math
 
 from ...qt.QtCore import *
@@ -510,7 +509,7 @@ class EditorWidget(QWidget):
                 self.find_selection.setChecked(True)
             else:
                 self.find_selection.setChecked(False)
-                self.find_edit.setText(text)
+                self.find_edit.setText(QRegularExpression.escape(text) if self.find_regex.isChecked() else text)
         else:
             self.find_selection.setChecked(False)
         self.find_edit.selectAll()
@@ -519,17 +518,7 @@ class EditorWidget(QWidget):
         self.find_edit.setFocus()
 
     def show_replace(self):
-        cursor = self.editor.textCursor()
-        if cursor.hasSelection():
-            text = cursor.selectedText()
-            if u'\u2029' in text:
-                self.find_selection.setChecked(True)
-            else:
-                self.find_selection.setChecked(False)
-                self.find_edit.setText(text)
-        self.find_edit.selectAll()
-        self.find_edit.setPalette(self.replace_edit.palette())
-        self.find_toolbar.show()
+        self.show_find()
         self.replace_toolbar.show()
         self.find_edit.setFocus()
 
@@ -623,7 +612,7 @@ class EditorWidget(QWidget):
 
     def trigger_setting(self, setting, caller):
         CONFIG[setting] = caller.isChecked()
-        CONFIG.save()
+        CONFIG.sync()
         if self.find_toolbar.isVisible():
             self.find_type()
 
