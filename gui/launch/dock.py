@@ -14,28 +14,31 @@ import os.path
 import re
 from time import strftime
 
-from ..utils.widgets import LineEditWithClear, set_icon_size
-
 from ..qt.QtCore import *
 from ..qt.QtGui import *
 from ..qt.QtWidgets import *
 from ..qt import qt_exec
 
 from ..utils.config import CONFIG, set_font
+from ..utils.widgets import LineEditWithClear, set_icon_size
 
 LEVEL_CRITICAL_ERROR = 1
-LEVEL_ERROR          = 2
-LEVEL_WARNING        = 3
-LEVEL_IMPORTANT      = 4
-LEVEL_INFO           = 5
-LEVEL_RESULT         = 6
-LEVEL_DATA           = 7
-LEVEL_DETAIL         = 8
-LEVEL_ERROR_DETAIL   = 9
-LEVEL_DEBUG          = 10
+LEVEL_ERROR = 2
+LEVEL_WARNING = 3
+LEVEL_IMPORTANT = 4
+LEVEL_INFO = 5
+LEVEL_RESULT = 6
+LEVEL_DATA = 7
+LEVEL_DETAIL = 8
+LEVEL_ERROR_DETAIL = 9
+LEVEL_DEBUG = 10
 
 LEVEL_ROLE = Qt.ItemDataRole.UserRole
-LINE_ROLE = Qt.ItemDataRole.UserRole + 1
+FILE_ROLE = Qt.ItemDataRole.UserRole + 1
+LINE_ROLE = Qt.ItemDataRole.UserRole + 2
+
+LINK = re.compile(r'[^:]+:\s*(.+?)(?:(?:|,|:| in <\S+>,?)(?: XML)? line |:)(\d+)(?:.*)')
+
 
 class OutputModel(QAbstractListModel):
 
@@ -50,10 +53,10 @@ class OutputModel(QAbstractListModel):
             self.lh = fm.lineSpacing()
             self.lw = fm.maxWidth()
 
-    def add_line(self, level, text, link=None):
+    def add_line(self, level, text, link_file=None, link_line=None):
         ll = len(self.lines)
-        self.beginInsertRows(QModelIndex(), ll, ll+1)
-        self.lines.append((level, text, link))
+        self.beginInsertRows(QModelIndex(), ll, ll + 1)
+        self.lines.append((level, text, link_file, link_line))
         self.endInsertRows()
 
     def data(self, index, role=None):
@@ -71,10 +74,12 @@ class OutputModel(QAbstractListModel):
             return QBrush(QColor(color))
         if role == LEVEL_ROLE:
             return self.lines[row][0]
-        if role == LINE_ROLE:
+        if role == FILE_ROLE:
             return self.lines[row][2]
+        if role == LINE_ROLE:
+            return self.lines[row][3]
         if role == Qt.ItemDataRole.SizeHintRole and self.fm is not None:
-            return QSize(self.fm.horizontalAdvance(self.lines[row][1])+self.lw, self.lh)
+            return QSize(self.fm.horizontalAdvance(self.lines[row][1]) + self.lw, self.lh)
 
     def rowCount(self, parent=None):
         return len(self.lines)
@@ -141,7 +146,7 @@ class OutputFilter(QSortFilterProxyModel):
             level = self.sourceModel().lines[row][0]
         except IndexError:
             return False
-        if level != 0 and not self.window.levels[level-1].isChecked():
+        if level != 0 and not self.window.levels[level - 1].isChecked():
             return False
         return super().filterAcceptsRow(row, parent)
 
@@ -154,6 +159,7 @@ class OutputWindow(QDockWidget):
 
         self.launcher = launcher
         self.main_window = main_window
+        self.current_file = os.path.split(filename) if filename is not None else None
 
         if main_window is not None:
             main_window.closing.connect(self.check_close_event)
@@ -241,16 +247,8 @@ class OutputWindow(QDockWidget):
         self.addAction(self.action_debug)
 
         self.levels = (
-            self.action_error,
-            self.action_error,
-            self.action_warning,
-            self.action_important,
-            self.action_info,
-            self.action_result,
-            self.action_data,
-            self.action_detail,
-            self.action_error,
-            self.action_debug
+            self.action_error, self.action_error, self.action_warning, self.action_important, self.action_info, self.action_result,
+            self.action_data, self.action_detail, self.action_error, self.action_debug
         )
 
         view_menu = QMenu("Show", self)
@@ -352,17 +350,6 @@ class OutputWindow(QDockWidget):
 
         self.newlines = []
 
-        if filename is not None:
-            fd, fb = (s.replace(' ', '&nbsp;') for s in os.path.split(filename))
-            sep = os.path.sep
-            if sep == '\\':
-                sep = '\\\\'
-                fd = fd.replace('\\', '\\\\')
-            self.link = re.compile(
-                r'((?:{}{})?{}(?:(?:|,|:| in <\S+>,?)(?: XML)? line |:))(\d+)(.*)'.format(fd, sep, fb))
-        else:
-            self.link = None
-
     def reconfig(self):
         font = self.messages.font()
         if set_font(font, 'launcher_local/font'):
@@ -371,11 +358,29 @@ class OutputWindow(QDockWidget):
         self.filter.invalidate()
 
     def line_clicked(self, index):
+        file = self.filter.data(index, FILE_ROLE)
         line = self.filter.data(index, LINE_ROLE)
-        if line is not None:
-            parent = self.parent()
-            if parent:
-                parent.goto_line(line)
+        if file is not None and line is not None:
+            dirname, filename = os.path.split(file)
+            if filename == self.current_file[1] and (dirname == self.current_file[0] or not dirname):
+                parent = self.parent()
+                if parent:
+                    parent.goto_line(line)
+            else:
+                from .. import WINDOWS
+                for window in WINDOWS:
+                    if window.document.filename is None:
+                        continue
+                    window_file = os.path.split(window.document.filename)
+                    if filename == window_file[1] and (dirname == window_file[0] or not dirname):
+                        window.raise_()
+                        window.goto_line(line)
+                        break
+                else:
+                    parent = self.parent()
+                    if parent:
+                        window = parent.load_file(os.path.join(dirname, filename))
+                        window.goto_line(line)
 
     def update_filter(self):
         self.filter.invalidateFilter()
@@ -392,24 +397,26 @@ class OutputWindow(QDockWidget):
                 line = line.decode('utf-8')
             except UnicodeDecodeError:
                 line = line.decode('cp1250')
-        level = {'CRITICAL ERROR:': LEVEL_CRITICAL_ERROR,
-                 'ERROR         :': LEVEL_ERROR,
-                 'WARNING       :': LEVEL_WARNING,
-                 'IMPORTANT     :': LEVEL_IMPORTANT,
-                 'INFO          :': LEVEL_INFO,
-                 'RESULT        :': LEVEL_RESULT,
-                 'DATA          :': LEVEL_DATA,
-                 'DETAIL        :': LEVEL_DETAIL,
-                 'ERROR DETAIL  :': LEVEL_ERROR_DETAIL,
-                 'DEBUG         :': LEVEL_DEBUG}.get(line[:15], 0)
-        lineno = None
-        if self.link is not None:
-            match = self.link.search(line)
-            if match is not None:
-                lineno = int(match.groups()[1])
+        level = {
+            'CRITICAL ERROR:': LEVEL_CRITICAL_ERROR,
+            'ERROR         :': LEVEL_ERROR,
+            'WARNING       :': LEVEL_WARNING,
+            'IMPORTANT     :': LEVEL_IMPORTANT,
+            'INFO          :': LEVEL_INFO,
+            'RESULT        :': LEVEL_RESULT,
+            'DATA          :': LEVEL_DATA,
+            'DETAIL        :': LEVEL_DETAIL,
+            'ERROR DETAIL  :': LEVEL_ERROR_DETAIL,
+            'DEBUG         :': LEVEL_DEBUG
+        }.get(line[:15], 0)
+        link = None, None
+        match = LINK.match(line)
+        if match is not None:
+            groups = match.groups()
+            link = groups[0], int(groups[1])
         try:
             self.mutex.lock()
-            self.newlines.append((level, line, lineno))
+            self.newlines.append((level, line, link[0], link[1]))
         finally:
             self.mutex.unlock()
 
@@ -427,10 +434,10 @@ class OutputWindow(QDockWidget):
             self.messages.scrollToBottom()
 
     def halt_thread(self):
-        confirm = QMessageBox.question(self, "Halt Process",
-                                             "PLaSK is currently running. Do you really want to terminate it? "
-                                             "All computation results may be lost!",
-                                             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        confirm = QMessageBox.question(
+            self, "Halt Process", "PLaSK is currently running. Do you really want to terminate it? "
+            "All computation results may be lost!", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
         if confirm == QMessageBox.StandardButton.Yes and self.thread is not None:
             self.thread.kill_process()
 
@@ -446,18 +453,18 @@ class OutputWindow(QDockWidget):
         checked = getattr(event, 'checked_by_laucher_local', False)
         if not checked and event.isAccepted() and self.thread is not None and self.thread.isRunning():
             event.checked_by_laucher_local = True
-            confirm = QMessageBox.question(self, "Close Window",
-                                                 "PLaSK process is currently running. Closing the window "
-                                                 "will terminate it. Do you really want to proceed? "
-                                                 "All computation results may be lost!",
-                                                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            confirm = QMessageBox.question(
+                self, "Close Window", "PLaSK process is currently running. Closing the window "
+                "will terminate it. Do you really want to proceed? "
+                "All computation results may be lost!", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            )
             if confirm == QMessageBox.StandardButton.Yes:
                 self.thread.kill_process()
                 if not self.thread.wait(6000):
-                    QMessageBox.critical(self, "Close Window",
-                                               "PLaSK process could not be terminated. Window will not be closed. "
-                                               "Please try once again or contact the program authors.",
-                                               QMessageBox.StandardButton.Ok)
+                    QMessageBox.critical(
+                        self, "Close Window", "PLaSK process could not be terminated. Window will not be closed. "
+                        "Please try once again or contact the program authors.", QMessageBox.StandardButton.Ok
+                    )
                     event.ignore()
                     event.ignore()
             else:
@@ -471,15 +478,17 @@ class OutputWindow(QDockWidget):
         super().closeEvent(event)
         if focus:
             main_window = self.parent()
-            others = [w for w in main_window.findChildren(QDockWidget)
-                      if isinstance(w, OutputWindow) and w is not self and w.isVisible()]
+            others = [
+                w for w in main_window.findChildren(QDockWidget) if isinstance(w, OutputWindow) and w is not self and w.isVisible()
+            ]
             if others:
                 others[-1].messages.setFocus()
 
     def close_all_stopped_docks(self):
         main_window = self.parent()
-        docks = (w for w in main_window.findChildren(QDockWidget)
-                 if isinstance(w, OutputWindow) and w.isVisible() and
-                 not (w.thread is None or w.thread.isRunning()))
+        docks = (
+            w for w in main_window.findChildren(QDockWidget)
+            if isinstance(w, OutputWindow) and w.isVisible() and not (w.thread is None or w.thread.isRunning())
+        )
         for dock in docks:
             dock.close()

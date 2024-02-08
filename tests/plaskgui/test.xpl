@@ -76,9 +76,9 @@
   <cartesian2d name="simple" left="periodic" right="periodic" bottom="Au" top="extend">
     <stack name="simple-stack">
       <python name="aaa">
-        h = 0.2
-        return geometry.Rectangle(1, h, 'GaAs')
-      </python>
+          h = 0.2
+          return geometry.Rectangle(1, h, 'GaAs')
+        </python>
       <stack repeat="3">
         <rectangle material="Al(0.9)GaAs" dtran="1" dvert="0.3"/>
         <rectangle material="Al(0.9)GaN" dtran="1" dvert="0.2"/>
@@ -616,6 +616,7 @@ dictionary = {
     'c': print_log
 }
 
+import module
 
 csys = 1
 cmap = 2

@@ -498,6 +498,7 @@ class MainWindow(QMainWindow):
             self.current_tab_index = -1
             self._try_load_from_file(filename)
             self.current_section_enter()
+            new_window = self
         else:
             new_window = MainWindow(filename)
             try:
@@ -511,6 +512,10 @@ class MainWindow(QMainWindow):
             except AttributeError:
                 new_window.setWindowModified(False)
                 new_window.close()
+                new_window = None
+            else:
+                new_window.raise_()
+        return new_window
 
     def reload(self):
         if self.document.filename is None:
