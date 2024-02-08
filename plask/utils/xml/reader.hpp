@@ -429,7 +429,7 @@ private:
      * Check if current XML state is available and throw exception if not.
      */
     void ensureHasCurrent() const {
-        if (!hasCurrent()) throw XMLException("xML reader: no current node (missing first read() call?)");
+        if (!hasCurrent()) throw XMLException("XML reader: no current node (missing first read() call?)");
     }
 
     /// @return current XML state (valid only if hasCurrent() returns @c true)

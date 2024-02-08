@@ -609,8 +609,8 @@ class MaterialsModel(TableModel):
                     except (ValueError, RuntimeError) as err:
                         if not (
                             d.alloy and isinstance(err, ValueError) and (
-                                str(err).startswith("Material composition required")
-                                or str(err).startswith("Unknown material composition")
+                                str(err).startswith("material composition required")
+                                or str(err).startswith("unknown material composition")
                             )
                         ):
                             if extract_material_name(mat) not in self.get_materials(i):

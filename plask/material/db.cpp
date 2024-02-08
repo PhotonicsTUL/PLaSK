@@ -208,7 +208,7 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
                 if (allow_alloy_without_composition)
                     return c->second;
                 else
-                    throw MaterialParseException(format("Material composition required for {0}", db_Key));
+                    throw MaterialParseException(format("material composition required for {0}", db_Key));
             } else
                 throw NoSuchMaterial(db_Key);
         }

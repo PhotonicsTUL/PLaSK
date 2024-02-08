@@ -23,14 +23,14 @@ namespace plask {
 std::size_t XMLReader::StreamDataSource::read(char* buff, std::size_t buf_size) {
     input->read(buff, buf_size);
     if (input->bad())
-        throw XMLException("xML reader: Can't read input data from C++ stream.");
+        throw XMLException("XML reader: Can't read input data from C++ stream.");
     return input->gcount();
 }
 
 std::size_t XMLReader::CFileDataSource::read(char* buff, std::size_t buf_size) {
     std::size_t read = fread(buff, sizeof(char), buf_size, desc);
     if (read != buf_size && ferror(desc)) {
-        throw XMLException("xML reader: Can't read input data from C file.");
+        throw XMLException("XML reader: Can't read input data from C file.");
     }
     return read;
 }
@@ -73,7 +73,7 @@ bool XMLReader::readSome() {
         auto error_code = XML_GetErrorCode(parser);
         if (error_code != XML_ERROR_FINISHED) {
             auto line = XML_GetCurrentLineNumber(parser);
-            throw XMLException("xML line " +
+            throw XMLException("XML line " +
                                boost::lexical_cast<std::string>(line) + ": parse error: "
                                + XML_ErrorString(error_code), int(line));
         }
@@ -221,7 +221,7 @@ const std::map<std::string, std::string> XMLReader::getAttributes() const {
                 parsed[attr.first] = attributeFilter(attr.second);
             } catch (const std::exception& e) {
                 unsigned line = this->getCurrent().lineNr;
-                throw XMLException("xML line " + boost::lexical_cast<std::string>(line) +
+                throw XMLException("XML line " + boost::lexical_cast<std::string>(line) +
                                 " in <" + this->getCurrent().text + "> attribute '" + attr.first +
                                 "': Bad parsed expression", e.what(), int(line));
             }
@@ -266,7 +266,7 @@ std::string XMLReader::getTextContent() const {
             return contentFilter(getCurrent().text);
         } catch (const std::exception& e) {
             unsigned line = this->getCurrent().lineNr;
-            throw XMLException("xML line " + boost::lexical_cast<std::string>(line) +
+            throw XMLException("XML line " + boost::lexical_cast<std::string>(line) +
                                ": Bad parsed expression", e.what(), int(line));
         }
     } else
@@ -283,7 +283,7 @@ plask::optional<std::string> XMLReader::getAttribute(const std::string& name) co
             return attributeFilter(res_it->second);
         } catch (const std::exception& e) {
             unsigned line = this->getCurrent().lineNr;
-            throw XMLException("xML line " + boost::lexical_cast<std::string>(line) +
+            throw XMLException("XML line " + boost::lexical_cast<std::string>(line) +
                                " in <" + this->getCurrent().text + "> attribute '" + name +
                                "': Bad parsed expression", e.what(), int(line));
         }
