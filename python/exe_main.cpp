@@ -306,7 +306,6 @@ int
                 "-m module      run python module as a script (terminates option list)\n"
                 "-p             treat provided file as Python script regardless of its\n"
                 "               extension (cannot be used together with -x)\n"
-                "-s             print hardware system ID for licensing and exit\n"
                 "-u             use unbuffered binary stdout and stderr\n"
                 "-V, --version  print the PLaSK version number and exit\n"
                 "-x             treat provided file as XPL regardless of its\n"
