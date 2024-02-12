@@ -858,7 +858,7 @@ else:
                 workdir = '/'.join((stdout.read().decode('utf8').strip(), workdir))
             ssh.exec_command("mkdir -p {}".format(quote(workdir)))
 
-            dock = OutputWindow(self, main_window, filename, "Launch at " + account.name)
+            dock = OutputWindow(self, main_window, "Launch at " + account.name)
             try:
                 bottom_docked = [w for w in main_window.findChildren(QDockWidget)
                                  if main_window.dockWidgetArea(w) == (Qt.DockWidgetArea.BottomDockWidgetArea)][-1]

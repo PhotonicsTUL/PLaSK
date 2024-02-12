@@ -9,8 +9,8 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
-
+import os
+from pathlib import Path
 import weakref
 
 from ....qt import QT_API
@@ -91,7 +91,7 @@ class PythonEditor(TextEditor):
         self.completer = CompletionsController(self)
 
         self._pointer_blocked = False
-        self._pointer_definition = None, None
+        self._pointer_definition = None, None, None
 
         self.setMouseTracking(True)
 
@@ -250,7 +250,7 @@ class PythonEditor(TextEditor):
             if txt[:col].strip() or (col == 0 and txt.strip()):
                 cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock, mode)
                 while self.document().characterAt(cursor.position()) in [' ', '\t']:
-                    cursor.movePosition(QTextCursor.MoveOperation.Right, mode)
+                    cursor.movePosition(QTextCursor.MoveOperation.NextCharacter, mode)
                 self.setTextCursor(cursor)
                 return
 
@@ -275,10 +275,12 @@ class PythonEditor(TextEditor):
                 update_python_scheme()
                 self.rehighlight(*args, **kwargs)
 
-    def link_definition(self, row, col):
+    def link_definition(self, path, row, col):
         self._pointer_blocked = False
-        self._pointer_definition = row, col
+        self._pointer_definition = path, row, col
         cursor = QApplication.overrideCursor()
+        if path and os.path.splitext(path)[-1] not in ('.py', '.xpl'):
+            row = None
         if not cursor and row is not None:
             QApplication.setOverrideCursor(Qt.CursorShape.PointingHandCursor)
         elif cursor and cursor.shape() == Qt.CursorShape.PointingHandCursor and row is None:
@@ -307,11 +309,14 @@ class PythonEditor(TextEditor):
 
     def mouseReleaseEvent(self, event):
         super().mouseReleaseEvent(event)
-        row, col = self._pointer_definition
-        if event.modifiers() == Qt.KeyboardModifier.ControlModifier and not self._pointer_blocked and row:
-            cursor = QTextCursor(self.document().findBlockByLineNumber(row))
-            cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.MoveAnchor, col)
-            self.setTextCursor(cursor)
+        path, row, col = self._pointer_definition
+        if event.modifiers() == Qt.KeyboardModifier.ControlModifier and not self._pointer_blocked and row is not None:
+            if path is None or path == Path(self._document.filename):
+                cursor = QTextCursor(self.document().findBlockByLineNumber(row))
+                cursor.movePosition(QTextCursor.MoveOperation.NextCharacter, QTextCursor.MoveMode.MoveAnchor, col)
+                self.setTextCursor(cursor)
+            else:
+                self._document.window.goto_file_line(path, row, col)
 
     def get_completions(self, row, col):
         if self._document is not None:

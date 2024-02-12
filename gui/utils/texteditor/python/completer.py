@@ -201,12 +201,12 @@ def get_definitions(document, text, block, column):
             script = jedi.Script(text, path=document.filename, project=jedi.Project(dirname, added_sys_path=PLASK_PATHS))
             defs = script.goto(block+1, column)
         except:
-            return None, None
+            return None, None, None
         if defs:
             d = defs[0]
             if d.line is not None:
-                return d.line-1, d.column
-        return None, None
+                return d.module_path, d.line-1, d.column
+        return None, None, None
 
 
 class CompletionsController(QCompleter):

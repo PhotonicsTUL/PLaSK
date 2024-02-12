@@ -692,20 +692,20 @@ class MainWindow(QMainWindow):
         else:
             return
 
-    def goto_line(self, line_number=None):
-        if line_number is None:
+    def goto_line(self, line=None, column=None):
+        if line is None:
             dialog = GotoDialog(self)
             if qt_exec(dialog):
-                line_number = int(dialog.input.text())
+                line = int(dialog.input.text())
             else:
                 return
         indx = None
         for i, c in enumerate(self.document.controllers):
             if c.model.line_in_file is None: continue
-            if line_number < c.model.line_in_file: break
+            if line < c.model.line_in_file: break
             indx = i
             cntrl = c
-            lineno = line_number - c.model.line_in_file - 1
+            lineno = line - c.model.line_in_file - 1
         if indx is not None:
             self.tabs.setCurrentIndex(indx)
             self.tab_change(indx)
@@ -714,8 +714,32 @@ class MainWindow(QMainWindow):
             editor = cntrl.get_source_widget().editor
             cursor = QTextCursor(editor.document().findBlockByLineNumber(
                 min(lineno, editor.document().blockCount()-1)))
+            if column is not None:
+                cursor.movePosition(QTextCursor.MoveOperation.NextCharacter, QTextCursor.MoveMode.MoveAnchor, column)
             editor.setTextCursor(cursor)
             editor.setFocus()
+
+    def goto_file_line(self, file, line, column=None):
+        if file is not None and line is not None:
+            current_file = os.path.abspath(self.document.filename)
+            cd = os.path.dirname(current_file)
+            d, f = os.path.split(file)
+            file = os.path.join(d or cd, f)
+            if file == current_file:
+                self.goto_line(line, column)
+            else:
+                for window in WINDOWS:
+                    if window.document.filename is None:
+                        continue
+                    window_file = os.path.abspath(window.document.filename)
+                    if file == window_file:
+                        window.raise_()
+                        window.goto_line(line, column)
+                        break
+                else:
+                    if os.path.splitext(file)[1] in ('.xpl', '.py') and os.path.isfile(file):
+                        window = self.load_file(file)
+                        window.goto_line(line, column)
 
     def set_show_source_state(self, show_source_enabled):
         if show_source_enabled is None:

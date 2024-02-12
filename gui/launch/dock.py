@@ -153,13 +153,12 @@ class OutputFilter(QSortFilterProxyModel):
 
 class OutputWindow(QDockWidget):
 
-    def __init__(self, launcher, main_window, filename=None, label="Launch local"):
+    def __init__(self, launcher, main_window, label="Launch local"):
         super().__init__("{} ({})".format(label, strftime('%X')), main_window)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
         self.launcher = launcher
         self.main_window = main_window
-        self.current_file = os.path.split(filename) if filename is not None else None
 
         if main_window is not None:
             main_window.closing.connect(self.check_close_event)
@@ -358,29 +357,10 @@ class OutputWindow(QDockWidget):
         self.filter.invalidate()
 
     def line_clicked(self, index):
-        file = self.filter.data(index, FILE_ROLE)
-        line = self.filter.data(index, LINE_ROLE)
-        if file is not None and line is not None:
-            dirname, filename = os.path.split(file)
-            if filename == self.current_file[1] and (dirname == self.current_file[0] or not dirname):
-                parent = self.parent()
-                if parent:
-                    parent.goto_line(line)
-            else:
-                from .. import WINDOWS
-                for window in WINDOWS:
-                    if window.document.filename is None:
-                        continue
-                    window_file = os.path.split(window.document.filename)
-                    if filename == window_file[1] and (dirname == window_file[0] or not dirname):
-                        window.raise_()
-                        window.goto_line(line)
-                        break
-                else:
-                    parent = self.parent()
-                    if parent:
-                        window = parent.load_file(os.path.join(dirname, filename))
-                        window.goto_line(line)
+        parent = self.parent()
+        if parent:
+            parent.goto_file_line(self.filter.data(index, FILE_ROLE), self.filter.data(index, LINE_ROLE))
+
 
     def update_filter(self):
         self.filter.invalidateFilter()
