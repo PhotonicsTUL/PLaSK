@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -55,7 +55,8 @@ class FormatPythonAction(QAction):
         tabs = self.parent().tabs
         tabs.setCurrentIndex(tabs.count() - 1)
         editor = self.parent().document.script.get_source_widget().editor
-        text = editor.toPlainText() + "\n"
+        offset = editor.line_numbers.offset
+        text = ''.join(f"# {i}\n" for i in range(offset)) + editor.toPlainText() + "\n"
         try:
             program = CONFIG['python_formatter/program']
             args = CONFIG['python_formatter/args'].splitlines()
@@ -80,7 +81,7 @@ class FormatPythonAction(QAction):
             except (TypeError, AttributeError):
                 editor.moveCursor(QTextCursor.MoveOperation.End, True)
             cursor = editor.textCursor()
-            cursor.insertText(text)
+            cursor.insertText('\n'.join(text.splitlines()[offset:]))
             cur = QTextCursor(editor.document().findBlockByLineNumber(min(lineno, editor.document().blockCount() - 1)))
             editor.setTextCursor(cur)
             editor.verticalScrollBar().setValue(min(scroll, editor.verticalScrollBar().maximum()))
