@@ -668,7 +668,12 @@ class MaterialsModel(TableModel):
                                 if material.name in sys.modules:
                                     reload_module(sys.modules[material.name])
                                 else:
-                                    import_module(material.name)
+                                    try:
+                                        import_module(material.name)
+                                    except:
+                                        if _DEBUG:
+                                            import traceback
+                                            traceback.print_exc()
                             except:
                                 if _DEBUG:
                                     import traceback
