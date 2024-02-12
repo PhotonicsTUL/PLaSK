@@ -49,6 +49,16 @@ template <> inline const char* docstring_provider_multi_param_desc<Gain>() {
            "                  concentration is returned.\n";
 }
 
+template <> struct PropertyArgsField<Luminescence> {
+    static py::detail::keywords<4> value() {
+        return boost::python::arg("self"), boost::python::arg("mesh"), boost::python::arg("wavelength"), boost::python::arg("interpolation")=INTERPOLATION_DEFAULT;
+    }
+};
+template <> inline const char* docstrig_property_optional_args<Luminescence>() { return ", wavelength"; }
+template <> inline const char* docstrig_property_optional_args_desc<Luminescence>() { return
+    u8":param float wavelength: The wavelength at which the luminescence is computed (nm).\n";
+}
+
 
 template <> struct PropertyArgsMultiField<CarriersConcentration> {
     static py::detail::keywords<4> value() {
