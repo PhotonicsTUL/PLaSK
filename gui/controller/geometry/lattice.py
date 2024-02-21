@@ -22,6 +22,7 @@ from matplotlib.lines import Line2D
 from matplotlib.backend_bases import MouseEvent
 from mpl_toolkits.axisartist.grid_helper_curvelinear import GridHelperCurveLinear
 from mpl_toolkits.axisartist import Subplot
+from matplotlib.backend_tools import cursors
 
 try:
     from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
@@ -145,12 +146,6 @@ class GNLatticeController(GNObjectController):
             segments = ' ^ '.join('; '.join('{:d} {:d}'.format(*xy) for xy in item)
                                   for item in dialog.bounds)
             self._set_node_property_undoable('segments', segments)
-
-
-class Cursors:
-    # this class is only used as a simple namespace
-    HAND, POINTER, SELECT_REGION, MOVE = range(4)
-cursors = Cursors()
 
 
 class NavigationToolbar(NavigationToolbar2QT):
@@ -327,8 +322,11 @@ class LatticeEditor(QDialog):
             super().__init__(base)
             self.create_dummy_axis()
         def __call__(self, v1, v2):
-            self.set_bounds(v1, v2)
-            locs = super().__call__()
+            try:
+                locs = self.tick_values(v1, v2)
+            except AttributeError:
+                self.set_bounds(v1, v2)
+                locs = super().__call__()
             return np.array(locs), len(locs), 1.
 
     def __init__(self, vecs, bounds=None, parent=None):
@@ -487,7 +485,10 @@ class LatticeEditor(QDialog):
                     self.canvas.restore_region(self.background)
                     line = self.axes.lines[-1]
                     line.set_color(CONFIG['geometry/lattice_line_color'])
-                    line.set_marker(None)
+                    try:
+                        line.set_marker('none')
+                    except ValueError:
+                        line.set_marker(None)
                     self.canvas.draw()
                     self.background = self.canvas.copy_from_bbox(self.axes.bbox)
                     self.current = None
@@ -508,8 +509,14 @@ class LatticeEditor(QDialog):
                 # event = MouseEvent('Lattice MouseEvent', self.canvas, x, y)
                 for i, line in reversed(list(enumerate(self.axes.lines[2:]))):
                     if line.contains(event)[0]:
-                        del self.bounds[i]
-                        del self.axes.lines[i+2]
+                        try:
+                            del self.bounds[i]
+                        except IndexError:
+                            pass
+                        try:
+                            self.axes.lines[i+2].remove()
+                        except AttributeError:
+                            del self.axes.lines[i+2]
                         self._save_bounds()
                         self.update_points()
                         self.canvas.draw()
