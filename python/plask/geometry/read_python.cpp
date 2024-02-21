@@ -89,8 +89,12 @@ shared_ptr<GeometryObject> read_python(GeometryReader& reader) {
                         #else
                             traceback->tb_frame->f_code;
                         #endif
-                    if (f_code->co_filename == original_filename)
+                    if (f_code->co_filename == original_filename) {
                         line = traceback->tb_lineno;
+                        #if PY_VERSION_HEX >= 0x030a0000
+                            if (line == -1) line = PyCode_Addr2Line(f_code, traceback->tb_lasti);
+                        #endif
+                    }
                     #if PY_VERSION_HEX >= 0x030900B1
                         Py_XDECREF(f_code);
                     #endif

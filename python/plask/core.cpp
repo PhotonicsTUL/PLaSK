@@ -317,13 +317,16 @@ PLASK_PYTHON_API int printPythonException(PyObject* otype, PyObject* value, PyOb
     if (original_traceback) {
         PyTracebackObject* traceback = original_traceback;
         while (traceback) {
-            int lineno = traceback->tb_lineno + scriptline;
             PyCodeObject* f_code =
                 #if PY_VERSION_HEX >= 0x030900B1
                     PyFrame_GetCode(traceback->tb_frame);
                 #else
                     traceback->tb_frame->f_code;
                 #endif
+            int lineno = traceback->tb_lineno + scriptline;
+            #if PY_VERSION_HEX >= 0x030a0000
+                if (lineno == -1) lineno = PyCode_Addr2Line(f_code, traceback->tb_lasti);
+            #endif
             std::string filename = py::extract<std::string>(f_code->co_filename);
             std::string funcname = py::extract<std::string>(f_code->co_name);
             #if PY_VERSION_HEX >= 0x030900B1
