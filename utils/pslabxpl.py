@@ -326,5 +326,5 @@ def save_xpl(xplname, source, materials=None):
     else:
         raise TypeError('Wrong PSLab source type')
 
-    with open(xplname, 'w') as out:
+    with open(xplname, 'w', encoding='utf-8') as out:
         out.write(etree.tostring(xpl, encoding='unicode', pretty_print=True))

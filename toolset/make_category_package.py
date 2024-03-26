@@ -20,7 +20,7 @@ import yaml
 
 plaskdir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 sys.path.insert(2, os.path.join(plaskdir, 'gui', 'lib'))
-import yaml_include
+import yaml_include  # type: ignore
 yaml_include.AddYamlIncludePath(os.path.join(plaskdir, 'plask', 'common'))
 
 

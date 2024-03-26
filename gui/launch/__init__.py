@@ -14,6 +14,8 @@ import os
 import shlex
 import json
 
+from lxml import etree
+
 from ..qt.QtGui import *
 from ..qt.QtWidgets import *
 from ..qt.QtCore import *
@@ -278,15 +280,15 @@ def save_launch_config(filename):
             if os.name == 'nt':
                 # workaround for hidden files
                 try:
-                    with open(filename, 'r+') as config_file:
+                    with open(filename, 'r+', encoding='utf8') as config_file:
                         json.dump({'launch': config}, config_file, indent=1)
                         config_file.truncate()
                 except FileNotFoundError:
-                    with open(filename, 'w') as config_file:
+                    with open(filename, 'w', encoding='utf8') as config_file:
                         json.dump({'launch': config}, config_file, indent=1)
                 system.set_file_attributes(filename, system.FILE_ATTRIBUTE_HIDDEN)
             else:
-                with open(filename, 'w') as config_file:
+                with open(filename, 'w', encoding='utf8') as config_file:
                     json.dump({'launch': config}, config_file, indent=1)
     except:
         from .. import _DEBUG

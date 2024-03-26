@@ -118,7 +118,7 @@ def _init_python_session(argv=[]):
     import sys
     sys.argv = argv
     if argv and argv != ['']:
-        console.runsource(open(argv[0]).read(), argv[0], 'exec')
+        console.runsource(open(argv[0], encoding='utf8').read(), argv[0], 'exec')
 
     return console
 
@@ -150,7 +150,7 @@ def interact(ipython=None, argv=[]):
         else:
             ipython = True
             try:
-                ip = get_ipython()
+                ip = get_ipython() # type: ignore
             except NameError:
                 ip = None
 

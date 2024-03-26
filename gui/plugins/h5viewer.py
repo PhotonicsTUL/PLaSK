@@ -398,7 +398,7 @@ class ResultsWindow(QMainWindow):
 
         try:
             QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
-            with open(filename, 'w') as out:
+            with open(filename, 'w', encoding='utf8') as out:
                 for pnt, val in zip(field.mesh, field):
                     print(*pnt, "  ", fmt(val), file=out)
         finally:

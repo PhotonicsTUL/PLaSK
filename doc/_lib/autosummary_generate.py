@@ -171,7 +171,7 @@ def generate_autosummary_docs(app, sources, output_dir=None, suffix='.rst',
 
         new_files.append(fn)
 
-        f = open(fn, 'w')
+        f = open(fn, 'w', encoding='utf8')
 
         try:
             try:

@@ -82,21 +82,8 @@ class Solver(TreeFragmentModel):
 
     def stub(self):
         if self.category is not None and self.solver is not None:
-            lib = self.lib
-            # if lib is None:
-            #     try:
-            #         prefix = os.path.dirname(os.path.dirname(sys.executable))
-            #         lst_re = re.compile(r'(\w+)\.{}'.format(self.solver))
-            #         with open(os.path.join(prefix, 'lib', 'plask', 'solvers', self.category, 'solvers.lst')) as lfile:
-            #             for line in lfile:
-            #                 match = lst_re.match(line)
-            #                 if match:
-            #                     lib = match.group(1)
-            #                     break
-            #     except (IOError, SystemError):
-            #         pass
-            if lib is not None:
-                return "from {1}.{2} import {3}\n{0} = {3}()\ndel {3}".format(self.name, self.category, lib, self.solver)
+            if self.lib is not None:
+                return "from {1}.{2} import {3}\n{0} = {3}()\ndel {3}".format(self.name, self.category, self.lib, self.solver)
             else:
                 return "from {1} import {2}\n{0} = {2}()\ndel {2}".format(self.name, self.category, self.solver)
         else:

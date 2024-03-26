@@ -514,7 +514,7 @@ class ThresholdSearch(ThermoElectric):
             filename = self.save(None if save is True else save)
             if filename.endswith('.h5'): filename = filename[:-3]
             plask.print_log('info', "Results saved to file '{}.txt'".format(filename))
-            with open(filename+'.txt', 'a') as out:
+            with open(filename+'.txt', 'a', encoding='utf-8') as out:
                 out.writelines(line + '\n' for line in infolines)
                 out.write("\n")
 

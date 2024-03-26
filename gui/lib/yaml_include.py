@@ -47,7 +47,7 @@ class AddYamlIncludePath:
         if not os.path.isabs(filename):
             filename = os.path.join(self.path, filename)
 
-        with open(filename, 'r') as file:
+        with open(filename, 'r', encoding='utf8') as file:
             result = yaml.load(file, loader.__class__)
 
         if updates:

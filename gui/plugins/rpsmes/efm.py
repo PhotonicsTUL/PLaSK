@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -91,7 +91,7 @@ def reduce_layers(layers):
 
 def write_xpl(fname, materials, layers, lam0, lpm):
 
-    ofile = open(fname, 'w')
+    ofile = open(fname, 'w', encoding='utf8')
 
     def out(text=''):
         ofile.write(text)
