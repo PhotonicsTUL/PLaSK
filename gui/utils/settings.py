@@ -57,13 +57,16 @@ def CheckBox(entry, help=None, needs_restart=False):
 def Combo(entry, options, help=None, needs_restart=False):
     return lambda parent: SettingsDialog.Combo(entry, options, help=help, parent=parent, needs_restart=needs_restart)
 
+def LineEdit(entry, help=None, needs_restart=False):
+    return lambda parent: SettingsDialog.LineEdit(entry, help=help, parent=parent, needs_restart=needs_restart)
+
 def SpinBox(entry, min=None, max=None, help=None, needs_restart=False):
     return lambda parent: SettingsDialog.SpinBox(entry, min=min, max=max, help=help, parent=parent,
-                                               needs_restart=needs_restart)
+                                                 needs_restart=needs_restart)
 
 def FloatSpinBox(entry, step=None, min=None, max=None, help=None, needs_restart=False):
     return lambda parent: SettingsDialog.FloatSpinBox(entry, step=step, min=min, max=max, help=help, parent=parent,
-                                                    needs_restart=needs_restart)
+                                                      needs_restart=needs_restart)
 
 def Color(entry, help=None, needs_restart=False):
     return lambda parent: SettingsDialog.Color(entry, help=help, parent=parent, needs_restart=needs_restart)
@@ -251,6 +254,7 @@ class PluginsConfig(QWidget):
                 label.setText(name)
             label.setBuddy(checkbox)
             self.plugins.append((checkbox, label))
+            config_items[entry] = checkbox
         self.filter_view()
         frame.setWidget(inframe)
 
@@ -557,6 +561,24 @@ class SettingsDialog(QDialog):
         @property
         def str(self):
             return self.currentText()
+
+    class LineEdit(QLineEdit):
+        def __init__(self, entry, parent=None, help=None, needs_restart=False):
+            super().__init__(parent)
+            self.entry = entry
+            if help is not None: self.setWhatsThis(help)
+            self.needs_restart = needs_restart
+            self.load(CONFIG[self.entry])
+        @property
+        def changed(self):
+            return CONFIG[self.entry] != self.text()
+        def load(self, value):
+            self.setText(value)
+        def save(self):
+            CONFIG[self.entry] = self.text()
+        @property
+        def str(self):
+            return self.text()
 
     class SpinBox(QSpinBox):
         def __init__(self, entry, parent=None, min=None, max=None, help=None, needs_restart=False):

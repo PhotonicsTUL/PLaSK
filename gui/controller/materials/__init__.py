@@ -381,6 +381,7 @@ class _PropEdit(PythonEditor):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.merge_index = 1
+        self.rehighlight()
 
     def focusOutEvent(self, event):
         super().focusOutEvent(event)
@@ -476,9 +477,9 @@ class MaterialsController(Controller):
         table_edit_shortcut(self.properties_table, 1, 'v')
 
         # font.setPointSize(font.pointSize()-1)
-        self.propedit = _PropEdit(self.prop_splitter, self.document, line_numbers=False)
+        self.prop_editor = _PropEdit(self.prop_splitter, self.document, line_numbers=False)
 
-        self.propedit.hide()
+        self.prop_editor.hide()
 
         self.document.window.config_changed.connect(self.reconfig)
 
@@ -488,15 +489,15 @@ class MaterialsController(Controller):
         focus_action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
         self.materials_table.addAction(focus_action)
 
-        self.prop_splitter.addWidget(self.propedit)
+        self.prop_splitter.addWidget(self.prop_editor)
         self.prop_splitter.setSizes([50000, 10000])
         self.prop_splitter.setEnabled(False)
         self.splitter.addWidget(self.prop_splitter)
         self.splitter.setSizes([10000, 30000])
 
     def reconfig(self):
-        with BlockQtSignals(self.propedit):
-            self.propedit.rehighlight(self.document.defines)
+        with BlockQtSignals(self.prop_editor):
+            self.prop_editor.rehighlight(self.document.defines)
 
     def update_materials_table(self, model):
         if model == self.model and model.rowCount():
@@ -513,7 +514,7 @@ class MaterialsController(Controller):
         if row is not None: self.materials_table.selectRow(row)
 
     def material_selected(self, new_selection, old_selection=None):
-        self.propedit.hide()
+        self.prop_editor.hide()
         indexes = new_selection.indexes()
         if self.selected_material is not None:
             try: self.selected_material.dataChanged.disconnect(self.property_data_changed)
@@ -553,29 +554,29 @@ class MaterialsController(Controller):
 
     def property_selected(self, new_selection, old_selection):
         indexes = new_selection.indexes()
-        try: self.propedit.textChanged.disconnect()
+        try: self.prop_editor.textChanged.disconnect()
         except (RuntimeError, TypeError): pass
         if indexes:
             row = indexes[0].row()
-            self.propedit.setPlainText(self.selected_material.properties[row].value)
-            self.propedit.show()
+            self.prop_editor.setPlainText(self.selected_material.properties[row].value)
+            self.prop_editor.show()
             weakself = weakref.proxy(self)
-            self.propedit.textChanged.connect(lambda: weakself.propedit_changed(row))
+            self.prop_editor.textChanged.connect(lambda: weakself.propedit_changed(row))
         else:
-            self.propedit.hide()
+            self.prop_editor.hide()
 
     def propedit_changed(self, row):
         self.selected_material.dataChanged.disconnect(self.property_data_changed)
         try:
-            self.selected_material.setData(self.selected_material.createIndex(row, 1), self.propedit.toPlainText(),
-                                           merge_id=self.propedit.merge_index)
+            self.selected_material.setData(self.selected_material.createIndex(row, 1), self.prop_editor.toPlainText(),
+                                           merge_id=self.prop_editor.merge_index)
         finally:
             self.selected_material.dataChanged.connect(self.property_data_changed)
 
     def property_data_changed(self, top_left, bottom_right):
         if top_left.row() in (i.row() for i in self.properties_table.selectedIndexes()):
-            with BlockQtSignals(self.propedit):
-                self.propedit.setPlainText(self.selected_material.get(1, top_left.row()))
+            with BlockQtSignals(self.prop_editor):
+                self.prop_editor.setPlainText(self.selected_material.get(1, top_left.row()))
         self.properties_table.resizeRowsToContents()  # ensure all documentation is visible
 
     def get_widget(self):

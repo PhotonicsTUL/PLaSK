@@ -298,7 +298,7 @@ class VerticalScrollArea(QScrollArea):
 
     def eventFilter(self, obj, event):
         if isinstance(obj, QWidgetItem): obj = obj.widget()  # hacky fix
-        if obj and obj == self.widget() and event.type() == QEvent.Type.Resize:
+        if obj and obj == self.widget() and isinstance(event, QEvent) and event.type() == QEvent.Type.Resize:
             self.setMinimumWidth(obj.minimumSizeHint().width() + self.verticalScrollBar().width())
         return super().eventFilter(obj, event)
 
