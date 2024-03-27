@@ -299,7 +299,7 @@ void export_BesselSolverCyl()
               );
     solver.def("get_raw_E", BesselSolverCyl_getFieldVectorE, (py::arg("num"), "level"),
                u8"Get Bessel expansion coefficients for the electric field.\n\n"
-               u8"This is a low-level function returning :math:`E_s` and :math:`E_p` Bessel\n"
+               u8"This is a low-level function returning $E_s$ and $E_p$ Bessel\n"
                u8"expansion coefficients. Please refer to the detailed solver description for their\n"
                u8"interpretation.\n\n"
                u8"Args:\n"
@@ -309,7 +309,7 @@ void export_BesselSolverCyl()
               );
     solver.def("get_raw_H", BesselSolverCyl_getFieldVectorH, (py::arg("num"), "level"),
                u8"Get Bessel expansion coefficients for the magnetic field.\n\n"
-               u8"This is a low-level function returning :math:`H_s` and :math:`H_p` Bessel\n"
+               u8"This is a low-level function returning $H_s$ and $H_p$ Bessel\n"
                u8"expansion coefficients. Please refer to the detailed solver description for their\n"
                u8"interpretation.\n\n"
                u8"Args:\n"

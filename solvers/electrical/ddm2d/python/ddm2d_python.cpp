@@ -75,8 +75,8 @@ inline static void register_drift_diffusion_solver(const char* name, const char*
            u8"Note:\n"
            u8"    This method can only be used it there are exactly two boundary conditions\n"
            u8"    specifying the voltage. Otherwise use :meth:`get_electrostatic_energy` to\n"
-           u8"    obtain the stored energy :math:`W` and compute the capacitance as:\n"
-           u8"    :math:`C = 2 \\, W / U^2`, where :math:`U` is the applied voltage.\n"
+           u8"    obtain the stored energy $W$ and compute the capacitance as:\n"
+           u8"    $C = 2, W / U^2$, where $U$ is the applied voltage.\n"
     );
     METHOD(get_total_heat, getTotalHeat,
            u8"Get the total heat produced by the current flowing in the structure.\n\n"

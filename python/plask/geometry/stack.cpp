@@ -435,7 +435,7 @@ void register_geometry_container_stack()
         u8"The left side of the first object is located at the `shift` position in\n"
         u8"container local coordinates. Each consecutive object is placed to the right\n"
         u8"of the previous one. Then the whole shelf is repeated *repeat* times. All the"
-        u8"items\n are vertically aligned according to its bottom edge.\n\n"
+        u8"items are vertically aligned according to its bottom edge.\n\n"
         u8"Args:\n"
         u8"    repeat (int): Number of the shelf contents repetitions.\n"
         u8"    shift (float): Position in the local coordinates of the left side of the\n"

@@ -130,7 +130,7 @@ class alloy:
     """
     def __init__(self, base=None):
         if isinstance(base, type):
-            raise TypeError("@material.alloy argument is a class (you probably forgot parenthes)")
+            raise TypeError("@material.alloy argument is a class (you probably forgot brackets)")
         self.base = base
     def __call__(self, cls):
         if 'name' not in cls.__dict__: cls.name = cls.__name__

@@ -27,7 +27,7 @@ import plask
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.mathjax',
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo',
               'sphinx.ext.autosummary', 'sphinx_domain_xml', 'sphinx_autodoc_cpp',
 #             'rst2pdf.pdfbuilder'
              ]
@@ -512,19 +512,6 @@ pdf_use_numbered_links = False
 
 # Background images fitting mode
 pdf_fit_background_mode = 'scale'
-
-
-# -- MathJaX config ----------------------------------------------------------------
-mathjax_config = {
-    'extensions': ['tex2jax.js'],
-    'jax': ['input/TeX', 'output/HTML-CSS'],
-    'tex2jax': {
-        'inlineMath': [ ['$','$'], ['\\(', '\\)'] ],
-        'displayMath': [ ['$$','$$'], ['\\[', '\\]'] ],
-        'processEscapes': False,
-        'ignoreClass': 'text-diff'
-    }
-}
 
 
 # -- Some tricks with plask for better documentation -------------------------------

@@ -18,7 +18,8 @@ tags:
     label: Iterative Params
     help: >
       Parameters for iterative matrix solver. PLaSK uses `NSPCG`_ package for performing iterations. Please refer to its documentation for explanation of most of the settings.
-      .. _NSPCG: https://web.ma.utexas.edu/CNA/NSPCG/",
+
+      .. _NSPCG: https://web.ma.utexas.edu/CNA/NSPCG/
     additional-help: >
       .. list-table:: Preconditioner choices:
         * - ``rich``

@@ -231,8 +231,8 @@ inline static ExportSolver<__Class__> register_electrical_solver(const char* nam
            u8"Note:\n"
            u8"    This method can only be used it there are exactly two boundary conditions\n"
            u8"    specifying the voltage. Otherwise use :meth:`get_electrostatic_energy` to\n"
-           u8"    obtain the stored energy :math:`W` and compute the capacitance as:\n"
-           u8"    :math:`C = 2 \\, W / U^2`, where :math:`U` is the applied voltage.\n");
+           u8"    obtain the stored energy $W$ and compute the capacitance as:\n"
+           u8"    $C = 2 \\, W / U^2$, where $U$ is the applied voltage.\n");
     METHOD(get_total_heat, getTotalHeat,
            u8"Get the total heat produced by the current flowing in the structure.\n\n"
            u8"Return:\n"
@@ -247,7 +247,7 @@ template <typename GeoT> inline static void register_shockley_solver(const char*
     ExportSolver<__Class__> solver = register_electrical_solver<__Class__>(name, geoname);
     solver.add_property("beta", &__Class__::getBeta0, &__Class__::setBeta0,
                         u8"Junction coefficient (1/V).\n\n"
-                        u8"In case, there is more than one junction you may set $\\beta$ parameter for any\n"
+                        u8"In case, there is more than one junction you may set $\\\\beta$ parameter for any\n"
                         u8"of them by using ``beta#`` property, where # is the junction number (specified\n"
                         u8"by a role ``junction#`` or ``active#``).\n\n"
                         u8"``beta`` is an alias for ``beta0``.\n");

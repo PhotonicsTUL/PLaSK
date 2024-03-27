@@ -557,7 +557,7 @@ void export_FourierSolver2D() {
                u8":rtype: Fourier2D.Scattering\n");
     solver.def("get_raw_E", FourierSolver2D_getFieldVectorE, (py::arg("num"), "level"),
                u8"Get Fourier expansion coefficients for the electric field.\n\n"
-               u8"This is a low-level function returning :math:`E_l` and/or :math:`E_t` Fourier\n"
+               u8"This is a low-level function returning $E_l$ and/or $E_t$ Fourier\n"
                u8"expansion coefficients. Please refer to the detailed solver description for their\n"
                u8"interpretation.\n\n"
                u8"Args:\n"
@@ -566,7 +566,7 @@ void export_FourierSolver2D() {
                u8":rtype: numpy.ndarray\n");
     solver.def("get_raw_H", FourierSolver2D_getFieldVectorH, (py::arg("num"), "level"),
                u8"Get Fourier expansion coefficients for the magnetic field.\n\n"
-               u8"This is a low-level function returning :math:`H_l` and/or :math:`H_t` Fourier\n"
+               u8"This is a low-level function returning $H_l$ and/or $H_t$ Fourier\n"
                u8"expansion coefficients. Please refer to the detailed solver description for their\n"
                u8"interpretation.\n\n"
                u8"Args:\n"
