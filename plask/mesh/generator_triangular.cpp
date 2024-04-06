@@ -48,7 +48,7 @@ shared_ptr<MeshD<2>> TriangleGenerator::generate(const shared_ptr<GeometryObject
         pointmap[DVec(bb.left(), bb.top())] = 3;
 
         if (pointmap.size() < 4)
-            throw BadMesh("triangularGenerator", "Geometry object is too small to create triangular mesh");
+            throw BadMesh("TriangularGenerator", "geometry object is too small to create triangular mesh");
 
         segmentsset.insert(std::make_pair(0, 1));
         segmentsset.insert(std::make_pair(1, 2));

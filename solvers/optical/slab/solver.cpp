@@ -95,7 +95,7 @@ std::unique_ptr<RootDigger> SlabBase::getRootDigger(const RootDigger::function_t
     if (root.method == RootDigger::ROOT_MULLER) return Res(new RootMuller(*this, func, root, name));
     else if (root.method == RootDigger::ROOT_BROYDEN) return Res(new RootBroyden(*this, func, root, name));
     else if (root.method == RootDigger::ROOT_BRENT) return Res(new RootBrent(*this, func, root, name));
-    throw BadInput(getId(), "Wrong root finding method");
+    throw BadInput(getId(), "wrong root finding method");
     return Res();
 }
 
@@ -596,7 +596,7 @@ size_t SlabSolver<BaseT>::initIncidence(Transfer::IncidentDirection side, dcompl
 template <typename BaseT>
 cvector SlabSolver<BaseT>::incidentVector(Transfer::IncidentDirection side, size_t idx, dcomplex lam) {
     size_t layer = initIncidence(side, lam);
-    if (idx >= transfer->diagonalizer->matrixSize()) throw BadInput(getId(), "Wrong incident eignenmode index");
+    if (idx >= transfer->diagonalizer->matrixSize()) throw BadInput(getId(), "wrong incident eignenmode index");
     cvector incident(transfer->diagonalizer->matrixSize(), 0.);
     incident[idx] = 1.;
 
@@ -607,7 +607,7 @@ cvector SlabSolver<BaseT>::incidentVector(Transfer::IncidentDirection side, size
 template <typename BaseT>
 cvector SlabSolver<BaseT>::incidentVector(Transfer::IncidentDirection side, const cvector& incident, dcomplex lam) {
     size_t layer = initIncidence(side, lam);
-    if (incident.size() != transfer->diagonalizer->matrixSize()) throw BadInput(getId(), "Wrong incident vector size");
+    if (incident.size() != transfer->diagonalizer->matrixSize()) throw BadInput(getId(), "wrong incident vector size");
     cvector result = incident.claim();
     scaleIncidentVector(result, layer);
     return result;

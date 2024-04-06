@@ -214,7 +214,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     /// Set new mode symmetry
     void setSymmetryLong(Expansion::Component symmetry) {
         if (symmetry != Expansion::E_UNSPECIFIED && geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_LONG))
-            throw BadInput(getId(), "Longitudinal symmetry not allowed for asymmetric structure");
+            throw BadInput(getId(), "longitudinal symmetry not allowed for asymmetric structure");
         if ((symmetry_long == Expansion::E_UNSPECIFIED) != (symmetry == Expansion::E_UNSPECIFIED))
             invalidate();
         if (klong != 0. && symmetry != Expansion::E_UNSPECIFIED) {
@@ -231,7 +231,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     /// Set new mode symmetry
     void setSymmetryTran(Expansion::Component symmetry) {
         if (symmetry != Expansion::E_UNSPECIFIED && geometry && !geometry->isSymmetric(Geometry3D::DIRECTION_TRAN))
-            throw BadInput(getId(), "Transverse symmetry not allowed for asymmetric structure");
+            throw BadInput(getId(), "transverse symmetry not allowed for asymmetric structure");
         if ((symmetry_tran == Expansion::E_UNSPECIFIED) != (symmetry == Expansion::E_UNSPECIFIED))
             invalidate();
         if (ktran != 0. && symmetry != Expansion::E_UNSPECIFIED) {
@@ -289,7 +289,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     /// Set type of the DCT
     void setDCT(int n) {
         if (n != 1 && n != 2)
-            throw BadInput(getId(), "Bad DCT type (can be only 1 or 2)");
+            throw BadInput(getId(), "bad DCT type (can be only 1 or 2)");
         if (dct != n) {
             dct = n;
             if (expansion.symmetric_long() || expansion.symmetric_tran()) invalidate();
@@ -497,7 +497,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     /// Check if the current parameters correspond to some mode and insert it
     size_t setMode() {
         if (abs2(this->getDeterminant()) > root.tolf_max*root.tolf_max)
-            throw BadInput(this->getId(), "Cannot set the mode, determinant too large");
+            throw BadInput(this->getId(), "cannot set the mode, determinant too large");
         return insertMode();
     }
 
@@ -523,7 +523,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     size_t nummodes() const override { return modes.size(); }
 
     double applyMode(size_t n) override {
-        if (n >= modes.size()) throw BadInput(this->getId(), "Mode {0} has not been computed", n);
+        if (n >= modes.size()) throw BadInput(this->getId(), "mode {0} has not been computed", n);
         applyMode(modes[n]);
         return modes[n].power;
     }

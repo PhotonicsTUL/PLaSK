@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -73,7 +73,7 @@ namespace detail {
             if (auto geomd = dynamic_pointer_cast<Geometry3D>(geom))
                 return Fun::call(self, filter->setOuter(*geomd->getChild(), path, points), value...);
 
-            throw TypeError(u8"Wrong geometry type '{0}'", std::string(py::extract<std::string>(py::str(key[0].attr("__class__")))));
+            throw TypeError(u8"wrong geometry type '{0}'", std::string(py::extract<std::string>(py::str(key[0].attr("__class__")))));
             return nullptr;
         }
     };
@@ -97,7 +97,7 @@ namespace detail {
             if (auto geomd = dynamic_pointer_cast<Geometry3D>(geom))
                 return Fun::call(self, filter->setOuter(*geomd->getChild(), path, points), value...);
 
-            throw TypeError(u8"Wrong geometry type '{0}'", std::string(py::extract<std::string>(py::str(key[0].attr("__class__")))));
+            throw TypeError(u8"wrong geometry type '{0}'", std::string(py::extract<std::string>(py::str(key[0].attr("__class__")))));
             return nullptr;
         }
     };
@@ -127,7 +127,7 @@ namespace detail {
             if (auto geomd = dynamic_pointer_cast<Geometry3D>(geom))
                 return Fun::call(self, filter->input(*geomd->getChild(), path), value...);
 
-            throw TypeError(u8"Wrong geometry type '{0}'", std::string(py::extract<std::string>(py::str(key[0].attr("__class__")))));
+            throw TypeError(u8"wrong geometry type '{0}'", std::string(py::extract<std::string>(py::str(key[0].attr("__class__")))));
             return nullptr;
         }
     };

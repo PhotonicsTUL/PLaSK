@@ -509,7 +509,7 @@ private:
     Boundary getBoundaryByName(XMLReader& reader, const std::string& name) {
         auto p = this->boundaries.find(name);
         if (p == this->boundaries.end())
-            throw XMLException(reader, format("Can't find boundary (place) with given name \"{0}\".", name));
+            throw XMLException(reader, format("can't find boundary (place) with given name \"{0}\".", name));
         return boost::any_cast<Boundary>(p->second);
     }
 

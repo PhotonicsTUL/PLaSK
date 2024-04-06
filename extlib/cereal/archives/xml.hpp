@@ -235,7 +235,7 @@ namespace cereal
         const auto strValue = itsOS.str();
 
         // If the first or last character is a whitespace, add xml:space attribute
-        // the string always contains a '\0' added by std::ends, so the last character is at len-2 and an 'empty' 
+        // the string always contains a '\0' added by std::ends, so the last character is at len-2 and an 'empty'
         // string has a length of 1 or lower
         const auto len = strValue.length();
         if ( len > 1 && ( xml_detail::isWhitespace( strValue[0] ) || xml_detail::isWhitespace( strValue[len - 2] ) ) )
@@ -401,7 +401,7 @@ namespace cereal
         // Parse the root
         auto root = itsXML.first_node( xml_detail::CEREAL_XML_STRING );
         if( root == nullptr )
-          throw Exception("Could not detect cereal root node - likely due to empty or invalid input");
+          throw Exception("could not detect cereal root node - likely due to empty or invalid input");
         else
           itsNodes.emplace( root );
       }
@@ -423,7 +423,7 @@ namespace cereal
         auto decoded = base64::decode( encoded );
 
         if( size != decoded.size() )
-          throw Exception("Decoded binary data size does not match specified size");
+          throw Exception("decoded binary data size does not match specified size");
 
         std::memcpy( data, decoded.data(), decoded.size() );
 

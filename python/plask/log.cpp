@@ -366,10 +366,10 @@ void LoggingConfig::setLoggingDest(py::object dest) {
         else if (dest == sys.attr("stdout") || dst == "stdout" || dst == "sys.stdout")
             logger->dest = PythonSysLogger::DEST_STDOUT;
         else
-            throw ValueError(u8"Logging output can only be sys.stderr or sys.stdout.");
+            throw ValueError(u8"logging output can only be sys.stderr or sys.stdout.");
         return;
     }
-    throw TypeError(u8"Setting output for current logging system does not make sense.");
+    throw TypeError(u8"setting output for current logging system does not make sense.");
 }
 
 

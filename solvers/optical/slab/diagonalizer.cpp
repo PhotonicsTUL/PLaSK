@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -131,7 +131,7 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
         // }
 
         // This is probably expensive but necessary check to avoid hangs
-        if (QE.isnan()) throw ComputationError(src->solver->getId(), "SimpleDiagonalizer: NaN in Q matrix");
+        if (QE.isnan()) throw ComputationError(src->solver->getId(), "simpleDiagonalizer: NaN in Q matrix");
 
         // Here we make the actual diagonalization, i.e. compute the eigenvalues and eigenvectors of QE
         int info;
@@ -145,7 +145,7 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             zgeev('N', 'V', int(N), QE.data(), int(N), gam.data(), nullptr, int(N), Te[layer].data(), int(N),
                     Th[layer].data(), int(NN), reinterpret_cast<double*>(Te1[layer].data()), info);
         }
-        if (info != 0) throw ComputationError(src->solver->getId(), "SimpleDiagonalizer: Could not compute {0}-th eignevalue of QE", info);
+        if (info != 0) throw ComputationError(src->solver->getId(), "simpleDiagonalizer: Could not compute {0}-th eignevalue of QE", info);
 
         // Find the inverse of Te in the classical way (maybe to be optimized in future)
         // TODO: eigenvectors should be built by hand based on Schur vectors
@@ -178,10 +178,10 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
     int ierr;
     std::unique_ptr<int[]> ipiv(new int[N]);
     zgetrf(int(N), int(N), RE.data(), int(N), ipiv.get(), ierr);
-    if (ierr != 0) throw ComputationError(src->solver->getId(), "SimpleDiagonalizer: RE matrix singular");
+    if (ierr != 0) throw ComputationError(src->solver->getId(), "simpleDiagonalizer: RE matrix singular");
     // the QE will contain inv(RE)^T * Te1^T
     zgetrs('t', int(N), int(N), RE.data(), int(N), ipiv.get(), QE.data(), int(N), ierr);
-    if (ierr != 0) throw ComputationError(src->solver->getId(), "SimpleDiagonalizer: Could not compute inv(RE)");
+    if (ierr != 0) throw ComputationError(src->solver->getId(), "simpleDiagonalizer: Could not compute inv(RE)");
     // compute QE^T and store it in Th1
     for (std::size_t j = 0; j < N; j++) {
         dcomplex g = gam[j];

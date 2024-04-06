@@ -58,7 +58,7 @@ namespace cereal
     typename std::enable_if<N == boost::mpl::size<typename Variant::types>::value, void>::type
     load_variant(Archive & /*ar*/, int /*target*/, Variant & /*variant*/)
     {
-      throw ::cereal::Exception("Error traversing variant during load");
+      throw ::cereal::Exception("error traversing variant during load");
     }
 
     //! @internal
@@ -97,7 +97,7 @@ namespace cereal
     int32_t which;
     ar( CEREAL_NVP_("which", which) );
     if(which >= boost::mpl::size<types>::value)
-      throw Exception("Invalid 'which' selector when deserializing boost::variant");
+      throw Exception("invalid 'which' selector when deserializing boost::variant");
 
     variant_detail::load_variant<0, boost::variant<VariantTypes...>, VariantTypes...>(ar, which, variant);
   }

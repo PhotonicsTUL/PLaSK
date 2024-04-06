@@ -83,7 +83,7 @@ static EffectiveIndex2D::Symmetry parseSymmetry(py::object symmetry) {
             }
             throw py::error_already_set();
         } catch (py::error_already_set&) {
-            throw ValueError(u8"Wrong symmetry specification.");
+            throw ValueError(u8"wrong symmetry specification.");
         }
     }
 }
@@ -143,7 +143,7 @@ void EffectiveIndex2D_setMirrors(EffectiveIndex2D& self, py::object value) {
                 self.mirrors.reset(
                     std::make_pair<double, double>(double(py::extract<double>(value[0])), double(py::extract<double>(value[1]))));
             } catch (py::error_already_set&) {
-                throw ValueError(u8"None, float, or tuple of two floats required");
+                throw ValueError(u8"none, float, or tuple of two floats required");
             }
         }
     }

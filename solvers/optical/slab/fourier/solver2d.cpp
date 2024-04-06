@@ -231,11 +231,11 @@ size_t FourierSolver2D::initIncidence(Transfer::IncidentDirection side, Expansio
         throw Exception("{}: Reflectivity computation for 2D geometries possible only if the extrusion length is infinite",
                         getId());
     if (polarization == Expansion::E_UNSPECIFIED)
-        throw BadInput(getId(), "Unspecified incident polarization for reflectivity computation");
+        throw BadInput(getId(), "unspecified incident polarization for reflectivity computation");
     if (expansion.symmetric() && expansion.symmetry != polarization)
-        throw BadInput(getId(), "Current solver symmetry is inconsistent with the specified incident polarization");
+        throw BadInput(getId(), "current solver symmetry is inconsistent with the specified incident polarization");
     if (expansion.separated() && expansion.polarization != polarization)
-        throw BadInput(getId(), "Current solver polarization is inconsistent with the specified incident polarization");
+        throw BadInput(getId(), "current solver polarization is inconsistent with the specified incident polarization");
     return SlabSolver<SolverWithMesh<Geometry2DCartesian,MeshAxis>>::initIncidence(side, lam);
 }
 

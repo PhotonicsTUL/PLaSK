@@ -82,7 +82,7 @@ void DynamicLibrary::open(const std::string &filename, unsigned flags) {
     //handle = LoadLibraryW(output_buffer->get());
     handle = (handle_t)LoadLibraryA(filename.c_str());
     if (!handle) {
-        throw plask::Exception("Could not open dynamic library from file \"{0}\". {1}", filename, GetLastErrorStr());
+        throw plask::Exception("could not open dynamic library from file \"{0}\". {1}", filename, GetLastErrorStr());
     }
     unload = !(flags & DONT_CLOSE);
 #else
@@ -90,7 +90,7 @@ void DynamicLibrary::open(const std::string &filename, unsigned flags) {
     if (flags & DONT_CLOSE) mode |= RTLD_NODELETE;
     handle = dlopen(filename.c_str(), mode);
     if (!handle) {
-        throw plask::Exception("Could not open dynamic library from file \"{0}\". {1}", filename, dlerror());
+        throw plask::Exception("could not open dynamic library from file \"{0}\". {1}", filename, dlerror());
     }
 #endif
 }
@@ -100,18 +100,18 @@ void DynamicLibrary::close() {
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
     if (unload) {
         if (!FreeLibrary((HINSTANCE)handle))
-            throw plask::Exception("Can't close dynamic library: {0}", GetLastErrorStr());
+            throw plask::Exception("can't close dynamic library: {0}", GetLastErrorStr());
     }
 #else
     if (dlclose(handle))
-        throw plask::Exception("Can't close dynamic library: {0}", dlerror());
+        throw plask::Exception("can't close dynamic library: {0}", dlerror());
 #endif
     handle = 0;
 }
 
 void * DynamicLibrary::getSymbol(const std::string &symbol_name) const {
     if (!handle)
-        throw plask::Exception("Trying to get symbol from dynamic library which is not opened.");
+        throw plask::Exception("trying to get symbol from dynamic library which is not opened.");
 
     return
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
@@ -124,7 +124,7 @@ void * DynamicLibrary::getSymbol(const std::string &symbol_name) const {
 void *DynamicLibrary::requireSymbol(const std::string &symbol_name) const {
     void* result = getSymbol(symbol_name);
     if (!result)
-        throw plask::Exception("There is no symbol \"{0}\" in dynamic library.", symbol_name);
+        throw plask::Exception("there is no symbol \"{0}\" in dynamic library.", symbol_name);
     return result;
 }
 

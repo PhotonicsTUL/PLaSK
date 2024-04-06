@@ -1046,7 +1046,7 @@ struct InterpolationAlgorithm<RectangularMesh2D, SrcT, DstT, INTERPOLATION_LINEA
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh2D>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<2>>& dst_mesh, const InterpolationFlags& flags) {
         if (src_mesh->axis[0]->size() == 0 || src_mesh->axis[1]->size() == 0)
-            throw BadMesh("interpolate", "Source mesh empty");
+            throw BadMesh("interpolate", "source mesh empty");
         return new LinearInterpolatedLazyDataImpl< DstT, RectangularMesh2D, SrcT >(src_mesh, src_vec, dst_mesh, flags);
     }
 };
@@ -1056,7 +1056,7 @@ struct InterpolationAlgorithm<RectangularMesh2D, SrcT, DstT, INTERPOLATION_NEARE
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh2D>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<2>>& dst_mesh, const InterpolationFlags& flags) {
         if (src_mesh->axis[0]->size() == 0 || src_mesh->axis[1]->size() == 0)
-            throw BadMesh("interpolate", "Source mesh empty");
+            throw BadMesh("interpolate", "source mesh empty");
         return new NearestNeighborInterpolatedLazyDataImpl< DstT, RectangularMesh2D, SrcT >(src_mesh, src_vec, dst_mesh, flags);
     }
 };
@@ -1075,7 +1075,7 @@ struct InterpolationAlgorithm<RectangularMesh2D::ElementMesh, SrcT, DstT, INTERP
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh2D::ElementMesh>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<2>>& dst_mesh, const InterpolationFlags& flags) {
         if (src_mesh->axis[0]->size() == 0 || src_mesh->axis[1]->size() == 0)
-            throw BadMesh("interpolate", "Source mesh empty");
+            throw BadMesh("interpolate", "source mesh empty");
         return new NearestNeighborInterpolatedLazyDataImpl<DstT, RectangularMesh2D::ElementMesh, SrcT>(src_mesh, src_vec, dst_mesh, flags);
     }
 };

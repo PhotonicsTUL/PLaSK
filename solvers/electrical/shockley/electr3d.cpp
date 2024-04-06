@@ -347,7 +347,7 @@ void ElectricalFem3DSolver::setMatrix(FemMatrix& A,
     double* aend = A.data + A.size;
     for (double* pa = A.data; pa != aend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
-            throw ComputationError(getId(), "Error in stiffness matrix at position {0} ({1})", pa - A.data,
+            throw ComputationError(getId(), "error in stiffness matrix at position {0} ({1})", pa - A.data,
                                    isnan(*pa) ? "nan" : "inf");
     }
 #endif
@@ -497,7 +497,7 @@ double ElectricalFem3DSolver::integrateCurrent(size_t vindex, bool onlyactive) {
 }
 
 double ElectricalFem3DSolver::getTotalCurrent(size_t nact) {
-    if (nact >= active.size()) throw BadInput(this->getId(), "Wrong active region number");
+    if (nact >= active.size()) throw BadInput(this->getId(), "wrong active region number");
     const auto& act = active[nact];
     // Find the average of the active region
     size_t level = (act.bottom + act.top) / 2;
@@ -601,7 +601,7 @@ double ElectricalFem3DSolver::getTotalEnergy() {
 
 double ElectricalFem3DSolver::getCapacitance() {
     if (this->voltage_boundary.size() != 2) {
-        throw BadInput(this->getId(), "Cannot estimate applied voltage (exactly 2 voltage boundary conditions required)");
+        throw BadInput(this->getId(), "cannot estimate applied voltage (exactly 2 voltage boundary conditions required)");
     }
 
     double U = voltage_boundary[0].value - voltage_boundary[1].value;

@@ -93,12 +93,12 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
                 if (sym == SYMMETRY_DEFAULT)
                     sym = SYMMETRY_POSITIVE;
                 else if (sym == SYMMETRY_NONE)
-                    throw BadInput(solver->getId(), "For symmetric geometry specify positive or negative symmetry");
+                    throw BadInput(solver->getId(), "for symmetric geometry specify positive or negative symmetry");
             } else {
                 if (sym == SYMMETRY_DEFAULT)
                     sym = SYMMETRY_NONE;
                 else if (sym != SYMMETRY_NONE)
-                    throw BadInput(solver->getId(), "For non-symmetric geometry no symmetry may be specified");
+                    throw BadInput(solver->getId(), "for non-symmetric geometry no symmetry may be specified");
             }
             symmetry = sym;
         }

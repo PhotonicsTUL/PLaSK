@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -240,7 +240,7 @@ struct InterpolationAlgorithm<EquilateralMesh3D::ElementMesh, SrcT, DstT, INTERP
     static LazyData<DstT> interpolate(const shared_ptr<const EquilateralMesh3D::ElementMesh>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
         if (src_mesh->axis[0]->size() == 0 || src_mesh->axis[1]->size() == 0)
-            throw BadMesh("interpolate", "Source mesh empty");
+            throw BadMesh("interpolate", "source mesh empty");
         //TODO Proprably we need to prohibit symmetry (or warn that its meaning is different)
         return new NearestNeighborInterpolatedLazyDataImpl<DstT, EquilateralMesh3D::ElementMesh, SrcT>(src_mesh, src_vec, EquilateralMesh3D::Transformed(src_mesh, dst_mesh), flags);
     }

@@ -103,9 +103,9 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
             try {
                 cls_name = py::extract<std::string>(py::object(py::borrowed(self)).attr("__class__").attr("__name__"));
             } catch (py::error_already_set&) {
-                throw TypeError(u8"Cannot convert return value of method '{}' in unknown material class to correct type", name);
+                throw TypeError(u8"cannot convert return value of method '{}' in unknown material class to correct type", name);
             }
-            throw TypeError(u8"Cannot convert return value of method '{}' in material class '{}' to correct type", name, cls_name);
+            throw TypeError(u8"cannot convert return value of method '{}' in material class '{}' to correct type", name, cls_name);
         }
     }
 
@@ -482,17 +482,17 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
     py::object cobj;
     try {
         cobj = kwargs["doping"];
-        if (result.hasDoping()) throw ValueError(u8"Doping concentrations specified in both full name and argument");
+        if (result.hasDoping()) throw ValueError(u8"doping concentrations specified in both full name and argument");
         had_doping_key = true;
     } catch (py::error_already_set&) {
         PyErr_Clear();
     }
     if (had_doping_key) {
-        if (!result.hasDopantName()) throw ValueError(u8"Doping concentration given for undoped material");
+        if (!result.hasDopantName()) throw ValueError(u8"doping concentration given for undoped material");
         result.doping = py::extract<double>(cobj);
     } else {
         if (result.hasDopantName() && !result.hasDoping())
-            throw ValueError(u8"Dopant specified, but doping concentrations not given correctly");
+            throw ValueError(u8"dopant specified, but doping concentrations not given correctly");
     }
 
     py::list keys = kwargs.keys();

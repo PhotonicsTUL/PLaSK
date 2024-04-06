@@ -174,11 +174,11 @@ Tensor3<dcomplex> ExpansionBessel::getEps(size_t layer, size_t ri, double r, dou
         std::tie(T, cc) = getTC(layer, ri);
         eps = material->NR(lam, T, cc);
         if (isnan(eps.c00) || isnan(eps.c11) || isnan(eps.c22) || isnan(eps.c01))
-            throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm, T={}K, n={}/cm3",
+            throw BadInput(solver->getId(), "complex refractive index (NR) for {} is NaN at lam={}nm, T={}K, n={}/cm3",
                            material->name(), lam, T, cc);
     }
     if (!is_zero(eps.c00 - eps.c11) || eps.c01 != 0.)
-        throw BadInput(solver->getId(), "Lateral anisotropy not allowed for this solver");
+        throw BadInput(solver->getId(), "lateral anisotropy not allowed for this solver");
     if (gain_connected && solver->lgained[layer]) {
         auto roles = SOLVER->getGeometry()->getRolesAt(vec(r, matz));
         if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
@@ -203,7 +203,7 @@ Tensor3<dcomplex> ExpansionBessel::getEps(size_t layer, size_t ri, double r, dou
 }
 
 void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam) {
-    if (isnan(real(k0)) || isnan(imag(k0))) throw BadInput(SOLVER->getId(), "No wavelength specified");
+    if (isnan(real(k0)) || isnan(imag(k0))) throw BadInput(SOLVER->getId(), "no wavelength specified");
 
     auto geometry = SOLVER->getGeometry();
 
@@ -216,7 +216,7 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam) {
     SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer {:d}/{:d} with {} rule", layer, solver->lcount, SOLVER->ruleName());
 #endif
 
-    if (isnan(lam)) throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
+    if (isnan(lam)) throw BadInput(SOLVER->getId(), "no wavelength given: specify 'lam' or 'lam0'");
 
     size_t nr = raxis->size(), N = SOLVER->size;
 

@@ -87,7 +87,7 @@ template <typename GeometryT> struct ExportedDiffusion2DSolverDefaultDefs {
             return;
         }
 
-        throw TypeError(u8"Cannot convert argument to proper mesh type");
+        throw TypeError(u8"cannot convert argument to proper mesh type");
     }
 
     template <typename PySolver> static auto init(PySolver& solver) -> PySolver& {

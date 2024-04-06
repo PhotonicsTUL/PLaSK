@@ -103,7 +103,7 @@ void EffectiveFrequencyCyl::loadConfiguration(XMLReader& reader, Manager& manage
                     auto generator2 = dynamic_pointer_cast<MeshGeneratorD<2>>(found->second);
                     if (generator1) this->setMesh(plask::make_shared<RectangularMesh2DFrom1DGenerator>(generator1));
                     else if (generator2) this->setMesh(generator2);
-                    else throw BadInput(this->getId(), "Mesh or generator '{0}' of wrong type", *name);
+                    else throw BadInput(this->getId(), "mesh or generator '{0}' of wrong type", *name);
                 }
             }
         } else
@@ -115,7 +115,7 @@ void EffectiveFrequencyCyl::loadConfiguration(XMLReader& reader, Manager& manage
 size_t EffectiveFrequencyCyl::findMode(dcomplex lambda, int m)
 {
     writelog(LOG_INFO, "Searching for the mode starting from wavelength = {0}", str(lambda));
-    if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
+    if (isnan(k0.real())) throw BadInput(getId(), "no reference wavelength `lam0` specified");
     stageOne();
     Mode mode(this, m);
     mode.lam = RootDigger::get(this, [this,&mode](const dcomplex& lam){return this->detS(lam,mode);}, log_value, root)->find(lambda);
@@ -125,11 +125,11 @@ size_t EffectiveFrequencyCyl::findMode(dcomplex lambda, int m)
 
 std::vector<size_t> EffectiveFrequencyCyl::findModes(dcomplex lambda1, dcomplex lambda2, int m, size_t resteps, size_t imsteps, dcomplex eps)
 {
-    if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
+    if (isnan(k0.real())) throw BadInput(getId(), "no reference wavelength `lam0` specified");
     stageOne();
 
     if ((real(lambda1) == 0. && real(lambda2) != 0.) || (real(lambda1) != 0. && real(lambda2) == 0.))
-        throw BadInput(getId(), "Bad area to browse specified");
+        throw BadInput(getId(), "bad area to browse specified");
 
     dcomplex lam0 =  lambda1;
     dcomplex lam1 =  lambda2;
@@ -137,7 +137,7 @@ std::vector<size_t> EffectiveFrequencyCyl::findModes(dcomplex lambda1, dcomplex 
     if (eps.imag() == 0.) eps.imag(eps.real());
 
     if (real(eps) <= 0. || imag(eps) <= 0.)
-        throw BadInput(this->getId(), "Bad precision specified");
+        throw BadInput(this->getId(), "bad precision specified");
 
     double re0 = real(lam0), im0 = imag(lam0);
     double re1 = real(lam1), im1 = imag(lam1);
@@ -195,7 +195,7 @@ std::vector<size_t> EffectiveFrequencyCyl::findModes(dcomplex lambda1, dcomplex 
 
 size_t EffectiveFrequencyCyl::setMode(dcomplex clambda, int m)
 {
-    if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
+    if (isnan(k0.real())) throw BadInput(getId(), "no reference wavelength `lam0` specified");
     stageOne();
     Mode mode(this, m);
     mode.lam = clambda;
@@ -622,17 +622,17 @@ void EffectiveFrequencyCyl::computeBessel(size_t i, dcomplex v, const Mode& mode
     double Jr[2], Ji[2], Hr[2], Hi[2];
     long nz, ierr;
     zbesj(x1.real(), x1.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
-    if (ierr != 0) throw ComputationError(getId(), "Could not compute J({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
+    if (ierr != 0) throw ComputationError(getId(), "could not compute J({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
         mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i-1])));
     zbesh(x1.real(), x1.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
-    if (ierr != 0) throw ComputationError(getId(), "Could not compute H({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
+    if (ierr != 0) throw ComputationError(getId(), "could not compute H({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
         mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i-1])));
     for (int j = 0; j < 2; ++j) { J1[j] = dcomplex(Jr[j], Ji[j]); H1[j] = dcomplex(Hr[j], Hi[j]); }
     zbesj(x2.real(), x2.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
-    if (ierr != 0) throw ComputationError(getId(), "Could not compute J({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
+    if (ierr != 0) throw ComputationError(getId(), "could not compute J({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
         mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i])));
     zbesh(x2.real(), x2.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
-    if (ierr != 0) throw ComputationError(getId(), "Could not compute H({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
+    if (ierr != 0) throw ComputationError(getId(), "could not compute H({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
         mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i])));
     for (int j = 0; j < 2; ++j) { J2[j] = dcomplex(Jr[j], Ji[j]); H2[j] = dcomplex(Hr[j], Hi[j]); }
     J1[1] *= x1; H1[1] *= x1;
@@ -707,7 +707,7 @@ dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, Mode& mode, bool save)
             aligned_unique_ptr<double[]> rwork(aligned_malloc<double>(2*N));
             int info;
             zgeev('N', 'V', int(N), matrix, int(N), evals, nullptr, 1, evecs, int(N), work.get(), int(lwork), rwork.get(), info);
-            if (info != 0) throw ComputationError(getId(), "Could not compute eigenvalues of radial continuity matrix");
+            if (info != 0) throw ComputationError(getId(), "could not compute eigenvalues of radial continuity matrix");
             // Find the eigenvalue with the smallest absolute value
             double minabs = INFINITY;
             size_t minidx;

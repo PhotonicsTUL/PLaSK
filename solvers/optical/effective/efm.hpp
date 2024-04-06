@@ -140,14 +140,14 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
             } else {
                 zbesj(x.real(), x.imag(), m, 1, 1, &Jr, &Ji, nz, ierr);
                 if (ierr != 0)
-                    throw ComputationError(solver->getId(), "Could not compute J({0}, {1}) @ r = {2}um", m, str(x), r);
+                    throw ComputationError(solver->getId(), "could not compute J({0}, {1}) @ r = {2}um", m, str(x), r);
             }
             if (ir == 0) {
                 Hr = Hi = 0.;
             } else {
                 zbesh(x.real(), x.imag(), m, 1, MH, 1, &Hr, &Hi, nz, ierr);
                 if (ierr != 0)
-                    throw ComputationError(solver->getId(), "Could not compute H({0}, {1}) @ r = {2}um", m, str(x), r);
+                    throw ComputationError(solver->getId(), "could not compute H({0}, {1}) @ r = {2}um", m, str(x), r);
             }
             return rfields[ir].J * dcomplex(Jr, Ji) + rfields[ir].H * dcomplex(Hr, Hi);
         }
@@ -228,7 +228,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     void setStripe(int stripe) {
         if (!mesh) setSimpleMesh();
         if (stripe < 0 || std::size_t(stripe) >= mesh->axis[0]->size())
-            throw BadInput(getId(), "Wrong stripe number specified");
+            throw BadInput(getId(), "wrong stripe number specified");
         rstripe = stripe;
         invalidate();
     }
@@ -245,7 +245,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      */
     void setStripeR(double r=0.) {
         if (!mesh) setSimpleMesh();
-        if (r < 0) throw BadInput(getId(), "Radial position cannot be negative");
+        if (r < 0) throw BadInput(getId(), "radial position cannot be negative");
         rstripe = int(std::lower_bound(mesh->axis[0]->begin()+1, mesh->axis[0]->end(), r) - mesh->axis[0]->begin() - 1);
         invalidate();
     }
@@ -262,7 +262,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      */
     dcomplex getDeltaNeff(double r) {
         stageOne();
-        if (r < 0) throw BadInput(getId(), "Radial position cannot be negative");
+        if (r < 0) throw BadInput(getId(), "radial position cannot be negative");
         size_t ir = mesh->axis[0]->findIndex(r); if (ir > 0) --ir; if (ir >= veffs.size()) ir = veffs.size()-1;
         return sqrt(nng[ir] * veffs[ir]);
     }
@@ -273,7 +273,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      */
     dcomplex getNNg(double r) {
         stageOne();
-        if (r < 0) throw BadInput(getId(), "Radial position cannot be negative");
+        if (r < 0) throw BadInput(getId(), "radial position cannot be negative");
         size_t ir = mesh->axis[0]->findIndex(r); if (ir > 0) --ir; if (ir >= veffs.size()) ir = veffs.size()-1;
         return sqrt(nng[ir]);
     }
@@ -412,8 +412,8 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      */
     dcomplex getVertDeterminant(dcomplex vlambda) {
         updateCache();
-        if (rstripe < 0) throw BadInput(getId(), "This works only for the weighted approach");
-        if (vlam == 0. && isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
+        if (rstripe < 0) throw BadInput(getId(), "this works only for the weighted approach");
+        if (vlam == 0. && isnan(k0.real())) throw BadInput(getId(), "no reference wavelength `lam0` specified");
         dcomplex v = freqv(vlambda);
         return this->detS1(v, nrCache[rstripe], ngCache[rstripe]);
     }
@@ -424,7 +424,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      * \param m number of the LP_mn mode describing angular dependence
      */
     dcomplex getDeterminant(dcomplex lambda, int m=0) {
-    if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
+    if (isnan(k0.real())) throw BadInput(getId(), "no reference wavelength `lam0` specified");
         stageOne();
         Mode mode(this,m);
         dcomplex det = detS(lambda, mode);

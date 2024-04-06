@@ -33,7 +33,7 @@ static inline py::object arrayFromVec3D(cvector data, size_t minor, int dim) {
     npy_intp dims[] = { npy_intp(data.size()/(2*minor)), npy_intp(minor), 2 };
     npy_intp strides[] = { npy_intp(2*minor*sizeof(dcomplex)), npy_intp(2*sizeof(dcomplex)), npy_intp(sizeof(dcomplex)) };
     PyObject* arr = PyArray_New(&PyArray_Type, dim, dims, type, strides, (void*)data.data(), 0, 0, NULL);
-    if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from field coefficients");
+    if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from field coefficients");
     PythonDataVector<const dcomplex,3> wrap(data);
     py::object odata(wrap); py::incref(odata.ptr());
     PyArray_SetBaseObject((PyArrayObject*)arr, odata.ptr()); // Make sure the data vector stays alive as long as the array
@@ -45,7 +45,7 @@ py::object Eigenmodes<FourierSolver3D>::array(const dcomplex* data, size_t N) co
     npy_intp dims[] = { npy_intp(N/(2*solver.minor())), npy_intp(solver.minor()), 2 };
     npy_intp strides[] = { npy_intp(2*solver.minor()*sizeof(dcomplex)), npy_intp(2*sizeof(dcomplex)), npy_intp(sizeof(dcomplex)) };
     PyObject* arr = PyArray_New(&PyArray_Type, 3, dims, NPY_CDOUBLE, strides, (void*)data, 0, 0, NULL);
-    if (arr == nullptr) throw plask::CriticalException("Cannot create array");
+    if (arr == nullptr) throw plask::CriticalException("cannot create array");
     return py::object(py::handle<>(arr));
 }
 
@@ -183,7 +183,7 @@ struct FourierSolver3D_LongTranSetter {
                     self.*field_tran = value_tran;
                     self.invalidate();
                 } catch (py::error_already_set&) {
-                    throw TypeError(u8"You may only assign a value or a sequence of two values");
+                    throw TypeError(u8"you may only assign a value or a sequence of two values");
                 }
             }
         }
@@ -260,7 +260,7 @@ struct FourierSolver3D_SymmetryLongTranWrapper {
 
     static void setter(FourierSolver3D& self, py::object values) {
         try { if (py::len(values) != 2 || py::extract<std::string>(values).check()) throw py::error_already_set(); }
-        catch (py::error_already_set&) { throw TypeError(u8"You may only assign a sequence of two values"); }
+        catch (py::error_already_set&) { throw TypeError(u8"you may only assign a sequence of two values"); }
         self.setSymmetryLong(py::extract<Expansion::Component>(values[0]));
         self.setSymmetryTran(py::extract<Expansion::Component>(values[1]));
     }
@@ -293,13 +293,13 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam") {
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
-                if (what) throw TypeError(u8"Only one key may be an array");
+                if (what) throw TypeError(u8"only one key may be an array");
                 what = WHAT_WAVELENGTH; array = kwargs[*i];
             } else
                 wavelength.reset(py::extract<dcomplex>(kwargs[*i]));
         } else if (*i == "k0") {
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
-                if (what) throw TypeError(u8"Only one key may be an array");
+                if (what) throw TypeError(u8"only one key may be an array");
                 what = WHAT_K0; array = kwargs[*i];
             } else
                 k0.reset(dcomplex(py::extract<dcomplex>(kwargs[*i])));
@@ -310,7 +310,7 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
                 if (expansion->symmetric_long())
                     throw Exception("{0}: Cannot get determinant for longitudinal wavevector array with longitudinal symmetry",
                                     self->getId());
-                if (what) throw TypeError(u8"Only one key may be an array");
+                if (what) throw TypeError(u8"only one key may be an array");
                 what = WHAT_KLONG; array = kwargs[*i];
             } else {
                 klong = py::extract<dcomplex>(kwargs[*i]);
@@ -324,7 +324,7 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
                 if (expansion->symmetric_tran())
                     throw Exception("{0}: Cannot get determinant for transverse wavevector array with transverse symmetry",
                                     self->getId());
-                if (what) throw TypeError(u8"Only one key may be an array");
+                if (what) throw TypeError(u8"only one key may be an array");
                 what = WHAT_KTRAN; array = kwargs[*i];
             } else {
                 ktran = py::extract<dcomplex>(kwargs[*i]);
@@ -449,13 +449,13 @@ size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {
 
 static py::object FourierSolver3D_getFieldVectorE(FourierSolver3D& self, int num, double z) {
     if (num < 0) num += int(self.modes.size());
-    if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
+    if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"bad mode number {:d}", num);
     return arrayFromVec3D<NPY_CDOUBLE>(self.getFieldVectorE(std::size_t(num), z), self.minor(), 3);
 }
 
 static py::object FourierSolver3D_getFieldVectorH(FourierSolver3D& self, int num, double z) {
     if (num < 0) num += int(self.modes.size());
-    if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
+    if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"bad mode number {:d}", num);
     return arrayFromVec3D<NPY_CDOUBLE>(self.getFieldVectorH(std::size_t(num), z), self.minor(), 3);
 }
 
@@ -473,7 +473,7 @@ py::object Scattering<FourierSolver3D>::getFieldVectorH(double z) {
 
 static cvector FourierSolver3D_gaussian(FourierSolver3D& self, Transfer::IncidentDirection side, Expansion::Component polarization, py::object sigma, py::object center) {
     if (py::len(center) != 2)
-        throw ValueError("Fourier3D.gaussian: 'center' must be a sequence of two floats");
+        throw ValueError("fourier3D.gaussian: 'center' must be a sequence of two floats");
     double cx = py::extract<double>(center[0]);
     double cy = py::extract<double>(center[1]);
     double sx, sy;
@@ -482,7 +482,7 @@ static cvector FourierSolver3D_gaussian(FourierSolver3D& self, Transfer::Inciden
     } catch (py::error_already_set) {
         PyErr_Clear();
         if (!PySequence_Check(sigma.ptr()) || py::len(sigma) != 2)
-            throw ValueError("Fourier3D.gaussian: 'sigma' must be a float or a sequence of two floats");
+            throw ValueError("fourier3D.gaussian: 'sigma' must be a float or a sequence of two floats");
         sx = py::extract<double>(sigma[0]);
         sy = py::extract<double>(sigma[1]);
     }

@@ -158,12 +158,12 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
             lock = material->lock();
             nr = material->NR(lam, T, C);
             if (isnan(nr.c00) || isnan(nr.c11) || isnan(nr.c22) || isnan(nr.c01))
-                throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm, T={}K, n={}/cm3",
+                throw BadInput(solver->getId(), "complex refractive index (NR) for {} is NaN at lam={}nm, T={}K, n={}/cm3",
                                material->name(), lam, T, C);
         }
         if (nr.c01 != 0.) {
-            if (symmetric()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
-            if (separated()) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
+            if (symmetric()) throw BadInput(solver->getId(), "symmetry not allowed for structure with non-diagonal NR tensor");
+            if (separated()) throw BadInput(solver->getId(), "single polarization not allowed for structure with non-diagonal NR tensor");
         }
         if (gain_connected && solver->lgained[layer]) {
             auto roles = geometry->getRolesAt(vec(mesh->tran()->at(j),maty));

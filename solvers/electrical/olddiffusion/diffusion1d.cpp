@@ -131,7 +131,7 @@ template <typename Geometry2DType> void DiffusionFem2DSolver<Geometry2DType>::co
         if (!convergence) {
             mesh_changes += 1;
             if (mesh_changes > max_mesh_changes)
-                throw ComputationError(this->getId(), "Maximum number of mesh refinements ({0}) reached", max_mesh_changes);
+                throw ComputationError(this->getId(), "maximum number of mesh refinements ({0}) reached", max_mesh_changes);
             size_t new_size = 2 * current_mesh.size() - 1;
             writelog(LOG_DETAIL, "Refining mesh (new size: {0})", new_size);
 
@@ -256,7 +256,7 @@ template <typename Geometry2DType> bool DiffusionFem2DSolver<Geometry2DType>::Ma
             if (overthreshold_computation) {
                 // Compute E and F components for overthreshold computations
                 if (inWavelength.size() != inLightE.size())
-                    throw BadInput(this->getId(), "Number of modes in inWavelength ({}) and inLightE ({}) differ",
+                    throw BadInput(this->getId(), "number of modes in inWavelength ({}) and inLightE ({}) differ",
                                    inWavelength.size(), inLightE.size());
 
                 // Sum all modes

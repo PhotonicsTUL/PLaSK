@@ -332,7 +332,7 @@ struct RegisterReceiverImpl<ReceiverT, MULTI_VALUE_PROPERTY, VariadicTemplateTyp
         if (assignProvider(self, obj)) return;
         if (assignMultipleValues(self, obj)) return;
         if (assignValue(self, obj)) return;
-        throw TypeError(u8"You can only attach {0} provider or a sequence of {1}s", type_name<typename ReceiverT::PropertyTag>(),
+        throw TypeError(u8"you can only attach {0} provider or a sequence of {1}s", type_name<typename ReceiverT::PropertyTag>(),
                         std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
     }
 
@@ -377,7 +377,7 @@ struct RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY, VariadicTemplateTypesHold
                 PythonProviderFor<ProviderT, PropertyT::propertyType, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
             if (assignProvider(self, py::object(data))) return;
         }
-        throw TypeError(u8"You can only attach {0} provider, {2} data over {1}D mesh, or a {2} constant",
+        throw TypeError(u8"you can only attach {0} provider, {2} data over {1}D mesh, or a {2} constant",
                         type_name<typename ReceiverT::PropertyTag>(), ReceiverT::SpaceType::DIM,
                         std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
     }
@@ -569,7 +569,7 @@ template <typename T> struct PythonLazyDataImpl : public LazyDataImpl<T> {
     PythonLazyDataImpl(const py::object& object, size_t len) : object(object), len(len) {
         if (PyObject_HasAttrString(object.ptr(), "__len__")) {
             if (py::len(object) != py::ssize_t(len))
-                throw ValueError(u8"Sizes of data ({}) and mesh ({}) do not match", py::len(object), len);
+                throw ValueError(u8"sizes of data ({}) and mesh ({}) do not match", py::len(object), len);
         }
     }
 
@@ -699,7 +699,7 @@ struct PythonProviderFor<ProviderT, MULTI_FIELD_PROPERTY, VariadicTemplateTypesH
                     u8"'data' in custom Python provider must be a callable or a sequence of proper Data objects"
                     u8" over {}-dimensional mesh",
                     ProviderT::SpaceType::DIM);
-            if (data().mesh != data0.mesh) throw ValueError(u8"Mesh in each element of 'data' sequence must be the same");
+            if (data().mesh != data0.mesh) throw ValueError(u8"mesh in each element of 'data' sequence must be the same");
         }
     }
 };
@@ -760,7 +760,7 @@ template <typename CombinedProviderT> struct RegisterCombinedProvider {
         py::handle<> cls = py::handle<>(py::borrowed(reinterpret_cast<PyObject*>(
             py::converter::registry::lookup(py::type_id<typename CombinedProviderT::BaseType>()).m_class_object)));
         if (!cls)
-            throw CriticalException(u8"No registered provider for {0}", py::type_id<typename CombinedProviderT::BaseType>().name());
+            throw CriticalException(u8"no registered provider for {0}", py::type_id<typename CombinedProviderT::BaseType>().name());
         py::scope cls_scope = py::object(cls);
         (void)cls_scope;  // don't warn about unused variable cls_scope
         py::def("__add__", &add,
@@ -926,7 +926,7 @@ struct RegisterProviderImpl<ProviderT, FIELD_PROPERTY, VariadicTemplateTypesHold
                                                          const shared_ptr<MeshD<DIMS>>& mesh,
                                                          const ExtraParams&... params,
                                                          InterpolationMethod method) {
-        if (!mesh) throw TypeError(u8"You must provide proper mesh to {0} provider", self.name());
+        if (!mesh) throw TypeError(u8"you must provide proper mesh to {0} provider", self.name());
         return PythonDataVector<const ValueT, DIMS>(self(mesh, params..., method), mesh);
     }
     RegisterProviderImpl()
@@ -954,7 +954,7 @@ struct RegisterProviderImpl<ProviderT, MULTI_FIELD_PROPERTY, VariadicTemplateTyp
                                                           const shared_ptr<MeshD<DIMS>>& mesh,
                                                           const ExtraParams&... params,
                                                           InterpolationMethod method) {
-        if (!mesh) throw TypeError(u8"You must provide proper mesh to {0} provider", self.name());
+        if (!mesh) throw TypeError(u8"you must provide proper mesh to {0} provider", self.name());
         int n = int(num);
         if (n < 0) num = EnumType(self.size() + n);
         if (n < 0 || std::size_t(n) >= self.size()) throw NoValue(format("{0} [{1}]", self.name(), num).c_str());
@@ -964,7 +964,7 @@ struct RegisterProviderImpl<ProviderT, MULTI_FIELD_PROPERTY, VariadicTemplateTyp
                                                           const shared_ptr<MeshD<DIMS>>& mesh,
                                                           const ExtraParams&... params,
                                                           InterpolationMethod method) {
-        if (!mesh) throw TypeError(u8"You must provide proper mesh to {0} provider", self.name());
+        if (!mesh) throw TypeError(u8"you must provide proper mesh to {0} provider", self.name());
         return PythonDataVector<const ValueT, DIMS>(self(EnumType(0), mesh, params..., method), mesh);
     }
     RegisterProviderImpl()

@@ -37,7 +37,7 @@ void ExpansionBesselInfini::init2()
     if (SOLVER->geometry->getEdge(Geometry::DIRECTION_TRAN, true).type() != edge::Strategy::DEFAULT &&
         SOLVER->geometry->getEdge(Geometry::DIRECTION_TRAN, true).type() != edge::Strategy::SIMPLE &&
         SOLVER->geometry->getEdge(Geometry::DIRECTION_TRAN, true).type() != edge::Strategy::EXTEND)
-        throw BadInput(solver->getId(), "Outer geometry edge must be 'extend' or a simple material");
+        throw BadInput(solver->getId(), "outer geometry edge must be 'extend' or a simple material");
 
     double k0 = isnan(lam0)? this->k0.real() : 2e3*M_PI / lam0;
     double kmax = SOLVER->kmax * k0;
@@ -50,7 +50,7 @@ void ExpansionBesselInfini::init2()
     switch (SOLVER->kmethod) {
         case BesselSolverCyl::WAVEVECTORS_UNIFORM:
             SOLVER->writelog(LOG_DETAIL, "Using uniform wavevectors");
-            if (isnan(k0)) throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
+            if (isnan(k0)) throw BadInput(SOLVER->getId(), "no wavelength given: specify 'lam' or 'lam0'");
             kpts.resize(N);
             kdlt = SOLVER->kscale * kmax / N;
             kdelts.reset(N, kdlt);
@@ -68,7 +68,7 @@ void ExpansionBesselInfini::init2()
             kdelts.reset(N);
             if (!SOLVER->kweights) {
                 if (SOLVER->klist.size() != N+1)
-                    throw BadInput(SOLVER->getId(), "If no weights are given, number of manually specified wavevectors must be {}",
+                    throw BadInput(SOLVER->getId(), "if no weights are given, number of manually specified wavevectors must be {}",
                                    N+1);
                 for (size_t i = 0; i != N; ++i) {
                     kpts[i] = 0.5 * (SOLVER->klist[i] + SOLVER->klist[i+1]) * R;
@@ -76,10 +76,10 @@ void ExpansionBesselInfini::init2()
                 }
             } else {
                 if (SOLVER->klist.size() != N)
-                    throw BadInput(SOLVER->getId(), "If weights are given, number of manually specified wavevectors must be {}",
+                    throw BadInput(SOLVER->getId(), "if weights are given, number of manually specified wavevectors must be {}",
                                    N);
                 if (SOLVER->kweights->size() != N)
-                    throw BadInput(SOLVER->getId(), "Number of manually specified wavevector weights must be {}", N+1);
+                    throw BadInput(SOLVER->getId(), "number of manually specified wavevector weights must be {}", N+1);
                 kpts = SOLVER->klist;
                 for (double& k: kpts) k *= R;
                 kdelts.reset(SOLVER->kweights->begin(), SOLVER->kweights->end());
@@ -87,7 +87,7 @@ void ExpansionBesselInfini::init2()
             break;
         case BesselSolverCyl::WAVEVECTORS_NONUNIFORM:
             SOLVER->writelog(LOG_DETAIL, "Using non-uniform wavevectors");
-            if (isnan(k0)) throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
+            if (isnan(k0)) throw BadInput(SOLVER->getId(), "no wavelength given: specify 'lam' or 'lam0'");
             kpts.resize(N);
             kdelts.reset(N);
             // Häyrynen, T., de Lasson, J.R., Gregersen, N., 2016.
@@ -96,7 +96,7 @@ void ExpansionBesselInfini::init2()
             int M1, M2, M3;
             M1 = M2 = (N+1) / 3;
             M3 = N - M1 - M2;
-            if (M3 < 0) throw BadInput(SOLVER->getId(), "Too small expansion size");
+            if (M3 < 0) throw BadInput(SOLVER->getId(), "too small expansion size");
             int i = 0;
             double k1 = 0.;
             for(int m = 1; m <= M1; ++m, ++i) {
@@ -117,7 +117,7 @@ void ExpansionBesselInfini::init2()
             double km = k1;
             double dlt2 = (kmax * SOLVER->kscale - km - M3 * dlt1) / (M3 * (M3 + 1));
             if (dlt2 < 0)
-                throw BadInput(SOLVER->getId(), "For non-uniform wavevectors kmax must be at least {}",
+                throw BadInput(SOLVER->getId(), "for non-uniform wavevectors kmax must be at least {}",
                                (km + M3 * dlt1) / SOLVER->kscale / k0);
             for(int m = 1; m <= M3; ++m, ++i) {
                 double k2 = km + dlt1 * m + dlt2 * m * (m+1);
@@ -135,8 +135,8 @@ void ExpansionBesselInfini::init2()
 void ExpansionBesselInfini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
 {
     assert(initialized);
-    if (isnan(k0)) throw BadInput(SOLVER->getId(), "Wavelength or k0 not set");
-    if (isinf(k0.real())) throw BadInput(SOLVER->getId(), "Wavelength must not be 0");
+    if (isnan(k0)) throw BadInput(SOLVER->getId(), "wavelength or k0 not set");
+    if (isinf(k0.real())) throw BadInput(SOLVER->getId(), "wavelength must not be 0");
 
     size_t N = SOLVER->size;
     dcomplex ik0 = 1. / k0;

@@ -278,7 +278,7 @@ struct PLASK_API RectangularMeshRefinedGenerator: public MeshGeneratorD<dim> {
     /// \param value true if the adjacent mesh elements cannot differ more than twice in size along each axis
     void setAspect(double value) {
         if (value != 0. && value < 2.)
-            throw BadInput("divideGenerator", "Maximum aspect must be larger than 2");
+            throw BadInput("divideGenerator", "maximum aspect must be larger than 2");
         aspect = value;
         this->fireChanged();
     }
@@ -346,9 +346,9 @@ struct PLASK_API RectangularMeshRefinedGenerator: public MeshGeneratorD<dim> {
         auto key = std::make_pair(object, path);
         assert(size_t(direction) <= dim);
         auto ref = refinements[size_t(direction)].find(key);
-        if (ref == refinements[size_t(direction)].end()) throw BadInput("rectangularMeshDivideGenerator", "There are no refinements for specified geometry object.");
+        if (ref == refinements[size_t(direction)].end()) throw BadInput("RectangularMeshDivideGenerator", "there are no refinements for specified geometry object.");
         auto oposition = ref->second.find(position);
-        if (oposition == ref->second.end()) throw BadInput("rectangularMeshDivideGenerator", "Specified geometry object does not have refinements at {0}.", *oposition);
+        if (oposition == ref->second.end()) throw BadInput("RectangularMeshDivideGenerator", "specified geometry object does not have refinements at {0}.", *oposition);
         ref->second.erase(oposition);
         if (ref->second.empty()) refinements[size_t(direction)].erase(ref);
         this->fireChanged();
@@ -587,7 +587,7 @@ struct PLASK_API RectangularMeshSmoothGenerator: public RectangularMeshRefinedGe
     /// Set maximum element increase factor
     inline void setFactor(typename Primitive<DIM>::Direction direction, double value) {
         assert(size_t(direction) <= dim);
-        if (value < 1.) throw BadInput("smoothGenerator", "Increase factor for axis {:d} cannot be smaller than 1", size_t(direction));
+        if (value < 1.) throw BadInput("SmoothGenerator", "increase factor for axis {:d} cannot be smaller than 1", size_t(direction));
         factor[size_t(direction)] = value;
         this->fireChanged();
     }

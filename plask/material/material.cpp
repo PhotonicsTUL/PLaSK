@@ -47,7 +47,7 @@ inline void fillGroupMaterialCompositionAmounts(NameValuePairIter begin, NameVal
     for (auto i = begin; i != end; ++i) {
         if (std::isnan(i->second)) {
             if (no_info != end)
-                throw plask::MaterialParseException("Incomplete material composition for group {0} elements", ROMANS[group_nr-1]);
+                throw plask::MaterialParseException("incomplete material composition for group {0} elements", ROMANS[group_nr-1]);
             else
                 no_info = i;
         } else {
@@ -56,12 +56,12 @@ inline void fillGroupMaterialCompositionAmounts(NameValuePairIter begin, NameVal
         }
     }
     if (n > 0 && sum - 1.0 > SMALL * std::max(n, unsigned(1)))
-        throw plask::MaterialParseException("Total material composition for group {0} elements exceeds 1", ROMANS[group_nr-1]);
+        throw plask::MaterialParseException("total material composition for group {0} elements exceeds 1", ROMANS[group_nr-1]);
     if (no_info != end) {
         no_info->second = 1.0 - sum;
     } else {
         if (!is_zero(sum - 1.0, SMALL * std::max(n, unsigned(1))))
-             throw plask::MaterialParseException("Total material composition for group {0} elements ({1}) differs from 1", ROMANS[group_nr-1], sum);
+             throw plask::MaterialParseException("total material composition for group {0} elements ({1}) differs from 1", ROMANS[group_nr-1], sum);
     }
 }
 
@@ -102,7 +102,7 @@ std::string Material::Parameters::str() const {
         std::map<int, std::vector<std::pair<std::string, double>>> by_group;
         for (auto c: composition) {
             int group = elementGroup(c.first);
-            if (group == 0) throw plask::MaterialParseException("Wrong element name \"{0}\"", c.first);
+            if (group == 0) throw plask::MaterialParseException("wrong element name \"{0}\"", c.first);
             by_group[group].push_back(c);
         }
         for (auto g: by_group) {
@@ -274,7 +274,7 @@ Material::Composition Material::completeComposition(const Composition &compositi
     std::map<int, std::vector<std::pair<std::string, double>>> by_group;
     for (auto c: composition) {
         int group = elementGroup(c.first);
-        if (group == 0) throw plask::MaterialParseException("Wrong object name \"{0}\"", c.first);
+        if (group == 0) throw plask::MaterialParseException("wrong object name \"{0}\"", c.first);
         by_group[group].push_back(c);
     }
     Material::Composition result;
@@ -289,7 +289,7 @@ Material::Composition Material::minimalComposition(const Composition &compositio
     std::map<int, std::vector<std::pair<std::string, double>>> by_group;
     for (auto c: composition) {
         int group = elementGroup(c.first);
-        if (group == 0) throw plask::MaterialParseException("Wrong object name \"{0}\"", c.first);
+        if (group == 0) throw plask::MaterialParseException("wrong object name \"{0}\"", c.first);
         by_group[group].push_back(c);
     }
     Material::Composition result;

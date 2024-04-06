@@ -791,7 +791,7 @@ struct InterpolationAlgorithm<TriangularMesh2D, SrcT, DstT, INTERPOLATION_NEARES
                                       const shared_ptr<const MeshD<2>>& dst_mesh,
                                       const InterpolationFlags& flags)
     {
-        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        if (src_mesh->empty()) throw BadMesh("interpolate", "source mesh empty");
         return new NearestNeighborTriangularMesh2DLazyDataImpl<typename std::remove_const<DstT>::type,
                                                        typename std::remove_const<SrcT>::type>
             (src_mesh, src_vec, dst_mesh, flags);
@@ -834,7 +834,7 @@ struct InterpolationAlgorithm<TriangularMesh2D, SrcT, DstT, INTERPOLATION_LINEAR
                                       const shared_ptr<const MeshD<2>>& dst_mesh,
                                       const InterpolationFlags& flags)
     {
-        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        if (src_mesh->empty()) throw BadMesh("interpolate", "source mesh empty");
         return new BarycentricTriangularMesh2DLazyDataImpl<typename std::remove_const<DstT>::type,
                                                        typename std::remove_const<SrcT>::type>
             (src_mesh, src_vec, dst_mesh, flags);
@@ -877,7 +877,7 @@ struct InterpolationAlgorithm<TriangularMesh2D::ElementMesh, SrcT, DstT, INTERPO
                                       const shared_ptr<const MeshD<2>>& dst_mesh,
                                       const InterpolationFlags& flags)
     {
-        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        if (src_mesh->empty()) throw BadMesh("interpolate", "source mesh empty");
         return new NearestNeighborElementTriangularMesh2DLazyDataImpl<typename std::remove_const<DstT>::type,
                                                                       typename std::remove_const<SrcT>::type>
             (src_mesh, src_vec, dst_mesh, flags);

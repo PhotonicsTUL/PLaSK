@@ -96,7 +96,7 @@ struct DpbMatrix : BandMatrix {
         if (info < 0)
             throw CriticalException("{0}: Argument {1} of `dpbtrf` has illegal value", solver->getId(), -info);
         else if (info > 0)
-            throw ComputationError(solver->getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite",
+            throw ComputationError(solver->getId(), "leading minor of order {0} of the stiffness matrix is not positive-definite",
                                    info);
     }
 

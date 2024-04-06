@@ -232,9 +232,9 @@ struct PLASK_SOLVER_API SlabBase {
 
     /// Throw exception if the interface position is unsuitable for eigenmode computations
     void ensureInterface() {
-        if (interface == -1) throw BadInput(this->getId(), "No interface position set");
+        if (interface == -1) throw BadInput(this->getId(), "no interface position set");
         if (interface == 0 || interface >= std::ptrdiff_t(stack.size()))
-            throw BadInput(this->getId(), "Wrong interface position {0} (min: 1, max: {1})", interface, stack.size() - 1);
+            throw BadInput(this->getId(), "wrong interface position {0} (min: 1, max: {1})", interface, stack.size() - 1);
     }
 
     /// Get solver expansion

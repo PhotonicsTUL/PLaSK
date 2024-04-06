@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -68,7 +68,7 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager) {
                         double val = boost::lexical_cast<double>(val);
                         klist.push_back(val);
                     } catch (boost::bad_lexical_cast&) {
-                        throw XMLException(reader, format("Value '{0}' cannot be converted to float", val));
+                        throw XMLException(reader, format("value '{0}' cannot be converted to float", val));
                     }
                 }
             }
@@ -84,7 +84,7 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager) {
                             double val = boost::lexical_cast<double>(val);
                             kweights->push_back(val);
                         } catch (boost::bad_lexical_cast&) {
-                            throw XMLException(reader, format("Value '{0}' cannot be converted to float", val));
+                            throw XMLException(reader, format("value '{0}' cannot be converted to float", val));
                         }
                     }
                 }
@@ -130,7 +130,7 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager) {
 
 void BesselSolverCyl::onInitialize() {
     if (size == 0)
-        throw BadInput(getId(), "Bessel solver size cannot be 0");
+        throw BadInput(getId(), "bessel solver size cannot be 0");
     this->setupLayers();
     std::string dom;
     switch (domain) {

@@ -272,7 +272,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
         std::replace(name->begin(), name->end(), '-', '_');
         BadId::throwIfBad("geometry", *name);
         if (manager.geometrics.find(*name) != manager.geometrics.end())
-            throw XMLDuplicatedElementException(source, "Geometry '" + *name + "'");
+            throw XMLDuplicatedElementException(source, "geometry '" + *name + "'");
     }
 
     // TODO read subspaces from XML

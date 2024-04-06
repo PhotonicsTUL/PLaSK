@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -112,7 +112,7 @@ inline static void imtqlx(int n, double d[], double e[], double z[])
             p = d[l-1];
             if (m == l) break;
             if (j >= itn)
-                throw "Iteration limit exceeded\n";
+                throw ComputationError("imtqlx", "iteration limit exceeded\n");
             j = j + 1;
             g = (d[l] - p) / (2.0 * e[l-1]);
             r = sqrt(g * g + 1.0);

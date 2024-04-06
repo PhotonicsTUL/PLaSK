@@ -97,7 +97,7 @@ class PythonXMLFilter {
                     ++close_pos;
                 }
                 if (close_pos == in.size() && level != 0)
-                    throw plask::Exception("Cannot find '}' matching to '{' at position {0} in: {1}", pos - 1, in);
+                    throw plask::Exception("cannot find '}' matching to '{' at position {0} in: {1}", pos - 1, in);
                 result += eval(in.substr(pos, close_pos - 1 - pos));
                 pos = close_pos - 1;  // pos with '}' that will be skipped
             } else if (in[pos] == '}' && in[pos + 1] == '}') {
@@ -273,7 +273,7 @@ void PythonManager::loadDefines(XMLReader& reader) {
         std::string name = reader.requireAttribute("name");
         std::string value = reader.requireAttribute("value");
         if (name == "self") {
-            throw XMLException(reader, u8"Definition name 'self' is reserved");
+            throw XMLException(reader, u8"definition name 'self' is reserved");
         };
         if (!defs.has_key(name)) {
             try {
@@ -285,7 +285,7 @@ void PythonManager::loadDefines(XMLReader& reader) {
                 defs[name] = value;
             }
         } else if (parsed.find(name) != parsed.end())
-            throw XMLDuplicatedElementException(reader, format("Definition of '{0}'", name));
+            throw XMLDuplicatedElementException(reader, format("definition of '{0}'", name));
         parsed.insert(name);
         reader.requireTagEnd();
     }
@@ -326,12 +326,12 @@ void PythonManager::loadConnects(XMLReader& reader) {
         py::object solverin, receiver;
 
         auto in_solver = solvers.find(in.first);
-        if (in_solver == solvers.end()) throw XMLException(reader, format(u8"Cannot find (in) solver with name '{0}'.", in.first));
+        if (in_solver == solvers.end()) throw XMLException(reader, format(u8"cannot find (in) solver with name '{0}'.", in.first));
         try {
             solverin = py::object(in_solver->second);
         } catch (py::error_already_set&) {
             PyErr_Clear();
-            throw XMLException(reader, format(u8"Cannot convert solver '{0}' to python object.", in.first));
+            throw XMLException(reader, format(u8"cannot convert solver '{0}' to python object.", in.first));
         }
 
         if (dynamic_pointer_cast<FilterCommonBase>(in_solver->second)) {
@@ -357,7 +357,7 @@ void PythonManager::loadConnects(XMLReader& reader) {
                 receiver = solverin.attr(in.second.c_str());
             } catch (py::error_already_set&) {
                 PyErr_Clear();
-                throw XMLException(reader, format("Solver '{0}' does not have attribute '{1}'.", in.first, in.second));
+                throw XMLException(reader, format("solver '{0}' does not have attribute '{1}'.", in.first, in.second));
             }
         }
 
@@ -373,20 +373,20 @@ void PythonManager::loadConnects(XMLReader& reader) {
 
             auto out_solver = solvers.find(out.first);
             if (out_solver == solvers.end()) {
-                throw XMLException(reader, format(u8"Cannot find (out) solver with name '{0}'.", out.first));
+                throw XMLException(reader, format(u8"cannot find (out) solver with name '{0}'.", out.first));
             }
             try {
                 solverout = py::object(out_solver->second);
             } catch (py::error_already_set&) {
                 PyErr_Clear();
-                throw XMLException(reader, format(u8"Cannot convert solver '{0}' to python object.", out.first));
+                throw XMLException(reader, format(u8"cannot convert solver '{0}' to python object.", out.first));
             }
 
             try {
                 prov = solverout.attr(out.second.c_str());
             } catch (py::error_already_set&) {
                 PyErr_Clear();
-                throw XMLException(reader, format(u8"Solver '{0}' does not have attribute '{1}'.", out.first, out.second));
+                throw XMLException(reader, format(u8"solver '{0}' does not have attribute '{1}'.", out.first, out.second));
             }
 
             if (provider.is_none())
@@ -399,7 +399,7 @@ void PythonManager::loadConnects(XMLReader& reader) {
             receiver.attr("attach")(provider);
         } catch (py::error_already_set&) {
             PyErr_Clear();
-            throw XMLException(reader, format(u8"Cannot connect '{0}' to '{1}'.", outkey, inkey));
+            throw XMLException(reader, format(u8"cannot connect '{0}' to '{1}'.", outkey, inkey));
         }
 
         reader.requireTagEnd();
@@ -415,11 +415,11 @@ void PythonManager::loadMaterialModule(XMLReader& reader) {
             try {
 #if (PY_VERSION_HEX >= 0x03040000)
                 py::object spec = py::import("importlib.util").attr("find_spec")(modname);
-                if (spec.is_none()) throw Exception(format("Cannot find materials module '{}'", name));
+                if (spec.is_none()) throw Exception(format("cannot find materials module '{}'", name));
                 file = py::extract<std::string>(spec.attr("origin"));
 #else
                 py::object loader = !py::import("importlib").attr("find_loader")(modname);
-                if (loader.is_none()) throw Exception(format("Cannot find materials module '{}'", name));
+                if (loader.is_none()) throw Exception(format("cannot find materials module '{}'", name));
                 file = py::extract<std::string>(loader.attr("get_filename")());
 #endif
             } catch (py::error_already_set) {

@@ -249,7 +249,7 @@ std::string GeometryObject__repr__(const shared_ptr<GeometryObject>& self) {
 
 py::object GeometryObject_getRole(const GeometryObject& self) {
     if (self.roles.size() == 0) return py::object();
-    if (self.roles.size() != 1) throw TypeError(u8"Object has more than one role, use .roles instead");
+    if (self.roles.size() != 1) throw TypeError(u8"object has more than one role, use .roles instead");
     return py::object(*(self.roles.begin()));
 }
 

@@ -237,11 +237,11 @@ size_t FourierSolver3D::initIncidence(Transfer::IncidentDirection side, Expansio
 {
 
     if (polarization == ExpansionPW3D::E_UNSPECIFIED)
-        throw BadInput(getId(), "Unspecified incident polarization for reflectivity computation");
+        throw BadInput(getId(), "unspecified incident polarization for reflectivity computation");
     if (expansion.symmetry_long == Expansion::Component(3-polarization))
-        throw BadInput(getId(), "Current longitudinal symmetry is inconsistent with the specified incident polarization");
+        throw BadInput(getId(), "current longitudinal symmetry is inconsistent with the specified incident polarization");
     if (expansion.symmetry_tran == Expansion::Component(3-polarization))
-        throw BadInput(getId(), "Current transverse symmetry is inconsistent with the specified incident polarization");
+        throw BadInput(getId(), "current transverse symmetry is inconsistent with the specified incident polarization");
     return SlabSolver<SolverOver<Geometry3D>>::initIncidence(side, lam);
 }
 

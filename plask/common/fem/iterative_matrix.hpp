@@ -276,30 +276,30 @@ struct SparseMatrix : FemMatrix {
 
         if (ier != 0) {
             switch (ier) {
-                case -1: throw ComputationError(solver->getId(), "Nonpositive matrix rank {}", rank);
-                case -2: throw ComputationError(solver->getId(), "Insufficient real workspace ({} required)", nw);
-                case -3: throw ComputationError(solver->getId(), "Insufficient integer workspace ({} required)", inw);
-                case -4: throw ComputationError(solver->getId(), "Nonpositive diagonal element in stiffness matrix");
-                case -5: throw ComputationError(solver->getId(), "Nonexistent diagonal element in stiffness matrix");
-                case -6: throw ComputationError(solver->getId(), "Stiffness matrix A is not positive definite");
-                case -7: throw ComputationError(solver->getId(), "Preconditioned matrix Q is not positive definite");
-                case -8: throw ComputationError(solver->getId(), "Cannot permute stiffness matrix as requested");
+                case -1: throw ComputationError(solver->getId(), "nonpositive matrix rank {}", rank);
+                case -2: throw ComputationError(solver->getId(), "insufficient real workspace ({} required)", nw);
+                case -3: throw ComputationError(solver->getId(), "insufficient integer workspace ({} required)", inw);
+                case -4: throw ComputationError(solver->getId(), "nonpositive diagonal element in stiffness matrix");
+                case -5: throw ComputationError(solver->getId(), "nonexistent diagonal element in stiffness matrix");
+                case -6: throw ComputationError(solver->getId(), "stiffness matrix A is not positive definite");
+                case -7: throw ComputationError(solver->getId(), "preconditioned matrix Q is not positive definite");
+                case -8: throw ComputationError(solver->getId(), "cannot permute stiffness matrix as requested");
                 case -9:
                     throw ComputationError(solver->getId(),
                                            "Number of non-zero diagonals is not large enough to allow expansion of matrix");
-                case -10: throw ComputationError(solver->getId(), "Inadmissible parameter encountered");
-                case -11: throw ComputationError(solver->getId(), "Incorrect storage mode for block method");
-                case -12: throw ComputationError(solver->getId(), "Zero pivot encountered in factorization");
-                case -13: throw ComputationError(solver->getId(), "Breakdown in direction vector calculation");
-                case -14: throw ComputationError(solver->getId(), "Breakdown in attempt to perform rotation");
-                case -15: throw ComputationError(solver->getId(), "Breakdown in iterate calculation");
-                case -16: throw ComputationError(solver->getId(), "Unimplemented combination of parameters");
-                case -18: throw ComputationError(solver->getId(), "Unable to perform eigenvalue estimation");
+                case -10: throw ComputationError(solver->getId(), "inadmissible parameter encountered");
+                case -11: throw ComputationError(solver->getId(), "incorrect storage mode for block method");
+                case -12: throw ComputationError(solver->getId(), "zero pivot encountered in factorization");
+                case -13: throw ComputationError(solver->getId(), "breakdown in direction vector calculation");
+                case -14: throw ComputationError(solver->getId(), "breakdown in attempt to perform rotation");
+                case -15: throw ComputationError(solver->getId(), "breakdown in iterate calculation");
+                case -16: throw ComputationError(solver->getId(), "unimplemented combination of parameters");
+                case -18: throw ComputationError(solver->getId(), "unable to perform eigenvalue estimation");
                 case 1:
                     params->converged = false;
                     switch (params->no_convergence_behavior) {
                         case IterativeMatrixParams::NO_CONVERGENCE_ERROR:
-                            throw ComputationError(solver->getId(), "Failed to converge in {} iterations (error {})", iparm.itmax,
+                            throw ComputationError(solver->getId(), "failed to converge in {} iterations (error {})", iparm.itmax,
                                                    rparm.zeta);
                         case IterativeMatrixParams::NO_CONVERGENCE_WARNING:
                             solver->writelog(LOG_WARNING, "Failed to converge in {} iterations (error {})", iparm.itmax,

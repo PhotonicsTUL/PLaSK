@@ -156,14 +156,14 @@ struct PLASK_SOLVER_API ElectricalFem3DSolver : public FemSolverWithMaskedMesh<G
                 l = 8;
             else
                 continue;
-            if (no != 0) throw BadInput(this->getId(), "Multiple 'active'/'junction' roles specified");
+            if (no != 0) throw BadInput(this->getId(), "multiple 'active'/'junction' roles specified");
             if (role.size() == l)
                 no = 1;
             else {
                 try {
                     no = boost::lexical_cast<size_t>(role.substr(l)) + 1;
                 } catch (boost::bad_lexical_cast&) {
-                    throw BadInput(this->getId(), "Bad junction number in role '{0}'", role);
+                    throw BadInput(this->getId(), "bad junction number in role '{0}'", role);
                 }
             }
         }
@@ -279,7 +279,7 @@ struct PLASK_SOLVER_API ElectricalFem3DSolver : public FemSolverWithMaskedMesh<G
         for (const auto& act : active) condsize += (act.right - act.left) * act.ld;
         condsize = max(condsize, size_t(1));
         if (!this->mesh || cond.size() != condsize)
-            throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
+            throw BadInput(this->getId(), "provided junction conductivity vector has wrong size");
         junction_conductivity = cond.claim();
     }
 

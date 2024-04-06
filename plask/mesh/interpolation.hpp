@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -372,7 +372,7 @@ LazyData<typename std::remove_const<DstT>::type> interpolate(
                                         bool verbose=true)
 {
     if (src_mesh->size() != src_vec.size())
-        throw BadMesh("interpolate", "Mesh size ({1}) and values size ({0}) do not match", src_vec.size(), src_mesh->size());
+        throw BadMesh("interpolate", "mesh size ({1}) and values size ({0}) do not match", src_vec.size(), src_mesh->size());
     if (src_mesh == dst_mesh) return new LazyDataFromVectorImpl<typename std::remove_const<DstT>::type>(src_vec); // meshes are identical, so just return src_vec
     if (verbose && method < __ILLEGAL_INTERPOLATION_METHOD__) writelog(LOG_DEBUG, "interpolate: Running {0} interpolation", interpolationMethodNames[method]);
     return __InterpolateMeta__<SrcMeshT, SrcT, DstT, 0>::interpolate(src_mesh, src_vec, dst_mesh, method, flags);

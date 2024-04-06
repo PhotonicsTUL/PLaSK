@@ -167,7 +167,7 @@ namespace cereal
     //! Error message used for unregistered polymorphic types
     /*! @internal */
     #define UNREGISTERED_POLYMORPHIC_EXCEPTION(LoadSave, Name)                                                                                      \
-      throw cereal::Exception("Trying to " #LoadSave " an unregistered polymorphic type (" + Name + ").\n"                                          \
+      throw cereal::Exception("trying to " #LoadSave " an unregistered polymorphic type (" + Name + ").\n"                                          \
                               "Make sure your type is registered with CEREAL_REGISTER_TYPE and that the archive "                                   \
                               "you are using was included (and registered with CEREAL_REGISTER_ARCHIVE) prior to calling CEREAL_REGISTER_TYPE.\n"   \
                               "If your type is already registered and you still see this error, you may need to use CEREAL_REGISTER_DYNAMIC_INIT.");
@@ -255,7 +255,7 @@ namespace cereal
     serialize_wrapper(Archive &, std::shared_ptr<T> &, std::uint32_t const nameid)
     {
       if(nameid & detail::msb2_32bit)
-        throw cereal::Exception("Cannot load a polymorphic type that is not default constructable and does not have a load_and_construct function");
+        throw cereal::Exception("cannot load a polymorphic type that is not default constructable and does not have a load_and_construct function");
       return false;
     }
 
@@ -272,7 +272,7 @@ namespace cereal
     serialize_wrapper(Archive &, std::unique_ptr<T, D> &, std::uint32_t const nameid)
     {
       if(nameid & detail::msb2_32bit)
-        throw cereal::Exception("Cannot load a polymorphic type that is not default constructable and does not have a load_and_construct function");
+        throw cereal::Exception("cannot load a polymorphic type that is not default constructable and does not have a load_and_construct function");
       return false;
     }
   } // polymorphic_detail

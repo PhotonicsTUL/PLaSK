@@ -351,7 +351,7 @@ template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::com
         nmodes = inWavelength.size();
 
         if (inLightE.size() != nmodes)
-            throw BadInput(this->getId(), "Number of modes in inWavelength ({}) and inLightE ({}) differ", inWavelength.size(),
+            throw BadInput(this->getId(), "number of modes in inWavelength ({}) and inLightE ({}) differ", inWavelength.size(),
                            inLightE.size());
 
         active.modesP.assign(inWavelength.size(), 0.);
@@ -459,12 +459,12 @@ template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::com
         double* kend = K->data + K->size;
         for (double* pk = K->data; pk != kend; ++pk) {
             if (isnan(*pk) || isinf(*pk))
-                throw ComputationError(this->getId(), "Error in stiffness matrix at position {0} ({1})", pk - K->data,
+                throw ComputationError(this->getId(), "error in stiffness matrix at position {0} ({1})", pk - K->data,
                                        isnan(*pk) ? "nan" : "inf");
         }
         for (auto f = F.begin(); f != F.end(); ++f) {
             if (isnan(*f) || isinf(*f))
-                throw ComputationError(this->getId(), "Error in load vector at position {0} ({1})", f - F.begin(),
+                throw ComputationError(this->getId(), "error in load vector at position {0} ({1})", f - F.begin(),
                                        isnan(*f) ? "nan" : "inf");
         }
 #endif
@@ -496,7 +496,7 @@ template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::com
 
 template <typename Geometry2DType>
 double Diffusion2DSolver<Geometry2DType>::get_burning_integral_for_mode(size_t mode) const {
-    if (mode >= inLightE.size()) throw BadInput(this->getId(), "Mode index out of range");
+    if (mode >= inLightE.size()) throw BadInput(this->getId(), "mode index out of range");
     double res = 0.;
     for (const auto& iactive: this->active) {
         const auto& active = iactive.second;

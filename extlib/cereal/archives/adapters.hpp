@@ -154,7 +154,7 @@ namespace cereal
     }
     catch( std::bad_cast const & )
     {
-      throw ::cereal::Exception("Attempting to get user data from archive not wrapped in UserDataAdapter");
+      throw ::cereal::Exception("attempting to get user data from archive not wrapped in UserDataAdapter");
     }
   }
   #endif // CEREAL_FUTURE_EXPERIMENTAL

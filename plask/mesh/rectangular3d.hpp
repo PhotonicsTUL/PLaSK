@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -205,7 +205,7 @@ struct InterpolationAlgorithm<RectangularMesh3D, SrcT, DstT, INTERPOLATION_LINEA
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh3D>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
         if (src_mesh->axis[0]->size() == 0 || src_mesh->axis[1]->size() == 0 || src_mesh->axis[2]->size() == 0)
-            throw BadMesh("interpolate", "Source mesh empty");
+            throw BadMesh("interpolate", "source mesh empty");
         return new LinearInterpolatedLazyDataImpl<DstT, RectilinearMesh3D, SrcT>(src_mesh, src_vec, dst_mesh, flags);
     }
 };
@@ -215,7 +215,7 @@ struct InterpolationAlgorithm<RectangularMesh3D, SrcT, DstT, INTERPOLATION_NEARE
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh3D>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
         if (src_mesh->axis[0]->size() == 0 || src_mesh->axis[1]->size() == 0 || src_mesh->axis[2]->size() == 0)
-            throw BadMesh("interpolate", "Source mesh empty");
+            throw BadMesh("interpolate", "source mesh empty");
         return new NearestNeighborInterpolatedLazyDataImpl<DstT, RectilinearMesh3D, SrcT>(src_mesh, src_vec, dst_mesh, flags);
     }
 };
@@ -235,7 +235,7 @@ struct InterpolationAlgorithm<RectangularMesh3D::ElementMesh, SrcT, DstT, INTERP
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh3D::ElementMesh>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
         if (src_mesh->axis[0]->size() == 0 || src_mesh->axis[1]->size() == 0)
-            throw BadMesh("interpolate", "Source mesh empty");
+            throw BadMesh("interpolate", "source mesh empty");
         return new NearestNeighborInterpolatedLazyDataImpl<DstT, RectangularMesh3D::ElementMesh, SrcT>(src_mesh, src_vec, dst_mesh, flags);
     }
 };

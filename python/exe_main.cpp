@@ -78,7 +78,7 @@ static void from_import_all(const char* name, py::object& dest) {
 // Initialize the binary modules and load the package from disk
 static py::object initPlask(int argc, const system_char* argv[], bool banner) {
     // Initialize the plask module
-    if (PyImport_AppendInittab("_plask", &PLASK_MODULE) != 0) throw plask::CriticalException("No _plask module");
+    if (PyImport_AppendInittab("_plask", &PLASK_MODULE) != 0) throw plask::CriticalException("no _plask module");
 
         // Initialize Python
 #if PY_VERSION_HEX >= 0x03080000
@@ -629,7 +629,7 @@ int
                         filename = path_to_system_string(filepath);
                     }
                     FILE* file = system_fopen(filename.c_str(), CSTR(r));
-                    if (!file) throw std::invalid_argument("No such file: '" + system_to_utf8(filename) + "'");
+                    if (!file) throw std::invalid_argument("no such file: '" + system_to_utf8(filename) + "'");
                     int c;
                     while ((c = std::getc(file))) {
                         if (!std::isspace(c) || c == EOF) break;
@@ -645,13 +645,13 @@ int
                         filename = path_to_system_string(filepath);
                     }
                     FILE* file = system_fopen(filename.c_str(), CSTR(r));
-                    if (!file) throw std::invalid_argument("No such file: '" + system_to_utf8(filename) + "'");
+                    if (!file) throw std::invalid_argument("no such file: '" + system_to_utf8(filename) + "'");
                     std::fclose(file);
                 }
                 assert(filetype);
             } else {
                 if (!filetype) {
-                    throw std::invalid_argument("Filetype must by specified (with -x or -p) when reading from <stdin>");
+                    throw std::invalid_argument("filetype must by specified (with -x or -p) when reading from <stdin>");
                 }
             }
             (*globals)["__file__"] = filename;
@@ -666,7 +666,7 @@ int
                 py::dict locals;
                 for (std::string& def : defs) {
                     auto keyval = plask::splitString2(def, '=');
-                    if (keyval.first == "self") throw plask::python::ValueError("Definition name 'self' is reserved");
+                    if (keyval.first == "self") throw plask::python::ValueError("definition name 'self' is reserved");
                     try {
                         locals[keyval.first] = (plask::python::py_eval(keyval.second, manager->globals, locals));
                     } catch (py::error_already_set&) {

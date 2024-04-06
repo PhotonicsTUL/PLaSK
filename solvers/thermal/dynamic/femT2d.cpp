@@ -249,7 +249,7 @@ void DynamicThermalFem2DSolver<Geometry2DCartesian>::setMatrix(
     double* aend = A.data + A.size;
     for (double* pa = A.data; pa != aend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
-            throw ComputationError(this->getId(), "Error in stiffness matrix at position {0}", pa-A.data);
+            throw ComputationError(this->getId(), "error in stiffness matrix at position {0}", pa-A.data);
     }
 #endif
 
@@ -377,7 +377,7 @@ void DynamicThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(
     double* aend = A.data + A.size;
     for (double* pa = A.data; pa != aend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
-            throw ComputationError(this->getId(), "Error in stiffness matrix at position {0}", pa-A.data);
+            throw ComputationError(this->getId(), "error in stiffness matrix at position {0}", pa-A.data);
     }
 #endif
 

@@ -131,7 +131,7 @@ static py::object FreeCarrierGainSpectrum__call__(typename SolverT::GainSpectrum
         PyObject* outarr = PyArray_SimpleNew(2, dims, NPY_DOUBLE);
         if (outarr == nullptr) {
             Py_DECREF(inarr);
-            throw plask::CriticalException(u8"Cannot create array for gain");
+            throw plask::CriticalException(u8"cannot create array for gain");
         }
 
         double* indata = static_cast<double*>(PyArray_DATA(inarr));

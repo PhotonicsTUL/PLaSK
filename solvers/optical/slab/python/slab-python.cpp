@@ -36,7 +36,7 @@ struct Matrix_Python {
 
         PyObject* arr = PyArray_New(&PyArray_Type, 2, dims, plask::python::detail::typenum<T>(), strides,
                                     (void*)self.data(), 0, 0, NULL);
-        if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from matrix");
+        if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from matrix");
         // Make sure the data vector stays alive as long as the array
         py::object oself {Matrix_Python<T>(self)};
         py::incref(oself.ptr());
@@ -57,7 +57,7 @@ struct Diagonal_Python {
 
         PyObject* arr = PyArray_New(&PyArray_Type, 1, dims, plask::python::detail::typenum<T>(), strides,
                                     (void*)self.data(), 0, 0, NULL);
-        if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from matrix");
+        if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from matrix");
         // Make sure the data vector stays alive as long as the array
         py::object oself {Diagonal_Python<T>(self)};
         py::incref(oself.ptr());

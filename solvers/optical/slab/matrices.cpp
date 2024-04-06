@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -19,11 +19,11 @@ cmatrix invmult(cmatrix& A, cmatrix& B)
 {
     // Check if the A is a square matrix
     if (A.rows() != A.cols())
-        throw ComputationError("invmult", "Cannot invert rectangular matrix");
+        throw ComputationError("invmult", "cannot invert rectangular matrix");
     const std::size_t N = A.rows();
     // Check if can multiply
     if (B.rows() != N)
-        throw ComputationError("invmult", "Cannot multiply matrices because of the dimensions mismatch");
+        throw ComputationError("invmult", "cannot multiply matrices because of the dimensions mismatch");
     const std::size_t nrhs = B.cols();
     // Needed variables
     std::unique_ptr<int[]> ipiv(new int[N]);
@@ -31,7 +31,7 @@ cmatrix invmult(cmatrix& A, cmatrix& B)
     // Perform the calculation
     zgesv(int(N), int(nrhs), A.data(), int(N), ipiv.get(), B.data(), int(N), info);
     // Return the result
-    if (info > 0) throw ComputationError("invmult", "Matrix is singular");
+    if (info > 0) throw ComputationError("invmult", "matrix is singular");
     return B;
 }
 
@@ -40,18 +40,18 @@ cvector invmult(cmatrix& A, cvector& B)
 {
     // Check if the A is a square matrix
     if (A.rows() != A.cols())
-        throw ComputationError("invmult", "Cannot invert rectangular matrix");
+        throw ComputationError("invmult", "cannot invert rectangular matrix");
     const std::size_t N = A.rows();
     // Check if can multiply
     if (B.size() != N)
-        throw ComputationError("invmult", "Cannot multiply matrix by vector because of the dimensions mismatch");
+        throw ComputationError("invmult", "cannot multiply matrix by vector because of the dimensions mismatch");
     // Needed variables
     std::unique_ptr<int[]> ipiv(new int[N]);
     int info;
     // Perform the calculation
     zgesv(int(N), 1, A.data(), int(N), ipiv.get(), B.data(), int(N), info);
     // Return the result
-    if (info > 0) throw ComputationError("invmult", "Matrix is singular");
+    if (info > 0) throw ComputationError("invmult", "matrix is singular");
     return B;
 }
 
@@ -60,7 +60,7 @@ cmatrix inv(cmatrix& A)
 {
     // Check if the A is a square matrix
     if (A.rows() != A.cols())
-        throw ComputationError("inv", "Cannot invert rectangular matrix");
+        throw ComputationError("inv", "cannot invert rectangular matrix");
     const std::size_t N = A.rows();
 
     // Simply call invmult(A, I)
@@ -77,7 +77,7 @@ dcomplex det(cmatrix& A)
 {
     // Check if the A is a square matrix
     if (A.rows() != A.cols())
-        throw ComputationError("det", "Cannot find the determinant of rectangular matrix");
+        throw ComputationError("det", "cannot find the determinant of rectangular matrix");
     const std::size_t N = A.rows();
     // Needed variables
     std::unique_ptr<int[]> ipiv(new int[N]);
@@ -100,14 +100,14 @@ int eigenv(cmatrix& A, cdiagonal& vals, cmatrix* rightv, cmatrix* leftv)
 {
     // Check the validity of the matrices
     if (A.rows() != A.cols())
-        throw ComputationError("eigenv", "Matrix A should be square");
+        throw ComputationError("eigenv", "matrix A should be square");
     const std::size_t N = A.rows();
     if (vals.size() != N)
-        throw ComputationError("eigenv", "Eigenvalues should have the same number of rows as the original matrix.");
+        throw ComputationError("eigenv", "eigenvalues should have the same number of rows as the original matrix.");
     if (rightv) if (rightv->rows() != N || rightv->cols() != N)
-        throw ComputationError("eigenv", "Matrices for right eigenvectors should be square");
+        throw ComputationError("eigenv", "matrices for right eigenvectors should be square");
     if (leftv) if (leftv->rows() != N || leftv->cols() != N)
-        throw ComputationError("eigenv", "Matrices for left eigenvectors should be square");
+        throw ComputationError("eigenv", "matrices for left eigenvectors should be square");
 
     // Determine the task
     char jobvl = (leftv==NULL)? 'N' : 'V';

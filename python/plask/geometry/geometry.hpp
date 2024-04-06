@@ -64,7 +64,7 @@ inline AlignerT update_aligner_from_dict(const AlignerT& original_aligner, const
                                             current_axes,
                                             original_aligner
                                             );
-    if (!map.empty()) throw TypeError(u8"Got unexpected alignment keyword '{0}'", map.begin()->first);
+    if (!map.empty()) throw TypeError(u8"got unexpected alignment keyword '{0}'", map.begin()->first);
     return aligner;
 }
 

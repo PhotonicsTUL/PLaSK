@@ -142,14 +142,14 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver : public FemSolverWithMesh<G
                 l = 8;
             else
                 continue;
-            if (no != 0) throw BadInput(this->getId(), "Multiple 'active'/'junction' roles specified");
+            if (no != 0) throw BadInput(this->getId(), "multiple 'active'/'junction' roles specified");
             if (role.size() == l)
                 no = 1;
             else {
                 try {
                     no = boost::lexical_cast<size_t>(role.substr(l)) + 1;
                 } catch (boost::bad_lexical_cast&) {
-                    throw BadInput(this->getId(), "Bad junction number in role '{0}'", role);
+                    throw BadInput(this->getId(), "bad junction number in role '{0}'", role);
                 }
             }
         }
@@ -281,7 +281,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver : public FemSolverWithMesh<G
         shared_ptr<Material> getLayerMaterial(size_t n) const {
             auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild().get());
             if (auto m = block->singleMaterial()) return m;
-            throw plask::Exception("FreeCarrierGainSolver requires solid layers.");
+            throw plask::Exception("freeCarrierGainSolver requires solid layers.");
         }
 
         /// Return translated bounding box of \p n-th layer

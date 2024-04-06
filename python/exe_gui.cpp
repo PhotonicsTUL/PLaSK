@@ -42,7 +42,7 @@ void showError(const std::string& msg, const std::string& cap = "Error");
 // Initialize the binary modules and load the package from disk
 static py::object initPlask(int argc, const system_char* const argv[]) {
     // Initialize the plask module
-    if (PyImport_AppendInittab("_plask", &PLASK_MODULE) != 0) throw plask::CriticalException("No _plask module");
+    if (PyImport_AppendInittab("_plask", &PLASK_MODULE) != 0) throw plask::CriticalException("no _plask module");
 
     // Initialize Python
 #if PY_VERSION_HEX >= 0x03080000

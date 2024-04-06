@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -87,7 +87,7 @@ bool RootBroyden::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, dou
         log_value.count(x, F);
 
         f = 0.5 * (real(F)*real(F) + imag(F)*imag(F));
-        if (std::isnan(f)) throw ComputationError(solver.getId(), "Computed value is NaN");
+        if (std::isnan(f)) throw ComputationError(solver.getId(), "computed value is NaN");
 
         if (f < f0 + params.alpha*lambda*slope)    // sufficient function decrease
             return true;
@@ -108,7 +108,7 @@ bool RootBroyden::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, dou
                 lambda = -slope/(2.*b);
             else {
                 double delta = b*b - 3.*a*slope;
-                if (delta < 0.0) throw ComputationError(solver.getId(), "Broyden lnsearch: roundoff problem");
+                if (delta < 0.0) throw ComputationError(solver.getId(), "broyden lnsearch: roundoff problem");
                 lambda = (-b + sqrt(delta)) / (3.0*a);
             }
         }
@@ -162,7 +162,7 @@ dcomplex RootBroyden::Broyden(dcomplex x)
 
         // compute p = - B**(-1) * F
         double M = real(Br)*imag(Bi) - imag(Br)*real(Bi);
-        if (M == 0) throw ComputationError(solver.getId(), "Singular Jacobian in Broyden method");
+        if (M == 0) throw ComputationError(solver.getId(), "singular Jacobian in Broyden method");
         dcomplex p = - dcomplex(real(F)*imag(Bi)-imag(F)*real(Bi), real(Br)*imag(F)-imag(Br)*real(F)) / M;
 
         // find the right step

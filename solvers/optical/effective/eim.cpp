@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -56,7 +56,7 @@ void EffectiveIndex2D::loadConfiguration(XMLReader& reader, Manager& manager) {
             if (pol) {
                 if (*pol == "TE") polarization = TE;
                 else if (*pol == "TM") polarization = TM;
-                else throw BadInput(getId(), "Wrong polarization specification '{0}' in XML", *pol);
+                else throw BadInput(getId(), "wrong polarization specification '{0}' in XML", *pol);
             }
             k0 = 2e3*PI / reader.getAttribute<double>("wavelength",  real(2e3*PI / k0));
             stripex = reader.getAttribute<double>("vat", stripex);
@@ -89,7 +89,7 @@ void EffectiveIndex2D::loadConfiguration(XMLReader& reader, Manager& manager) {
                     auto generator2 = dynamic_pointer_cast<MeshGeneratorD<2>>(found->second);
                     if (generator1) this->setMesh(plask::make_shared<RectangularMesh2DFrom1DGenerator>(generator1));
                     else if (generator2) this->setMesh(generator2);
-                    else throw BadInput(this->getId(), "Mesh or generator '{0}' of wrong type", *name);
+                    else throw BadInput(this->getId(), "mesh or generator '{0}' of wrong type", *name);
                 }
             }
         } else
@@ -109,7 +109,7 @@ std::vector<dcomplex> EffectiveIndex2D::searchVNeffs(dcomplex neff1, dcomplex ne
     if (eps.imag() == 0.) eps.imag(eps.real());
 
     if (real(eps) <= 0. || imag(eps) <= 0.)
-        throw BadInput(this->getId(), "Bad precision specified");
+        throw BadInput(this->getId(), "bad precision specified");
 
     double re0 = real(neff1), im0 = imag(neff1);
     double re1 = real(neff2), im1 = imag(neff2);
@@ -125,7 +125,7 @@ std::vector<dcomplex> EffectiveIndex2D::searchVNeffs(dcomplex neff1, dcomplex ne
             if (n.real() > re1) re1 = n.real();
         }
     } else if (re0 == 0. || re1 == 0.)
-        throw BadInput(getId(), "Bad area to browse specified");
+        throw BadInput(getId(), "bad area to browse specified");
     if (im0 == 0. && im1 == 0.) {
         im0 = 1e30;
         im1 = -1e30;
@@ -176,7 +176,7 @@ std::vector<size_t> EffectiveIndex2D::findModes(dcomplex neff1, dcomplex neff2, 
     if (eps.imag() == 0.) eps.imag(eps.real());
 
     if (real(eps) <= 0. || imag(eps) <= 0.)
-        throw BadInput(this->getId(), "Bad precision specified");
+        throw BadInput(this->getId(), "bad precision specified");
 
     double re0 = real(neff1), im0 = imag(neff1);
     double re1 = real(neff2), im1 = imag(neff2);
@@ -192,7 +192,7 @@ std::vector<size_t> EffectiveIndex2D::findModes(dcomplex neff1, dcomplex neff2, 
             if (n.real() > re1) re1 = n.real();
         }
     } else if (re0 == 0. || re1 == 0.)
-        throw BadInput(getId(), "Bad area to browse specified");
+        throw BadInput(getId(), "bad area to browse specified");
     if (im0 == 0. && im1 == 0.) {
         im0 = 1e30;
         im1 = -1e30;

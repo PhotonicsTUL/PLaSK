@@ -379,12 +379,12 @@ static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type 
     py::object oself,
     py::object dtype = py::object()) {
     const PythonDataVector<T, dim>* self = py::extract<const PythonDataVector<T, dim>*>(oself);
-    if (self->mesh_changed) throw Exception(u8"Cannot create array, mesh changed since data retrieval");
+    if (self->mesh_changed) throw Exception(u8"cannot create array, mesh changed since data retrieval");
     const int nd = (detail::type_dim<T>() == 1) ? 1 : 2;
     npy_intp dims[] = {static_cast<npy_intp>(self->mesh->size()), detail::type_dim<T>()};
     npy_intp strides[] = {static_cast<npy_intp>(sizeof(T)), static_cast<npy_intp>(sizeof(T) / detail::type_dim<T>())};
     PyObject* arr = PyArray_New(&PyArray_Type, nd, dims, detail::typenum<T>(), strides, (void*)self->data(), 0, 0, NULL);
-    if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from data");
+    if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from data");
     confirm_array<T>(arr, oself, dtype);
     return py::object(py::handle<>(arr));
 }
@@ -395,7 +395,7 @@ static typename std::enable_if<!detail::isBasicData<T>::value, py::object>::type
     py::object dtype = py::object()) {
     const PythonDataVector<T, dim>* self = py::extract<const PythonDataVector<T, dim>*>(oself);
     if (!dtype.is_none()) throw ValueError(u8"dtype for this data must not be specified");
-    if (self->mesh_changed) throw Exception(u8"Cannot create array, mesh changed since data retrieval");
+    if (self->mesh_changed) throw Exception(u8"cannot create array, mesh changed since data retrieval");
 
     npy_intp dims[] = {static_cast<npy_intp>(self->size())};
     py::object arr(py::handle<>(PyArray_SimpleNew(1, dims, NPY_OBJECT)));
@@ -415,7 +415,7 @@ static inline typename std::enable_if<detail::isBasicData<T>::value, PyObject*>:
 
     PyObject* arr = PyArray_New(&PyArray_Type, int(dims.size()), &dims.front(), detail::typenum<T>(),
                                 &detail::mesh_strides<T>(*mesh, dims.size()).front(), (void*)self->data(), 0, 0, NULL);
-    if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from data");
+    if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from data");
     return arr;
 }
 
@@ -428,7 +428,7 @@ static inline typename std::enable_if<!detail::isBasicData<T>::value, PyObject*>
     std::vector<npy_intp> dims = detail::mesh_dims(*mesh);
 
     PyObject* arr = PyArray_SimpleNew(int(dims.size()), &dims.front(), NPY_OBJECT);
-    if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from data");
+    if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from data");
 
     PyObject** arr_data = static_cast<PyObject**>(PyArray_DATA((PyArrayObject*)arr));
     for (auto i = self->begin(); i < self->end(); ++i, ++arr_data) *arr_data = py::incref(py::object(*i).ptr());
@@ -439,13 +439,13 @@ static inline typename std::enable_if<!detail::isBasicData<T>::value, PyObject*>
 template <typename T, int dim> static py::object PythonDataVector_Array(py::object oself) {
     const PythonDataVector<T, dim>* self = py::extract<const PythonDataVector<T, dim>*>(oself);
 
-    if (self->mesh_changed) throw Exception(u8"Cannot create array, mesh changed since data retrieval");
+    if (self->mesh_changed) throw Exception(u8"cannot create array, mesh changed since data retrieval");
 
     PyObject* arr = PythonDataVector_ArrayImpl<T, RectangularMesh<2>>(self);
     if (!arr) arr = PythonDataVector_ArrayImpl<T, RectangularMesh<3>>(self);
 
     if (arr == nullptr)
-        throw TypeError(u8"Cannot create array for data on this mesh type (possible only for {0})",
+        throw TypeError(u8"cannot create array for data on this mesh type (possible only for {0})",
                         (dim == 2) ? "mesh.RectangularMesh2D" : "mesh.RectangularMesh3D");
 
     py::incref(oself.ptr());
@@ -488,14 +488,14 @@ static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type 
         }
     } else {
         auto rectangular = dynamic_pointer_cast<RectangularMesh<dim>>(mesh);
-        if (!rectangular) throw TypeError(u8"For this mesh type only one-dimensional array is allowed");
+        if (!rectangular) throw TypeError(u8"for this mesh type only one-dimensional array is allowed");
         auto meshdims = mesh_dims(*rectangular);
         if (type_dim<T>() != 1) meshdims.push_back(type_dim<T>());
         std::size_t nd = meshdims.size();
-        if ((std::size_t)PyArray_NDIM(arr) != nd) throw ValueError(u8"Provided array must have either 1 or {0} dimensions", dim);
+        if ((std::size_t)PyArray_NDIM(arr) != nd) throw ValueError(u8"provided array must have either 1 or {0} dimensions", dim);
         for (std::size_t i = 0; i != nd; ++i)
             if (meshdims[i] != PyArray_DIMS(arr)[i])
-                throw ValueError(u8"Dimension {0} for the array ({2}) does not match with the mesh ({1})", i, meshdims[i],
+                throw ValueError(u8"dimension {0} for the array ({2}) does not match with the mesh ({1})", i, meshdims[i],
                                  PyArray_DIMS(arr)[i]);
         auto meshstrides = mesh_strides<T>(*rectangular, nd);
         for (std::size_t i = 0; i != nd; ++i) {
@@ -511,7 +511,7 @@ static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type 
         size = mesh->size();
     }
 
-    if (size != mesh->size()) throw ValueError(u8"Sizes of data ({0}) and mesh ({1}) do not match", size, mesh->size());
+    if (size != mesh->size()) throw ValueError(u8"sizes of data ({0}) and mesh ({1}) do not match", size, mesh->size());
 
     auto result = plask::make_shared<PythonDataVector<const T, dim>>(
         DataVector<const T>((const T*)PyArray_DATA(arr), size, NumpyDataDeleter(arr)), mesh);
@@ -526,9 +526,9 @@ static typename std::enable_if<!detail::isBasicData<T>::value, py::object>::type
     py::handle<PyArrayObject> newarr;
 
     if (PyArray_NDIM(arr) != 1) {
-        throw NotImplemented(u8"Data from multi-dimensional array for this dtype");
+        throw NotImplemented(u8"data from multi-dimensional array for this dtype");
     } else {
-        if (size != mesh->size()) throw ValueError(u8"Sizes of data ({0}) and mesh ({1}) do not match", size, mesh->size());
+        if (size != mesh->size()) throw ValueError(u8"sizes of data ({0}) and mesh ({1}) do not match", size, mesh->size());
         size = PyArray_DIMS(arr)[0];
         PyArrayIterObject* iter = (PyArrayIterObject*)PyArray_IterNew((PyObject*)arr);
         auto data = DataVector<T>(size);
@@ -581,7 +581,7 @@ PLASK_PYTHON_API py::object Data(PyObject* obj, py::object omesh) {
         switch (PyArray_TYPE(arr)) {
             case NPY_DOUBLE: return detail::makeDataVector<double, 2>(arr, mesh);
             case NPY_CDOUBLE: return detail::makeDataVector<dcomplex, 2>(arr, mesh);
-            default: throw TypeError(u8"Array has wrong dtype (only float and complex allowed)");
+            default: throw TypeError(u8"array has wrong dtype (only float and complex allowed)");
         }
 
     } catch (py::error_already_set&) {
@@ -592,7 +592,7 @@ PLASK_PYTHON_API py::object Data(PyObject* obj, py::object omesh) {
             switch (PyArray_TYPE(arr)) {
                 case NPY_DOUBLE: return detail::makeDataVector<double, 3>(arr, mesh);
                 case NPY_CDOUBLE: return detail::makeDataVector<dcomplex, 3>(arr, mesh);
-                default: throw TypeError(u8"Array has wrong dtype (only float and complex allowed)");
+                default: throw TypeError(u8"array has wrong dtype (only float and complex allowed)");
             }
 
         } catch (py::error_already_set&) {
@@ -606,14 +606,14 @@ PLASK_PYTHON_API py::object Data(PyObject* obj, py::object omesh) {
 template <typename T, int dim>
 static PythonDataVector<T, dim> PythonDataVector__add__(const PythonDataVector<T, dim>& vec1,
                                                         const PythonDataVector<T, dim>& vec2) {
-    if (vec1.mesh != vec2.mesh) throw ValueError(u8"You may only add data on the same mesh");
+    if (vec1.mesh != vec2.mesh) throw ValueError(u8"you may only add data on the same mesh");
     return PythonDataVector<T, dim>(vec1 + vec2, vec1.mesh);
 }
 
 template <typename T, int dim>
 static PythonDataVector<T, dim> PythonDataVector__sub__(const PythonDataVector<T, dim>& vec1,
                                                         const PythonDataVector<T, dim>& vec2) {
-    if (vec1.mesh != vec2.mesh) throw ValueError(u8"You may only subtract data on the same mesh");
+    if (vec1.mesh != vec2.mesh) throw ValueError(u8"you may only subtract data on the same mesh");
     return PythonDataVector<T, dim>(vec1 + vec2, vec1.mesh);
 }
 
@@ -914,7 +914,7 @@ static inline typename std::enable_if<detail::isBasicData<T>::value, PythonDataV
     shared_ptr<MeshD<dim>> dst_mesh,
     InterpolationMethod method,
     const InterpolationFlags& flags) {
-    if (self.mesh_changed) throw Exception(u8"Cannot interpolate, mesh changed since data retrieval");
+    if (self.mesh_changed) throw Exception(u8"cannot interpolate, mesh changed since data retrieval");
 
     INTERPOLATE_MESH(typename RectangularMesh<dim>::ElementMesh);
     INTERPOLATE_MESH(RectangularMesh<dim>);

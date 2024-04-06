@@ -402,7 +402,7 @@ void FreeCarrierGainSolver<BaseT>::estimateWellLevels(WhichLevel which, ActiveRe
             double xa, xb;
             std::tie(xa, xb) = toms748_solve([&](double x) { return level(which, x, params, qw); }, a, b, fa, fb,
                                              [this](double l, double r) { return r - l < levelsep; }, iters);
-            if (xb - xa > levelsep) throw ComputationError(this->getId(), "Could not find level estimate in quantum well");
+            if (xb - xa > levelsep) throw ComputationError(this->getId(), "could not find level estimate in quantum well");
             params.levels[which].emplace_back(0.5 * (xa + xb), M, which, params);
         }
     }
@@ -465,7 +465,7 @@ void FreeCarrierGainSolver<BaseT>::estimateAboveLevels(WhichLevel which, ActiveR
             double xa, xb;
             std::tie(xa, xb) = toms748_solve([&](double x) { return level(which, x, params); }, a, b, fa, fb,
                                              [this](double l, double r) { return r - l < levelsep; }, iters);
-            if (xb - xa > levelsep) throw ComputationError(this->getId(), "Could not find level estimate above quantum wells");
+            if (xb - xa > levelsep) throw ComputationError(this->getId(), "could not find level estimate above quantum wells");
             params.levels[which].emplace_back(0.5 * (xa + xb), M, which, params);
         }
     }
@@ -584,12 +584,12 @@ void FreeCarrierGainSolver<BaseT>::findFermiLevels(double& Fc, double& Fv, doubl
 
     iters = 1000;
     std::tie(xa, xb) = fermi_bracket_and_solve([this, T, n, &params](double x) { return getN(x, T, params) - n; }, Fc, fs, iters);
-    if (xb - xa > levelsep) throw ComputationError(this->getId(), "Could not find quasi-Fermi level for electrons");
+    if (xb - xa > levelsep) throw ComputationError(this->getId(), "could not find quasi-Fermi level for electrons");
     Fc = 0.5 * (xa + xb);
 
     iters = 1000;
     std::tie(xa, xb) = fermi_bracket_and_solve([this, T, n, &params](double x) { return getP(x, T, params) - n; }, Fv, fs, iters);
-    if (xb - xa > levelsep) throw ComputationError(this->getId(), "Could not find quasi-Fermi level for holes");
+    if (xb - xa > levelsep) throw ComputationError(this->getId(), "could not find quasi-Fermi level for holes");
     Fv = 0.5 * (xa + xb);
 }
 

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -307,7 +307,7 @@ static void Space_setEdges(Geometry& self, py::dict edges) {
 
 struct EdgesProxy : public std::map<std::string, py::object> {
     void __setitem__(const std::string&, const py::object&) {
-        throw TypeError(u8"Edges do not support item assignment");
+        throw TypeError(u8"edges do not support item assignment");
     }
     std::string __repr__() const {
         std::string result;

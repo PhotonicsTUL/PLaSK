@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -23,7 +23,7 @@ std::unique_ptr<RootDigger> RootDigger::get(Solver* solver, const function_type&
     if (params.method == RootDigger::ROOT_MULLER) return Res(new RootMuller(*solver, func, detlog, params));
     else if (params.method == RootDigger::ROOT_BROYDEN) return Res(new RootBroyden(*solver, func, detlog, params));
     else if (params.method == RootDigger::ROOT_BRENT) return Res(new RootBrent(*solver, func, detlog, params));
-    throw BadInput(solver->getId(), "Wrong root finding method");
+    throw BadInput(solver->getId(), "wrong root finding method");
     return Res();
 }
 

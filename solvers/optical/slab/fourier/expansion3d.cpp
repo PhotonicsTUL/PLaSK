@@ -49,16 +49,16 @@ void ExpansionPW3D::init()
     if (reft == 0) reft = 1;
 
     if (symmetry_long != E_UNSPECIFIED && !geometry->isSymmetric(Geometry3D::DIRECTION_LONG))
-            throw BadInput(solver->getId(), "Longitudinal symmetry not allowed for asymmetric structure");
+            throw BadInput(solver->getId(), "longitudinal symmetry not allowed for asymmetric structure");
     if (symmetry_tran != E_UNSPECIFIED && !geometry->isSymmetric(Geometry3D::DIRECTION_TRAN))
-            throw BadInput(solver->getId(), "Transverse symmetry not allowed for asymmetric structure");
+            throw BadInput(solver->getId(), "transverse symmetry not allowed for asymmetric structure");
 
     if (geometry->isSymmetric(Geometry3D::DIRECTION_LONG)) {
         if (front <= 0.) {
             back = -back; front = -front;
             std::swap(back, front);
         }
-        if (back != 0.) throw BadInput(SOLVER->getId(), "Longitudinally symmetric geometry must have one of its sides at symmetry axis");
+        if (back != 0.) throw BadInput(SOLVER->getId(), "longitudinally symmetric geometry must have one of its sides at symmetry axis");
         if (!symmetric_long()) back = -front;
     }
     if (geometry->isSymmetric(Geometry3D::DIRECTION_TRAN)) {
@@ -66,20 +66,20 @@ void ExpansionPW3D::init()
             left = -left; right = -right;
             std::swap(left, right);
         }
-        if (left != 0.) throw BadInput(SOLVER->getId(), "Transversely symmetric geometry must have one of its sides at symmetry axis");
+        if (left != 0.) throw BadInput(SOLVER->getId(), "transversely symmetric geometry must have one of its sides at symmetry axis");
         if (!symmetric_tran()) left = -right;
     }
 
     if (!periodic_long) {
         if (SOLVER->getLongSize() == 0)
-            throw BadInput(solver->getId(), "Flat structure in longitudinal direction (size_long = 0) allowed only for periodic geometry");
+            throw BadInput(solver->getId(), "flat structure in longitudinal direction (size_long = 0) allowed only for periodic geometry");
         // Add PMLs
         if (!symmetric_long()) back -= SOLVER->pml_long.size + SOLVER->pml_long.dist;
         front += SOLVER->pml_long.size + SOLVER->pml_long.dist;
     }
     if (!periodic_tran) {
         if (SOLVER->getTranSize() == 0)
-            throw BadInput(solver->getId(), "Flat structure in transverse direction (size_tran = 0) allowed only for periodic geometry");
+            throw BadInput(solver->getId(), "flat structure in transverse direction (size_tran = 0) allowed only for periodic geometry");
         // Add PMLs
         if (!symmetric_tran()) left -= SOLVER->pml_tran.size + SOLVER->pml_tran.dist;
         right += SOLVER->pml_tran.size + SOLVER->pml_tran.dist;
@@ -313,7 +313,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
     #endif
 
     if (isnan(lam))
-        throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
+        throw BadInput(SOLVER->getId(), "no wavelength given: specify 'lam' or 'lam0'");
 
     double matv;
     for (size_t i = 0; i != solver->stack.size(); ++i) {
@@ -397,7 +397,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
                         lock = material->lock();
                         cell[j] = material->NR(lam, T, C);
                         if (isnan(cell[j].c00) || isnan(cell[j].c11) || isnan(cell[j].c22) || isnan(cell[j].c01))
-                            throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm, T={}K n={}/cm3",
+                            throw BadInput(solver->getId(), "complex refractive index (NR) for {} is NaN at lam={}nm, T={}K n={}/cm3",
                              material->name(), lam, T, C);
                     }
                     if (gain_connected && solver->lgained[layer]) {
@@ -661,7 +661,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
             } else if (SOLVER->expansion_rule == FourierSolver3D::RULE_COMBINED) {
                 // Fill gaps in cos² and cos·sin matrices
                 if (nN == normnans)
-                    throw ComputationError(SOLVER->getId(), "Cannot compute normals - consider changing expansion size");
+                    throw ComputationError(SOLVER->getId(), "cannot compute normals - consider changing expansion size");
                 std::vector<Gradient::Vertex> vertices;
                 vertices.reserve(nN - normnans);
                 size_t i = 0;
@@ -875,8 +875,8 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay,
 void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH)
 {
     assert(initialized);
-    if (isnan(k0)) throw BadInput(SOLVER->getId(), "Wavelength or k0 not set");
-    if (isinf(k0.real())) throw BadInput(SOLVER->getId(), "Wavelength must not be 0");
+    if (isnan(k0)) throw BadInput(SOLVER->getId(), "wavelength or k0 not set");
+    if (isinf(k0.real())) throw BadInput(SOLVER->getId(), "wavelength must not be 0");
 
     bool diagonal = diagonals[lay];
 

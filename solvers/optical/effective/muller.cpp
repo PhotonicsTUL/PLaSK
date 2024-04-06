@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -38,7 +38,7 @@ dcomplex RootMuller::find(dcomplex start) const
 
     for (int i = 0; i < params.maxiter; ++i) {
         if (isnan(real(f0)) || isnan(imag(f0)))
-            throw ComputationError(solver.getId(), "Computed value is NaN");
+            throw ComputationError(solver.getId(), "computed value is NaN");
         dcomplex q = (x0 - x1) / (x1 - x2);
         dcomplex A = q * f0 - q*(q+1.) * f1 + q*q * f2;
         dcomplex B = (2.*q+1.) * f0 - (q+1.)*(q+1.) * f1 + q*q * f2;

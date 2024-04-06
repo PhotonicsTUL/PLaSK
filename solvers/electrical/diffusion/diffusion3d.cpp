@@ -111,14 +111,14 @@ void Diffusion3DSolver::setupActiveRegions() {
                         l = 8;
                     else
                         continue;
-                    if (cur != 0) throw BadInput(this->getId(), "Multiple 'active'/'junction' roles specified");
+                    if (cur != 0) throw BadInput(this->getId(), "multiple 'active'/'junction' roles specified");
                     if (role.size() == l)
                         cur = 1;
                     else {
                         try {
                             cur = boost::lexical_cast<size_t>(role.substr(l)) + 1;
                         } catch (boost::bad_lexical_cast&) {
-                            throw BadInput(this->getId(), "Bad active region number in role '{0}'", role);
+                            throw BadInput(this->getId(), "bad active region number in role '{0}'", role);
                         }
                     }
                 }
@@ -249,7 +249,7 @@ double Diffusion3DSolver::compute(unsigned loops, bool shb, size_t act) {
         nmodes = inWavelength.size();
 
         if (inLightE.size() != nmodes)
-            throw BadInput(this->getId(), "Number of modes in inWavelength ({}) and inLightE ({}) differ", inWavelength.size(),
+            throw BadInput(this->getId(), "number of modes in inWavelength ({}) and inLightE ({}) differ", inWavelength.size(),
                            inLightE.size());
 
         active.modesP.assign(inWavelength.size(), 0.);
@@ -348,12 +348,12 @@ double Diffusion3DSolver::compute(unsigned loops, bool shb, size_t act) {
         double* kend = K->data + K->size;
         for (double* pk = K->data; pk != kend; ++pk) {
             if (isnan(*pk) || isinf(*pk))
-                throw ComputationError(this->getId(), "Error in stiffness matrix at position {0} ({1})", pk - K->data,
+                throw ComputationError(this->getId(), "error in stiffness matrix at position {0} ({1})", pk - K->data,
                                        isnan(*pk) ? "nan" : "inf");
         }
         for (auto f = F.begin(); f != F.end(); ++f) {
             if (isnan(*f) || isinf(*f))
-                throw ComputationError(this->getId(), "Error in load vector at position {0} ({1})", f - F.begin(),
+                throw ComputationError(this->getId(), "error in load vector at position {0} ({1})", f - F.begin(),
                                        isnan(*f) ? "nan" : "inf");
         }
 #endif
@@ -384,7 +384,7 @@ double Diffusion3DSolver::compute(unsigned loops, bool shb, size_t act) {
 }
 
 double Diffusion3DSolver::get_burning_integral_for_mode(size_t mode) const {
-    if (mode >= inLightE.size()) throw BadInput(this->getId(), "Mode index out of range");
+    if (mode >= inLightE.size()) throw BadInput(this->getId(), "mode index out of range");
     size_t i = 0;
     double res = 0.;
     for (const auto& iactive : this->active) {

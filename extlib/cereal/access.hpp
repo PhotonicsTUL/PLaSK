@@ -172,7 +172,7 @@ namespace cereal
       T * operator->()
       {
         if( !itsValid )
-          throw Exception("Object must be initialized prior to accessing members");
+          throw Exception("object must be initialized prior to accessing members");
 
         return itsPtr;
       }
@@ -417,7 +417,7 @@ namespace cereal
   void construct<T>::operator()( Args && ... args )
   {
     if( itsValid )
-      throw Exception("Attempting to construct an already initialized object");
+      throw Exception("attempting to construct an already initialized object");
 
     ::cereal::access::construct( itsPtr, std::forward<Args>( args )... );
     itsValid = true;

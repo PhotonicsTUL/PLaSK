@@ -43,14 +43,14 @@ void FreeCarrierGainSolver3D::detectActiveRegions() {
                 size_t cur = 0;
                 for (auto role : roles) {  // find the active region, point belongs to
                     if (role.substr(0, 6) == "active") {
-                        if (cur != 0) throw BadInput(this->getId(), "Multiple 'active' roles specified");
+                        if (cur != 0) throw BadInput(this->getId(), "multiple 'active' roles specified");
                         if (role.size() == 6) {
                             cur = 1;
                         } else {
                             try {
                                 cur = boost::lexical_cast<size_t>(role.substr(6)) + 1;
                             } catch (boost::bad_lexical_cast&) {
-                                throw BadInput(this->getId(), "Bad active region number in role '{0}'", role);
+                                throw BadInput(this->getId(), "bad active region number in role '{0}'", role);
                             }
                         }
                     } else if (role == "substrate") {
@@ -153,7 +153,7 @@ void FreeCarrierGainSolver3D::detectActiveRegions() {
     }
 
     if (this->strained && !this->substrateMaterial)
-        throw BadInput(this->getId(), "Strained quantum wells requested but no layer with substrate role set");
+        throw BadInput(this->getId(), "strained quantum wells requested but no layer with substrate role set");
 
     this->writelog(LOG_DETAIL, "Found {0} active region{1}", this->regions.size(), (this->regions.size() == 1) ? "" : "s");
     for (auto& region : this->regions) region.summarize(this);
@@ -209,7 +209,7 @@ template <typename DT> struct FreeCarrierGainSolver3D::DataBase : public LazyDat
             size_t offset = i * mesh->vertAxis->size();
             for (size_t j = 0; j != mesh->vertAxis->size(); ++j) {
                 double v = data[offset + j];
-                if (isnan(v)) throw ComputationError(solver->getId(), "Wrong {0} ({1}) at {2}", name, v, mesh->at(offset + j));
+                if (isnan(v)) throw ComputationError(solver->getId(), "wrong {0} ({1}) at {2}", name, v, mesh->at(offset + j));
                 val += v;
             }
             return val * factor;
@@ -401,7 +401,7 @@ const LazyData<Tensor2<double>> FreeCarrierGainSolver3D::getGainData(Gain::EnumT
         data->compute(wavelength, getInterpolationMethod<INTERPOLATION_SPLINE>(interp));
         return LazyData<Tensor2<double>>(data);
     } else {
-        throw BadInput(this->getId(), "Wrong gain type requested");
+        throw BadInput(this->getId(), "wrong gain type requested");
     }
 }
 

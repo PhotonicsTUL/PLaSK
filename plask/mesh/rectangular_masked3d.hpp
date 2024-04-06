@@ -789,7 +789,7 @@ template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<RectangularMaskedMesh3D, SrcT, DstT, INTERPOLATION_LINEAR> {
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularMaskedMesh3D>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
-        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        if (src_mesh->empty()) throw BadMesh("interpolate", "source mesh empty");
         return new LinearInterpolatedLazyDataImpl<DstT, RectangularMaskedMesh3D, SrcT>(src_mesh, src_vec, dst_mesh, flags);
     }
 };
@@ -798,7 +798,7 @@ template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<RectangularMaskedMesh3D, SrcT, DstT, INTERPOLATION_NEAREST> {
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularMaskedMesh3D>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
-        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        if (src_mesh->empty()) throw BadMesh("interpolate", "source mesh empty");
         return new NearestNeighborInterpolatedLazyDataImpl<DstT, RectangularMaskedMesh3D, SrcT>(src_mesh, src_vec, dst_mesh, flags);
     }
 };
@@ -808,7 +808,7 @@ template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<RectangularMaskedMesh3D::ElementMesh, SrcT, DstT, INTERPOLATION_LINEAR> {
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularMaskedMesh3D::ElementMesh>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
-        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        if (src_mesh->empty()) throw BadMesh("interpolate", "source mesh empty");
         return new LinearInterpolatedLazyDataImpl<DstT, RectangularMaskedMesh3D::ElementMesh, SrcT>(src_mesh, src_vec, dst_mesh, flags);
     }
 };
@@ -817,7 +817,7 @@ template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<RectangularMaskedMesh3D::ElementMesh, SrcT, DstT, INTERPOLATION_NEAREST> {
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularMaskedMesh3D::ElementMesh>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
-        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        if (src_mesh->empty()) throw BadMesh("interpolate", "source mesh empty");
         return new NearestNeighborInterpolatedLazyDataImpl<DstT, RectangularMaskedMesh3D::ElementMesh, SrcT>(src_mesh, src_vec, dst_mesh, flags);
     }
 };

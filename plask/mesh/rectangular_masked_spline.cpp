@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -526,7 +526,7 @@ HymanSplineMaskedRect2DLazyDataImpl<DstT, SrcT, BaseT>::HymanSplineMaskedRect2DL
     const size_t n0 = src_mesh->fullMesh.axis[0]->size(), n1 = src_mesh->fullMesh.axis[1]->size();
 
     if (n0 == 0 || n1 == 0)
-        throw BadMesh("interpolate", "Source mesh empty");
+        throw BadMesh("interpolate", "source mesh empty");
 
     if (n0 > 1)
         for (size_t i1 = 0; i1 < n1; ++i1)
@@ -555,7 +555,7 @@ HymanSplineMaskedRect3DLazyDataImpl<DstT, SrcT, BaseT>::HymanSplineMaskedRect3DL
     const size_t n0 = src_mesh->fullMesh.axis[0]->size(), n1 = src_mesh->fullMesh.axis[1]->size(), n2 = src_mesh->fullMesh.axis[2]->size();
 
     if (n0 == 0 || n1 == 0 || n2 == 0)
-        throw BadMesh("interpolate", "Source mesh empty");
+        throw BadMesh("interpolate", "source mesh empty");
 
     if (n0 > 1) {
         for (size_t i2 = 0; i2 < n2; ++i2) {

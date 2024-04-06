@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -47,7 +47,7 @@ void Geometry::setEdges(const std::function<plask::optional<std::string>(const s
         try {
             v_lo = borderValuesGetter(axis_name + "-lo");
             if ((v = borderValuesGetter(alternativeDirectionName(dir_nr, 0)))) {
-                if (v_lo) throw BadInput("setEdges", "Edge specified by both '{0}-lo' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 0));
+                if (v_lo) throw BadInput("setEdges", "edge specified by both '{0}-lo' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 0));
                 else v_lo = v;
             }
         } catch (...) {
@@ -57,7 +57,7 @@ void Geometry::setEdges(const std::function<plask::optional<std::string>(const s
         try {
             v_hi = borderValuesGetter(axis_name + "-hi");
             if ((v = borderValuesGetter(alternativeDirectionName(dir_nr, 1)))) {
-                if (v_hi) throw BadInput("setEdges", "Edge specified by both '{0}-hi' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 1));
+                if (v_hi) throw BadInput("setEdges", "edge specified by both '{0}-hi' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 1));
                 else v_hi = v;
             }
         } catch (...) {
@@ -89,7 +89,7 @@ void Geometry::setEdges(const std::function<plask::optional<std::string>(const s
                 }
             }
         } catch (DimensionError&) {
-            if (!draft) throw BadInput("setEdges", "Axis '{0}' is not allowed for this space", axis_name);
+            if (!draft) throw BadInput("setEdges", "axis '{0}' is not allowed for this space", axis_name);
         } catch (...) {
             if (!draft) throw;
         }
@@ -349,7 +349,7 @@ void Geometry2DCylindrical::setEdges(Direction direction, const edge::Strategy& 
         try {
             innerouter.setBoth(dynamic_cast<const edge::UniversalStrategy&>(border_to_set));
         } catch (std::bad_cast&) {
-            throw BadInput("setEdges", "Wrong edge type for inner or outer edge");
+            throw BadInput("setEdges", "wrong edge type for inner or outer edge");
         }
     } else
         bottomup.setBoth(border_to_set);
@@ -364,7 +364,7 @@ void Geometry2DCylindrical::setEdges(Direction direction, const edge::Strategy& 
             innerouter.setStrategies(dynamic_cast<const edge::UniversalStrategy&>(border_lo),
                                      dynamic_cast<const edge::UniversalStrategy&>(border_hi));
         } catch (std::bad_cast&) {
-            throw BadInput("setEdges", "Wrong edge type for inner or outer edge");
+            throw BadInput("setEdges", "wrong edge type for inner or outer edge");
         }
     } else
         bottomup.setStrategies(border_lo, border_hi);   //bottomup is only one valid proper bound for lo and hi
@@ -377,7 +377,7 @@ void Geometry2DCylindrical::setEdge(Direction direction, bool higher, const edge
         try {
             innerouter.set(higher, dynamic_cast<const edge::UniversalStrategy&>(border_to_set));
         } catch (std::bad_cast&) {
-            throw BadInput("setEdge", "Wrong edge type for inner or outer edge");
+            throw BadInput("setEdge", "wrong edge type for inner or outer edge");
         }
     } else
         bottomup.set(higher, border_to_set);

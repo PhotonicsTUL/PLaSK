@@ -36,7 +36,7 @@ py::object Eigenmodes<BesselSolverCyl>::array(const dcomplex* data, size_t N) co
     npy_intp dims[] = { npy_intp(N / strid), npy_intp(strid) };
     npy_intp strides[] = { strid * sizeof(dcomplex), sizeof(dcomplex) };
     PyObject* arr = PyArray_New(&PyArray_Type, dim, dims, NPY_CDOUBLE, strides, (void*)data, 0, 0, NULL);
-    if (arr == nullptr) throw plask::CriticalException("Cannot create array");
+    if (arr == nullptr) throw plask::CriticalException("cannot create array");
     return py::object(py::handle<>(arr));
 }
 
@@ -68,7 +68,7 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
             if (what == WHAT_K0 || k0)
                 throw BadInput(self->getId(), u8"'lam' and 'k0' are mutually exclusive");
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
-                if (what) throw TypeError(u8"Only one key may be an array");
+                if (what) throw TypeError(u8"only one key may be an array");
                 what = WHAT_WAVELENGTH; array = kwargs[*i];
             } else
                 k0.reset(2e3*PI / py::extract<dcomplex>(kwargs[*i])());
@@ -76,7 +76,7 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
             if (what == WHAT_WAVELENGTH || k0)
                 throw BadInput(self->getId(), u8"'lam' and 'k0' are mutually exclusive");
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
-                if (what) throw TypeError(u8"Only one key may be an array");
+                if (what) throw TypeError(u8"only one key may be an array");
                 what = WHAT_K0; array = kwargs[*i];
             } else
                 k0.reset(py::extract<dcomplex>(kwargs[*i]));
@@ -140,13 +140,13 @@ static size_t BesselSolverCyl_setMode(BesselSolverCyl* self, dcomplex lam, const
 
 static py::object BesselSolverCyl_getFieldVectorE(BesselSolverCyl& self, int num, double z) {
     if (num < 0) num += int(self.modes.size());
-    if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
+    if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"bad mode number {:d}", num);
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorE(num, z), false, 2);
 }
 
 static py::object BesselSolverCyl_getFieldVectorH(BesselSolverCyl& self, int num, double z) {
     if (num < 0) num += int(self.modes.size());
-    if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
+    if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"bad mode number {:d}", num);
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), false, 2);
 }
 

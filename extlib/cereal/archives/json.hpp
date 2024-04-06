@@ -428,7 +428,7 @@ namespace cereal
         auto decoded = base64::decode( encoded );
 
         if( size != decoded.size() )
-          throw Exception("Decoded binary data size does not match specified size");
+          throw Exception("decoded binary data size does not match specified size");
 
         std::memcpy( data, decoded.data(), decoded.size() );
         itsNextName = nullptr;
@@ -471,7 +471,7 @@ namespace cereal
             {
               case Value : return itsValueItBegin[itsIndex];
               case Member: return itsMemberItBegin[itsIndex].value;
-              default: throw cereal::Exception("Invalid Iterator Type!");
+              default: throw cereal::Exception("invalid Iterator Type!");
             }
           }
 
@@ -636,7 +636,7 @@ namespace cereal
       template <class T> inline
       typename std::enable_if<sizeof(T) == sizeof(std::uint64_t) && !std::is_signed<T>::value, void>::type
       loadLong(T & lu){ loadValue( reinterpret_cast<std::uint64_t&>( lu ) ); }
-            
+
     public:
       //! Serialize a long if it would not be caught otherwise
       template <class T> inline

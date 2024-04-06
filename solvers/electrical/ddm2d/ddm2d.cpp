@@ -208,7 +208,7 @@ size_t DriftDiffusionModel2DSolver<Geometry2DType>::getActiveRegionMeshIndex(siz
         acthi = points->axis[1]->size();
         if(hin++ == actnum) return (actlo + acthi) / 2;
     }
-    throw BadInput(this->getId(), "Wrong active region number {}", actnum);
+    throw BadInput(this->getId(), "wrong active region number {}", actnum);
 }
 
 
@@ -570,7 +570,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(FemMatrix& A, DataVe
     double* aend = A.data + A.size;
     for (double* pa = A.data; pa != aend; ++pa) {
         if (isnan(*pa) || isinf(*pa))
-            throw ComputationError(this->getId(), "Error in stiffness matrix at position {0} ({1})", pa-A.data, isnan(*pa)?"nan":"inf");
+            throw ComputationError(this->getId(), "error in stiffness matrix at position {0} ({1})", pa-A.data, isnan(*pa)?"nan":"inf");
     }
 #endif
 
@@ -1786,7 +1786,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 		throw Exception("{0}: Quantum-well cannot be located at the edge of the structure.", this->getId());
 
 	if (strained && !substrateMaterial)
-		throw BadInput(this->getId(), "Strained quantum wells requested but no layer with substrate role set");
+		throw BadInput(this->getId(), "strained quantum wells requested but no layer with substrate role set");
 
 	this->writelog(LOG_DETAIL, "Found {0} active region{1}", regions.size(), (regions.size() == 1) ? "" : "s");
 	for (auto& region : regions) region.summarize(this);
@@ -2015,7 +2015,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 //        throw Exception("{0}: Quantum-well cannot be located at the edge of the structure.", this->getId());
 //
 //    if (strained && !substrateMaterial)
-//        throw BadInput(this->getId(), "Strained quantum wells requested but no layer with substrate role set");
+//        throw BadInput(this->getId(), "strained quantum wells requested but no layer with substrate role set");
 //	*/
 //    this->writelog(LOG_DETAIL, "Found {0} active region{1}", regions.size(), (regions.size()==1)?"":"s");
 //    for (auto& region: regions) region.summarize(this);
@@ -2158,7 +2158,7 @@ template <typename Geometry2DType>
 double DriftDiffusionModel2DSolver<Geometry2DType>::getCapacitance() {
 
     if (this->voltage_boundary.size() != 2) {
-        throw BadInput(this->getId(), "Cannot estimate applied voltage (exactly 2 voltage boundary conditions required)");
+        throw BadInput(this->getId(), "cannot estimate applied voltage (exactly 2 voltage boundary conditions required)");
     }
 
     double U = voltage_boundary[0].value - voltage_boundary[1].value;

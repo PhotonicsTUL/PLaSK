@@ -51,14 +51,14 @@ template <typename GeometryT> void FreeCarrierGainSolver2D<GeometryT>::detectAct
             auto roles = this->geometry->getRolesAt(point);
             for (const auto& role : roles) {
                 if (role.substr(0, 6) == "active") {
-                    if (num != 0) throw BadInput(this->getId(), "Multiple 'active' roles specified");
+                    if (num != 0) throw BadInput(this->getId(), "multiple 'active' roles specified");
                     if (role.size() == 6) {
                         num = 1;
                     } else {
                         try {
                             num = boost::lexical_cast<size_t>(role.substr(6)) + 1;
                         } catch (boost::bad_lexical_cast&) {
-                            throw BadInput(this->getId(), "Bad active region number in role '{0}'", role);
+                            throw BadInput(this->getId(), "bad active region number in role '{0}'", role);
                         }
                     }
                 } else if (role == "substrate") {
@@ -160,7 +160,7 @@ template <typename GeometryT> void FreeCarrierGainSolver2D<GeometryT>::detectAct
     }
 
     if (this->strained && !this->substrateMaterial)
-        throw BadInput(this->getId(), "Strained quantum wells requested but no layer with substrate role set");
+        throw BadInput(this->getId(), "strained quantum wells requested but no layer with substrate role set");
 
     this->writelog(LOG_DETAIL, "Found {0} active region{1}", this->regions.size(), (this->regions.size() == 1) ? "" : "s");
     for (auto& region : this->regions) region.summarize(this);
@@ -201,7 +201,7 @@ template <typename GeometryT> template <typename DT> struct FreeCarrierGainSolve
             double val = 0.;
             for (size_t j = 0; j != mesh->axis[1]->size(); ++j) {
                 double v = data[mesh->index(i, j)];
-                if (isnan(v)) throw ComputationError(solver->getId(), "Wrong {0} ({1}) at {2}", name, v, mesh->at(i, j));
+                if (isnan(v)) throw ComputationError(solver->getId(), "wrong {0} ({1}) at {2}", name, v, mesh->at(i, j));
                 val += v;
             }
             return val * factor;
@@ -423,7 +423,7 @@ const LazyData<Tensor2<double>> FreeCarrierGainSolver2D<GeometryT>::getGainData(
         data->compute(wavelength, getInterpolationMethod<INTERPOLATION_SPLINE>(interp));
         return LazyData<Tensor2<double>>(data);
     } else {
-        throw BadInput(this->getId(), "Wrong gain type requested");
+        throw BadInput(this->getId(), "wrong gain type requested");
     }
 }
 

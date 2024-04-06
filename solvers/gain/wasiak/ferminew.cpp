@@ -116,10 +116,10 @@ void FermiNewGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Mana
                 if (name) {
                     auto found = manager.geometrics.find(*name);
                     if (found == manager.geometrics.end())
-                        throw BadInput(this->getId(), "Geometry '{0}' not found", *name);
+                        throw BadInput(this->getId(), "geometry '{0}' not found", *name);
                     else {
                         auto geometry = dynamic_pointer_cast<GeometryType>(found->second);
-                        if (!geometry) throw BadInput(this->getId(), "Geometry '{0}' of wrong type", *name);
+                        if (!geometry) throw BadInput(this->getId(), "geometry '{0}' of wrong type", *name);
                         this->setModGeometry(geometry);
                     }
                 }
@@ -376,7 +376,7 @@ void FermiNewGainSolver<GeometryType>::findEnergyLevels(Levels& levels,
                                                         const ActiveRegionInfo& region,
                                                         double T,
                                                         bool showDetails) {
-    if (isnan(T) || T < 0.) throw ComputationError(this->getId(), "Wrong temperature ({0}K)", T);
+    if (isnan(T) || T < 0.) throw ComputationError(this->getId(), "wrong temperature ({0}K)", T);
 
     this->writelog(LOG_DETAIL, "Determining energy levels");
 
@@ -419,7 +419,7 @@ void FermiNewGainSolver<GeometryType>::buildStructure(double T,
                                                       bool showDetails) {
     if (strains) {
         if (!this->substrateMaterial)
-            throw ComputationError(this->getId(), "No layer with role 'substrate' has been found");
+            throw ComputationError(this->getId(), "no layer with role 'substrate' has been found");
         if (showDetails)
             for (int i = 0; i < region.size(); ++i) {
                 double e = (this->substrateMaterial->lattC(T, 'a') - region.getLayerMaterial(i)->lattC(T, 'a')) /
@@ -645,8 +645,8 @@ kubly::wzmocnienie FermiNewGainSolver<GeometryType>::getGainModule(double wavele
                                                                    const ActiveRegionInfo& region,
                                                                    const Levels& levels,
                                                                    bool showDetails) {
-    if (isnan(T) || T < 0.) throw ComputationError(this->getId(), "Wrong temperature ({0}K)", T);
-    if (isnan(n)) throw ComputationError(this->getId(), "Wrong carriers concentration ({0}/cm3)", n);
+    if (isnan(T) || T < 0.) throw ComputationError(this->getId(), "wrong temperature ({0}K)", T);
+    if (isnan(n)) throw ComputationError(this->getId(), "wrong carriers concentration ({0}/cm3)", n);
     n = max(n, 1e-6);  // To avoid hangs
 
     double QWh = region.qwtotallen;  // total thickness of QWs (Å)
@@ -750,7 +750,7 @@ template <typename GeometryT, typename T> struct DataBase : public LazyDataImpl<
             for (size_t j = 0; j != mesh->axis[1]->size(); ++j) {
                 auto v = data[mesh->index(i, j)];
                 if (isnan(v))
-                    throw ComputationError(solver->getId(), "Wrong {0} ({1}) at {2}", name, v, mesh->at(i, j));
+                    throw ComputationError(solver->getId(), "wrong {0} ({1}) at {2}", name, v, mesh->at(i, j));
                 v = max(v, 1e-6);  // To avoid hangs
                 val += v;
             }
@@ -976,7 +976,7 @@ GainSpectrum<GeometryT>::GainSpectrum(FermiNewGainSolver<GeometryT>* solver, con
             return;
         };
     }
-    throw BadInput(solver->getId(), "Point {0} does not belong to any active region", point);
+    throw BadInput(solver->getId(), "point {0} does not belong to any active region", point);
 }
 
 template <typename GeometryT> double GainSpectrum<GeometryT>::getGain(double wavelength) {
@@ -1014,7 +1014,7 @@ LuminescenceSpectrum<GeometryT>::LuminescenceSpectrum(FermiNewGainSolver<Geometr
             return;
         };
     }
-    throw BadInput(solver->getId(), "Point {0} does not belong to any active region", point);
+    throw BadInput(solver->getId(), "point {0} does not belong to any active region", point);
 }
 
 template <typename GeometryT> double LuminescenceSpectrum<GeometryT>::getLuminescence(double wavelength) {

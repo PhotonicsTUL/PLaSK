@@ -602,7 +602,7 @@ struct InterpolationAlgorithm<ExtrudedTriangularMesh3D, SrcT, DstT, INTERPOLATIO
                                       const shared_ptr<const MeshD<3>>& dst_mesh,
                                       const InterpolationFlags& flags)
     {
-        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        if (src_mesh->empty()) throw BadMesh("interpolate", "source mesh empty");
         return new NearestNeighborExtrudedTriangularMesh3DLazyDataImpl<typename std::remove_const<DstT>::type,
                                                        typename std::remove_const<SrcT>::type>
             (src_mesh, src_vec, dst_mesh, flags);
@@ -634,7 +634,7 @@ struct InterpolationAlgorithm<ExtrudedTriangularMesh3D, SrcT, DstT, INTERPOLATIO
                                       const shared_ptr<const MeshD<3>>& dst_mesh,
                                       const InterpolationFlags& flags)
     {
-        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        if (src_mesh->empty()) throw BadMesh("interpolate", "source mesh empty");
         return new BarycentricExtrudedTriangularMesh3DLazyDataImpl<typename std::remove_const<DstT>::type,
                                                        typename std::remove_const<SrcT>::type>
             (src_mesh, src_vec, dst_mesh, flags);
@@ -666,7 +666,7 @@ struct InterpolationAlgorithm<ExtrudedTriangularMesh3D::ElementMesh, SrcT, DstT,
                                       const shared_ptr<const MeshD<3>>& dst_mesh,
                                       const InterpolationFlags& flags)
     {
-        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        if (src_mesh->empty()) throw BadMesh("interpolate", "source mesh empty");
         return new NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<typename std::remove_const<DstT>::type,
                                                                               typename std::remove_const<SrcT>::type>
             (src_mesh, src_vec, dst_mesh, flags);

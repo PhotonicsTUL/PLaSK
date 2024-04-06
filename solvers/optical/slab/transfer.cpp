@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -70,7 +70,7 @@ dcomplex Transfer::determinant() {
     // This is probably expensive but necessary check to avoid hangs
     const std::size_t NN = N * N;
     for (std::size_t i = 0; i < NN; i++) {
-        if (isnan(real(M[i])) || isnan(imag(M[i]))) throw ComputationError(solver->getId(), "NaN in discontinuity matrix");
+        if (isnan(real(M[i])) || isnan(imag(M[i]))) throw ComputationError(solver->getId(), "naN in discontinuity matrix");
     }
 
     // Find the eigenvalues of M using LAPACK
@@ -130,7 +130,7 @@ const_cvector Transfer::getInterfaceVector() {
         int info;
         zgeev('N', 'V', int(N), M.data(), int(N), evals, nullptr, 1, interface_field_matrix.data(), int(N), wrk, int(lwrk), rwrk,
               info);
-        if (info != 0) throw ComputationError(solver->getId(), "Interface field: zgeev failed");
+        if (info != 0) throw ComputationError(solver->getId(), "interface field: zgeev failed");
 
         // Find the number of the smallest eigenvalue
         double min_mag = 1e32;
@@ -145,7 +145,7 @@ const_cvector Transfer::getInterfaceVector() {
 
         // Error handling
         if (min_mag > solver->root.tolf_max * solver->root.tolf_max)
-            throw BadInput(solver->getId(), "Interface field: determinant not sufficiently close to 0 (det={})", str(evals[n]));
+            throw BadInput(solver->getId(), "interface field: determinant not sufficiently close to 0 (det={})", str(evals[n]));
 
         // Chose the eigenvector corresponding to the smallest eigenvalue
         interface_field = interface_field_matrix.data() + n * N;

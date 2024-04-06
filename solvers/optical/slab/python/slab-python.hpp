@@ -64,7 +64,7 @@ inline static py::object arrayFromVec(const DataVector<T>& data) {
     npy_intp dims[] = { npy_intp(data.size()) };
     npy_intp strides[] = { npy_intp(sizeof(T)) };
     PyObject* arr = PyArray_New(&PyArray_Type, 1, dims, type, strides, (void*)data.data(), 0, 0, NULL);
-    if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from field coefficients");
+    if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from field coefficients");
     PythonDataVector<const T, 3> wrap(data);
     py::object odata(wrap); py::incref(odata.ptr());
     PyArray_SetBaseObject((PyArrayObject*)arr, odata.ptr()); // Make sure the data vector stays alive as long as the array
@@ -79,7 +79,7 @@ static inline py::object arrayFromVec2D(cvector data, bool sep, int dim=1) {
     npy_intp dims[] = { npy_intp(data.size() / strid), npy_intp(strid) };
     npy_intp strides[] = { npy_intp(strid * sizeof(dcomplex)), npy_intp(sizeof(dcomplex)) };
     PyObject* arr = PyArray_New(&PyArray_Type, dim, dims, type, strides, (void*)data.data(), 0, 0, NULL);
-    if (arr == nullptr) throw plask::CriticalException("Cannot create array from field coefficients");
+    if (arr == nullptr) throw plask::CriticalException("cannot create array from field coefficients");
     PythonDataVector<const dcomplex,2> wrap(data);
     py::object odata(wrap); py::incref(odata.ptr());
     PyArray_SetBaseObject((PyArrayObject*)arr, odata.ptr()); // Make sure the data vector stays alive as long as the array
@@ -744,7 +744,7 @@ struct Scattering {
      * Construct proxy.
      * \param wavelength incident light wavelength
      * \param side incidence sideif (incident.size() >= self->transfer->diagonalizer->matrixSize())
-        throw BadInput(self->getId(), "Wrong incident vector size ({}, should be {}", incident.size(), solver->transfer->diagonalizer->matrixSize());
+        throw BadInput(self->getId(), "wrong incident vector size ({}, should be {}", incident.size(), solver->transfer->diagonalizer->matrixSize());
 
      * \param incident incident vector
      */
@@ -756,7 +756,7 @@ struct Scattering {
         solver->initCalculation();
         if (!solver->transfer) solver->initTransfer(solver->getExpansion(), true);
         if (incident.size() != solver->transfer->diagonalizer->matrixSize())
-            throw BadInput(solver->getId(), "Wrong incident vector size ({}, should be {}", incident.size(), solver->transfer->diagonalizer->matrixSize());
+            throw BadInput(solver->getId(), "wrong incident vector size ({}, should be {}", incident.size(), solver->transfer->diagonalizer->matrixSize());
     }
 
     /**
@@ -1032,7 +1032,7 @@ py::object Solver_computeReflectivity_array(SolverT* self,
     PyArrayObject* arr = coeffs.array;
     size_t size(PyArray_DIMS(arr)[0]);
     if (size != self->transfer->diagonalizer->matrixSize())
-        throw BadInput(self->getId(), "Wrong incident vector size ({}, should be {}", size, self->transfer->diagonalizer->matrixSize());
+        throw BadInput(self->getId(), "wrong incident vector size ({}, should be {}", size, self->transfer->diagonalizer->matrixSize());
 
     cvector incident((dcomplex*)PyArray_DATA(arr), size_t(PyArray_DIMS(arr)[0]), plask::python::detail::NumpyDataDeleter(arr));
 
@@ -1056,7 +1056,7 @@ py::object Solver_computeTransmittivity_array(SolverT* self,
     PyArrayObject* arr = coeffs.array;
     size_t size(PyArray_DIMS(arr)[0]);
     if (size != self->transfer->diagonalizer->matrixSize())
-        throw BadInput(self->getId(), "Wrong incident vector size ({}, should be {}", size, self->transfer->diagonalizer->matrixSize());
+        throw BadInput(self->getId(), "wrong incident vector size ({}, should be {}", size, self->transfer->diagonalizer->matrixSize());
 
     cvector incident((dcomplex*)PyArray_DATA(arr), size_t(PyArray_DIMS(arr)[0]), plask::python::detail::NumpyDataDeleter(arr));
 
@@ -1085,27 +1085,27 @@ void set_max_temp_diff(SolverT* self, py::object value) {
 
 template <typename SolverT>
 static double getIntegralEE_0(SolverT& self, double z1, double z2) {
-    if (self.modes.size() == 0) throw IndexError(u8"No mode computed");
+    if (self.modes.size() == 0) throw IndexError(u8"no mode computed");
     return self.getIntegralEE(0, z1, z2);
 }
 
 template <typename SolverT>
 static double getIntegralHH_0(SolverT& self, double z1, double z2) {
-    if (self.modes.size() == 0) throw IndexError(u8"No mode computed");
+    if (self.modes.size() == 0) throw IndexError(u8"no mode computed");
     return self.getIntegralHH(0, z1, z2);
 }
 
 template <typename SolverT>
 static double getIntegralEE(SolverT& self, int num, double z1, double z2) {
     if (num < 0) num += int(self.modes.size());
-    if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
+    if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"bad mode number {:d}", num);
     return self.getIntegralEE(num, z1, z2);
 }
 
 template <typename SolverT>
 static double getIntegralHH(SolverT& self, int num, double z1, double z2) {
     if (num < 0) num += int(self.modes.size());
-    if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
+    if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"bad mode number {:d}", num);
     return self.getIntegralHH(num, z1, z2);
 }
 

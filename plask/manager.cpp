@@ -235,7 +235,7 @@ void Manager::loadSolvers(XMLReader& reader) {
         BadId::throwIfBad("solver", name);
         if (shared_ptr<Solver> filter = FiltersFactory::getDefault().get(reader, *this)) {
             if (!this->solvers.insert(std::make_pair(name, filter)).second)
-                throw NamesConflictException("Solver", name);
+                throw NamesConflictException("solver", name);
             continue;
         }
         plask::optional<std::string> lib = reader.getAttribute("lib");
@@ -273,11 +273,11 @@ void Manager::loadSolvers(XMLReader& reader) {
             }
         }
         if (!lib || lib->empty())
-            throw XMLException(reader, format("Cannot determine library for {0}.{1} solver", category, solver_name));
+            throw XMLException(reader, format("cannot determine library for {0}.{1} solver", category, solver_name));
         shared_ptr<Solver> solver = loadSolver(category, *lib, solver_name, name);
         solver->loadConfiguration(reader, *this);
         if (!this->solvers.insert(std::make_pair(name, solver)).second)
-            throw NamesConflictException("Solver", name);
+            throw NamesConflictException("solver", name);
     }
     assert(reader.getNodeName() == "solvers");
 }
@@ -297,7 +297,7 @@ void Manager::loadScript(XMLReader& reader)
     size_t start;
     for (start = 0; scr[start] != '\n' && start < scr.length(); ++start) {
         if (!std::isspace(scr[start]))
-            throw XMLException(format("XML line {}", scriptline), "Script must begin from new line after <script>", scriptline);
+            throw XMLException(format("XML line {}", scriptline), "script must begin from new line after <script>", scriptline);
     }
     if (start != scr.length()) script = scr.substr(start+1);
 }
@@ -423,7 +423,7 @@ void Manager::load(XMLReader& reader,
     } catch (const std::exception& err) {
         throw XMLException(reader, err.what());
     // } catch (...) {
-    //     throw XMLException(reader, "Unrecognized exception");
+    //     throw XMLException(reader, "unrecognized exception");
     }
 }
 

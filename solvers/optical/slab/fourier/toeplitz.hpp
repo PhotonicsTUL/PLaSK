@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -37,7 +37,7 @@ void ToeplitzLevinson(const DataVector<D>& TM, Matrix<D>& X)
     std::unique_ptr<D[]> B(new D[n]);
     std::unique_ptr<D[]> eX(new D[nx]);
 
-    if (TM[0] == 0.) throw ComputationError("ToeplitzLevinson", "Cannot invert Fourier coefficients matrix");
+    if (TM[0] == 0.) throw ComputationError("ToeplitzLevinson", "cannot invert Fourier coefficients matrix");
 
     F[0] = 1. / TM[0];
     B[0] = 1. / TM[0];
@@ -59,7 +59,7 @@ void ToeplitzLevinson(const DataVector<D>& TM, Matrix<D>& X)
         }
 
         D scal = (1. - ef * eb);
-        if (scal == 0.) throw ComputationError("ToeplitzLevinson", "Cannot invert Fourier coefficients matrix");
+        if (scal == 0.) throw ComputationError("ToeplitzLevinson", "cannot invert Fourier coefficients matrix");
         scal = 1. / scal;
 
         D b = B[0];

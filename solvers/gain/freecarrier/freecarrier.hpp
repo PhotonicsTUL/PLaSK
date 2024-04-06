@@ -66,7 +66,7 @@ template <typename BaseT> struct PLASK_SOLVER_API FreeCarrierGainSolver : public
         shared_ptr<Material> getLayerMaterial(size_t n) const {
             auto block = static_cast<Block<DIM>*>(static_cast<Translation<DIM>*>(layers->getChildNo(n).get())->getChild().get());
             if (auto m = block->singleMaterial()) return m;
-            throw plask::Exception("FreeCarrierGainSolver requires solid layers.");
+            throw plask::Exception("freeCarrierGainSolver requires solid layers.");
         }
 
         /// Return translated bounding box of \p n-th layer
@@ -421,7 +421,7 @@ template <typename BaseT> struct GainSpectrum {
                 return;
             };
         }
-        throw BadInput(solver->getId(), "Point {0} does not belong to any active region", point);
+        throw BadInput(solver->getId(), "point {0} does not belong to any active region", point);
     }
 
     GainSpectrum(FreeCarrierGainSolver<BaseT>* solver, double T, double n, size_t reg)

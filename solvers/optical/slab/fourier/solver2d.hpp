@@ -193,7 +193,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverWithMesh<Geomet
     /// Set type of the DCT
     void setDCT(int n) {
         if (n != 1 && n != 2)
-            throw BadInput(getId(), "Bad DCT type (can be only 1 or 2)");
+            throw BadInput(getId(), "bad DCT type (can be only 1 or 2)");
         if (dct != n) {
             dct = n;
             if (symmetric() && ftt == FOURIER_DISCRETE) invalidate();
@@ -247,7 +247,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverWithMesh<Geomet
     /// Set new mode symmetry
     void setSymmetry(Expansion::Component sym) {
         if (sym != Expansion::E_UNSPECIFIED && geometry && !geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
-            throw BadInput(getId(), "Symmetry not allowed for asymmetric structure");
+            throw BadInput(getId(), "symmetry not allowed for asymmetric structure");
         if ((symmetry == Expansion::E_UNSPECIFIED) != (sym == Expansion::E_UNSPECIFIED))
             invalidate();
         if (ktran != 0. && sym != Expansion::E_UNSPECIFIED) {
@@ -476,7 +476,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverWithMesh<Geomet
     /// Check if the current parameters correspond to some mode and insert it
     size_t setMode() {
         if (abs2(this->getDeterminant()) > root.tolf_max*root.tolf_max)
-            throw BadInput(this->getId(), "Cannot set the mode, determinant too large");
+            throw BadInput(this->getId(), "cannot set the mode, determinant too large");
         return insertMode();
     }
 
@@ -503,7 +503,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverWithMesh<Geomet
     size_t nummodes() const override { return modes.size(); }
 
     double applyMode(size_t n) override {
-        if (n >= modes.size()) throw BadInput(this->getId(), "Mode {0} has not been computed", n);
+        if (n >= modes.size()) throw BadInput(this->getId(), "mode {0} has not been computed", n);
         applyMode(modes[n]);
         return modes[n].power;
     }

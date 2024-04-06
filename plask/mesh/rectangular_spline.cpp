@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -338,7 +338,7 @@ HymanSplineRect2DLazyDataImpl<DstT, SrcT>::HymanSplineRect2DLazyDataImpl(const s
     const int n0 = int(src_mesh->axis[0]->size()), n1 = int(src_mesh->axis[1]->size());
 
     if (n0 == 0 || n1 == 0)
-        throw BadMesh("interpolate", "Source mesh empty");
+        throw BadMesh("interpolate", "source mesh empty");
 
     size_t stride0 = src_mesh->index(1, 0),
            stride1 = src_mesh->index(0, 1);
@@ -367,7 +367,7 @@ HymanSplineRect3DLazyDataImpl<DstT, SrcT>::HymanSplineRect3DLazyDataImpl(const s
     const int n0 = int(src_mesh->axis[0]->size()), n1 = int(src_mesh->axis[1]->size()), n2 = int(src_mesh->axis[2]->size());
 
     if (n0 == 0 || n1 == 0 || n2 == 0)
-        throw BadMesh("interpolate", "Source mesh empty");
+        throw BadMesh("interpolate", "source mesh empty");
 
     if (n0 > 1) {
         size_t stride0 = src_mesh->index(1, 0, 0);
@@ -589,7 +589,7 @@ SmoothSplineRect2DLazyDataImpl<DstT, SrcT>::SmoothSplineRect2DLazyDataImpl(const
     const size_t n0 = int(src_mesh->axis[0]->size()), n1 = int(src_mesh->axis[1]->size());
 
     if (n0 == 0 || n1 == 0)
-        throw BadMesh("interpolate", "Source mesh empty");
+        throw BadMesh("interpolate", "source mesh empty");
 
     size_t stride0 = src_mesh->index(1, 0),
            stride1 = src_mesh->index(0, 1);
@@ -621,7 +621,7 @@ SmoothSplineRect3DLazyDataImpl<DstT, SrcT>::SmoothSplineRect3DLazyDataImpl(const
     const size_t n0 = int(src_mesh->axis[0]->size()), n1 = int(src_mesh->axis[1]->size()), n2 = int(src_mesh->axis[2]->size());
 
     if (n0 == 0 || n1 == 0)
-        throw BadMesh("interpolate", "Source mesh empty");
+        throw BadMesh("interpolate", "source mesh empty");
 
     size_t stride0 = src_mesh->index(1, 0, 0),
            stride1 = src_mesh->index(0, 1, 0),

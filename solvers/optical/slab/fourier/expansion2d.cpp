@@ -63,20 +63,20 @@ void ExpansionPW2D::init()
     if (refine == 0) refine = 1;
 
     if (symmetry != E_UNSPECIFIED && !geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
-        throw BadInput(solver->getId(), "Symmetry not allowed for asymmetric structure");
+        throw BadInput(solver->getId(), "symmetry not allowed for asymmetric structure");
 
     if (geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN)) {
         if (right <= 0.) {
             left = -left; right = -right;
             std::swap(left, right);
         }
-        if (left != 0.) throw BadMesh(SOLVER->getId(), "Symmetric geometry must have one of its sides at symmetry axis");
+        if (left != 0.) throw BadMesh(SOLVER->getId(), "symmetric geometry must have one of its sides at symmetry axis");
         if (!symmetric()) left = -right;
     }
 
     if (SOLVER->ftt == FourierSolver2D::FOURIER_ANALYTIC) {
         if (!SOLVER->mesh) SOLVER->setSimpleMesh();
-        if (SOLVER->mesh->size() < 2) throw BadInput(SOLVER->getId(), "Mesh needs at least two points");
+        if (SOLVER->mesh->size() < 2) throw BadInput(SOLVER->getId(), "mesh needs at least two points");
         if (!geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN) || SOLVER->mesh->at(0) < 0.) {
             original_mesh = SOLVER->mesh;
         } else {
@@ -87,10 +87,10 @@ void ExpansionPW2D::init()
             new_mesh->addOrderedPoints(transformed.begin(), transformed.end(), new_mesh->size());
         }
         if (!is_zero(original_mesh->at(0) - (symmetric()? -right : left)))
-            throw BadInput(SOLVER->getId(), "First mesh point ({}) must match left geometry boundary ({})",
+            throw BadInput(SOLVER->getId(), "first mesh point ({}) must match left geometry boundary ({})",
                            original_mesh->at(0), symmetric()? -right : left);
         if (!is_zero(original_mesh->at(original_mesh->size()-1) - right))
-            throw BadInput(SOLVER->getId(), "Last mesh point ({}) must match right geometry boundary ({})",
+            throw BadInput(SOLVER->getId(), "last mesh point ({}) must match right geometry boundary ({})",
                            original_mesh->at(original_mesh->size()-1), right);
     }
 
@@ -189,7 +189,7 @@ void ExpansionPW2D::init()
             fft.execute(mag.data());
             if (polarization != E_TRAN) fft.execute(rmag.data());
         } else {
-            throw NotImplemented(SOLVER->getId(), "Analytic Fourier transform for non-periodic structure");  //TODO
+            throw NotImplemented(SOLVER->getId(), "analytic Fourier transform for non-periodic structure");  //TODO
         }
         // Smooth coefficients
         if (SOLVER->smooth) {
@@ -264,7 +264,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         #endif
 
         if (isnan(lam))
-            throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
+            throw BadInput(SOLVER->getId(), "no wavelength given: specify 'lam' or 'lam0'");
 
         if (gain_connected && solver->lgained[layer]) {
             SOLVER->writelog(LOG_DEBUG, "Layer {:d} has gain", layer);
@@ -290,7 +290,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 lock = material->lock();
                 refl = geometry->getMaterial(vec(pl,maty))->NR(lam, Tl).sqr();
                 if (isnan(refl.c00) || isnan(refl.c11) || isnan(refl.c22) || isnan(refl.c01))
-                    throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
+                    throw BadInput(solver->getId(), "complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
                                    material->name(), lam, Tl);
             }{
                 OmpLockGuard<OmpNestLock> lock; // this must be declared before `material` to guard its destruction
@@ -298,7 +298,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 lock = material->lock();
                 refr = geometry->getMaterial(vec(pr,maty))->NR(lam, Tr).sqr();
                 if (isnan(refr.c00) || isnan(refr.c11) || isnan(refr.c22) || isnan(refr.c01))
-                    throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
+                    throw BadInput(solver->getId(), "complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
                                    material->name(), lam, Tr);
             }
         }
@@ -331,11 +331,11 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
 
                 if (polarization == E_LONG) {
                     if (eps.c01 != 0.)
-                        throw BadInput(solver->getId(), "Polarization can be specified only for diagonal refractive index tensor (NR)");
+                        throw BadInput(solver->getId(), "polarization can be specified only for diagonal refractive index tensor (NR)");
                     coeffs[layer].zz[i] += eps.c00;
                 } else if (polarization == E_TRAN) {
                     if (eps.c01 != 0.)
-                        throw BadInput(solver->getId(), "Polarization can be specified only for diagonal refractive index tensor (NR)");
+                        throw BadInput(solver->getId(), "polarization can be specified only for diagonal refractive index tensor (NR)");
                     coeffs[layer].rxx[i] += 1./eps.c11;
                     coeffs[layer].yy[i] += eps.c22;
                 } else {
@@ -344,7 +344,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                     if (eps.c01 != 0.) {
                         if (epsilon_diagonal) {
                             if (symmetric())
-                                throw BadInput(solver->getId(), "Symmetry can be specified only for diagonal refractive index tensor (NR)");
+                                throw BadInput(solver->getId(), "symmetry can be specified only for diagonal refractive index tensor (NR)");
                             coeffs[layer].zx.reset(nN, 0.);
                             epsilon_diagonal = false;
                         }
@@ -466,7 +466,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         #endif
 
         if (isnan(lam))
-            throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
+            throw BadInput(SOLVER->getId(), "no wavelength given: specify 'lam' or 'lam0'");
 
         if (gain_connected && solver->lgained[layer]) {
             SOLVER->writelog(LOG_DEBUG, "Layer {:d} has gain", layer);
@@ -479,7 +479,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         dcomplex rm;
         if (nd) {
             if (polarization != E_UNSPECIFIED)
-                throw BadInput(solver->getId(), "Polarization can be specified only for diagonal refractive index tensor (NR)");
+                throw BadInput(solver->getId(), "polarization can be specified only for diagonal refractive index tensor (NR)");
             rm = 1. / (eps0.c00*eps0.c11 - eps0.c01.real()*eps0.c01.real() - eps0.c01.imag()*eps0.c01.imag());
         }
         const Tensor3<dcomplex> reps0 = nd? Tensor3<dcomplex>(rm*eps0.c11, rm*eps0.c00, 1./eps0.c22, -rm*eps0.c01) :
@@ -513,7 +513,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 nd = eps.c01 != 0.;
                 if (nd) {
                     if (polarization != E_UNSPECIFIED)
-                        throw BadInput(solver->getId(), "Polarization can be specified only for diagonal refractive index tensor (NR)");
+                        throw BadInput(solver->getId(), "polarization can be specified only for diagonal refractive index tensor (NR)");
                     rm = 1. / (eps.c00*eps.c11 - eps.c01.real()*eps.c01.real() - eps.c01.imag()*eps.c01.imag());
                     Tensor3<dcomplex>(rm*eps.c11, rm*eps.c00, 1./eps.c22, -rm*eps.c01);
                 } else
@@ -539,7 +539,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                     if (eps.c01 != 0.) {
                         if (epsilon_diagonal) {
                             if (symmetric())
-                                throw BadInput(solver->getId(), "Symmetry can be specified only for diagonal refractive index tensor (NR)");
+                                throw BadInput(solver->getId(), "symmetry can be specified only for diagonal refractive index tensor (NR)");
                             coeffs[layer].zx.reset(nN, 0.);
                             epsilon_diagonal = false;
                         }
@@ -816,8 +816,8 @@ void ExpansionPW2D::make_permeability_matrices(cmatrix& work)
 void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
 {
     assert(initialized);
-    if (isnan(k0)) throw BadInput(SOLVER->getId(), "Wavelength or k0 not set");
-    if (isinf(k0.real())) throw BadInput(SOLVER->getId(), "Wavelength must not be 0");
+    if (isnan(k0)) throw BadInput(SOLVER->getId(), "wavelength or k0 not set");
+    if (isinf(k0.real())) throw BadInput(SOLVER->getId(), "wavelength must not be 0");
 
     if (coeff_matrices.empty()) coeff_matrices.resize(solver->lcount);
 

@@ -100,7 +100,7 @@ struct DgbMatrix : BandMatrix {
         if (info < 0) {
             throw CriticalException("{0}: Argument {1} of `dgbtrf` has illegal value", solver->getId(), -info);
         } else if (info > 0) {
-            throw ComputationError(solver->getId(), "Matrix is singular (at {0})", info);
+            throw ComputationError(solver->getId(), "matrix is singular (at {0})", info);
         }
     }
 

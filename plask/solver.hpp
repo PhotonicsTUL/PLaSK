@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -896,10 +896,10 @@ void SolverOver<SpaceT>::parseStandardConfiguration(XMLReader& reader, Manager& 
         else reader.requireTagEnd();
         auto found = manager.geometrics.find(*name);
         if (found == manager.geometrics.end())
-            throw BadInput(this->getId(), "Geometry '{0}' not found", *name);
+            throw BadInput(this->getId(), "geometry '{0}' not found", *name);
         else {
             auto geometry = dynamic_pointer_cast<SpaceT>(found->second);
-            if (!geometry) throw BadInput(this->getId(), "Geometry '{0}' of wrong type", *name);
+            if (!geometry) throw BadInput(this->getId(), "geometry '{0}' of wrong type", *name);
             this->setGeometry(geometry);
         }
     } else {
@@ -919,7 +919,7 @@ void SolverWithMesh<SpaceT, MeshT>::parseStandardConfiguration(XMLReader& reader
                 this->setMesh(mesh);
             } else {
                 auto generator = dynamic_pointer_cast<MeshGeneratorD<MeshT::DIM>>(found->second);
-                if (!generator) throw BadInput(this->getId(), "Mesh or generator '{0}' of wrong type", *name);
+                if (!generator) throw BadInput(this->getId(), "mesh or generator '{0}' of wrong type", *name);
                 this->setMesh(generator);
             }
         }

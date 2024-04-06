@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -36,7 +36,7 @@ void BetaSolver<Geometry2DType>::loadConfiguration(XMLReader &source, Manager &m
                 this->setCondJunc(*condjunc);
             }
             // if (source.hasAttribute("wavelength") || source.hasAttribute("heat"))
-            //     throw XMLException(reader, "Heat computation by wavelegth is no onger supporte");
+            //     throw XMLException(reader, "heat computation by wavelegth is no onger supporte");
             for (auto attr: source.getAttributes()) {
                 if (attr.first == "beta" || attr.first == "js" || attr.first == "pnjcond" || attr.first == "wavelength" || attr.first == "heat") continue;
                 if (attr.first.substr(0,4) == "beta") {
