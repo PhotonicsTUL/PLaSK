@@ -16,28 +16,26 @@
 
 namespace plask { namespace python {
 
-// void register_standard_properties_thermal();
-// void register_standard_properties_electrical();
-void register_standard_properties_gain();
-void register_standard_properties_optical();
-void register_standard_properties_refractive();
+void register_standard_properties_gain(const py::object& flow_module);
+void register_standard_properties_optical(const py::object& flow_module);
+void register_standard_properties_refractive(const py::object& flow_module);
 
 
-void register_standard_properties_thermal();
-void register_standard_properties_temperature();
-void register_standard_properties_heatdensity();
-void register_standard_properties_heatflux();
+void register_standard_properties_thermal(const py::object& flow_module);
+void register_standard_properties_temperature(const py::object& flow_module);
+void register_standard_properties_heatdensity(const py::object& flow_module);
+void register_standard_properties_heatflux(const py::object& flow_module);
 
-void register_standard_properties_electrical();
-void register_standard_properties_voltage();
-void register_standard_properties_current();
+void register_standard_properties_electrical(const py::object& flow_module);
+void register_standard_properties_voltage(const py::object& flow_module);
+void register_standard_properties_current(const py::object& flow_module);
 
-void register_standard_properties_concentration_carriers();
-void register_standard_properties_band_edges();
+void register_standard_properties_concentration_carriers(const py::object& flow_module);
+void register_standard_properties_band_edges(const py::object& flow_module);
 
-void register_standard_properties_builtin_potential();
-void register_standard_properties_quasi_Fermi_levels();
-void register_standard_properties_energy_levels();
+void register_standard_properties_builtin_potential(const py::object& flow_module);
+void register_standard_properties_quasi_Fermi_levels(const py::object& flow_module);
+void register_standard_properties_energy_levels(const py::object& flow_module);
 
 PLASK_PYTHON_API const char* docstring_receiver =
     u8"{0}Receiver{1}()\n\n"
@@ -258,14 +256,12 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_FIELD_PRO
 // template PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_FIELD_PROPERTY>();
 
 
-PLASK_PYTHON_API py::object flow_module;
-
 /**
  * Register standard properties to Python.
  */
 void register_standard_properties()
 {
-    flow_module = py::object(py::handle<>(py::borrowed(PyImport_AddModule("plask.flow"))));
+    py::object flow_module = py::object(py::handle<>(py::borrowed(PyImport_AddModule("plask.flow"))));
     py::scope().attr("flow") = flow_module;
     flow_module.attr("__doc__") =
         u8"Data flow classes for standard properties.\n\n"
@@ -377,25 +373,25 @@ void register_standard_properties()
         ;
     }
 
-    register_standard_properties_thermal();
-    register_standard_properties_temperature();
-    register_standard_properties_heatdensity();
-    register_standard_properties_heatflux();
+    register_standard_properties_thermal(flow_module);
+    register_standard_properties_temperature(flow_module);
+    register_standard_properties_heatdensity(flow_module);
+    register_standard_properties_heatflux(flow_module);
 
-    register_standard_properties_electrical();
-    register_standard_properties_voltage();
-    register_standard_properties_current();
-    register_standard_properties_concentration_carriers();
+    register_standard_properties_electrical(flow_module);
+    register_standard_properties_voltage(flow_module);
+    register_standard_properties_current(flow_module);
+    register_standard_properties_concentration_carriers(flow_module);
 
-    register_standard_properties_builtin_potential();
-    register_standard_properties_quasi_Fermi_levels();
-    register_standard_properties_energy_levels();
-    register_standard_properties_band_edges();
+    register_standard_properties_builtin_potential(flow_module);
+    register_standard_properties_quasi_Fermi_levels(flow_module);
+    register_standard_properties_energy_levels(flow_module);
+    register_standard_properties_band_edges(flow_module);
 
-    register_standard_properties_gain();
+    register_standard_properties_gain(flow_module);
 
-    register_standard_properties_optical();
-    register_standard_properties_refractive();
+    register_standard_properties_optical(flow_module);
+    register_standard_properties_refractive(flow_module);
 }
 
 }} // namespace plask>();

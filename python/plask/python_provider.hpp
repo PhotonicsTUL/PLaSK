@@ -58,8 +58,6 @@ template <typename PropertyTag> static constexpr const char* docstring_provider(
 
 namespace plask { namespace python {
 
-extern PLASK_PYTHON_API py::object flow_module;
-
 template <typename T, int dim> struct PythonDataVector : public DataVector<T> {
     shared_ptr<MeshD<dim>> mesh;
     bool mesh_changed;
@@ -734,7 +732,7 @@ template <typename CombinedProviderT> struct RegisterCombinedProvider {
         return self;
     }
 
-    RegisterCombinedProvider(const std::string& name) {
+    RegisterCombinedProvider(const std::string& name, const py::object& flow_module) {
         py::scope scope = flow_module;
         (void)scope;  // don't warn about unused variable scope
         Class pyclass(name.c_str(), (std::string(u8"Combined provider for ") + CombinedProviderT::NAME +
@@ -986,7 +984,7 @@ struct RegisterProviderImpl<ProviderT, MULTI_FIELD_PROPERTY, VariadicTemplateTyp
 
 }  // namespace detail
 
-template <typename ReceiverT> inline void registerReceiver() {
+template <typename ReceiverT> inline void registerReceiver(const py::object& flow_module) {
     if (py::converter::registry::lookup(py::type_id<ReceiverT>()).m_class_object == nullptr) {
         py::scope scope = flow_module;
         (void)scope;  // don't warn about unused variable scope
@@ -995,7 +993,7 @@ template <typename ReceiverT> inline void registerReceiver() {
     }
 }
 
-template <typename ProviderT> void registerProvider() {
+template <typename ProviderT> void registerProvider(const py::object& flow_module) {
     if (py::converter::registry::lookup(py::type_id<ProviderT>()).m_class_object == nullptr) {
         py::scope scope = flow_module;
         (void)scope;  // don't warn about unused variable scope

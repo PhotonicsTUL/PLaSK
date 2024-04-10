@@ -23,15 +23,15 @@ namespace plask { namespace python {
  *
  * Add new gain properties here
  */
-void register_standard_properties_gain()
+void register_standard_properties_gain(const py::object& flow_module)
 {
-    registerProperty<Gain>();
+    registerProperty<Gain>(flow_module);
     py_enum<Gain::EnumType>()
         .value("", Gain::GAIN)
         .value("CONC", Gain::DGDN)
     ;
 
-    registerProperty<Luminescence>();
+    registerProperty<Luminescence>(flow_module);
 }
 
 }} // namespace plask::python

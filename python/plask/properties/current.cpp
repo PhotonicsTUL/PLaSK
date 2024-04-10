@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -18,10 +18,10 @@
 
 namespace plask { namespace python {
 
-void register_standard_properties_current()
+void register_standard_properties_current(const py::object& flow_module)
 {
     //TODO
-    registerProperty<CurrentDensity>();
+    registerProperty<CurrentDensity>(flow_module);
 }
 
 }} // namespace plask>();

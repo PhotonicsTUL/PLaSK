@@ -125,13 +125,13 @@ struct SpaceTest : plask::SolverWithMesh<plask::Geometry2DCartesian, plask::Rect
 
 //// Provider & Receiver /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct VectorialField: plask::FieldProperty<plask::Vec<2,double>> {
+struct VectorField: plask::FieldProperty<plask::Vec<2,double>> {
     static constexpr const char* NAME = "vectorial field";
     static constexpr const char* UNIT = "-";
 };
 
-constexpr const char* VectorialField::NAME;
-constexpr const char* VectorialField::UNIT;
+constexpr const char* VectorField::NAME;
+constexpr const char* VectorField::UNIT;
 
 
 struct SimpleSolver : plask::Solver {
@@ -144,7 +144,7 @@ struct SimpleSolver : plask::Solver {
 
     plask::ProviderFor<plask::ModeLightMagnitude, plask::Geometry2DCartesian>::WithValue<plask::RectangularMesh<2>> outLightMagnitude;
 
-    plask::ReceiverFor<VectorialField, plask::Geometry2DCartesian> inVectors;
+    plask::ReceiverFor<VectorField, plask::Geometry2DCartesian> inVectors;
 
     std::string showVectors() {
         auto mesh = plask::make_shared<plask::RectangularMesh<2>>(plask::make_shared<plask::RegularAxis>(1., 3., 2), plask::make_shared<plask::RegularAxis>(5., 15., 2));
@@ -253,7 +253,8 @@ py::dict extractPathHints(const plask::PathHints& hints) {
 
 BOOST_PYTHON_MODULE(plasktest)
 {
-    plask::python::registerProperty<VectorialField>();
+    py::object flow_module = py::object(py::handle<>(py::borrowed(PyImport_AddModule("plask.flow"))));
+    plask::python::registerProperty<VectorField>(flow_module);
 
     py::def("get_vecs", &getVecs);
 

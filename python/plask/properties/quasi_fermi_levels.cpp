@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -18,9 +18,9 @@
 
 namespace plask { namespace python {
 
-void register_standard_properties_quasi_Fermi_levels()
+void register_standard_properties_quasi_Fermi_levels(const py::object& flow_module)
 {
-    registerProperty<FermiLevels>();
+    registerProperty<FermiLevels>(flow_module);
     py_enum<FermiLevels::EnumType>()
         .value("ELECTRONS", FermiLevels::ELECTRONS)
         .value("HOLES", FermiLevels::HOLES)

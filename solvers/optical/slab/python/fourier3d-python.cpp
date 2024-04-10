@@ -507,7 +507,8 @@ void export_FourierSolver3D()
         .value("OLD", FourierSolver3D::RULE_OLD)
     ;
 
-    registerProvider<ProviderFor<GradientFunctions,Geometry3D>>();
+    py::object flow_module = py::object(py::handle<>(py::borrowed(PyImport_AddModule("plask.flow"))));
+    registerProvider<ProviderFor<GradientFunctions,Geometry3D>>(flow_module);
     py_enum<GradientFunctions::EnumType>()
         .value("COS2", GradientFunctions::COS2)
         .value("COSSIN", GradientFunctions::COSSIN)

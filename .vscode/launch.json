@@ -1,0 +1,236 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "inputs": [
+        {
+            "id": "script",
+            "type": "pickString",
+            "description": "PLaSK file to run...",
+            "options": [
+                "debug.py",
+                "debug.xpl"
+            ]
+        },
+        {
+            "id": "pyqt",
+            "type": "pickString",
+            "description": "Select Qt binding...",
+            "options": [
+                "pyqt5",
+                "pyside2",
+                "pyqt6",
+                "pyside6"
+            ]
+        }
+    ],
+    "configurations": [
+        {
+            "name": "LLDB",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "args": [
+                "${input:script}"
+            ],
+            "cwd": "${workspaceFolder}/build",
+            "env": {
+                "OMP_NUM_THREADS": "1",
+                "MKL_NUM_THREADS": "1",
+                "OPENBLAS_NUM_THREADS": "1"
+            }
+        },
+        {
+            "name": "GDB",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "args": [
+                "${input:script}"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build",
+            "environment": [
+                {
+                    "name": "OMP_NUM_THREADS",
+                    "value": "1"
+                },
+                {
+                    "name": "MKL_NUM_THREADS",
+                    "value": "1"
+                },
+                {
+                    "name": "OPENBLAS_NUM_THREADS",
+                    "value": "1"
+                }
+            ],
+            "externalConsole": false,
+            "miDebuggerPath": "/usr/bin/gdb",
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Włącz formatowanie kodu dla gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Pomiń pliki biblioteki standardowej",
+                    "text": "-interpreter-exec console \"skip -gfi /build/**/*\""
+                }
+            ]
+        },
+        {
+            "name": "Python GUI",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/utils/plaskgui.py",
+            "env": {
+                "PYTHONUNBUFFERED": "1",
+                "QT_API": "${input:pyqt}",
+                "PYDEVD_PYQT_MODE": "${input:pyqt}",
+                "PLASK_HELP_DIR": "/usr/local/share/doc/plask",
+                "PYTHONFAULTHANDLER": "1"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Python",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "debug.py",
+            "cwd": "${workspaceFolder}/build",
+            "env": {
+                "PYTHONUNBUFFERED": "1",
+                "PYTHONFAULTHANDLER": "1",
+                "PYTHONPATH": "${command:cmake.buildDirectory}/lib/plask/python",
+                "PLASK_PYTHON_PATH": "${workspaceFolder}/python",
+                "PLASK_SOLVERS_PATH": "${workspaceFolder}/solvers:${command:cmake.buildDirectory}/lib/plask/solvers"
+            },
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Sphinx",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "/usr/bin/sphinx-build",
+            "args": [
+                "-b",
+                "html",
+                "-d",
+                "/home/maciek/Dokumenty/PLaSK/plask/build/release/doc/doctrees",
+                "/home/maciek/Dokumenty/PLaSK/plask/doc",
+                "/home/maciek/Dokumenty/PLaSK/plask/build/release/doc/html"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "LLDB (module)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "/usr/bin/python",
+            "args": [ "debug.py" ],
+            "cwd": "${workspaceFolder}/build",
+            "env": {
+                "PYTHONPATH": "${command:cmake.buildDirectory}/lib/plask/python",
+                "OMP_NUM_THREADS": "1",
+                "MKL_NUM_THREADS": "1",
+                "OPENBLAS_NUM_THREADS": "1"
+            }
+        },
+        {
+            "name": "GDB (module)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/usr/bin/python",
+            "args": [ "debug.py" ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build",
+            "environment": [
+                {
+                    "name": "PYTHONPATH",
+                    "value": "${command:cmake.buildDirectory}/lib/plask/python"
+                },
+                {
+                    "name": "OMP_NUM_THREADS",
+                    "value": "1"
+                },
+                {
+                    "name": "MKL_NUM_THREADS",
+                    "value": "1"
+                },
+                {
+                    "name": "OPENBLAS_NUM_THREADS",
+                    "value": "1"
+                }
+            ],
+            "externalConsole": false,
+            "miDebuggerPath": "/usr/bin/gdb",
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Włącz formatowanie kodu dla gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Pomiń pliki biblioteki standardowej",
+                    "text": "-interpreter-exec console \"skip -gfi /build/**/*\""
+                }
+            ]
+        },
+        {
+            "name": "Test (LLDB)",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${cmake.testProgram}",
+            "args": [ "${cmake.testArgs}"],
+            "cwd": "${workspaceFolder}/build",
+            "env": {
+                "OMP_NUM_THREADS": "1",
+                "MKL_NUM_THREADS": "1",
+                "OPENBLAS_NUM_THREADS": "1"
+            }
+        },
+        {
+            "name": "Test (GDB)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${cmake.testProgram}",
+            "args": [ "${cmake.testArgs}"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/build",
+            "environment": [
+                {
+                    "name": "OMP_NUM_THREADS",
+                    "value": "1"
+                },
+                {
+                    "name": "MKL_NUM_THREADS",
+                    "value": "1"
+                },
+                {
+                    "name": "OPENBLAS_NUM_THREADS",
+                    "value": "1"
+                }
+            ],
+            "externalConsole": false,
+            "miDebuggerPath": "/usr/bin/gdb",
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Włącz formatowanie kodu dla gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Pomiń pliki biblioteki standardowej",
+                    "text": "-interpreter-exec console \"skip -gfi /build/**/*\""
+                }
+            ]
+        }
+    ]
+}

@@ -22,8 +22,6 @@
 
 namespace plask { namespace python {
 
-extern PLASK_PYTHON_API py::object flow_module;
-
 namespace detail {
 
     void PLASK_PYTHON_API filterin_parse_key(const py::object& key, shared_ptr<GeometryObject>& geom, PathHints*& path, size_t& points);
@@ -139,7 +137,7 @@ namespace detail {
 
     template <typename PropertyT, typename GeometryT>
     py::class_<Filter<PropertyT,GeometryT>, shared_ptr<Filter<PropertyT,GeometryT>>, py::bases<Solver>, boost::noncopyable>
-    registerFilterImpl(const char* suffix)
+    registerFilterImpl(const char* suffix, const py::object& flow_module)
     {
         py::scope scope = flow_module;
         (void) scope;   // don't warn about unused variable scope
@@ -174,11 +172,11 @@ namespace detail {
 
 
 template <typename PropertyT>
-void registerFilters() {
+void registerFilters(const py::object& flow_module) {
 
-    detail::registerFilterImpl<PropertyT,Geometry2DCartesian>("2D");
-    detail::registerFilterImpl<PropertyT,Geometry2DCylindrical>("Cyl");
-    detail::registerFilterImpl<PropertyT,Geometry3D>("3D");
+    detail::registerFilterImpl<PropertyT,Geometry2DCartesian>("2D", flow_module);
+    detail::registerFilterImpl<PropertyT,Geometry2DCylindrical>("Cyl", flow_module);
+    detail::registerFilterImpl<PropertyT,Geometry3D>("3D", flow_module);
 
 }
 
