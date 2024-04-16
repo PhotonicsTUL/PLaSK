@@ -22,10 +22,19 @@
 namespace plask {
 
 /**
- * Refractive index tensor
+ * Refractive index
  */
-struct PLASK_API RefractiveIndex: FieldProperty<Tensor3<dcomplex>> {
+struct PLASK_API RefractiveIndex: FieldProperty<dcomplex> {
     static constexpr const char* NAME = "refractive index";
+    static constexpr const char* UNIT = "-";
+    static inline dcomplex getDefaultValue() { return dcomplex(1.); }
+};
+
+/**
+ * Permittivity tensor
+ */
+struct PLASK_API Epsilon: FieldProperty<Tensor3<dcomplex>> {
+    static constexpr const char* NAME = "permittivity tensor";
     static constexpr const char* UNIT = "-";
     static inline Tensor3<dcomplex> getDefaultValue() { return Tensor3<dcomplex>(1.); }
 };

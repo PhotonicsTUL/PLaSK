@@ -34,7 +34,7 @@
           return 50
     ]]></cond>
     <A><![CDATA[0.1 * T + 0.02 * (T-300)**2 if T < 400. else 1000.]]></A>
-    <NR>3.6, 3.6, 3.4, 0.0</NR>
+    <Eps>12.96, 12.96, 11.56</Eps>
     <thermk>10.+ 0.001 * T**2</thermk>
   </material>
   <material name="AlGaAs_xxx" base="AlGaAs" alloy="yes">

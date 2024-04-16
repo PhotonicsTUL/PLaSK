@@ -65,7 +65,7 @@ void SlabBase::initTransfer(Expansion& expansion, bool reflection) {
 template <typename BaseT>
 SlabSolver<BaseT>::SlabSolver(const std::string& name): BaseT(name),
     smooth(0.),
-    outRefractiveIndex(this, &SlabSolver<BaseT>::getRefractiveIndexProfile),
+    outEpsilon(this, &SlabSolver<BaseT>::getEpsilonProfile),
     outWavelength(this, &SlabSolver<BaseT>::getWavelength, &SlabSolver<BaseT>::nummodes),
     outLightMagnitude(this, &SlabSolver<BaseT>::getLightMagnitude, &SlabSolver<BaseT>::nummodes),
     outLightE(this, &SlabSolver<BaseT>::getLightE<>, &SlabSolver<BaseT>::nummodes),
@@ -516,7 +516,7 @@ void SlabSolver<BaseT>::setupLayers()
 
 
 template <typename BaseT>
-DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getRefractiveIndexProfile
+DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getEpsilonProfile
                                         (const shared_ptr<const MeshD<BaseT::SpaceType::DIM>>& dst_mesh,
                                         InterpolationMethod interp)
 {
@@ -526,33 +526,21 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getRefractiveIndexProfile
     if (isnan(expansion.lam0) || always_recompute_gain || isnan(expansion.k0))
         expansion.setK0(isnan(k0)? 2e3*PI / lam0 : k0);
     // initTransfer(expansion, false);
-    expansion.beforeGetRefractiveIndex();
+    expansion.beforeGetEpsilon();
 
     //TODO maybe there is a more efficient way to implement this
     DataVector<Tensor3<dcomplex>> result(dst_mesh->size());
     auto levels = makeLevelsAdapter(dst_mesh);
 
-    //std::map<size_t,LazyData<Tensor3<dcomplex>>> cache;
-    //while (auto level = levels->yield()) {
-    //    double h = level->vpos();
-    //    size_t n = getLayerFor(h);
-    //    size_t l = stack[n];
-    //    LazyData<Tensor3<dcomplex>> data = cache.find(l);
-    //    if (data == cache.end()) {
-    //        data = expansion.getMaterialNR(l, level, interp);
-    //        cache[l] = data;
-    //    }
-    //    for (size_t i = 0; i != level->size(); ++i) result[level->index(i)] = data[i];
-    //}
     while (auto level = levels->yield()) {
         double h = level->vpos();
         size_t n = getLayerFor(h);
         size_t l = stack[n];
-        auto data = expansion.getMaterialNR(l, level, interp);
+        auto data = expansion.getMaterialEps(l, level, interp);
         for (size_t i = 0; i != level->size(); ++i) result[level->index(i)] = data[i];
     }
 
-    expansion.afterGetRefractiveIndex();
+    expansion.afterGetEpsilon();
 
     return result;
 }
@@ -790,6 +778,6 @@ template class PLASK_SOLVER_API SlabSolver<SolverWithMesh<Geometry2DCylindrical,
 template class PLASK_SOLVER_API SlabSolver<SolverOver<Geometry3D>>;
 
 
-// FiltersFactory::RegisterStandard<RefractiveIndex> registerRefractiveIndexFilters;
+// FiltersFactory::RegisterStandard<Epsilon> registerEpsilonFilters;
 
 }}} // namespace

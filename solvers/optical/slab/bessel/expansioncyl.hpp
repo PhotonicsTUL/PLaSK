@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -74,9 +74,9 @@ struct PLASK_SOLVER_API ExpansionBessel : public Expansion {
                                         const cvector& E,
                                         const cvector& H) override;
 
-    LazyData<Tensor3<dcomplex>> getMaterialNR(size_t layer,
-                                              const shared_ptr<const typename LevelsAdapter::Level>& level,
-                                              InterpolationMethod interp = INTERPOLATION_DEFAULT) override;
+    LazyData<Tensor3<dcomplex>> getMaterialEps(size_t layer,
+                                               const shared_ptr<const typename LevelsAdapter::Level>& level,
+                                               InterpolationMethod interp = INTERPOLATION_DEFAULT) override;
 
     double integratePoyntingVert(const cvector& E, const cvector& H) override;
 
@@ -161,9 +161,9 @@ struct PLASK_SOLVER_API ExpansionBessel : public Expansion {
 
   public:
 
-    void beforeGetRefractiveIndex() override;
+    void beforeGetEpsilon() override;
 
-    void afterGetRefractiveIndex() override;
+    void afterGetEpsilon() override;
 
     unsigned getM() const { return m; }
     void setM(unsigned n) {

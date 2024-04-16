@@ -9,7 +9,6 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
 """
 Materials and material database.
 
@@ -28,7 +27,6 @@ except ImportError:
 
 from ._material import *
 
-
 db = _material.getdb()
 
 get = db.get
@@ -37,16 +35,18 @@ with_params = db.material_with_params
 
 def update_factories():
     """For each material in default database make factory in ``plask.material``."""
+
     def factory(name):
         def func(**kwargs):
             if 'dopant' in kwargs:
                 kwargs = kwargs.copy()
                 dopant = kwargs.pop('dopant')
-                return db.get(name+':'+dopant, **kwargs)
+                return db.get(name + ':' + dopant, **kwargs)
             else:
                 return db.get(name, **kwargs)
         func.__doc__ = u"Create material {}.\n\n:rtype: Material".format(name)
         return func
+
     for mat in db:
         if mat == 'air': continue
         name = mat.split(":")[0]
@@ -79,6 +79,7 @@ def load_library(lib):
     _material.load_library(lib)
     update_factories()
 
+
 def load_all_libraries(dir):
     """
     Load all materials from specified directory to database.
@@ -96,7 +97,18 @@ def load_all_libraries(dir):
     update_factories()
 
 
-class simple:
+class _Simple:
+
+    def __init__(self, base=None):
+        self.base = base
+
+    def __call__(self, cls):
+        if 'name' not in cls.__dict__: cls.name = cls.__name__
+        _material._register_material_simple(cls.name, cls, self.base)
+        return cls
+
+
+def simple(base=None):
     """
     Decorator for custom simple material class.
 
@@ -107,17 +119,28 @@ class simple:
             In either case you must initialize the base in the
             constructor of your material.
     """
+
+    if isinstance(base, type):
+        # @simple is used without brackets
+        if 'name' not in base.__dict__: base.name = base.__name__
+        _material._register_material_simple(base.name, base)
+        return base
+    else:
+        return _Simple(base)
+
+
+class _Alloy:
+
     def __init__(self, base=None):
-        if isinstance(base, type):
-            raise TypeError("@material.simple argument is a class (you probably forgot parenthes)")
         self.base = base
+
     def __call__(self, cls):
         if 'name' not in cls.__dict__: cls.name = cls.__name__
-        _material._register_material_simple(cls.name, cls, self.base)
+        _material._register_material_alloy(cls.name, cls, self.base)
         return cls
 
 
-class alloy:
+def alloy(base=None):
     """
     Decorator for custom alloy material class.
 
@@ -128,14 +151,14 @@ class alloy:
             In either case you must initialize the base in the
             constructor of your material.
     """
-    def __init__(self, base=None):
-        if isinstance(base, type):
-            raise TypeError("@material.alloy argument is a class (you probably forgot brackets)")
-        self.base = base
-    def __call__(self, cls):
-        if 'name' not in cls.__dict__: cls.name = cls.__name__
-        _material._register_material_alloy(cls.name, cls, self.base)
-        return cls
+
+    if isinstance(base, type):
+        # @alloy is used without brackets
+        if 'name' not in base.__dict__: base.name = base.__name__
+        _material._register_material_alloy(base.name, base)
+        return base
+    else:
+        return _Alloy(base)
 
 
 const = staticmethod

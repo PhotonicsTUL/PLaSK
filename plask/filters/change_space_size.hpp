@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -54,7 +54,7 @@ struct DataFrom3Dto2DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTypes
                 auto sum = data[index];
                 for (std::size_t i = 1; i < point_count; ++i) sum += data[index+i];
 PLASK_NO_CONVERSION_WARNING_BEGIN
-                return PropertyT::value3Dto2D(sum / point_count);
+                return PropertyT::value3Dto2D(sum / double(point_count));
 PLASK_NO_WARNING_END
             };
         } else {
@@ -94,11 +94,11 @@ struct DataFrom3Dto2DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemplat
                 auto sum = data[index];
                 for (std::size_t i = 1; i < point_count; ++i) sum += data[index+i];
 PLASK_NO_CONVERSION_WARNING_BEGIN
-                return PropertyT::value3Dto2D(sum / point_count);
+                return PropertyT::value3Dto2D(sum / double(point_count));
 PLASK_NO_WARNING_END
             };
         } else {
-            auto data = this->in(n, 
+            auto data = this->in(n,
                         plask::make_shared<CartesianMesh2DTo3D>(dst_mesh, this->inTranslation, this->outputObj->getLength() * 0.5),
                         std::forward<ExtraArgs>(extra_args)..., method);
             return [data] (std::size_t index) { return PropertyT::value3Dto2D(data[index]); };
@@ -189,7 +189,7 @@ struct DataFrom2Dto3DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemplat
     typedef typename PropertyAt<PropertyT, Geometry2DCartesian>::ValueType InputValueType;
 
     typedef typename PropertyT::EnumType EnumType;
-    
+
     struct LazySourceImpl {
 
         std::vector<LazyData<InputValueType>> dataForRegion;

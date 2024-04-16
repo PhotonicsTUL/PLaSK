@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -177,13 +177,17 @@ dcomplex MixedMaterial::Nr(double lam, double T, double n) const {
     return avg([&](const Material& m) { return m.Nr(lam, T, n); });
 }
 
-Tensor3<dcomplex> MixedMaterial::NR(double lam, double T, double n) const {
+Tensor3<dcomplex> MixedMaterial::Eps(double lam, double T, double n) const {
     Tensor3<dcomplex> result;
-    result.c00 = avg([&](const Material& m) { return m.NR(lam, T, n).c00; });
-    result.c11 = avg([&](const Material& m) { return m.NR(lam, T, n).c11; });
-    result.c22 = avg([&](const Material& m) { return m.NR(lam, T, n).c22; });
-    result.c01 = avg([&](const Material& m) { return m.NR(lam, T, n).c01; });
-    result.c11 = avg([&](const Material& m) { return m.NR(lam, T, n).c11; });
+    result.c00 = avg([&](const Material& m) { return m.Eps(lam, T, n).c00; });
+    result.c11 = avg([&](const Material& m) { return m.Eps(lam, T, n).c11; });
+    result.c22 = avg([&](const Material& m) { return m.Eps(lam, T, n).c22; });
+    result.c01 = avg([&](const Material& m) { return m.Eps(lam, T, n).c01; });
+    result.c10 = avg([&](const Material& m) { return m.Eps(lam, T, n).c10; });
+    result.c02 = avg([&](const Material& m) { return m.Eps(lam, T, n).c02; });
+    result.c20 = avg([&](const Material& m) { return m.Eps(lam, T, n).c20; });
+    result.c12 = avg([&](const Material& m) { return m.Eps(lam, T, n).c12; });
+    result.c21 = avg([&](const Material& m) { return m.Eps(lam, T, n).c21; });
     return result;
 }
 

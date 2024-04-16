@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -264,58 +264,59 @@ ConstMaterial::ConstMaterial(const shared_ptr<Material>& base, const std::map<st
 std::string ConstMaterial::str() const{
     std::string result;
     bool c = false;
-    if (cache.A) { result += (c? " A=" : "A=") + plask::str(*cache.A); c= true; }
-    if (cache.absp) { result += (c? " absp=" : "absp=") + plask::str(*cache.absp); c= true; }
-    if (cache.ac) { result += (c? " ac=" : "ac=") + plask::str(*cache.ac); c= true; }
-    if (cache.av) { result += (c? " av=" : "av=") + plask::str(*cache.av); c= true; }
-    if (cache.b) { result += (c? " b=" : "b=") + plask::str(*cache.b); c= true; }
-    if (cache.B) { result += (c? " B=" : "B=") + plask::str(*cache.B); c= true; }
-    if (cache.C) { result += (c? " C=" : "C=") + plask::str(*cache.C); c= true; }
-    if (cache.c11) { result += (c? " c11=" : "c11=") + plask::str(*cache.c11); c= true; }
-    if (cache.c12) { result += (c? " c12=" : "c12=") + plask::str(*cache.c12); c= true; }
-    if (cache.c13) { result += (c? " c13=" : "c13=") + plask::str(*cache.c13); c= true; }
-    if (cache.c33) { result += (c? " c33=" : "c33=") + plask::str(*cache.c33); c= true; }
-    if (cache.c44) { result += (c? " c44=" : "c44=") + plask::str(*cache.c44); c= true; }
-    if (cache.CB) { result += (c? " CB=" : "CB=") + plask::str(*cache.CB); c= true; }
-    if (cache.Ce) { result += (c? " Ce=" : "Ce=") + plask::str(*cache.Ce); c= true; }
-    if (cache.Ch) { result += (c? " Ch=" : "Ch=") + plask::str(*cache.Ch); c= true; }
-    if (cache.chi) { result += (c? " chi=" : "chi=") + plask::str(*cache.chi); c= true; }
-    if (cache.cond) { result += (c? " cond=" : "cond=") + plask::str(*cache.cond); c= true; }
-    if (cache.cp) { result += (c? " cp=" : "cp=") + plask::str(*cache.cp); c= true; }
-    if (cache.d) { result += (c? " d=" : "d=") + plask::str(*cache.d); c= true; }
-    if (cache.D) { result += (c? " D=" : "D=") + plask::str(*cache.D); c= true; }
-    if (cache.dens) { result += (c? " dens=" : "dens=") + plask::str(*cache.dens); c= true; }
-    if (cache.Dso) { result += (c? " Dso=" : "Dso=") + plask::str(*cache.Dso); c= true; }
-    if (cache.e13) { result += (c? " e13=" : "e13=") + plask::str(*cache.e13); c= true; }
-    if (cache.e15) { result += (c? " e15=" : "e15=") + plask::str(*cache.e15); c= true; }
-    if (cache.e33) { result += (c? " e33=" : "e33=") + plask::str(*cache.e33); c= true; }
-    if (cache.EactA) { result += (c? " EactA=" : "EactA=") + plask::str(*cache.EactA); c= true; }
-    if (cache.EactD) { result += (c? " EactD=" : "EactD=") + plask::str(*cache.EactD); c= true; }
-    if (cache.Eg) { result += (c? " Eg=" : "Eg=") + plask::str(*cache.Eg); c= true; }
-    if (cache.eps) { result += (c? " eps=" : "eps=") + plask::str(*cache.eps); c= true; }
-    if (cache.lattC) { result += (c? " lattC=" : "lattC=") + plask::str(*cache.lattC); c= true; }
-    if (cache.Me) { result += (c? " Me=" : "Me=") + plask::str(*cache.Me); c= true; }
-    if (cache.Mh) { result += (c? " Mh=" : "Mh=") + plask::str(*cache.Mh); c= true; }
-    if (cache.Mhh) { result += (c? " Mhh=" : "Mhh=") + plask::str(*cache.Mhh); c= true; }
-    if (cache.Mlh) { result += (c? " Mlh=" : "Mlh=") + plask::str(*cache.Mlh); c= true; }
-    if (cache.mob) { result += (c? " mob=" : "mob=") + plask::str(*cache.mob); c= true; }
-    if (cache.mobe) { result += (c? " mobe=" : "mobe=") + plask::str(*cache.mobe); c= true; }
-    if (cache.mobh) { result += (c? " mobh=" : "mobh=") + plask::str(*cache.mobh); c= true; }
-    if (cache.Mso) { result += (c? " Mso=" : "Mso=") + plask::str(*cache.Mso); c= true; }
-    if (cache.Na) { result += (c? " Na=" : "Na=") + plask::str(*cache.Na); c= true; }
-    if (cache.Nd) { result += (c? " Nd=" : "Nd=") + plask::str(*cache.Nd); c= true; }
-    if (cache.Nf) { result += (c? " Nf=" : "Nf=") + plask::str(*cache.Nf); c= true; }
-    if (cache.Ni) { result += (c? " Ni=" : "Ni=") + plask::str(*cache.Ni); c= true; }
-    if (cache.nr) { result += (c? " nr=" : "nr=") + plask::str(*cache.nr); c= true; }
-    if (cache.Nr) { result += (c? " Nr=" : "Nr=") + plask::str(*cache.Nr); c= true; }
-    if (cache.Psp) { result += (c? " Psp=" : "Psp=") + plask::str(*cache.Psp); c= true; }
-    if (cache.taue) { result += (c? " taue=" : "taue=") + plask::str(*cache.taue); c= true; }
-    if (cache.tauh) { result += (c? " tauh=" : "tauh=") + plask::str(*cache.tauh); c= true; }
-    if (cache.thermk) { result += (c? " thermk=" : "thermk=") + plask::str(*cache.thermk); c= true; }
-    if (cache.VB) { result += (c? " VB=" : "VB=") + plask::str(*cache.VB); c= true; }
-    if (cache.y1) { result += (c? " y1=" : "y1=") + plask::str(*cache.y1); c= true; }
-    if (cache.y2) { result += (c? " y2=" : "y2=") + plask::str(*cache.y2); c= true; }
-    if (cache.y3) { result += (c? " y3=" : "y3=") + plask::str(*cache.y3); c= true; }
+    if (cache.A) { result += (c? " A=" : "A=") + plask::str(*cache.A); c = true; }
+    if (cache.absp) { result += (c? " absp=" : "absp=") + plask::str(*cache.absp); c = true; }
+    if (cache.ac) { result += (c? " ac=" : "ac=") + plask::str(*cache.ac); c = true; }
+    if (cache.av) { result += (c? " av=" : "av=") + plask::str(*cache.av); c = true; }
+    if (cache.b) { result += (c? " b=" : "b=") + plask::str(*cache.b); c = true; }
+    if (cache.B) { result += (c? " B=" : "B=") + plask::str(*cache.B); c = true; }
+    if (cache.C) { result += (c? " C=" : "C=") + plask::str(*cache.C); c = true; }
+    if (cache.c11) { result += (c? " c11=" : "c11=") + plask::str(*cache.c11); c = true; }
+    if (cache.c12) { result += (c? " c12=" : "c12=") + plask::str(*cache.c12); c = true; }
+    if (cache.c13) { result += (c? " c13=" : "c13=") + plask::str(*cache.c13); c = true; }
+    if (cache.c33) { result += (c? " c33=" : "c33=") + plask::str(*cache.c33); c = true; }
+    if (cache.c44) { result += (c? " c44=" : "c44=") + plask::str(*cache.c44); c = true; }
+    if (cache.CB) { result += (c? " CB=" : "CB=") + plask::str(*cache.CB); c = true; }
+    if (cache.Ce) { result += (c? " Ce=" : "Ce=") + plask::str(*cache.Ce); c = true; }
+    if (cache.Ch) { result += (c? " Ch=" : "Ch=") + plask::str(*cache.Ch); c = true; }
+    if (cache.chi) { result += (c? " chi=" : "chi=") + plask::str(*cache.chi); c = true; }
+    if (cache.cond) { result += (c? " cond=" : "cond=") + plask::str(*cache.cond); c = true; }
+    if (cache.cp) { result += (c? " cp=" : "cp=") + plask::str(*cache.cp); c = true; }
+    if (cache.d) { result += (c? " d=" : "d=") + plask::str(*cache.d); c = true; }
+    if (cache.D) { result += (c? " D=" : "D=") + plask::str(*cache.D); c = true; }
+    if (cache.dens) { result += (c? " dens=" : "dens=") + plask::str(*cache.dens); c = true; }
+    if (cache.Dso) { result += (c? " Dso=" : "Dso=") + plask::str(*cache.Dso); c = true; }
+    if (cache.e13) { result += (c? " e13=" : "e13=") + plask::str(*cache.e13); c = true; }
+    if (cache.e15) { result += (c? " e15=" : "e15=") + plask::str(*cache.e15); c = true; }
+    if (cache.e33) { result += (c? " e33=" : "e33=") + plask::str(*cache.e33); c = true; }
+    if (cache.EactA) { result += (c? " EactA=" : "EactA=") + plask::str(*cache.EactA); c = true; }
+    if (cache.EactD) { result += (c? " EactD=" : "EactD=") + plask::str(*cache.EactD); c = true; }
+    if (cache.Eg) { result += (c? " Eg=" : "Eg=") + plask::str(*cache.Eg); c = true; }
+    if (cache.eps) { result += (c? " eps=" : "eps=") + plask::str(*cache.eps); c = true; }
+    if (cache.Eps) { result += (c? " Eps=" : "Eps=") + plask::str(*cache.Eps); c = true; }
+    if (cache.lattC) { result += (c? " lattC=" : "lattC=") + plask::str(*cache.lattC); c = true; }
+    if (cache.Me) { result += (c? " Me=" : "Me=") + plask::str(*cache.Me); c = true; }
+    if (cache.Mh) { result += (c? " Mh=" : "Mh=") + plask::str(*cache.Mh); c = true; }
+    if (cache.Mhh) { result += (c? " Mhh=" : "Mhh=") + plask::str(*cache.Mhh); c = true; }
+    if (cache.Mlh) { result += (c? " Mlh=" : "Mlh=") + plask::str(*cache.Mlh); c = true; }
+    if (cache.mob) { result += (c? " mob=" : "mob=") + plask::str(*cache.mob); c = true; }
+    if (cache.mobe) { result += (c? " mobe=" : "mobe=") + plask::str(*cache.mobe); c = true; }
+    if (cache.mobh) { result += (c? " mobh=" : "mobh=") + plask::str(*cache.mobh); c = true; }
+    if (cache.Mso) { result += (c? " Mso=" : "Mso=") + plask::str(*cache.Mso); c = true; }
+    if (cache.Na) { result += (c? " Na=" : "Na=") + plask::str(*cache.Na); c = true; }
+    if (cache.Nd) { result += (c? " Nd=" : "Nd=") + plask::str(*cache.Nd); c = true; }
+    if (cache.Nf) { result += (c? " Nf=" : "Nf=") + plask::str(*cache.Nf); c = true; }
+    if (cache.Ni) { result += (c? " Ni=" : "Ni=") + plask::str(*cache.Ni); c = true; }
+    if (cache.nr) { result += (c? " nr=" : "nr=") + plask::str(*cache.nr); c = true; }
+    if (cache.Nr) { result += (c? " Nr=" : "Nr=") + plask::str(*cache.Nr); c = true; }
+    if (cache.Psp) { result += (c? " Psp=" : "Psp=") + plask::str(*cache.Psp); c = true; }
+    if (cache.taue) { result += (c? " taue=" : "taue=") + plask::str(*cache.taue); c = true; }
+    if (cache.tauh) { result += (c? " tauh=" : "tauh=") + plask::str(*cache.tauh); c = true; }
+    if (cache.thermk) { result += (c? " thermk=" : "thermk=") + plask::str(*cache.thermk); c = true; }
+    if (cache.VB) { result += (c? " VB=" : "VB=") + plask::str(*cache.VB); c = true; }
+    if (cache.y1) { result += (c? " y1=" : "y1=") + plask::str(*cache.y1); c = true; }
+    if (cache.y2) { result += (c? " y2=" : "y2=") + plask::str(*cache.y2); c = true; }
+    if (cache.y3) { result += (c? " y3=" : "y3=") + plask::str(*cache.y3); c = true; }
     if (base)
         return base->str() + " [" + result + "]";
     else
@@ -345,10 +346,13 @@ double ConstMaterial::C(double T) const {
 double ConstMaterial::CB(double T, double e, char point) const {
     if (cache.CB) return *cache.CB;
     try {
-        if (e == 0.)
-            return VB(T, 0., point) + Eg(T, 0., point);
-        else
-            return max(VB(T, e, point, 'H'), VB(T, e, point, 'L')) + Eg(T, e, point);
+        if (cache.VB) return *cache.VB + Eg(T, e, point);
+        else if (cache.Eg) {
+            if (e == 0.)
+                return VB(T, 0., point) + Eg(T, 0., point);
+            else
+                return max(VB(T, e, point, 'H'), VB(T, e, point, 'L')) + *cache.Eg;
+        }
     } catch (MaterialMethodNotImplemented) {
         if (base) return base->CB(T, e, point);
         else throwNotImplemented("CB(double T, double e, char point)");
@@ -369,13 +373,9 @@ Tensor2<double> ConstMaterial::cond(double T) const {
 
 double ConstMaterial::D(double T) const {
     if (cache.D) return *cache.D;
-    try {
-        // Use Einstein relation here
-        return mob(T).c00 * T * 8.6173423e-5;  // D = µ kB T / e
-    } catch (MaterialMethodNotImplemented) {
-        if (base) return base->D(T);
-        else throwNotImplemented("D(double T)");
-    }
+    else if (cache.mob) return 8.6173423e-5 * cache.mob->c00 * T;  // D = µ kB T / e
+    else if (base) return base->D(T);
+    else throwNotImplemented("D(double T)");
 }
 
 double ConstMaterial::dens(double T) const {
@@ -525,20 +525,19 @@ double ConstMaterial::nr(double lam, double T, double n) const {
 dcomplex ConstMaterial::Nr(double lam, double T, double n) const {
     if (cache.Nr) return *cache.Nr;
     try {
-        return dcomplex(nr(lam,T), -7.95774715459e-09*absp(lam,T)*lam);
+        if (cache.nr) return dcomplex(*cache.nr, -7.95774715459e-09 * absp(lam,T) * lam);
+        else if (cache.absp) return dcomplex(nr(lam,T), -7.95774715459e-09 * *cache.absp * lam);
     } catch (MaterialMethodNotImplemented) {
         if (base) return base->Nr(lam, T, n);
         else throwNotImplemented("Nr(double lam, double T, double n)");
     }
 }
 
-Tensor3<dcomplex> ConstMaterial::NR(double lam, double T, double n) const {
-    try {
-        return Nr(lam, T, n);
-    } catch (MaterialMethodNotImplemented) {
-        if (base) return base->NR(lam, T, n);
-        else throwNotImplemented("NR(double lam, double T, double n)");
-    }
+Tensor3<dcomplex> ConstMaterial::Eps(double lam, double T, double n) const {
+    if (cache.Eps) return *cache.Eps;
+    else if (cache.Nr) return *cache.Nr * *cache.Nr;
+    else if (base) return base->Eps(lam, T, n);
+    else throwNotImplemented("Eps(double lam, double T, double n)");
 }
 
 double ConstMaterial::cp(double T) const {

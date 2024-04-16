@@ -581,8 +581,12 @@ class ThresholdSearch(ThermoElectric):
                                              plask.mesh.Regular(obox.bottom, obox.top, optical_resolution[1]))
             ofield = self.optical.outLightMagnitude(self.modeno, omesh)
             plask.save_field(ofield/max(ofield), h5file, group + '/LightMagnitude')
-            nrfield = self.optical.outRefractiveIndex(omesh)
-            plask.save_field(nrfield, h5file, group + '/RefractiveIndex')
+            try:
+                nrfield = self.optical.outRefractiveIndex(omesh)
+                plask.save_field(nrfield, h5file, group + '/RefractiveIndex')
+            except AttributeError:
+                epsfield = self.optical.outEpsilon(omesh)
+                plask.save_field(epsfield, h5file, group + '/Epsilon')
             rmesh = next(self._iter_levels(self.optical.geometry, oaxis, 'QW', 'QD', 'gain'))[1]
             orfield = self.optical.outLightMagnitude(self.modeno, rmesh)
             plask.save_field(orfield/max(orfield), h5file, group + '/HorizontalLightMagnitude')
@@ -728,7 +732,12 @@ class ThresholdSearch(ThermoElectric):
         plask.plot_profile(field/max(field), color=color, **kwargs)
         plask.ylabel("Light Intensity [arb.u.]")
         ax2 = plask.twinx()
-        plask.plot_profile(self.optical.outRefractiveIndex(field.mesh).real, comp=0, color=color2)
+        try:
+            plask.plot_profile(self.optical.outRefractiveIndex(field.mesh).real, comp=0, color=color2)
+        except AttributeError:
+            eps = self.optical.outEpsilon(field.mesh)
+            nr = plask.Data((np.array(eps)[:,0,0]**0.5).real, eps.mesh)
+            plask.plot_profile(nr, color=color2)
         plask.ylabel("Refractive Index")
         ax1.set_zorder(ax2.get_zorder()+1)
         ax1.patch.set_visible(False)
@@ -1013,7 +1022,7 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
     outLightMagnitude = property(lambda self: self.optical.outLightMagnitude, doc=_doc.outLightMagnitude)
     outLoss = property(lambda self: self.optical.outLoss, doc=_doc.outLoss)
     outWavelength = property(lambda self: self.optical.outWavelength, doc=_doc.outWavelength)
-    outRefractiveIndex = property(lambda self: self.optical.outRefractiveIndex, doc=_doc.outRefractiveIndex)
+    outEpsilon = property(lambda self: self.optical.outEpsilon, doc=_doc.outEpsilon)
     outLightE = property(lambda self: self.optical.outLightE, doc=_doc.outLightE)
 
     thermal = attribute(_Thermal.__name__ + "()")
@@ -1509,7 +1518,7 @@ class ThresholdSearchFourier2D(ThresholdSearch):
     outGain = property(lambda self: self.gain.outGain, doc=_Gain.outGain.__doc__)
     outLightMagnitude = property(lambda self: self.optical.outLightMagnitude, doc=_doc.outLightMagnitude)
     outNeff = property(lambda self: self.optical.outNeff, doc=_doc.outNeff)
-    outRefractiveIndex = property(lambda self: self.optical.outRefractiveIndex, doc=_doc.outRefractiveIndex)
+    outEpsilon = property(lambda self: self.optical.outEpsilon, doc=_doc.outEpsilon)
     outLightE = property(lambda self: self.optical.outLightE, doc=_doc.outLightE)
 
     thermal = attribute(_Thermal.__name__+"()")

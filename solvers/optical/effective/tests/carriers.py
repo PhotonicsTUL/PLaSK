@@ -65,8 +65,8 @@ class CarriersTest:
         self.test_mesh = mesh.Rectangular2D([0.], [0.050, 0.103, 0.156])
 
     def test_no_carriers(self):
-        nr = self.solver.outRefractiveIndex(self.test_mesh).array[0,:,0].real
-        assert_array_equal(nr, [3.0, 3.0, 3.0])
+        nr = self.solver.outRefractiveIndex(self.test_mesh).array[0,:].real
+        assert_array_equal(nr, 3.0)
 
     def test_carriers(self):
         diffusion = self.Diffusion('diffusion')
@@ -77,7 +77,7 @@ class CarriersTest:
         self.assertLess(1e18, cc)
 
         self.solver.inCarriersConcentration = diffusion.outCarriersConcentration
-        nr = self.solver.outRefractiveIndex(self.test_mesh).array[0,:,0].real
+        nr = self.solver.outRefractiveIndex(self.test_mesh).array[0,:].real
         assert_array_almost_equal(nr, [3.0, 3.0 + 1e-19 * cc, 3.0])
 
 

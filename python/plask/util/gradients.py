@@ -50,7 +50,7 @@ class _SimplifiedMaterial(_Material):
     def Nr(self, lam, T=300., n=0.):
         return self.nr(lam, T, n) - 7.95774715459e-09j * self.absp(lam, T) * lam
 
-    def NR(self, lam, T=300., n=0.):
+    def Eps(self, lam, T=300., n=0.):
         Nr = self.Nr(lam, T, n)
         return _tensor(Nr, Nr, Nr)
 

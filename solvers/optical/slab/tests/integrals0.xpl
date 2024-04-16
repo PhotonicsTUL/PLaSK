@@ -116,7 +116,7 @@ field_provider = getattr(SOLVER, 'outLight{0}'.format(f))
 field = field_provider(fmesh.elements.mesh)
 
 if SOLVER.geometry is GEO.onedi:
-    plot_profile(SOLVER.outRefractiveIndex(nmesh), comp='rr', color='C1')
+    plot_profile(SOLVER.outEpsilon(nmesh), comp='rr', color='C1')
     twinx()
     plot_profile(field, color='C{}'.format({'E':0, 'H':3}[f]))
 

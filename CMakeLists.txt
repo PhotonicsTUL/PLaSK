@@ -800,6 +800,7 @@ if(BUILD_TESTING)
         add_custom_target(python-test-runner ALL DEPENDS "${PLASK_PATH}/python/runtest.py")
 
         file(GLOB_RECURSE python_tests FOLLOW_SYMLINKS tests/python/*.py)
+        list(REMOVE_ITEM python_tests "${CMAKE_SOURCE_DIR}/tests/python/runtest.py")
         foreach(test_file ${python_tests})
             get_filename_component(test ${test_file} NAME_WE)
             add_python_test(${test} ${test_file})

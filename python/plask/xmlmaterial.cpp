@@ -43,7 +43,7 @@ struct PythonEvalMaterialConstructor : public MaterialsDB::MaterialConstructor {
     py::object globals;
 
     PyHandle<> lattC, Eg, CB, VB, Dso, Mso, Me, Mhh, Mlh, Mh, ac, av, b, d, c11, c12, c44, eps, chi, Na, Nd, Ni, Nf, EactD, EactA,
-        mob, cond, A, B, C, D, thermk, dens, cp, nr, absp, Nr, NR, mobe, mobh, taue, tauh, Ce, Ch, e13, e15, e33, c13, c33, Psp, y1,
+        mob, cond, A, B, C, D, thermk, dens, cp, nr, absp, Nr, Eps, mobe, mobh, taue, tauh, Ce, Ch, e13, e15, e33, c13, c33, Psp, y1,
         y2, y3;
 
     template <typename BaseT>
@@ -315,18 +315,16 @@ class PythonEvalMaterial : public MaterialWithBase {
             return dcomplex(nr(lam, T, n), -7.95774715459e-09 * absp(lam, T) * lam);
         return base->Nr(lam, T, n);
     }
-    Tensor3<dcomplex> NR(double lam, double T, double n = .0) const override {
-        if (cls->cache.NR) return *cls->cache.NR;
-        if (cls->NR != NULL) {
+    Tensor3<dcomplex> Eps(double lam, double T, double n = .0) const override {
+        if (cls->cache.Eps) return *cls->cache.Eps;
+        if (cls->Eps != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            py::dict locals;
-            locals["lam"] = locals["wl"] = lam;
-            locals["T"] = T;
-            locals["n"] = n;
-            return call<Tensor3<dcomplex>>(cls->NR, locals, "NR");
+            py::dict locals; locals["lam"] = locals["wl"] = lam; locals["T"] = T; locals["n"] = n;
+            return call<Tensor3<dcomplex>>(cls->Eps, locals, "Eps");
         }
         if (cls->cache.Nr) {
             dcomplex nc = *cls->cache.Nr;
+            nc *= nc;
             return Tensor3<dcomplex>(nc, nc, nc, 0.);
         }
         if (cls->Nr != NULL) {
@@ -336,14 +334,16 @@ class PythonEvalMaterial : public MaterialWithBase {
             locals["T"] = T;
             locals["n"] = n;
             dcomplex nc = call<dcomplex>(cls->Nr, locals, "Nr");
+            nc *= nc;
             return Tensor3<dcomplex>(nc, nc, nc, 0.);
         }
         if (cls->nr != NULL || cls->absp != NULL || cls->cache.nr || cls->cache.absp) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             dcomplex nc(nr(lam, T, n), -7.95774715459e-09 * absp(lam, T) * lam);
+            nc *= nc;
             return Tensor3<dcomplex>(nc, nc, nc, 0.);
         }
-        return base->NR(lam, T, n);
+        return base->Eps(lam, T, n);
     }
 
     Tensor2<double> mobe(double T) const override{
@@ -475,7 +475,7 @@ void PythonManager::loadMaterial(XMLReader& reader) {
             COMPILE_PYTHON_MATERIAL_FUNCTION(nr, "lam, T, n")
             COMPILE_PYTHON_MATERIAL_FUNCTION(absp, "lam, T")
             COMPILE_PYTHON_MATERIAL_FUNCTION(Nr, "lam, T, n")
-            COMPILE_PYTHON_MATERIAL_FUNCTION(NR, "lam, T, n")
+            COMPILE_PYTHON_MATERIAL_FUNCTION(Eps, "lam, T, n")
             COMPILE_PYTHON_MATERIAL_FUNCTION(mobe, "T")
             COMPILE_PYTHON_MATERIAL_FUNCTION(mobh, "T")
             COMPILE_PYTHON_MATERIAL_FUNCTION(taue, "T")

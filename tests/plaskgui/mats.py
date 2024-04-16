@@ -48,8 +48,8 @@ class AlGaAsDp(material.Material):
     def CB(self, T=300., e=0., point='G'):
         return self._composition['Ga'] * T
 
-    def NR(self, wl, T, n):
-        return (3.5, 3.6, 3.7, 0.1)
+    def Eps(self, wl, T, n):
+        return (12.25, 12.96, 13.69, 0.01)
 
 
 @material.simple()

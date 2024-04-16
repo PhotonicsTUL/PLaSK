@@ -48,8 +48,8 @@ mrank = mpi.Get_rank()
 
 if mrank == 0:
     msh = mesh.Rectangular3D(linspace(-1.5, 1.5, 301), linspace(-1.5, 1.5, 301), [0.])
-    refindex = OPTICAL.outRefractiveIndex(msh, interpolation='nearest')
-    plot_field(refindex, None, plane='yx', comp='x', cmap='Blues')
+    epsilon = OPTICAL.outEpsilon(msh, interpolation='nearest')
+    plot_field(epsilon, None, plane='yx', comp='x', cmap='Blues')
     plot_geometry(OPTICAL.geometry, plane='yx', color='w', periods=3)
     aspect('equal')
     window_title('Refractive Index')

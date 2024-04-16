@@ -34,8 +34,8 @@ The second way is to define a custom material class in Python. This is more flex
 
     <module name="module_name"/>
 
-to the ``<materials>`` section or by selectinf *Add Module* in GUI.
+to the ``<materials>`` section or by selecting *Add Module* in GUI.
 
 
 
-If custom __init__ ALWAYS call superclass __init__.
+In custom __init__ ALWAYS call superclass __init__.

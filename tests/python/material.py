@@ -55,8 +55,8 @@ class TestMaterial(unittest.TestCase):
             return self.doping * T
         def CB(self, T=300., e=0., point='G'):
             return self.composition['Ga'] * T
-        def NR(self, lam, T, n):
-            return (3.5, 3.6, 3.7, 0.1)
+        def Eps(self, lam, T, n):
+            return (12.25, 12.96, 13.69, 0.01)
 
     @material.simple()
     class WithChar(material.Material):
@@ -81,7 +81,7 @@ class TestMaterial(unittest.TestCase):
         self.assertEqual(m.name, "AlGaAs_fake")
         self.assertEqual(m.VB(1.0), 2.0)
         self.assertEqual(m.nr(980., 300.), 3.5)
-        self.assertEqual(tuple(m.NR(980., 300.)), (3.5, 3.5, 3.5, 0.))
+        self.assertEqual(tuple(m.Eps(980., 300.)), (12.25, 12.25, 12.25, 0., 0., 0., 0., 0., 0.))
         self.assertEqual(m.thermk(), material.AlGaAs(Al=0.1).thermk())
         self.assertNotEqual(m.nr(980., 300.), material.AlGaAs(Al=0.1).nr(980., 300.))
         self.assertEqual(m, material.get('AlGaAs_fake', Al=0.1))
@@ -99,8 +99,7 @@ class TestMaterial(unittest.TestCase):
         self.assertEqual(m1.name, "AlGaAs:Dp")
         self.assertEqual(m1.VB(1.0), 3.0)
         self.assertAlmostEqual(m1.CB(1.0), 0.8)
-        print(ptest.NR(m1))
-        self.assertEqual(tuple(ptest.NR(m1)), (3.5, 3.6, 3.7, 0.1))
+        self.assertEqual(tuple(ptest.Eps(m1)), (12.25, 12.96, 13.69, 0.01, 0.01, 0, 0, 0, 0))
 
         with(self.assertRaisesRegex(TypeError, "'N' not allowed in material AlGaAs:Dp")):
             mx = TestMaterial.AlGaAsDp(Al=0.2, N=0.9, doping=1e18)

@@ -26,6 +26,7 @@ namespace plask { namespace python {
 void register_standard_properties_refractive(const py::object& flow_module)
 {
     registerProperty<RefractiveIndex>(flow_module);
+    registerProperty<Epsilon>(flow_module);
 }
 
 }} // namespace plask::python

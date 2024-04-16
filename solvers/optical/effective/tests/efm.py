@@ -106,7 +106,7 @@ class EffectiveFrequency(unittest.TestCase):
         geo = self.solver.geometry
         refr = [geo.get_material(point).Nr(980., 300.) for point in msh]
         self.assertEqual(
-            ["%.8g" % nr[0].real for nr in self.solver.outRefractiveIndex(msh)],
+            ["%.8g" % nr.real for nr in self.solver.outRefractiveIndex(msh)],
             ["%.8g" % r.real for r in refr]
         )
 

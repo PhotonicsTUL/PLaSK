@@ -463,7 +463,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     const LazyData<Vec<3,dcomplex>> getElectricField(std::size_t num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get used refractive index
-    const LazyData<Tensor3<dcomplex>> getRefractiveIndex(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);
+    const LazyData<dcomplex> getRefractiveIndex(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get generated/absorbed heat
     const LazyData<double> getHeat(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod method=INTERPOLATION_DEFAULT);

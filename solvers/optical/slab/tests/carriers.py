@@ -14,7 +14,7 @@
 import unittest
 
 from numpy import *
-from numpy.testing import assert_array_equal, assert_array_almost_equal
+from numpy.testing import assert_array_almost_equal
 
 from plask import *
 from plask import material, geometry, mesh
@@ -77,8 +77,8 @@ class CarriersTest:
         self.test_mesh = mesh.Rectangular2D([0.0], [0.050, 0.104, 0.158])
 
     def test_no_carriers(self):
-        nr = self.solver.outRefractiveIndex(self.test_mesh).array[...,0].flatten().real
-        assert_array_equal(nr, [3.0, 3.0, 3.0])
+        eps = self.solver.outEpsilon(self.test_mesh).array[...,0,0].flatten().real
+        assert_array_almost_equal(eps, [9.0, 9.0, 9.0], 4)
 
     def test_carriers(self):
         diffusion = self.Diffusion('diffusion')
@@ -89,8 +89,8 @@ class CarriersTest:
         self.assertLess(1e18, cc)
 
         self.solver.inCarriersConcentration = diffusion.outCarriersConcentration
-        nr = self.solver.outRefractiveIndex(self.test_mesh).array[...,0].flatten().real
-        assert_array_almost_equal(nr, [3.0, 3.0 + 1e-19 * cc, 3.0])
+        nr = self.solver.outEpsilon(self.test_mesh).array[...,0,0].flatten().real
+        assert_array_almost_equal(nr, [9.0, (3.0 + 1e-19 * cc)**2, 9.0], 4)
 
 
 class Fourier2DCarriers(CarriersTest, unittest.TestCase):

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -388,18 +388,19 @@ std::ostream& operator<<(std::ostream& out, LazyData<T> const& to_print) {
 }
 
 
-#ifdef _MSC_VER // MSVC require this while MingW does not accept
+#ifdef _MSC_VER // MSVC requires this while MingW does not accept it
 
 #define PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(...) \
-    PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_CLASS(LazyData<__VA_ARGS__>) ; \
-    PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(LazyDataImpl<__VA_ARGS__>) ;
+    PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_CLASS(LazyData<__VA_ARGS__>); \
+    PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(LazyDataImpl<__VA_ARGS__>);
 
-PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Tensor3< complex<double> >)
-PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Tensor2< double >)
-PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Vec<3, complex<double>>)
-PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Vec<3, double>)
-PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Vec<2, double>)
+PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Tensor3<complex<double>>)
+PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Tensor2<double>)
+PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Vec<3,complex<double>>)
+PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Vec<3,double>)
+PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Vec<2,double>)
 PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(double)
+PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(complex<double>)
 
 #endif
 

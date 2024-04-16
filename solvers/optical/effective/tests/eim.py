@@ -64,7 +64,7 @@ class EffectiveIndex(unittest.TestCase):
         msh = self.solver.mesh.elements.mesh
         geo = self.solver.geometry
         refr = [geo.get_material(point).Nr(1000., 300.) for point in msh]
-        self.assertEqual([nr[0] for nr in self.solver.outRefractiveIndex(msh)], refr)
+        self.assertEqual(list(self.solver.outRefractiveIndex(msh)), refr)
 
     def testDeltaNeffs(self):
         xx = array([0.0, 0.5, 1.0])

@@ -93,7 +93,7 @@ void ExpansionBessel::init3() {
     for (size_t i = 0; i < nseg; ++i) {
         double b = rbounds[i + 1];
 
-        // excpected value is the second Lommel's integral
+        // expected value is the second Lommel's integral
         double expct = expcts;
         expcts = cyl_bessel_j(m, k * b);
         expcts = 0.5 * b * b * (expcts * expcts - cyl_bessel_j(m - 1, k * b) * cyl_bessel_j(m + 1, k * b));
@@ -147,7 +147,7 @@ void ExpansionBessel::beforeLayersIntegrals(double lam, double glam) {
     SOLVER->prepareExpansionIntegrals(this, mesh, lam, glam);
 }
 
-void ExpansionBessel::beforeGetRefractiveIndex() {
+void ExpansionBessel::beforeGetEpsilon() {
     double lambda = real(2e3*PI/k0);
     double lam, glam;
     if (!isnan(lam0)) {
@@ -159,7 +159,7 @@ void ExpansionBessel::beforeGetRefractiveIndex() {
     beforeLayersIntegrals(lam, glam);
 }
 
-void ExpansionBessel::afterGetRefractiveIndex() {
+void ExpansionBessel::afterGetEpsilon() {
     afterLayersIntegrals();
 }
 
@@ -172,12 +172,13 @@ Tensor3<dcomplex> ExpansionBessel::getEps(size_t layer, size_t ri, double r, dou
         lock = material->lock();
         double T, cc;
         std::tie(T, cc) = getTC(layer, ri);
-        eps = material->NR(lam, T, cc);
-        if (isnan(eps.c00) || isnan(eps.c11) || isnan(eps.c22) || isnan(eps.c01))
-            throw BadInput(solver->getId(), "complex refractive index (NR) for {} is NaN at lam={}nm, T={}K, n={}/cm3",
+        eps = material->Eps(lam, T, cc);
+        if (isnan(eps))
+            throw BadInput(solver->getId(), "complex permittivity tensor (Eps) for {} is NaN at lam={}nm, T={}K, n={}/cm3",
                            material->name(), lam, T, cc);
     }
-    if (!is_zero(eps.c00 - eps.c11) || eps.c01 != 0.)
+    if (!is_zero(eps.c00 - eps.c11) ||
+        eps.c01 != 0. || eps.c02 != 0. || eps.c10 != 0. || eps.c12 != 0. || eps.c20 != 0. || eps.c21 != 0.)
         throw BadInput(solver->getId(), "lateral anisotropy not allowed for this solver");
     if (gain_connected && solver->lgained[layer]) {
         auto roles = SOLVER->getGeometry()->getRolesAt(vec(r, matz));
@@ -193,12 +194,11 @@ Tensor3<dcomplex> ExpansionBessel::getEps(size_t layer, size_t ri, double r, dou
                 }
             }
             Tensor2<double> ni = glam * g / W * (0.25e-7 / PI);
-            eps.c00.imag(ni.c00);
-            eps.c11.imag(ni.c00);
-            eps.c22.imag(ni.c11);
+            double n00 = sqrt(eps.c00).real(), n22 = sqrt(eps.c22).real();
+            eps.c00 = eps.c11 = dcomplex(n00*n00 - ni.c00*ni.c00, 2 * n00 * ni.c00);
+            eps.c22 = dcomplex(n22*n22 - ni.c11*ni.c11, 2 * n22 * ni.c11);
         }
     }
-    eps.sqr_inplace();
     return eps;
 }
 
@@ -249,7 +249,6 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam) {
         }
     } else {
         Tensor3<dcomplex> eps0 = getEps(layer, mesh->tran()->size() - 1, rbounds[rbounds.size() - 1] + 0.001, matz, lam, glam);
-        eps0.sqr_inplace();
         epsp0 = eps0.c00;
         if (SOLVER->rule != BesselSolverCyl::RULE_OLD) {
             epsr0 = (SOLVER->rule != BesselSolverCyl::RULE_DIRECT) ? 1. / eps0.c11 : eps0.c11;
@@ -442,7 +441,7 @@ LazyData<Vec<3, dcomplex>> ExpansionBessel::getField(size_t layer,
     }
 }
 
-LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialNR(size_t layer,
+LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialEps(size_t layer,
                                                            const shared_ptr<const typename LevelsAdapter::Level>& level,
                                                            InterpolationMethod interp) {
     if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_NEAREST;
@@ -460,16 +459,15 @@ LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialNR(size_t layer,
 
     auto raxis = mesh->tran();
 
-    DataVector<Tensor3<dcomplex>> nrs(raxis->size());
-    for (size_t i = 0; i != nrs.size(); ++i) {
+    DataVector<Tensor3<dcomplex>> eps(raxis->size());
+    for (size_t i = 0; i != eps.size(); ++i) {
         Tensor3<dcomplex> eps = getEps(layer, i, raxis->at(i), level->vpos(), lam, glam);
-        nrs[i] = eps.sqrt();
     }
 
     auto src_mesh =
         plask::make_shared<RectangularMesh<2>>(mesh->tran(), plask::make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
     return interpolate(
-        src_mesh, nrs, dest_mesh, interp,
+        src_mesh, eps, dest_mesh, interp,
         InterpolationFlags(SOLVER->getGeometry(), InterpolationFlags::Symmetry::POSITIVE, InterpolationFlags::Symmetry::NO));
 }
 

@@ -84,7 +84,7 @@ template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, publ
     ReceiverFor<CarriersConcentration, typename BaseT::SpaceType> inCarriersConcentration;
 
     /// Provider of the refractive index
-    typename ProviderFor<RefractiveIndex, typename BaseT::SpaceType>::Delegate outRefractiveIndex;
+    typename ProviderFor<Epsilon, typename BaseT::SpaceType>::Delegate outEpsilon;
 
     /// Provider for computed resonant wavelength
     typename ProviderFor<ModeWavelength>::Delegate outWavelength;
@@ -282,7 +282,7 @@ template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, publ
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    DataVector<const Tensor3<dcomplex>> getRefractiveIndexProfile(const shared_ptr<const MeshD<BaseT::SpaceType::DIM>>& dst_mesh,
+    DataVector<const Tensor3<dcomplex>> getEpsilonProfile(const shared_ptr<const MeshD<BaseT::SpaceType::DIM>>& dst_mesh,
                                                                   InterpolationMethod interp = INTERPOLATION_DEFAULT);
 
     /**

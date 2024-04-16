@@ -138,7 +138,7 @@ else:
 NR = [main.get_material(pos(ax, 0.5*h)).nr(opt.wavelength.real).real for ax in AX]
 plot(AX, NR, '--k')
 
-NR = opt.outRefractiveIndex(msh, 'fourier')
+NR = opt.outEpsilon(msh, 'fourier')
 plot(AX, NR.array[:,:,0,2].ravel().real, 'r', label='Fourier')
 
 if axis == 0:
@@ -151,13 +151,13 @@ elif axis == 1:
 
 #opt.invalidate()
 #opt.symmetry = 'Ex'
-#NR = opt.outRefractiveIndex(msh)
+#NR = opt.outEpsilon(msh)
 #plot(AX, NR.array[:,:,0,2].ravel().real, 'r', label='Symmetric')
 
 #NR = [main.get_material(pos(ax, 0.5*h)).nr(opt.wavelength.real).real for ax in opt.tran_mesh]
 #plot(opt.tran_mesh, NR, 'r.')
 
-#NR = opt.outRefractiveIndex(msh, 'linear')
+#NR = opt.outEpsilon(msh, 'linear')
 #plot(AX, NR.array[:,:,0,2].ravel().real, 'b', label='linear')
 
 xlim(AX[0], AX[-1])

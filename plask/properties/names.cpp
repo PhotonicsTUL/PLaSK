@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -37,6 +37,7 @@ constexpr const char* Gain::NAME;                               constexpr const 
 constexpr const char* Luminescence::NAME;                       constexpr const char* Luminescence::UNIT;
 
 constexpr const char* RefractiveIndex::NAME;                    constexpr const char* RefractiveIndex::UNIT;
+constexpr const char* Epsilon::NAME;                            constexpr const char* Epsilon::UNIT;
 constexpr const char* LightMagnitude::NAME;                     constexpr const char* LightMagnitude::UNIT;
 constexpr const char* LightE::NAME;                             constexpr const char* LightE::UNIT;
 constexpr const char* LightH::NAME;                             constexpr const char* LightH::UNIT;

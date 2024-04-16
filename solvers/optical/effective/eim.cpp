@@ -913,16 +913,16 @@ const LazyData<Vec<3,dcomplex>> EffectiveIndex2D::getElectricField(std::size_t n
         return LazyData<Vec<3,dcomplex>>(new FieldDataInefficient<Vec<3,dcomplex>>(this, num, dst_mesh));
 }
 
-const LazyData<Tensor3<dcomplex>> EffectiveIndex2D::getRefractiveIndex(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod) {
+const LazyData<dcomplex> EffectiveIndex2D::getRefractiveIndex(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod) {
     this->writelog(LOG_DEBUG, "Getting refractive indices");
     updateCache();
     InterpolationFlags flags(geometry);
-    return LazyData<Tensor3<dcomplex>>(dst_mesh->size(),
-        [this, dst_mesh, flags](size_t i) -> Tensor3<dcomplex> {
+    return LazyData<dcomplex>(dst_mesh->size(),
+        [this, dst_mesh, flags](size_t i) -> dcomplex {
             auto point = flags.wrap(dst_mesh->at(i));
             size_t ix = this->mesh->axis[0]->findIndex(point.c0); if (ix < this->xbegin) ix = this->xbegin;
             size_t iy = this->mesh->axis[1]->findIndex(point.c1);
-            return Tensor3<dcomplex>(this->nrCache[ix][iy]);
+            return this->nrCache[ix][iy];
         });
 }
 

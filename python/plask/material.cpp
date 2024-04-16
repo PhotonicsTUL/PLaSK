@@ -308,11 +308,11 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
             catch (NotImplemented&) { return base->Nr(lam, T, n); }
         }
     }
-    Tensor3<dcomplex> NR(double lam, double T, double n) const override {
-        try { return call_override<Tensor3<dcomplex>>("NR", cache->NR, lam, T, n); }
+    Tensor3<dcomplex> Eps(double lam, double T, double n) const override {
+        try { return call_override<Tensor3<dcomplex>>("Eps", cache->Eps, lam, T, n); }
         catch (NotImplemented&) {
-            try { dcomplex nr = Nr(lam, T, n); return Tensor3<dcomplex>(nr, nr, nr, 0.); }
-            catch (NotImplemented&) { return base->NR(lam, T, n); }
+            try { dcomplex nr = Nr(lam, T, n); return Tensor3<dcomplex>(nr*nr); }
+            catch (NotImplemented&) { return base->Eps(lam, T, n); }
         }
     }
     Tensor2<double> mobe(double T) const override { return call<Tensor2<double>>("mobe", &Material::mobe, cache->mobe, T); }
@@ -425,7 +425,7 @@ static void setMaterialInfo(const std::string& material_name, PyObject* class_ob
     UPDATE_INFO(nr);
     UPDATE_INFO(absp);
     UPDATE_INFO(Nr);
-    UPDATE_INFO(NR);
+    UPDATE_INFO(Eps);
     UPDATE_INFO(mobe);
     UPDATE_INFO(mobh);
     UPDATE_INFO(taue);
@@ -574,7 +574,7 @@ namespace detail {
     MAKE_CACHED_VALUE_GETTER(double, nr)
     MAKE_CACHED_VALUE_GETTER(double, absp)
     MAKE_CACHED_VALUE_GETTER(dcomplex, Nr)
-    MAKE_CACHED_VALUE_GETTER(Tensor3<dcomplex>, NR)
+    MAKE_CACHED_VALUE_GETTER(Tensor3<dcomplex>, Eps)
     MAKE_CACHED_VALUE_GETTER(Tensor2<double>, mobe)
     MAKE_CACHED_VALUE_GETTER(Tensor2<double>, mobh)
     MAKE_CACHED_VALUE_GETTER(double, taue)
@@ -718,7 +718,7 @@ shared_ptr<Material> PythonMaterial::__init__(const py::tuple& args, const py::d
         CHECK_CACHE(double, nr, py::object(), 300., 0.)
         CHECK_CACHE(double, absp, py::object(), 300.)
         CHECK_CACHE(dcomplex, Nr, py::object(), 300., 0.)
-        CHECK_CACHE(Tensor3<dcomplex>, NR, py::object(), 300., 0.)
+        CHECK_CACHE(Tensor3<dcomplex>, Eps, py::object(), 300., 0.)
         CHECK_CACHE(Tensor2<double>, mobe, 300.)
         CHECK_CACHE(Tensor2<double>, mobh, 300.)
         CHECK_CACHE(double, taue, 300.)
@@ -925,6 +925,7 @@ py::dict getMaterialInfoForDB(const MaterialsDB& materialsdb, const std::string&
     detail::getPropertyInfo(result, *minfo, MaterialInfo::c12, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::c44, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::eps, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::Eps, MaterialInfo::lam, MaterialInfo::T, MaterialInfo::n);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::chi, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::Na);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::Nd);
@@ -945,7 +946,6 @@ py::dict getMaterialInfoForDB(const MaterialsDB& materialsdb, const std::string&
     detail::getPropertyInfo(result, *minfo, MaterialInfo::nr, MaterialInfo::lam, MaterialInfo::T, MaterialInfo::n);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::absp, MaterialInfo::lam, MaterialInfo::T, MaterialInfo::n);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::Nr, MaterialInfo::lam, MaterialInfo::T, MaterialInfo::n);
-    detail::getPropertyInfo(result, *minfo, MaterialInfo::NR, MaterialInfo::lam, MaterialInfo::T, MaterialInfo::n);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::mobe, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::mobh, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::taue, MaterialInfo::T);
@@ -1307,6 +1307,17 @@ void initMaterials() {
              u8"Args:\n"
              u8"    T (float): Temperature (K).\n")
 
+        .def("Eps", &Material::Eps, (py::arg("lam"), py::arg("T")=300., py::arg("n")=0.),
+             u8"Get Hermitian permittivity tensor ε(λ) (-).\n\n"
+             u8"Args:\n"
+             u8"    lam (float): Wavelength (nm).\n"
+             u8"    T (float): Temperature (K).\n"
+             u8"    n (float): Injected carriers concentration (1/cm³).\n\n"
+             u8".. warning::\n"
+             u8"   This parameter is used only by solvers that can consider anisotropic\n"
+             u8"   Hermitian permittivity tensor properly. It is strongly advised to also define\n"
+             u8"   :meth:`~plask.material.Material.Nr`.\n")
+
         .def("chi", &Material::chi, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
              u8"Get electron affinity Chi (eV).\n\n"
              u8"Args:\n"
@@ -1441,17 +1452,6 @@ void initMaterials() {
              u8"    T (float): Temperature (K).\n"
              u8"    n (float): Injected carriers concentration (1/cm³).\n")
 
-        .def("NR", &Material::NR, (py::arg("lam"), py::arg("T")=300., py::arg("n")=0.),
-             u8"Get complex refractive index tensor Nr (-).\n\n"
-             u8"Args:\n"
-             u8"    lam (float): Wavelength (nm).\n"
-             u8"    T (float): Temperature (K).\n"
-             u8"    n (float): Injected carriers concentration (1/cm³).\n\n"
-             u8".. warning::\n"
-             u8"   This parameter is used only by solvers that can consider refractive index\n"
-             u8"   anisotropy properly. It is strongly advised to also define\n"
-             u8"   :meth:`~plask.material.Material.Nr`.\n")
-
         .def("y1", &Material::y1, u8"Get Luttinger parameter γ₁ (-).\n")
 
         .def("y2", &Material::y2, u8"Get Luttinger parameter γ₂ (-).\n")
@@ -1487,11 +1487,11 @@ void initMaterials() {
         ("_Constructor", py::no_init);
 
     py::def("_register_material_simple", &registerSimpleMaterial,
-            (py::arg("name"), "material", "base"),
+            (py::arg("name"), "material", py::arg("base")=py::object()),
             u8"Register new simple material class to the database");
 
     py::def("_register_material_alloy", &registerAlloyMaterial,
-            (py::arg("name"), "material", "base"),
+            (py::arg("name"), "material", py::arg("base")=py::object()),
             u8"Register new alloy material class to the database");
 
     #define REGISTER_CACHED_VALUE_GETTER(param) \
@@ -1535,7 +1535,7 @@ void initMaterials() {
     REGISTER_CACHED_VALUE_GETTER(nr);
     REGISTER_CACHED_VALUE_GETTER(absp);
     REGISTER_CACHED_VALUE_GETTER(Nr);
-    REGISTER_CACHED_VALUE_GETTER(NR);
+    REGISTER_CACHED_VALUE_GETTER(Eps);
     REGISTER_CACHED_VALUE_GETTER(mobe);
     REGISTER_CACHED_VALUE_GETTER(mobh);
     REGISTER_CACHED_VALUE_GETTER(taue);

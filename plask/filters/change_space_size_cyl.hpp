@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -50,7 +50,7 @@ struct DataFrom3DtoCyl2DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTy
             auto sum = data[index];
             for (std::size_t i = 1; i < point_count; ++i) sum += data[index+i];
 PLASK_NO_CONVERSION_WARNING_BEGIN
-            return PropertyT::value3Dto2D(sum / point_count);
+            return PropertyT::value3Dto2D(sum / double(point_count));
 PLASK_NO_WARNING_END
 		};
     }

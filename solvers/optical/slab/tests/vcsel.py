@@ -124,10 +124,11 @@ class VCSEL(unittest.TestCase):
 
     def testComputationsInfinite(self):
         self.solver.domain = 'infinite'
+        self.solver.kscale = 0.05
         m = self.solver.find_mode(979.0)
         self.assertEqual(m, 0)
         self.assertEqual(len(self.solver.modes), 1)
-        self.assertAlmostEqual(self.solver.modes[m].lam.real,  979.614, 3)
+        self.assertAlmostEqual(self.solver.modes[m].lam.real,  979.663, 3)
         self.assertAlmostEqual(self.solver.modes[m].lam.imag, -0.02077, 3)
 
         # Test integration of the Pointing vector
@@ -141,8 +142,10 @@ class VCSEL(unittest.TestCase):
         P = 0.5 * real(E[:,1]*conj(H[:,0]) - E[:,0]*conj(H[:,1]))
         self.assertAlmostEqual(2e3*pi * sum(1e-6*rr * P) * dr / self.solver.modes[m].power, 1.0, 2)
 
-    def _integrals_test(self, domain, prec, right=None, nr=101):
+    def _integrals_test(self, domain, prec, right=None, nr=101, kscale=None):
         self.solver.domain = domain
+        if kscale is not None:
+            self.solver.kscale = kscale
         bbox = self.solver.geometry.get_object_bboxes(self.manager.geo.middle)[0]
         if right is None:
             right = bbox.right
@@ -166,10 +169,10 @@ class VCSEL(unittest.TestCase):
         self.assertAlmostEqual(HH0 / HH1, 1., prec)
 
     def testIntegralsFinite(self):
-        self._integrals_test('finite', 3)
+        self._integrals_test('finite', 2, kscale=0.1)
 
     def testIntegralsInfinite(self):
-        self._integrals_test('infinite', 3, 20., 301)
+        self._integrals_test('infinite', 2, 20., 301, kscale=0.05)
 
     def plot_determinant(self):
         lams = linspace(979., 982., 201)

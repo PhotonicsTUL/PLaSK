@@ -1,5 +1,4 @@
 {
-    "cmake.buildDirectory" : "${workspaceFolder}/build/${variant:buildConfig}",
     "cmake.configureSettings": {
         "SHOW_EXTENDED_WARNINGS": false,
         "BLA_VENDOR": "Intel_64lp_seq",
@@ -9,18 +8,17 @@
         "--timeout",
         "120"
     ],
-    "C_Cpp.enhancedColorization": "Enabled",
+    "C_Cpp.enhancedColorization": "enabled",
     "restructuredtext.confPath": "${workspaceFolder}/doc",
-    "restructuredtext.builtDocumentationPath": "${workspaceFolder}/build/release/doc/html",
-    "python.linting.enabled": false,
+    "restructuredtext.builtDocumentationPath": "${command:cmake.buildDirectory}/doc/html",
     "cmakeExplorer.buildDir": "${buildDirectory}",
     "python.analysis.extraPaths": [
         "${workspaceFolder}",
         "${workspaceFolder}/gui/external/pysparkle",
-        "${workspaceFolder}/build/release/lib/plask/python",
-        "${workspaceFolder}/build/release/share/plask/stubs"
+        "${command:cmake.buildDirectory}/lib/plask/python",
+        "${command:cmake.buildDirectory}/share/plask/stubs"
     ],
-    "python.analysis.stubPath": "${workspaceFolder}/build/release/plask/stubs",
+    "python.analysis.stubPath": "${command:cmake.buildDirectory}/plask/stubs",
     "yaml.schemas": {
         "http://json-schema.org/draft-07/schema#": "${workspaceFolder}/doc/schema/solvers.yaml",
         "file:///${workspaceFolder}/doc/schema/solvers.json": "solvers.yml"

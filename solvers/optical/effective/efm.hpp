@@ -597,7 +597,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     const LazyData<Vec<3,dcomplex>> getElectricField(std::size_t num, const shared_ptr<const plask::MeshD<2>>& dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get used refractive index
-    const LazyData<Tensor3<dcomplex>> getRefractiveIndex(const shared_ptr<const MeshD<2> >& dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);
+    const LazyData<dcomplex> getRefractiveIndex(const shared_ptr<const MeshD<2> >& dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get generated/absorbed heat
     const LazyData<double> getHeat(const shared_ptr<const MeshD<2> > &dst_mesh, InterpolationMethod method=INTERPOLATION_DEFAULT);

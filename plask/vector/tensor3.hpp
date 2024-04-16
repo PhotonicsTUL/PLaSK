@@ -487,17 +487,17 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(Tensor3<double>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Tensor3< std::complex<double> >)
 */
 
-}  // namespace plask
-
-namespace std {
-
-template <typename T> plask::Tensor3<T> pow(plask::Tensor3<T> tens, int n) { return tens.pow(n); }
-
 template <typename T>
 inline bool isnan(plask::Tensor3<T> tens) {
     return isnan(tens.c00) || isnan(tens.c01) || isnan(tens.c02) || isnan(tens.c10) || isnan(tens.c11) || isnan(tens.c12) ||
            isnan(tens.c20) || isnan(tens.c21) || isnan(tens.c22);
 }
+
+}  // namespace plask
+
+namespace std {
+
+template <typename T> plask::Tensor3<T> pow(plask::Tensor3<T> tens, int n) { return tens.pow(n); }
 
 }  // namespace std
 

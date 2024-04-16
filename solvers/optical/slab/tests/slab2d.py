@@ -113,7 +113,7 @@ for i in range(-4, 5):
 NR = [main.get_material(x, 0.5*h).nr(opt.wavelength.real).real for x in XX]
 plot(XX, NR, '--k')
 
-NR = opt.outRefractiveIndex(msh)
+NR = opt.outEpsilon(msh)
 plot(XX, NR.array[:,0,0].real, 'g')
 plot(XX, NR.array[:,0,1].real, 'r', label='Fourier')
 

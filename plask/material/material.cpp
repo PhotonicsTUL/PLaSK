@@ -218,8 +218,9 @@ double Material::nr(double /*lam*/, double /*T*/, double /*n*/) const { throwNot
 
 dcomplex Material::Nr(double lam, double T, double n) const { return dcomplex(nr(lam,T, n), -7.95774715459e-09*absp(lam,T)*lam); }
 
-Tensor3<dcomplex> Material::NR(double lam, double T, double n) const {
-    return Nr(lam, T, n);
+Tensor3<dcomplex> Material::Eps(double lam, double T, double n) const {
+    dcomplex nr = Nr(lam, T, n);
+    return nr * nr;
 }
 
 bool Material::operator ==(const Material &other) const {

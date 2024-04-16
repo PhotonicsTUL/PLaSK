@@ -172,7 +172,7 @@ namespace cereal
       T * operator->()
       {
         if( !itsValid )
-          throw Exception("object must be initialized prior to accessing members");
+            throw Exception("object must be initialized prior to accessing members");
 
         return itsPtr;
       }

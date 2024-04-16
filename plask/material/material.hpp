@@ -589,6 +589,15 @@ struct PLASK_API Material {
     virtual double eps(double T) const;
 
     /**
+     * Get Hermitian permittivity tensor ε (-).
+     * @param lam Wavelength (nm)
+     * @param T temperature (K)
+     * @param n injected carriers concentration (1/cm)
+     * @return permittivity index tensor Eps(-)
+     */
+    virtual Tensor3<dcomplex> Eps(double lam, double T, double n = 0) const;
+
+    /**
      * Get electron affinity Chi(eV).
      * @param T temperature (K)
      * @param e lateral strain (-)
@@ -720,19 +729,6 @@ struct PLASK_API Material {
      * @return refractive index Nr(-)
      */
     virtual dcomplex Nr(double lam, double T, double n = 0) const;
-
-    /**
-     * Get anisotropic refractive index tensor NR (-).
-     * Tensor must have the form \f$ \left[\begin{array}{ccc} n_{0} & n_{3} & 0\\ n_{4} & n_{1} & 0\\ 0 & 0 & n_{2} \end{array}\right] \f$,
-     * where \f$ n_i \f$ is i-th object of the returned tuple.
-     * @param lam Wavelength (nm)
-     * @param T temperature (K)
-     * @param n injected carriers concentration (1/cm)
-     * @return refractive index tensor NR(-)
-     */
-    virtual Tensor3<dcomplex> NR(double lam, double T, double n = 0) const;
-
-    // #330:
 
     /**
      * Get electron mobility in-plane (lateral) and cross-plane (vertical) direction [cm^2/(V*s)].
@@ -986,6 +982,7 @@ struct PLASK_API MaterialCache {
     plask::optional<double> c12;
     plask::optional<double> c44;
     plask::optional<double> eps;
+    plask::optional<Tensor3<dcomplex>> Eps;
     plask::optional<double> chi;
     plask::optional<double> Na;
     plask::optional<double> Nd;
@@ -1005,7 +1002,6 @@ struct PLASK_API MaterialCache {
     plask::optional<double> nr;
     plask::optional<double> absp;
     plask::optional<dcomplex> Nr;
-    plask::optional<Tensor3<dcomplex>> NR;
     plask::optional<Tensor2<double>> mobe;
     plask::optional<Tensor2<double>> mobh;
     plask::optional<double> taue;
@@ -1061,7 +1057,7 @@ struct PLASK_API MaterialCache {
             nr == other.nr &&
             absp == other.absp &&
             Nr == other.Nr &&
-            NR == other.NR &&
+            Eps == other.Eps &&
             mobe == other.mobe &&
             mobh == other.mobh &&
             taue == other.taue &&

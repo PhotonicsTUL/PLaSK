@@ -1132,7 +1132,18 @@
 
   - *threshold-output
 
-  providers: *threshold-providers
+  providers:
+  - outTemperature
+  - outHeatFlux
+  - outThermalConductivity
+  - outVoltage
+  - outCurrentDensity
+  - outCurrentDensity
+  - outHeat
+  - outConductivity
+  - outLightMagnitude
+  - outLightE
+  - outEpsilon
 
 ###########################################################################################
 

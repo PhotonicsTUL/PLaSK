@@ -69,11 +69,12 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
         Coeff(const dcomplex& val): c22(val),
             c00(val), ic00((val != 0.)? 1. / val : 0.),
             c11(val), ic11((val != 0.)? 1. / val : 0.),
-            c01(val) {}
-        Coeff(const Tensor3<dcomplex>& eps): c22(eps.c22),
-            c00(eps.c00), ic00((eps.c00 != 0.)? 1. / eps.c00 : 0.),
-            c11(eps.c11), ic11((eps.c11 != 0.)? 1. / eps.c11 : 0.),
-            c01(eps.c01) {}
+            c01(0.) {}
+        Coeff(const Tensor3<dcomplex>& eps): c22(eps.c22), c00(eps.c00), c11(eps.c11), c01(eps.c01) {
+            dcomplex det = eps.c00 * eps.c11 - eps.c01 * conj(eps.c01);
+            ic00 = (det != 0.)? eps.c11 / det : 0.;
+            ic11 = (det != 0.)? eps.c00 / det : 0.;
+        }
         Coeff& operator*=(dcomplex a) {
             c22 *= a; c00 *= a; ic00 *= a; c11 *= a; ic11 *= a; c01 *= a;
             return *this;
@@ -89,7 +90,11 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
             return !(is_zero(other.c22-c22) && is_zero(other.c00-c00) && is_zero(other.c11-c11) && is_zero(other.c01-c01));
         }
         operator Tensor3<dcomplex>() const { return Tensor3<dcomplex>(c00, c11, c22, c01); }
-        Tensor3<dcomplex> toInverseTensor() const { return Tensor3<dcomplex>(ic00, ic11, c22, c01); }
+
+        Tensor3<dcomplex> toInverseTensor() const {
+            return Tensor3<dcomplex>(ic00, ic11, c22, c01);
+            // return Tensor3<dcomplex>(ic00, ic11, c22, -c01 / (c00 * c11 - c01 * conj(c01)));
+        }
     };
 
     /// Cached permittivity expansion coefficients
@@ -167,7 +172,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
                                        const shared_ptr<const typename LevelsAdapter::Level>& level,
                                        const cvector& E, const cvector& H) override;
 
-    LazyData<Tensor3<dcomplex>> getMaterialNR(size_t lay,
+    LazyData<Tensor3<dcomplex>> getMaterialEps(size_t lay,
                                               const shared_ptr<const typename LevelsAdapter::Level>& level,
                                               InterpolationMethod interp) override;
 

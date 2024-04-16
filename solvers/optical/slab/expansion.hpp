@@ -101,12 +101,12 @@ struct PLASK_SOLVER_API Expansion {
   public:
 
     /// Prepare retrieval of refractive index
-    virtual void beforeGetRefractiveIndex() {
+    virtual void beforeGetEpsilon() {
         computeIntegrals();
     }
 
     /// Finish retrieval of refractive index
-    virtual void afterGetRefractiveIndex() {}
+    virtual void afterGetEpsilon() {}
 
     /// Get lam0
     double getLam0() const { return lam0; }
@@ -214,17 +214,17 @@ struct PLASK_SOLVER_API Expansion {
     virtual void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) = 0;
 
     /**
-     * Get refractive index back from expansion
+     * Get epsilons index back from expansion
      * \param lay layer number
      * \param mesh mesh to get parameters to
      * \param interp interpolation method
      * \return computed refractive indices
      */
-    virtual LazyData<Tensor3<dcomplex>> getMaterialNR(size_t lay,
-                                                      const shared_ptr<const typename LevelsAdapter::Level> &level,
-                                                      InterpolationMethod interp) = 0;
+    virtual LazyData<Tensor3<dcomplex>> getMaterialEps(size_t lay,
+                                                       const shared_ptr<const typename LevelsAdapter::Level> &level,
+                                                       InterpolationMethod interp) = 0;
     /**
-     * Get eigenvectors with some physical meaing when the layer is diagonal
+     * Get eigenvectors with some physical meaning when the layer is diagonal
      * \param[out] Te Resulting Te matrix
      * \param[out] Te1 Resulting Te^1 matrix
      * \param RE RE matrix for the layer

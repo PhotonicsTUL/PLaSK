@@ -363,7 +363,7 @@
   - outLightMagnitude
   - outLightE
   - outLightH
-  - outRefractiveIndex
+  - outEpsilon
   - outNeff
 
   receivers: &receivers
@@ -624,7 +624,7 @@
   - outElectricField: LightE
   - outLightH
   - outMagneticField: LightH
-  - outRefractiveIndex
+  - outEpsilon
 
   receivers: *receivers
 
@@ -798,7 +798,7 @@
   - outUpwardsLightH: LightH
   - outDownwardsLightE: LightE
   - outDownwardsLightH: LightH
-  - outRefractiveIndex
+  - outEpsilon
   - outWavelength
 
   receivers: *receivers

@@ -274,7 +274,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         double factor = 1. / double(refine);
 
         double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
-        Tensor3<dcomplex> refl, refr;
+        Tensor3<dcomplex> epsl, epsr;
         if (!periodic) {
             double Tl = 0., Tr = 0., totalw = 0.;
             for (size_t i = 0, vl = pil * solver->verts->size(), vr = pir * solver->verts->size(); i != mesh->vert()->size(); ++vl, ++vr, ++i) {
@@ -288,17 +288,17 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 OmpLockGuard<OmpNestLock> lock; // this must be declared before `material` to guard its destruction
                 auto material = geometry->getMaterial(vec(pl,maty));
                 lock = material->lock();
-                refl = geometry->getMaterial(vec(pl,maty))->NR(lam, Tl).sqr();
-                if (isnan(refl.c00) || isnan(refl.c11) || isnan(refl.c22) || isnan(refl.c01))
-                    throw BadInput(solver->getId(), "complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
+                epsl = geometry->getMaterial(vec(pl,maty))->Eps(lam, Tl);
+                if (isnan(epsl))
+                    throw BadInput(solver->getId(), "complex permittivity tensor (Eps) for {} is NaN at lam={}nm and T={}K",
                                    material->name(), lam, Tl);
             }{
                 OmpLockGuard<OmpNestLock> lock; // this must be declared before `material` to guard its destruction
                 auto material = geometry->getMaterial(vec(pr,maty));
                 lock = material->lock();
-                refr = geometry->getMaterial(vec(pr,maty))->NR(lam, Tr).sqr();
-                if (isnan(refr.c00) || isnan(refr.c11) || isnan(refr.c22) || isnan(refr.c01))
-                    throw BadInput(solver->getId(), "complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
+                epsr = geometry->getMaterial(vec(pr,maty))->Eps(lam, Tr);
+                if (isnan(epsr))
+                    throw BadInput(solver->getId(), "complex permittivity tensor (Eps) for {} is NaN at lam={}nm and T={}K",
                                    material->name(), lam, Tr);
             }
         }
@@ -321,30 +321,32 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                     if (j < pil) {
                         double h = (pl - mesh->tran()->at(j)) / SOLVER->pml.size;
                         dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
-                        eps = Tensor3<dcomplex>(refl.c00*sy, refl.c11/sy, refl.c22*sy);
+                        eps = Tensor3<dcomplex>(epsl.c00*sy, epsl.c11/sy, epsl.c22*sy);
                     } else if (j > pir) {
                         double h = (mesh->tran()->at(j) - pr) / SOLVER->pml.size;
                         dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
-                        eps = Tensor3<dcomplex>(refr.c00*sy, refr.c11/sy, refr.c22*sy);
+                        eps = Tensor3<dcomplex>(epsr.c00*sy, epsr.c11/sy, epsr.c22*sy);
                     }
                 }
 
                 if (polarization == E_LONG) {
                     if (eps.c01 != 0.)
-                        throw BadInput(solver->getId(), "polarization can be specified only for diagonal refractive index tensor (NR)");
+                        throw BadInput(solver->getId(), "polarization can be specified only for diagonal complex permittivity tensor (Eps)");
                     coeffs[layer].zz[i] += eps.c00;
                 } else if (polarization == E_TRAN) {
                     if (eps.c01 != 0.)
-                        throw BadInput(solver->getId(), "polarization can be specified only for diagonal refractive index tensor (NR)");
+                        throw BadInput(solver->getId(), "polarization can be specified only for diagonal complex permittivity tensor (Eps)");
                     coeffs[layer].rxx[i] += 1./eps.c11;
                     coeffs[layer].yy[i] += eps.c22;
                 } else {
                     dcomplex rm;
                     bool nd = false;
-                    if (eps.c01 != 0.) {
+                    if (eps.c01 != 0. || eps.c10 != 0.) {
+                        if (!is_zero(eps.c01 - conj(eps.c10)))
+                            throw BadInput(solver->getId(), "complex permittivity tensor (Eps) must be Hermitian for this solver");
                         if (epsilon_diagonal) {
                             if (symmetric())
-                                throw BadInput(solver->getId(), "symmetry can be specified only for diagonal refractive index tensor (NR)");
+                                throw BadInput(solver->getId(), "symmetry can be specified only for diagonal complex permittivity tensor (Eps)");
                             coeffs[layer].zx.reset(nN, 0.);
                             epsilon_diagonal = false;
                         }
@@ -479,7 +481,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         dcomplex rm;
         if (nd) {
             if (polarization != E_UNSPECIFIED)
-                throw BadInput(solver->getId(), "polarization can be specified only for diagonal refractive index tensor (NR)");
+                throw BadInput(solver->getId(), "polarization can be specified only for diagonal complex permittivity tensor (Eps)");
             rm = 1. / (eps0.c00*eps0.c11 - eps0.c01.real()*eps0.c01.real() - eps0.c01.imag()*eps0.c01.imag());
         }
         const Tensor3<dcomplex> reps0 = nd? Tensor3<dcomplex>(rm*eps0.c11, rm*eps0.c00, 1./eps0.c22, -rm*eps0.c01) :
@@ -513,7 +515,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 nd = eps.c01 != 0.;
                 if (nd) {
                     if (polarization != E_UNSPECIFIED)
-                        throw BadInput(solver->getId(), "polarization can be specified only for diagonal refractive index tensor (NR)");
+                        throw BadInput(solver->getId(), "polarization can be specified only for diagonal complex permittivity tensor (Eps)");
                     rm = 1. / (eps.c00*eps.c11 - eps.c01.real()*eps.c01.real() - eps.c01.imag()*eps.c01.imag());
                     Tensor3<dcomplex>(rm*eps.c11, rm*eps.c00, 1./eps.c22, -rm*eps.c01);
                 } else
@@ -539,7 +541,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                     if (eps.c01 != 0.) {
                         if (epsilon_diagonal) {
                             if (symmetric())
-                                throw BadInput(solver->getId(), "symmetry can be specified only for diagonal refractive index tensor (NR)");
+                                throw BadInput(solver->getId(), "symmetry can be specified only for diagonal complex permittivity tensor (Eps)");
                             coeffs[layer].zx.reset(nN, 0.);
                             epsilon_diagonal = false;
                         }
@@ -629,7 +631,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
 }
 
 
-LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_ptr<const LevelsAdapter::Level> &level, InterpolationMethod interp)
+LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialEps(size_t l, const shared_ptr<const LevelsAdapter::Level> &level, InterpolationMethod interp)
 {
     assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
     auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
@@ -665,7 +667,6 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
                     case E_UNSPECIFIED:
                         eps.c11 = 1. / eps.c11;
                 }
-                eps.sqrt_inplace();
                 return eps;
             });
         } else {
@@ -697,19 +698,17 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
                     case E_UNSPECIFIED:
                         eps.c11 = 1. / eps.c11;
                 }
-                eps.sqrt_inplace();
                 return eps;
             });
         }
     } else {
-        DataVector<Tensor3<dcomplex>> params(symmetric()? nN : nN+1);
-        FFT::Backward1D fft(4, int(nN), symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE);
+        DataVector<Tensor3<dcomplex>> params(symmetric()? nN : nN+1, Tensor3<dcomplex>(0.));
+        FFT::Backward1D fft(9, int(nN), symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE);
         if (symmetry == E_LONG) {
             for (size_t i = 0; i != nN; ++i) params[i].c00 = coeffs[l].zz[i];
             fft.execute(reinterpret_cast<dcomplex*>(params.data(), 1));
             for (Tensor3<dcomplex>& eps: params) {
                 eps.c22 = eps.c11 = eps.c00;
-                eps.sqrt_inplace();
             }
         } else {
             for (size_t i = 0; i != nN; ++i) {
@@ -721,21 +720,18 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
             if (coeffs[l].zx) {
                 for (size_t i = 0; i != nN; ++i) params[i].c01 = coeffs[l].zx[i];
                 fft.execute(reinterpret_cast<dcomplex*>(params.data())+3, 1);
-            } else {
-                for (size_t i = 0; i != nN; ++i) params[i].c01 = 0.;
+                for (size_t i = 0; i != nN; ++i) params[i].c10 = conj(params[i].c01);
             }
             if (symmetry == E_TRAN || coeffs[l].zz.data() == coeffs[l].yy.data()) {
                 for (Tensor3<dcomplex>& eps: params) {
                     eps.c00 = eps.c22;
                     eps.c11 = 1. / eps.c11;
-                    eps.sqrt_inplace();
                 }
             } else {
                 for (size_t i = 0; i != nN; ++i) params[i].c00 = coeffs[l].zz[i];
                 fft.execute(reinterpret_cast<dcomplex*>(params.data()), 1);
                 for (Tensor3<dcomplex>& eps: params) {
                     eps.c11 = 1. / eps.c11;
-                    eps.sqrt_inplace();
                 }
             }
         }

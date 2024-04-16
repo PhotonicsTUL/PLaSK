@@ -84,7 +84,7 @@ def show_plots(solver, direction, title=None, sep=False):
     ylabel('reflectivity/transmittivity [%]')
     ylim(0,100)
     legend(loc='best')
-    f.canvas.set_window_title((direction if title is None else title).title())
+    plask.window_title((direction if title is None else title).title())
 
 
 class FresnelTest(unittest.TestCase):

@@ -187,8 +187,8 @@ def export_geometry(geo, materials=None):
                 if n.imag == 0: nr.text = str(n.real)
                 else: nr.text = str(n)[1:-1]
             else:
-                nr = etree.SubElement(new_material, "NR")
-                nr.text = ', '.join(str(sqrt(e)) for e in eps)
+                nr = etree.SubElement(new_material, "Eps")
+                nr.text = ', '.join(str(e) for e in eps)
             materials.append(new_material)
         return mat
 

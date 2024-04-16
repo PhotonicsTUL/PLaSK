@@ -9,7 +9,7 @@
 
 <materials>
   <material name="GaAs" base="GaAs">
-    <NR>3.5, 3.6, 3.5, 0</NR>
+    <Eps>3.5**2, 3.6**2, 3.5**2</Eps>
   </material>
 </materials>
 

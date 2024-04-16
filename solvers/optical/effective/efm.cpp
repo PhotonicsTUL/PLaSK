@@ -126,6 +126,7 @@ size_t EffectiveFrequencyCyl::findMode(dcomplex lambda, int m)
 std::vector<size_t> EffectiveFrequencyCyl::findModes(dcomplex lambda1, dcomplex lambda2, int m, size_t resteps, size_t imsteps, dcomplex eps)
 {
     if (isnan(k0.real())) throw BadInput(getId(), "no reference wavelength `lam0` specified");
+    if (isnan(k0.real())) throw BadInput(getId(), "no reference wavelength `lam0` specified");
     stageOne();
 
     if ((real(lambda1) == 0. && real(lambda2) != 0.) || (real(lambda1) != 0. && real(lambda2) == 0.))
@@ -1068,18 +1069,18 @@ const LazyData<Vec<3,dcomplex>> EffectiveFrequencyCyl::getElectricField(std::siz
         return LazyData<Vec<3,dcomplex>>(new FieldDataInefficient<Vec<3,dcomplex>>(this, num, dst_mesh, stripe));
 }
 
-const LazyData<Tensor3<dcomplex>> EffectiveFrequencyCyl::getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod)
+const LazyData<dcomplex> EffectiveFrequencyCyl::getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod)
 {
     this->writelog(LOG_DEBUG, "Getting refractive indices");
     dcomplex lam0 = 2e3*PI / k0;
     updateCache();
     InterpolationFlags flags(geometry);
-    return LazyData<Tensor3<dcomplex>>(dst_mesh->size(),
-        [this, dst_mesh, flags, lam0](size_t j) -> Tensor3<dcomplex> {
+    return LazyData<dcomplex>(dst_mesh->size(),
+        [this, dst_mesh, flags, lam0](size_t j) -> dcomplex {
             auto point = flags.wrap(dst_mesh->at(j));
             size_t ir = this->mesh->axis[0]->findIndex(point.c0); if (ir != 0) --ir; if (ir >= this->rsize) ir = this->rsize-1;
             size_t iz = this->mesh->axis[1]->findIndex(point.c1); if (iz < this->zbegin) iz = this->zbegin; else if (iz >= zsize) iz = this->zsize-1;
-            return Tensor3<dcomplex>(this->nrCache[ir][iz]/* + this->ngCache[ir][iz] * (1. - lam/lam0)*/);
+            return this->nrCache[ir][iz]/* + this->ngCache[ir][iz] * (1. - lam/lam0)*/;
         }
     );
 }

@@ -2220,7 +2220,7 @@ class system_error : public std::runtime_error {
      const char *filename = "madeup";
      std::FILE *file = std::fopen(filename, "r");
      if (!file)
-       throw fmt::system_error(errno, "cannot open file '{}'", filename);
+        throw fmt::system_error(errno, "cannot open file '{}'", filename);
    \endrst
   */
   template <typename... Args>
@@ -2791,7 +2791,7 @@ class windows_error : public system_error {
      LPOFSTRUCT of = LPOFSTRUCT();
      HFILE file = OpenFile(filename, &of, OF_READ);
      if (file == HFILE_ERROR) {
-       throw fmt::windows_error(GetLastError(),
+        throw fmt::windows_error(GetLastError(),
                                 "cannot open file '{}'", filename);
      }
    \endrst

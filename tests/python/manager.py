@@ -15,6 +15,7 @@ import unittest
 import sys
 
 import plask
+from plask import material
 
 
 class ManagerTest(unittest.TestCase):
@@ -196,7 +197,7 @@ class ManagerTest(unittest.TestCase):
         mat = plask.material.XmlMat()
         self.assertAlmostEqual(mat.nr(900, 300), 1.39)
         self.assertAlmostEqual(mat.Nr(900, 300), 1.39-7.16197244e-06j)
-        self.assertEqual(tuple(plask.material.XmlMatSimple().NR(900, 300)), (3.5, 3.5, 3.5, 0.))
+        self.assertEqual(tuple(plask.material.XmlMatSimple().Eps(900, 300)), (12.25, 12.25, 12.25, 0., 0., 0., 0., 0., 0.))
 
 
         mad = plask.material.XmlMat(dopant="Mg", doping=1e18)

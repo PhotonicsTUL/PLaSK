@@ -584,7 +584,12 @@ def plot_optical(suffix=''):
         if presentation:
             ylabel("Light intensity [a.u.]")
         twinx()
-        nr = OPTICAL.outRefractiveIndex(mesh.Rectangular2D([0.01], vm))
+        try:
+            nr = OPTICAL.outRefractiveIndex(mesh.Rectangular2D([0.01], vm))
+        except AttributeError:
+            eps = OPTICAL.outEpsilon(mesh.Rectangular2D([0.01], vm))
+            nr = Data(eps.array[:,:,0,0]**0.5, eps.mesh)
+
         plot_profile(nr, color=color_cycle[4], comp='rr', alpha=0.5)
         ylim(0.95, 3.55)
 

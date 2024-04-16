@@ -47,7 +47,7 @@ See also:
 
    Provider class: :class:`plask.flow.LightMagnitudeProviderCyl`
 
-   Receciver class: :class:`plask.flow.LightMagnitudeReceiverCyl`
+   Receiver class: :class:`plask.flow.LightMagnitudeReceiverCyl`
 """
 
 outLoss = """\
@@ -82,7 +82,7 @@ See also:
 
    Provider class: :class:`plask.flow.ModalLossProvider`
 
-   Receciver class: :class:`plask.flow.ModalLossReceiver`
+   Receiver class: :class:`plask.flow.ModalLossReceiver`
 """
 
 outWavelength = """\
@@ -117,7 +117,7 @@ See also:
 
    Provider class: :class:`plask.flow.WavelengthProvider`
 
-   Receciver class: :class:`plask.flow.WavelengthReceiver`
+   Receiver class: :class:`plask.flow.WavelengthReceiver`
 """
 
 outRefractiveIndex = """\
@@ -145,7 +145,35 @@ See also:
 
    Provider class: :class:`plask.flow.RefractiveIndexProviderCyl`
 
-   Receciver class: :class:`plask.flow.RefractiveIndexReceiverCyl`
+   Receiver class: :class:`plask.flow.RefractiveIndexReceiverCyl`
+"""
+
+outEpsilon = """\
+Provider of the computed permittivity tensor (-).
+
+
+outEpsilon(mesh, interpolation='default')
+
+:param mesh mesh: Target mesh to get the field at.
+:param str interpolation: Requested interpolation method.
+
+:return: Data with the permittivity tensor on the specified mesh **(-)**.
+
+Example:
+   Connect the provider to a receiver in some other solver:
+
+   >>> other_solver.inEpsilon = solver.outEpsilon
+
+   Obtain the provided field:
+
+   >>> solver.outEpsilon(mesh)
+   <plask.Data at 0x1234567>
+
+See also:
+
+   Provider class: :class:`plask.flow.EpsilonProviderCyl`
+
+   Receiver class: :class:`plask.flow.EpsilonReceiverCyl`
 """
 
 outLightE = """\
@@ -182,7 +210,7 @@ See also:
 
    Provider class: :class:`plask.flow.LightEProvider2D`
 
-   Receciver class: :class:`plask.flow.LightEReceiver2D`
+   Receiver class: :class:`plask.flow.LightEReceiver2D`
 """
 
 outNeff = """\
@@ -217,5 +245,5 @@ See also:
 
    Provider class: :class:`plask.flow.EffectiveIndexProvider`
 
-   Receciver class: :class:`plask.flow.EffectiveIndexReceiver`
+   Receiver class: :class:`plask.flow.EffectiveIndexReceiver`
 """
