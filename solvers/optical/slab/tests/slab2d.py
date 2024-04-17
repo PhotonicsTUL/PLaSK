@@ -110,12 +110,12 @@ msh = mesh.Rectangular2D(XX, [0.5*h])
 for i in range(-4, 5):
     axvline((wn+wa)*i, color='0.75')
 
-NR = [main.get_material(x, 0.5*h).nr(opt.wavelength.real).real for x in XX]
-plot(XX, NR, '--k')
+eps = [main.get_material(x, 0.5*h).nr(opt.wavelength.real).real**2 for x in XX]
+plot(XX, eps, '--k')
 
-NR = opt.outEpsilon(msh)
-plot(XX, NR.array[:,0,0].real, 'g')
-plot(XX, NR.array[:,0,1].real, 'r', label='Fourier')
+eps = opt.outEpsilon(msh)
+plot(XX, eps.array[:,0,0,0].real, 'g')
+plot(XX, eps.array[:,0,1,1].real, 'r', label='Fourier')
 
 
 

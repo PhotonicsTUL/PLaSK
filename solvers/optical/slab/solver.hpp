@@ -15,9 +15,9 @@
 #define PLASK__SOLVER_SLAB_SOLVER_H
 
 #include <plask/plask.hpp>
-#include "solverbase.hpp"
 #include "expansion.hpp"
 #include "rootdigger.hpp"
+#include "solverbase.hpp"
 #include "transfer.hpp"
 
 #undef interface
@@ -73,7 +73,6 @@ template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, publ
     double smooth;
 
   public:
-
     /// Receiver for the temperature
     ReceiverFor<Temperature, typename BaseT::SpaceType> inTemperature;
 
@@ -83,8 +82,11 @@ template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, publ
     /// Receiver for carriers concentration
     ReceiverFor<CarriersConcentration, typename BaseT::SpaceType> inCarriersConcentration;
 
-    /// Provider of the refractive index
+    /// Provider of the permittivity tensor
     typename ProviderFor<Epsilon, typename BaseT::SpaceType>::Delegate outEpsilon;
+
+    /// Provider of the refractive index
+    typename ProviderFor<RefractiveIndex, typename BaseT::SpaceType>::Delegate outRefractiveIndex;
 
     /// Provider for computed resonant wavelength
     typename ProviderFor<ModeWavelength>::Delegate outWavelength;
@@ -228,8 +230,10 @@ template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, publ
         return transfer->determinant();
     }
 
-    void prepareExpansionIntegrals(Expansion* expansion, const shared_ptr<MeshD<BaseT::SpaceType::DIM>>& mesh,
-                                   double lam, double glam) {
+    void prepareExpansionIntegrals(Expansion* expansion,
+                                   const shared_ptr<MeshD<BaseT::SpaceType::DIM>>& mesh,
+                                   double lam,
+                                   double glam) {
         expansion->temperature = inTemperature(mesh);
         expansion->gain_connected = inGain.hasProvider();
         if (expansion->gain_connected) {
@@ -247,7 +251,7 @@ template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, publ
      * \param lam indicent wavelength
      * \return incident field vector
      */
-    cvector incidentVector(Transfer::IncidentDirection side, size_t idx, dcomplex lam=NAN);
+    cvector incidentVector(Transfer::IncidentDirection side, size_t idx, dcomplex lam = NAN);
 
     /**
      * Get incident field vector for given polarization.
@@ -256,12 +260,11 @@ template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, publ
      * \param lam indicent wavelength
      * \return incident field vector
      */
-    cvector incidentVector(Transfer::IncidentDirection side, const cvector& incident, dcomplex lam=NAN);
+    cvector incidentVector(Transfer::IncidentDirection side, const cvector& incident, dcomplex lam = NAN);
 
   protected:
-
     // Initialize the incident field vector
-    size_t initIncidence(Transfer::IncidentDirection side, dcomplex lam=NAN);
+    size_t initIncidence(Transfer::IncidentDirection side, dcomplex lam = NAN);
 
     /// Scale the incident field vector with scale specific to the solver
     void scaleIncidentVector(cvector& incident, size_t layer);
@@ -278,12 +281,21 @@ template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, publ
     virtual double applyMode(size_t n) = 0;
 
     /**
-     * Get refractive index after expansion
+     * Get permittivity tensor after expansion
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
     DataVector<const Tensor3<dcomplex>> getEpsilonProfile(const shared_ptr<const MeshD<BaseT::SpaceType::DIM>>& dst_mesh,
-                                                                  InterpolationMethod interp = INTERPOLATION_DEFAULT);
+                                                          InterpolationMethod interp = INTERPOLATION_DEFAULT);
+
+    /**
+     * Get refractive index after expansion
+     * \param dst_mesh target mesh
+     * \param method interpolation method
+     */
+    LazyData<dcomplex> getRefractiveIndex(RefractiveIndex::EnumType component,
+                                          const shared_ptr<const MeshD<BaseT::SpaceType::DIM>>& dst_mesh,
+                                          InterpolationMethod interp = INTERPOLATION_DEFAULT);
 
     /**
      * Compute electric field

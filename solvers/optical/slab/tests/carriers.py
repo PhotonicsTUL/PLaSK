@@ -23,6 +23,7 @@ from plask.geometry import Cartesian2D, Cartesian3D, Cylindrical
 from optical.slab import *
 from electrical.diffusion import Diffusion2D, DiffusionCyl
 
+config.axes = 'xyz'
 
 @material.simple('GaAs')
 class Conc(material.Material):
@@ -77,8 +78,7 @@ class CarriersTest:
         self.test_mesh = mesh.Rectangular2D([0.0], [0.050, 0.104, 0.158])
 
     def test_no_carriers(self):
-        eps = self.solver.outEpsilon(self.test_mesh).array[...,0,0].flatten().real
-        assert_array_almost_equal(eps, [9.0, 9.0, 9.0], 4)
+        assert_array_almost_equal(self.solver.outRefractiveIndex(self.test_mesh).array.real, 3.0, 4)
 
     def test_carriers(self):
         diffusion = self.Diffusion('diffusion')

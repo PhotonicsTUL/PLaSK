@@ -14,6 +14,7 @@
 import unittest
 
 from numpy import *
+from numpy.testing import assert_array_almost_equal
 
 from plask import *
 from plask import material, geometry, mesh
@@ -115,3 +116,43 @@ class MergeTestTest(unittest.TestCase):
       stack = list(self.solver.stack)
       print(stack)
       self.assertEqual(stack, [0, 1, 1, 0])
+
+
+class TestAnisotropic(unittest.TestCase):
+
+    def setUp(self):
+        plask.config.axes = 'xyz'
+        self.manager = plask.Manager()
+        self.manager.load('''
+          <plask>
+            <materials>
+              <material name="Anisotropic" base="semiconductor">
+                <Eps>1, 4, 9</Eps>
+              </material>
+            </materials>
+            <geometry>
+              <cartesian2d axes="yz" name="test" left="mirror" right="periodic">
+                <block dy="10" dz="10" material="Anisotropic"/>
+              </cartesian2d>
+            </geometry>
+            <solvers>
+              <optical name="solver" solver="Fourier2D">
+                <geometry ref="test"/>
+              </optical>
+            </solvers>
+          </plask>''')
+        self.solver = self.manager.solvers.solver
+        self.solver.wavelength = 1000.
+        self.mesh = mesh.Rectangular2D([5.0], [5.0])
+
+    def testEpsilon(self):
+      assert_array_almost_equal(diag([1.,4.,9.]), self.solver.outEpsilon(self.mesh)[0])
+
+    def testRefractiveIndex(self):
+      self.assertAlmostEqual(3., self.solver.outRefractiveIndex(self.mesh)[0])
+      self.assertAlmostEqual(1., self.solver.outRefractiveIndex('ll', self.mesh)[0])
+      self.assertAlmostEqual(2., self.solver.outRefractiveIndex('tt', self.mesh)[0])
+      self.assertAlmostEqual(3., self.solver.outRefractiveIndex('vv', self.mesh)[0])
+      self.assertAlmostEqual(1., self.solver.outRefractiveIndex('xx', self.mesh)[0])
+      self.assertAlmostEqual(2., self.solver.outRefractiveIndex('yy', self.mesh)[0])
+      self.assertAlmostEqual(3., self.solver.outRefractiveIndex('zz', self.mesh)[0])

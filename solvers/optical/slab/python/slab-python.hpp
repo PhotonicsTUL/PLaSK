@@ -1152,6 +1152,7 @@ inline void export_base(Class solver) {
     solver.template add_receiver<ReceiverFor<Gain, typename Solver::SpaceType>, Solver>("inGain", &Solver::inGain, "");
     solver.template add_receiver<ReceiverFor<CarriersConcentration, typename Solver::SpaceType>, Solver>("inCarriersConcentration", &Solver::inCarriersConcentration, "");
     solver.add_provider("outEpsilon", &Solver::outEpsilon, "");
+    solver.add_provider("outRefractiveIndex", &Solver::outRefractiveIndex, "");
     solver.add_provider("outWavelength", &Solver::outWavelength, "");
     solver.add_provider("outLightMagnitude", &Solver::outLightMagnitude, "");
     solver.add_provider("outLightE", &Solver::outLightE, "");

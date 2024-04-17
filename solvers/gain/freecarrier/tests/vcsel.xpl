@@ -345,7 +345,7 @@ zqw = GEO.main.get_object_bboxes(GEO.QW)[0].center.z
 olams = linspace(1280, 1320, 241)
 glams = linspace(1280, 1320, 241)
 
-OPTICAL.mesh = MSG.optical
+OPTICAL.mesh = MSH.optical
 
 
 # desc = os.path.join('Results', 'tajwan-cav{cavity}-re{aperture:.2f}-ta{Ta:.0f}'.format(**DEF))
@@ -412,7 +412,7 @@ def plot_thermoelectric(save=True, suffix=''):
     # plot_boundary(THERMAL.temperature_boundary, THERMAL.mesh, THERMAL.geometry, color="r")
     # plot_boundary(THERMAL.convection_boundary, THERMAL.mesh, THERMAL.geometry, color="g")
     # plot_boundary(THERMAL.radiation_boundary, THERMAL.mesh, THERMAL.geometry, color="y")
-    # gcf().canvas.set_window_title("Default mesh")
+    # window_title("Default mesh")
 
     figure()
     work.plot_temperature(cmap='inferno', geometry_color=(0.75, 0.75, 0.75, 0.1))
@@ -432,7 +432,7 @@ def plot_thermoelectric(save=True, suffix=''):
     plot_profile(jtemp, color=color_cycle[3], label='PLaSK')
     plot_rs(GEO.thermal)
     if presentation:
-        gcf().canvas.set_window_title("Junction Temperature")
+        window_title("Junction Temperature")
     else:
         title("Junction Temperature (K)")
     xlim(0., 0.55*mesa)
@@ -447,7 +447,7 @@ def plot_thermoelectric(save=True, suffix=''):
     work.plot_junction_current(color=color_cycle[4], label='PLaSK')
     plot_rs(GEO.main)
     if presentation:
-        gcf().canvas.set_window_title("Junction Current")
+        window_title("Junction Current")
     else:
         title("Junction Current")
     xlim(0., 0.55*mesa)
@@ -464,7 +464,7 @@ def plot_thermoelectric(save=True, suffix=''):
     plot_rs(GEO.main)
     ylabel("Carriers Concentration [10$^{18}$/cm$^3$]")
     if presentation:
-        gcf().canvas.set_window_title("Carriers Concentration")
+        window_title("Carriers Concentration")
     else:
         title("Carriers Concentration")
     xlim(0., 0.55*mesa)
@@ -475,7 +475,7 @@ def plot_thermoelectric(save=True, suffix=''):
     else:
         suptitle(u"$U = {U:.3f}$V  $J = {J:.2f}$mA  $T_{{\\mathrm{{max}}}} = {T:.1f}$K".format(**globals()), fontsize=16)
 
-        gcf().canvas.set_window_title("Thermoelectric")
+        window_title("Thermoelectric")
         subplots_adjust(top=0.89)
         tight_layout(pad=0.2)
         save_figure()
@@ -511,7 +511,7 @@ def plot_gain_spectrum(new=False, label='PLaSK'):
         plot(glams, spectrum, label=label)
     xlabel("Wavelength (nm)")
     ylabel("Gain (1/cm)")
-    gcf().canvas.set_window_title("Gain Spectrum")
+    window_title("Gain Spectrum")
 
 
 def plot_optical(suffix=''):
@@ -528,7 +528,7 @@ def plot_optical(suffix=''):
     if presentation:
         tight_layout(pad=0.2)
         save_figure(suffix+'det')
-        gcf().canvas.set_window_title("Determinant")
+        window_title("Determinant")
     else:
         title("Determinant")
         tight_layout(pad=0.2)
@@ -555,7 +555,7 @@ def plot_optical(suffix=''):
         if presentation:
             tight_layout(pad=0.2)
             save_figure(suffix+'opt')
-            gcf().canvas.set_window_title("Optical Field")
+            window_title("Optical Field")
             figure()
         else:
             title("Optical Field")
@@ -572,7 +572,7 @@ def plot_optical(suffix=''):
         if presentation:
             tight_layout(pad=0.2)
             save_figure(suffix+'optr')
-            gcf().canvas.set_window_title("Lateral")
+            window_title("Lateral")
             figure()
         else:
             title("Lateral")
@@ -584,11 +584,7 @@ def plot_optical(suffix=''):
         if presentation:
             ylabel("Light intensity [a.u.]")
         twinx()
-        try:
-            nr = OPTICAL.outRefractiveIndex(mesh.Rectangular2D([0.01], vm))
-        except AttributeError:
-            eps = OPTICAL.outEpsilon(mesh.Rectangular2D([0.01], vm))
-            nr = Data(eps.array[:,:,0,0]**0.5, eps.mesh)
+        nr = OPTICAL.outRefractiveIndex(mesh.Rectangular2D([0.01], vm))
 
         plot_profile(nr, color=color_cycle[4], comp='rr', alpha=0.5)
         ylim(0.95, 3.55)
@@ -597,14 +593,14 @@ def plot_optical(suffix=''):
             ylabel("Refractive Index")
             tight_layout(pad=0.2)
             save_figure(suffix+'optz')
-            gcf().canvas.set_window_title("Vertical")
+            window_title("Vertical")
         else:
             title("Vertical")
 
     if not presentation:
         suptitle(u"LP$_{{{m},{n}}}$".format(**DEF), fontsize=16)
 
-        gcf().canvas.set_window_title("Optical")
+        window_title("Optical")
         tight_layout(pad=0.)
         subplots_adjust(top=0.89)
         save_figure()
@@ -636,7 +632,7 @@ try:
             ylabel("Det [a.u.]")
             yscale('log')
             title("Determinant")
-            gcf().canvas.set_window_title("Optical")
+            window_title("Optical")
             tight_layout(pad=0.1)
             lam_th = NAN
             loss_th = NAN
@@ -730,7 +726,7 @@ try:
         xlim(0, T_DYNAMIC.time)
         ylabel("Total Current (mA)")
         tight_layout(pad=0.2)
-        gcf().canvas.set_window_title("Temperature/Current Evolution ({:.1f})".format(heat_t/(heat_t+cool_t)))
+        window_title("Temperature/Current Evolution ({:.1f})".format(heat_t/(heat_t+cool_t)))
         save_figure("u{:.2f}v-h{:.2f}-time-temp".format(U, heat_t/(heat_t+cool_t)))
 
 
@@ -772,7 +768,7 @@ try:
             ylabel("Det [a.u.]")
             yscale('log')
             title("Determinant")
-            gcf().canvas.set_window_title("Optical")
+            window_title("Optical")
             tight_layout(pad=0.1)
             save_figure('lp{}x-det'.format(DEF['m']))
         else:
@@ -820,7 +816,7 @@ try:
                 axhline(vo+l, color=hh_color, ls='--')
             for l in levels['lh']:
                 axhline(vo+l, color=lh_color, ls='--')
-        gcf().canvas.set_window_title("Band edges")
+        window_title("Band edges")
         tight_layout(pad=0.2)
         save_figure()
 

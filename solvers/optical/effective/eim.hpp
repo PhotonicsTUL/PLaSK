@@ -18,23 +18,17 @@
 
 #include <plask/plask.hpp>
 
-#include "rootdigger.hpp"
 #include "bisection.hpp"
+#include "rootdigger.hpp"
 
 namespace plask { namespace optical { namespace effective {
 
 /**
  * Solver performing calculations in 2D Cartesian space using effective index method
  */
-struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartesian, RectangularMesh<2>> {
-
+struct PLASK_SOLVER_API EffectiveIndex2D : public SolverWithMesh<Geometry2DCartesian, RectangularMesh<2>> {
     /// Mode symmetry in horizontal axis
-    enum Symmetry {
-        SYMMETRY_DEFAULT,
-        SYMMETRY_POSITIVE,
-        SYMMETRY_NEGATIVE,
-        SYMMETRY_NONE
-    };
+    enum Symmetry { SYMMETRY_DEFAULT, SYMMETRY_POSITIVE, SYMMETRY_NEGATIVE, SYMMETRY_NONE };
 
     /// Mode polarization
     enum Polarization {
@@ -43,48 +37,50 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     };
 
     /// Direction of the possible emission
-    enum Emission {
-        FRONT,
-        BACK
-    };
+    enum Emission { FRONT, BACK };
 
     struct Field {
         dcomplex F, B;
         Field() = default;
-        Field(dcomplex f, dcomplex b): F(f), B(b) {}
-        Field operator*(dcomplex a) const { return Field(F*a, B*a); }
-        Field operator/(dcomplex a) const { return Field(F/a, B/a); }
-        Field operator*=(dcomplex a) { F *= a; B *= a; return *this; }
-        Field operator/=(dcomplex a) { F /= a; B /= a; return *this; }
+        Field(dcomplex f, dcomplex b) : F(f), B(b) {}
+        Field operator*(dcomplex a) const { return Field(F * a, B * a); }
+        Field operator/(dcomplex a) const { return Field(F / a, B / a); }
+        Field operator*=(dcomplex a) {
+            F *= a;
+            B *= a;
+            return *this;
+        }
+        Field operator/=(dcomplex a) {
+            F /= a;
+            B /= a;
+            return *this;
+        }
     };
 
     struct Matrix {
         dcomplex ff, fb, bf, bb;
         Matrix() = default;
-        Matrix(dcomplex t1, dcomplex t2, dcomplex t3, dcomplex t4): ff(t1), fb(t2), bf(t3), bb(t4) {}
-        static Matrix eye() { return Matrix(1.,0.,0.,1.); }
-        static Matrix diag(dcomplex f, dcomplex b) { return Matrix(f,0.,0.,b); }
+        Matrix(dcomplex t1, dcomplex t2, dcomplex t3, dcomplex t4) : ff(t1), fb(t2), bf(t3), bb(t4) {}
+        static Matrix eye() { return Matrix(1., 0., 0., 1.); }
+        static Matrix diag(dcomplex f, dcomplex b) { return Matrix(f, 0., 0., b); }
         Matrix operator*(const Matrix& T) {
-            return Matrix( ff*T.ff + fb*T.bf,   ff*T.fb + fb*T.bb,
-                           bf*T.ff + bb*T.bf,   bf*T.fb + bb*T.bb );
+            return Matrix(ff * T.ff + fb * T.bf, ff * T.fb + fb * T.bb, bf * T.ff + bb * T.bf, bf * T.fb + bb * T.bb);
         }
-        Field solve(const Field& v) {
-            return Field(bb*v.F - fb*v.B, -bf*v.F + ff*v.B) / (ff*bb - fb*bf);
-        }
+        Field solve(const Field& v) { return Field(bb * v.F - fb * v.B, -bf * v.F + ff * v.B) / (ff * bb - fb * bf); }
     };
 
     /// Details of the computed mode
     struct Mode {
-        EffectiveIndex2D* solver;       ///< Solver this mode belongs to
-        Symmetry symmetry;              ///< Horizontal symmetry of the modes
-        dcomplex neff;                  ///< Stored mode effective index
-        bool have_fields;               ///< Did we compute fields for current state?
-        std::vector<Field,aligned_allocator<Field>> xfields; ///< Computed horizontal fields
-        std::vector<double,aligned_allocator<double>> xweights; ///< Computed horizontal weights
-        double power;                   ///< Mode power (mW)
+        EffectiveIndex2D* solver;                                 ///< Solver this mode belongs to
+        Symmetry symmetry;                                        ///< Horizontal symmetry of the modes
+        dcomplex neff;                                            ///< Stored mode effective index
+        bool have_fields;                                         ///< Did we compute fields for current state?
+        std::vector<Field, aligned_allocator<Field>> xfields;     ///< Computed horizontal fields
+        std::vector<double, aligned_allocator<double>> xweights;  ///< Computed horizontal weights
+        double power;                                             ///< Mode power (mW)
 
-        Mode(EffectiveIndex2D* solver, Symmetry sym):
-            solver(solver), have_fields(false), xfields(solver->xend), xweights(solver->xend), power(1.) {
+        Mode(EffectiveIndex2D* solver, Symmetry sym)
+            : solver(solver), have_fields(false), xfields(solver->xend), xweights(solver->xend), power(1.) {
             setSymmetry(sym);
         }
 
@@ -103,54 +99,48 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
             symmetry = sym;
         }
 
-        bool operator==(const Mode& other) const {
-            return symmetry == other.symmetry && is_zero( neff - other.neff );
-        }
+        bool operator==(const Mode& other) const { return symmetry == other.symmetry && is_zero(neff - other.neff); }
 
         /// Return mode loss
-        double loss() const {
-            return - 2e7 * imag(neff * solver->k0);
-        }
+        double loss() const { return -2e7 * imag(neff * solver->k0); }
     };
 
   protected:
-
     friend struct RootDigger;
 
     size_t xbegin,  ///< First element of horizontal mesh to consider
-           xend,    ///< Last element of horizontal mesh to consider
-           ybegin,  ///< First element of vertical mesh to consider
-           yend;    ///< Last element of vertical mesh to consider
+        xend,       ///< Last element of horizontal mesh to consider
+        ybegin,     ///< First element of vertical mesh to consider
+        yend;       ///< Last element of vertical mesh to consider
 
     /// Logger for determinant
-    DataLog<dcomplex,dcomplex> log_value;
+    DataLog<dcomplex, dcomplex> log_value;
 
     /// Cached refractive indices
-    std::vector<std::vector<dcomplex,aligned_allocator<dcomplex>>> nrCache;
+    std::vector<std::vector<dcomplex, aligned_allocator<dcomplex>>> nrCache;
 
     /// Computed horizontal and vertical fields
-    std::vector<Field,aligned_allocator<Field>> yfields;
+    std::vector<Field, aligned_allocator<Field>> yfields;
 
     /// Vertical field confinement weights
-    std::vector<double,aligned_allocator<double>> yweights;
+    std::vector<double, aligned_allocator<double>> yweights;
 
     /// Computed effective epsilons for each stripe
-    std::vector<dcomplex,aligned_allocator<dcomplex>> epsilons;
+    std::vector<dcomplex, aligned_allocator<dcomplex>> epsilons;
 
-    double stripex;             ///< Position of the main stripe
+    double stripex;  ///< Position of the main stripe
 
     Polarization polarization;  ///< Chosen light polarization
 
-    bool recompute_neffs;       ///< Should stripe indices be recomputed
+    bool recompute_neffs;  ///< Should stripe indices be recomputed
 
   public:
+    Emission emission;  ///< Direction of laser emission
 
-    Emission emission;          ///< Direction of laser emission
-
-    dcomplex vneff;             ///< Vertical effective index of the main stripe
+    dcomplex vneff;  ///< Vertical effective index of the main stripe
 
     /// Mirror reflectivities
-    plask::optional<std::pair<double,double>> mirrors;
+    plask::optional<std::pair<double, double>> mirrors;
 
     /// Parameters for main rootdigger
     RootDigger::Params root;
@@ -185,7 +175,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     /// Provider of the heat absorbed/generated by the light
     typename ProviderFor<Heat, Geometry2DCartesian>::Delegate outHeat;
 
-    EffectiveIndex2D(const std::string& name="");
+    EffectiveIndex2D(const std::string& name = "");
 
     virtual ~EffectiveIndex2D() {
         inTemperature.changedDisconnectMethod(this, &EffectiveIndex2D::onInputChange);
@@ -227,14 +217,14 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     }
 
     /// \return current wavelength
-    dcomplex getWavelength() const { return 2e3*PI / k0; }
+    dcomplex getWavelength() const { return 2e3 * PI / k0; }
 
     /**
      * Set new wavelength
      * \param wavelength new wavelength
      */
     void setWavelength(dcomplex wavelength) {
-        k0 = 2e3*PI / wavelength;
+        k0 = 2e3 * PI / wavelength;
         invalidate();
     }
 
@@ -247,11 +237,12 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     }
 
     /**
-     * Set up the horizontal mesh. Horizontal division is provided while vertical one is created basing on the geometry bounding boxes.
+     * Set up the horizontal mesh. Horizontal division is provided while vertical one is created basing on the geometry bounding
+     *boxes.
      *
      * \param meshx horizontal mesh
      **/
-    void setHorizontalMesh(shared_ptr<MeshAxis> meshx) { //TODO pointer to mesh is held now, is this fine?
+    void setHorizontalMesh(shared_ptr<MeshAxis> meshx) {  // TODO pointer to mesh is held now, is this fine?
         writelog(LOG_DETAIL, "Setting horizontal mesh");
         if (!geometry) throw NoChildException();
         auto meshxy = RectangularMesh2DSimpleGenerator().generate_t<RectangularMesh<2>>(geometry->getChild());
@@ -269,7 +260,11 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
      * \param eps approximate error for integrals
      * \return vector of determined effective indices
      */
-    std::vector<dcomplex> searchVNeffs(plask::dcomplex neff1=0., plask::dcomplex neff2=0., size_t resteps=256, size_t imsteps=64, dcomplex eps=dcomplex(1e-6,1e-9));
+    std::vector<dcomplex> searchVNeffs(plask::dcomplex neff1 = 0.,
+                                       plask::dcomplex neff2 = 0.,
+                                       size_t resteps = 256,
+                                       size_t imsteps = 64,
+                                       dcomplex eps = dcomplex(1e-6, 1e-9));
 
     /**
      * Find the mode around the specified effective index.
@@ -277,7 +272,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
      * \param symmetry mode symmetry
      * \return index of found mode
      */
-    size_t findMode(dcomplex neff, Symmetry symmetry=SYMMETRY_DEFAULT);
+    size_t findMode(dcomplex neff, Symmetry symmetry = SYMMETRY_DEFAULT);
 
     /**
      * Find the modes within the specified range
@@ -289,7 +284,12 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
      * \param eps approximate error for integrals
      * \return vector of indices of found modes
      */
-    std::vector<size_t> findModes(dcomplex neff1=0., dcomplex neff2=0., Symmetry symmetry=SYMMETRY_DEFAULT, size_t resteps=256, size_t imsteps=64, dcomplex eps=dcomplex(1e-6,1e-9));
+    std::vector<size_t> findModes(dcomplex neff1 = 0.,
+                                  dcomplex neff2 = 0.,
+                                  Symmetry symmetry = SYMMETRY_DEFAULT,
+                                  size_t resteps = 256,
+                                  size_t imsteps = 64,
+                                  dcomplex eps = dcomplex(1e-6, 1e-9));
 
     /**
      * Compute determinant for a single stripe
@@ -298,8 +298,10 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     dcomplex getVertDeterminant(dcomplex neff) {
         updateCache();
         size_t stripe = mesh->tran()->findIndex(stripex);
-        if (stripe < xbegin) stripe = xbegin;
-        else if (stripe >= xend) stripe = xend-1;
+        if (stripe < xbegin)
+            stripe = xbegin;
+        else if (stripe >= xend)
+            stripe = xend - 1;
         return detS1(neff, nrCache[stripe]);
     }
 
@@ -308,9 +310,9 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
      * \param neff effective index to use
      * \param symmetry mode symmetry
      */
-    dcomplex getDeterminant(dcomplex neff, Symmetry sym=SYMMETRY_DEFAULT) {
+    dcomplex getDeterminant(dcomplex neff, Symmetry sym = SYMMETRY_DEFAULT) {
         stageOne();
-        Mode mode(this,sym);
+        Mode mode(this, sym);
         dcomplex det = detS(neff, mode);
         return det;
     }
@@ -322,12 +324,10 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
      * \param symmetry mode symmetry
      * \return index of set mode
      */
-    size_t setMode(dcomplex neff, Symmetry sym=SYMMETRY_DEFAULT);
+    size_t setMode(dcomplex neff, Symmetry sym = SYMMETRY_DEFAULT);
 
     /// Clear computed modes
-    void clearModes() {
-        modes.clear();
-    }
+    void clearModes() { modes.clear(); }
 
     /**
      * Compute field weights
@@ -347,16 +347,13 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
      */
     dcomplex getDeltaNeff(double x) {
         stageOne();
-        size_t i(clamp(mesh->tran()->findIndex(geometry->isSymmetric(Geometry::DIRECTION_TRAN)? abs(x) : x), xbegin, xend-1));
+        size_t i(clamp(mesh->tran()->findIndex(geometry->isSymmetric(Geometry::DIRECTION_TRAN) ? abs(x) : x), xbegin, xend - 1));
         return sqrt(epsilons[i]);
     }
 
   protected:
-
     /// Slot called when gain has changed
-    void onInputChange(ReceiverBase&, ReceiverBase::ChangeReason) {
-        invalidate();
-    }
+    void onInputChange(ReceiverBase&, ReceiverBase::ChangeReason) { invalidate(); }
 
     /// Initialize the solver
     void onInitialize() override;
@@ -374,17 +371,17 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     double getMirrorLosses(dcomplex n) {
         double L = geometry->getExtrusion()->getLength();
         if (isinf(L)) return 0.;
-        const double lambda = real(2e3*PI / k0);
+        const double lambda = real(2e3 * PI / k0);
         double R1, R2;
         if (mirrors) {
-            std::tie(R1,R2) = *mirrors;
+            std::tie(R1, R2) = *mirrors;
         } else {
             const double n1 = real(geometry->getFrontMaterial()->Nr(lambda, 300.)),
                          n2 = real(geometry->getBackMaterial()->Nr(lambda, 300.));
-            R1 = abs((n-n1) / (n+n1));
-            R2 = abs((n-n2) / (n+n2));
+            R1 = abs((n - n1) / (n + n1));
+            R2 = abs((n - n2) / (n + n2));
         }
-        return lambda * std::log(R1*R2) / (4e3 * PI * L);
+        return lambda * std::log(R1 * R2) / (4e3 * PI * L);
     }
 
     /**
@@ -409,7 +406,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
      * Normalize horizontal fields, so multiplying LightMagnitude by power gives proper LightMagnitude in (V/m)²
      * \param kx computed horizontal propagation constants
      */
-    void normalizeFields(Mode& mode, const std::vector<dcomplex,aligned_allocator<dcomplex>>& kx);
+    void normalizeFields(Mode& mode, const std::vector<dcomplex, aligned_allocator<dcomplex>>& kx);
 
     /**
      * Compute S matrix determinant for one stripe
@@ -417,14 +414,14 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
      * \param NR refractive indices
      * \param save if \c true, the fields are saved to yfields
      */
-    dcomplex detS1(const dcomplex& x, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR, bool save=false);
+    dcomplex detS1(const dcomplex& x, const std::vector<dcomplex, aligned_allocator<dcomplex>>& NR, bool save = false);
 
     /**
      * Return S matrix determinant for the whole structure
      * \param x effective index
      * \param save if \c true, the fields are saved to xfields
      */
-    dcomplex detS(const dcomplex& x, Mode& mode, bool save=false);
+    dcomplex detS(const dcomplex& x, Mode& mode, bool save = false);
 
     /// Insert mode to the list or return the index of the exiting one
     size_t insertMode(const Mode& mode) {
@@ -434,13 +431,11 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
         outNeff.fireChanged();
         outLightMagnitude.fireChanged();
         outLightE.fireChanged();
-        return modes.size()-1;
+        return modes.size() - 1;
     }
 
     /// Return number of found modes
-    size_t nmodes() const {
-        return modes.size();
-    }
+    size_t nmodes() const { return modes.size(); }
 
     /**
      * Return mode effective index
@@ -457,20 +452,24 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     struct HeatDataImpl;
 
     /// Method computing the distribution of light intensity
-    const LazyData<double> getLightMagnitude(std::size_t num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
+    const LazyData<double> getLightMagnitude(std::size_t num,
+                                             shared_ptr<const plask::MeshD<2>> dst_mesh,
+                                             plask::InterpolationMethod = INTERPOLATION_DEFAULT);
 
     /// Method computing the distribution of the light electric field
-    const LazyData<Vec<3,dcomplex>> getElectricField(std::size_t num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
+    const LazyData<Vec<3, dcomplex>> getElectricField(std::size_t num,
+                                                      shared_ptr<const plask::MeshD<2>> dst_mesh,
+                                                      plask::InterpolationMethod = INTERPOLATION_DEFAULT);
 
     /// Get used refractive index
-    const LazyData<dcomplex> getRefractiveIndex(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);
+    const LazyData<dcomplex> getRefractiveIndex(RefractiveIndex::EnumType component,
+                                                shared_ptr<const MeshD<2>> dst_mesh,
+                                                InterpolationMethod = INTERPOLATION_DEFAULT);
 
     /// Get generated/absorbed heat
-    const LazyData<double> getHeat(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod method=INTERPOLATION_DEFAULT);
-
+    const LazyData<double> getHeat(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method = INTERPOLATION_DEFAULT);
 };
 
+}}}  // namespace plask::optical::effective
 
-}}} // namespace plask::optical::effective
-
-#endif // PLASK__MODULE_OPTICAL_EIM_HPP
+#endif  // PLASK__MODULE_OPTICAL_EIM_HPP

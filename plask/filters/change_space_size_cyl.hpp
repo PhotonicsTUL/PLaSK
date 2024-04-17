@@ -81,7 +81,7 @@ struct DataFrom3DtoCyl2DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemp
             auto sum = data[index];
             for (std::size_t i = 1; i < point_count; ++i) sum += data[index+i];
 PLASK_NO_CONVERSION_WARNING_BEGIN
-            return PropertyT::value3Dto2D(sum / point_count);
+            return PropertyT::value3Dto2D(sum / double(point_count));
 PLASK_NO_WARNING_END
         };
     }

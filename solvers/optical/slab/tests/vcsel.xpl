@@ -146,7 +146,7 @@ plot_profile(efield/max(efield), ls='--', color='0.8', label="EFM")
 
 legend(loc='best')
 ylabel("Light magnitude [a.u.]")
-gcf().canvas.set_window_title(u"Mode profiles — base" + desc)
+window_title(u"Mode profiles — base" + desc)
 tight_layout(pad=0.2)
 
 if N0 is None:

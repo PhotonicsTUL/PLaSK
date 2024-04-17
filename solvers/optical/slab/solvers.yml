@@ -364,6 +364,7 @@
   - outLightE
   - outLightH
   - outEpsilon
+  - outRefractiveIndex
   - outNeff
 
   receivers: &receivers

@@ -135,30 +135,16 @@ elif axis == 1:
 else:
     raise ValueError("wrong axis")
 
-NR = [main.get_material(pos(ax, 0.5*h)).nr(opt.wavelength.real).real for ax in AX]
-plot(AX, NR, '--k')
+eps = [main.get_material(pos(ax, 0.5*h)).nr(opt.wavelength.real).real**2 for ax in AX]
+plot(AX, eps, '--k')
 
-NR = opt.outEpsilon(msh, 'fourier')
-plot(AX, NR.array[:,:,0,2].ravel().real, 'r', label='Fourier')
+eps = opt.outEpsilon(msh, 'fourier')
+plot(AX, eps.array[:,:,0,2,2].ravel().real, 'r', label='Fourier')
 
 if axis == 0:
     msh = mesh.Rectangular3D(AX, [0], [0.5*h])
 elif axis == 1:
     msh = mesh.Rectangular3D([0], AX, [0.5*h])
-
-#NR = [main.get_material(pos(ax, 0.5*h)).nr(opt.wavelength.real).real for ax in opt.tran_mesh]
-#plot(opt.tran_mesh, NR, 'b.')
-
-#opt.invalidate()
-#opt.symmetry = 'Ex'
-#NR = opt.outEpsilon(msh)
-#plot(AX, NR.array[:,:,0,2].ravel().real, 'r', label='Symmetric')
-
-#NR = [main.get_material(pos(ax, 0.5*h)).nr(opt.wavelength.real).real for ax in opt.tran_mesh]
-#plot(opt.tran_mesh, NR, 'r.')
-
-#NR = opt.outEpsilon(msh, 'linear')
-#plot(AX, NR.array[:,:,0,2].ravel().real, 'b', label='linear')
 
 xlim(AX[0], AX[-1])
 #ylim(0.95, 1.35)

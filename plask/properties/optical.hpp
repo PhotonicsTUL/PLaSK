@@ -24,7 +24,13 @@ namespace plask {
 /**
  * Refractive index
  */
-struct PLASK_API RefractiveIndex: FieldProperty<dcomplex> {
+struct PLASK_API RefractiveIndex: MultiFieldProperty<dcomplex> {
+    enum EnumType {
+        COMPONENT_VERT = 0,
+        COMPONENT_LONG = 1,
+        COMPONENT_TRAN = 2
+    };
+    static constexpr size_t NUM_VALS = 3;
     static constexpr const char* NAME = "refractive index";
     static constexpr const char* UNIT = "-";
     static inline dcomplex getDefaultValue() { return dcomplex(1.); }
