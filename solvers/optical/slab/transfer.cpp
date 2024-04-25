@@ -70,7 +70,7 @@ dcomplex Transfer::determinant() {
     // This is probably expensive but necessary check to avoid hangs
     const std::size_t NN = N * N;
     for (std::size_t i = 0; i < NN; i++) {
-        if (isnan(real(M[i])) || isnan(imag(M[i]))) throw ComputationError(solver->getId(), "naN in discontinuity matrix");
+        if (isnan(real(M[i])) || isnan(imag(M[i]))) throw ComputationError(solver->getId(), "NaN in discontinuity matrix");
     }
 
     // Find the eigenvalues of M using LAPACK

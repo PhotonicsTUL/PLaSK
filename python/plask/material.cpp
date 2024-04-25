@@ -113,6 +113,7 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     inline R call(const char* name, F f, const plask::optional<R>& cached, Args&&... args) const {
         if (cached) return *cached;
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        if (PyErr_Occurred()) throw py::error_already_set();
         if (overriden_no_recursion(name)) {
             return call_method<R>(name, std::forward<Args>(args)...);
         }
@@ -123,6 +124,7 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     inline R call_override(const char* name, const plask::optional<R>& cached, Args&&... args) const {
         if (cached) return *cached;
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        if (PyErr_Occurred()) throw py::error_already_set();
         if (overriden_no_recursion(name)) {
             return call_method<R>(name, std::forward<Args>(args)...);
         }
@@ -1308,14 +1310,14 @@ void initMaterials() {
              u8"    T (float): Temperature (K).\n")
 
         .def("Eps", &Material::Eps, (py::arg("lam"), py::arg("T")=300., py::arg("n")=0.),
-             u8"Get Hermitian permittivity tensor ε(λ) (-).\n\n"
+             u8"Get anisotropic permittivity tensor ε(λ) (-).\n\n"
              u8"Args:\n"
              u8"    lam (float): Wavelength (nm).\n"
              u8"    T (float): Temperature (K).\n"
              u8"    n (float): Injected carriers concentration (1/cm³).\n\n"
              u8".. warning::\n"
              u8"   This parameter is used only by solvers that can consider anisotropic\n"
-             u8"   Hermitian permittivity tensor properly. It is strongly advised to also define\n"
+             u8"   anisotropic permittivity tensor properly. It is strongly advised to also define\n"
              u8"   :meth:`~plask.material.Material.Nr`.\n")
 
         .def("chi", &Material::chi, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
