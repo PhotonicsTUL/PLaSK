@@ -239,17 +239,16 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
     double differenceQuotient;  ///< difference quotient of dG_dn derivative
     double Tref;                ///< reference temperature (K)
 
-    void findEnergyLevels(Levels& levels, const ActiveRegionInfo& region, double T, bool showDetails = false);
+    void findEnergyLevels(Levels& levels, const ActiveRegionInfo& region, double T);
 
     void buildStructure(double T,
                         const ActiveRegionData& region,
                         std::unique_ptr<kubly::struktura>& bandsEc,
                         std::unique_ptr<kubly::struktura>& bandsEvhh,
-                        std::unique_ptr<kubly::struktura>& bandsEvlh,
-                        bool showDetails = false);
-    kubly::struktura* buildEc(double T, const ActiveRegionData& region, bool showDetails = false);
-    kubly::struktura* buildEvhh(double T, const ActiveRegionData& region, bool showDetails = false);
-    kubly::struktura* buildEvlh(double T, const ActiveRegionData& region, bool showDetails = false);
+                        std::unique_ptr<kubly::struktura>& bandsEvlh);
+    kubly::struktura* buildEc(double T, const ActiveRegionData& region);
+    kubly::struktura* buildEvhh(double T, const ActiveRegionData& region);
+    kubly::struktura* buildEvlh(double T, const ActiveRegionData& region);
 
     void showEnergyLevels(std::string str, const std::unique_ptr<kubly::struktura>& structure, double nQW);
 
@@ -257,8 +256,7 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
                                      double T,
                                      double n,
                                      const ActiveRegionInfo& region,
-                                     const Levels& levels,
-                                     bool iShowSpecLogs = false);
+                                     const Levels& levels);
 
     void prepareLevels(kubly::wzmocnienie& gmodule, const ActiveRegionInfo& region) {}
 

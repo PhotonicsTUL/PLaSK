@@ -27,7 +27,7 @@ FermiNewGainSolver<GeometryType>::FermiNewGainSolver(const std::string& name)
     : SolverWithMesh<GeometryType, MeshAxis>(name),
       outGain(this, &FermiNewGainSolver<GeometryType>::getGain),
       outLuminescence(this, &FermiNewGainSolver<GeometryType>::getLuminescence) {
-    Tref = 300.;                // (K), only for this temperature energy levels are calculated
+    Tref = NAN;                 // (K), only for this temperature energy levels are calculated
     inTemperature = 300.;       // temperature receiver has some sensible value
     condQWshift = 0.;           // (eV)
     valeQWshift = 0.;           // (eV)
@@ -372,15 +372,12 @@ template <typename GeometryType> void FermiNewGainSolver<GeometryType>::prepareA
 }
 
 template <typename GeometryType>
-void FermiNewGainSolver<GeometryType>::findEnergyLevels(Levels& levels,
-                                                        const ActiveRegionInfo& region,
-                                                        double T,
-                                                        bool showDetails) {
+void FermiNewGainSolver<GeometryType>::findEnergyLevels(Levels& levels, const ActiveRegionInfo& region, double T) {
     if (isnan(T) || T < 0.) throw ComputationError(this->getId(), "wrong temperature ({0}K)", T);
 
     this->writelog(LOG_DETAIL, "Determining energy levels");
 
-    buildStructure(T, region, levels.bandsEc, levels.bandsEvhh, levels.bandsEvlh, showDetails);
+    buildStructure(T, region, levels.bandsEc, levels.bandsEvhh, levels.bandsEvlh);
 
     std::vector<double> dso;
     dso.reserve(region.size());
@@ -394,7 +391,7 @@ void FermiNewGainSolver<GeometryType>::findEnergyLevels(Levels& levels,
     levels.Eg = region.getLayerMaterial(0)->CB(T, 0.) - region.getLayerMaterial(0)->VB(T, 0.);  // cladding Eg (eV)
 
     if (region.mod) {
-        buildStructure(T, *region.mod, levels.modbandsEc, levels.modbandsEvhh, levels.modbandsEvlh, showDetails);
+        buildStructure(T, *region.mod, levels.modbandsEc, levels.modbandsEvhh, levels.modbandsEvlh);
 
         std::vector<kubly::struktura*> modholes;
         modholes.reserve(2);
@@ -415,12 +412,11 @@ void FermiNewGainSolver<GeometryType>::buildStructure(double T,
                                                       const ActiveRegionData& region,
                                                       std::unique_ptr<kubly::struktura>& bandsEc,
                                                       std::unique_ptr<kubly::struktura>& bandsEvhh,
-                                                      std::unique_ptr<kubly::struktura>& bandsEvlh,
-                                                      bool showDetails) {
+                                                      std::unique_ptr<kubly::struktura>& bandsEvlh) {
     if (strains) {
         if (!this->substrateMaterial)
             throw ComputationError(this->getId(), "no layer with role 'substrate' has been found");
-        if (showDetails)
+        if (maxLoglevel >= LOG_DEBUG) {
             for (int i = 0; i < region.size(); ++i) {
                 double e = (this->substrateMaterial->lattC(T, 'a') - region.getLayerMaterial(i)->lattC(T, 'a')) /
                            region.getLayerMaterial(i)->lattC(T, 'a');
@@ -428,11 +424,12 @@ void FermiNewGainSolver<GeometryType>::buildStructure(double T,
                     e = 0.;
                 this->writelog(LOG_DEBUG, "Layer {0} - strain: {1}{2}", i + 1, e * 100., '%');
             }
+        }
     }
 
-    kubly::struktura* Ec = buildEc(T, region, showDetails);
-    kubly::struktura* Evhh = buildEvhh(T, region, showDetails);
-    kubly::struktura* Evlh = buildEvlh(T, region, showDetails);
+    kubly::struktura* Ec = buildEc(T, region);
+    kubly::struktura* Evhh = buildEvhh(T, region);
+    kubly::struktura* Evlh = buildEvlh(T, region);
 
     if (!Ec)
         throw BadInput(this->getId(),
@@ -459,9 +456,7 @@ void FermiNewGainSolver<GeometryType>::buildStructure(double T,
 }
 
 template <typename GeometryType>
-kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T,
-                                                            const ActiveRegionData& region,
-                                                            bool showDetails) {
+kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T, const ActiveRegionData& region) {
     ptrVector<kubly::warstwa> levels;
 
     int N = region.size();  // number of all layers in the active region (QW, barr, external)
@@ -476,7 +471,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T,
 
     double x = 0.;
     double Ec = region.getLayerMaterial(0)->CB(T, 0.) - DEc;
-    if (showDetails) this->writelog(LOG_DEBUG, "Layer {0} CB: {1} eV", 1, region.getLayerMaterial(0)->CB(T, 0.));
+    this->writelog(LOG_DEBUG, "Layer {0} CB: {1} eV", 1, region.getLayerMaterial(0)->CB(T, 0.));
     levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::lewa,
                                                       region.getLayerMaterial(0)->Me(T, 0.).c11,
                                                       region.getLayerMaterial(0)->Me(T, 0.).c00, x,
@@ -487,9 +482,8 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T,
         double CBshift = 0.;
         if (region.isQW(i)) CBshift = condQWshift;
         Ec = region.getLayerMaterial(i)->CB(T, straine) + CBshift - DEc;
-        if (showDetails)
-            this->writelog(LOG_DEBUG, "Layer {0} CB: {1} eV", i + 1,
-                           region.getLayerMaterial(i)->CB(T, straine) + CBshift);
+        this->writelog(LOG_DEBUG, "Layer {0} CB: {1} eV", i + 1,
+                        region.getLayerMaterial(i)->CB(T, straine) + CBshift);
         levels.data.emplace_back(new kubly::warstwa(region.getLayerMaterial(i)->Me(T, straine).c11,
                                                     region.getLayerMaterial(i)->Me(T, straine).c00, x, Ec, (x + h),
                                                     Ec));  // wells and barriers
@@ -498,8 +492,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T,
     }
 
     Ec = (region.getLayerMaterial(N - 1)->CB(T, 0.) - DEc);
-    if (showDetails)
-        this->writelog(LOG_DEBUG, "Layer {0} CB: {1} eV", N, region.getLayerMaterial(N - 1)->CB(T, 0.));
+    this->writelog(LOG_DEBUG, "Layer {0} CB: {1} eV", N, region.getLayerMaterial(N - 1)->CB(T, 0.));
     levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::prawa,
                                                       region.getLayerMaterial(N - 1)->Me(T, 0.).c11,
                                                       region.getLayerMaterial(N - 1)->Me(T, 0.).c00, x,
@@ -511,8 +504,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T,
 
 template <typename GeometryType>
 kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T,
-                                                              const ActiveRegionData& region,
-                                                              bool showDetails) {
+                                                              const ActiveRegionData& region) {
     ptrVector<kubly::warstwa> levels;
 
     int N = region.size();  // number of all layers int the active region (QW, barr, external)
@@ -527,8 +519,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T,
 
     double x = 0.;
     double Evhh = -(region.getLayerMaterial(0)->VB(T, 0., '*', 'H') - DEvhh);
-    if (showDetails)
-        this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", 1, region.getLayerMaterial(0)->VB(T, 0., '*', 'H'));
+    this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", 1, region.getLayerMaterial(0)->VB(T, 0., '*', 'H'));
     levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::lewa,
                                                       region.getLayerMaterial(0)->Mhh(T, 0.).c11,
                                                       region.getLayerMaterial(0)->Mhh(T, 0.).c00, x,
@@ -539,9 +530,8 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T,
         double VBshift = 0.;
         if (region.isQW(i)) VBshift = valeQWshift;
         Evhh = -(region.getLayerMaterial(i)->VB(T, straine, '*', 'H') + VBshift - DEvhh);
-        if (showDetails)
-            this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", i + 1,
-                           region.getLayerMaterial(i)->VB(T, straine, '*', 'H') + VBshift);
+        this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", i + 1,
+                        region.getLayerMaterial(i)->VB(T, straine, '*', 'H') + VBshift);
         levels.data.emplace_back(new kubly::warstwa(region.getLayerMaterial(i)->Mhh(T, straine).c11,
                                                     region.getLayerMaterial(i)->Mhh(T, straine).c00, x, Evhh, (x + h),
                                                     Evhh));  // wells and barriers
@@ -550,9 +540,8 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T,
     }
 
     Evhh = -(region.getLayerMaterial(N - 1)->VB(T, 0., '*', 'H') - DEvhh);
-    if (showDetails)
-        this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", N,
-                       region.getLayerMaterial(N - 1)->VB(T, 0., '*', 'H'));
+    this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", N,
+                    region.getLayerMaterial(N - 1)->VB(T, 0., '*', 'H'));
     levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::prawa,
                                                       region.getLayerMaterial(N - 1)->Mhh(T, 0.).c11,
                                                       region.getLayerMaterial(N - 1)->Mhh(T, 0.).c00, x, Evhh));
@@ -563,8 +552,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T,
 
 template <typename GeometryType>
 kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvlh(double T,
-                                                              const ActiveRegionData& region,
-                                                              bool showDetails) {
+                                                              const ActiveRegionData& region) {
     ptrVector<kubly::warstwa> levels;
 
     int N = region.size();  // number of all layers int the active region (QW, barr, external)
@@ -579,8 +567,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvlh(double T,
 
     double x = 0.;
     double Evlh = -(region.getLayerMaterial(0)->VB(T, 0., '*', 'L') - DEvlh);
-    if (showDetails)
-        this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", 1, region.getLayerMaterial(0)->VB(T, 0., '*', 'L'));
+    this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", 1, region.getLayerMaterial(0)->VB(T, 0., '*', 'L'));
     levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::lewa,
                                                       region.getLayerMaterial(0)->Mlh(T, 0.).c11,
                                                       region.getLayerMaterial(0)->Mlh(T, 0.).c00, x,
@@ -591,9 +578,8 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvlh(double T,
         double VBshift = 0.;
         if (region.isQW(i)) VBshift = valeQWshift;
         Evlh = -(region.getLayerMaterial(i)->VB(T, straine, '*', 'L') + VBshift - DEvlh);
-        if (showDetails)
-            this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", i + 1,
-                           region.getLayerMaterial(i)->VB(T, straine, '*', 'L') + VBshift);
+        this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", i + 1,
+                        region.getLayerMaterial(i)->VB(T, straine, '*', 'L') + VBshift);
         levels.data.emplace_back(new kubly::warstwa(region.getLayerMaterial(i)->Mlh(T, straine).c11,
                                                     region.getLayerMaterial(i)->Mlh(T, straine).c00, x, Evlh, (x + h),
                                                     Evlh));  // wells and barriers
@@ -603,9 +589,8 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvlh(double T,
     }
 
     Evlh = -(region.getLayerMaterial(N - 1)->VB(T, 0., '*', 'L') - DEvlh);
-    if (showDetails)
-        this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", N,
-                       region.getLayerMaterial(N - 1)->VB(T, 0., '*', 'L'));
+    this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", N,
+                    region.getLayerMaterial(N - 1)->VB(T, 0., '*', 'L'));
     levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::prawa,
                                                       region.getLayerMaterial(N - 1)->Mlh(T, 0.).c11,
                                                       region.getLayerMaterial(N - 1)->Mlh(T, 0.).c00, x, Evlh));
@@ -643,8 +628,7 @@ kubly::wzmocnienie FermiNewGainSolver<GeometryType>::getGainModule(double wavele
                                                                    double T,
                                                                    double n,
                                                                    const ActiveRegionInfo& region,
-                                                                   const Levels& levels,
-                                                                   bool showDetails) {
+                                                                   const Levels& levels) {
     if (isnan(T) || T < 0.) throw ComputationError(this->getId(), "wrong temperature ({0}K)", T);
     if (isnan(n)) throw ComputationError(this->getId(), "wrong carriers concentration ({0}/cm3)", n);
     n = max(n, 1e-6);  // To avoid hangs
@@ -700,9 +684,9 @@ kubly::wzmocnienie FermiNewGainSolver<GeometryType>::getGainModule(double wavele
     //     n -= step;
     // }
 
-    double qFc = gainModule.qFlc;
-    double qFv = gainModule.qFlv;
-    if (showDetails) {
+    if (maxLoglevel >= LOG_DEBUG) {
+        double qFc = gainModule.qFlc;
+        double qFv = gainModule.qFlv;
         this->writelog(LOG_DEBUG, "Quasi-Fermi level for electrons: {0} eV from cladding conduction band edge", qFc);
         this->writelog(LOG_DEBUG, "Quasi-Fermi level for holes: {0} eV from cladding valence band edge", -qFv);
         std::vector<double> ne = levels.bandsEc->koncentracje_w_warstwach(qFc, T);
@@ -817,8 +801,10 @@ template <typename GeometryT, typename T> struct DataBase : public LazyDataImpl<
             concs.name = "carriers concentration";
             temps.data = solver->inTemperature(temps.mesh, interp);
             concs.data = solver->inCarriersConcentration(temps.mesh, interp);
-            if (solver->build_struct_once && !solver->region_levels[reg])
+            if (solver->build_struct_once && !solver->region_levels[reg]) {
+                if (isnan(solver->Tref)) throw ComputationError(solver->getId(), "no reference temperature set for fast levels calculation");
                 solver->findEnergyLevels(solver->region_levels[reg], solver->regions[reg], solver->Tref);
+            }
             std::exception_ptr error;
 #pragma omp parallel for
             for (int i = 0; i < regpoints[reg]->size(); ++i) {
@@ -982,15 +968,18 @@ GainSpectrum<GeometryT>::GainSpectrum(FermiNewGainSolver<GeometryT>* solver, con
 template <typename GeometryT> double GainSpectrum<GeometryT>::getGain(double wavelength) {
     if (!gMod) {
         Levels* levels;
-        if (solver->build_struct_once && !solver->region_levels[reg]) {
-            solver->findEnergyLevels(solver->region_levels[reg], solver->regions[reg], solver->Tref);
+        if (solver->build_struct_once) {
+            if (!solver->region_levels[reg]) {
+                if (isnan(solver->Tref)) throw ComputationError(solver->getId(), "no reference temperature set for fast levels calculation");
+                solver->findEnergyLevels(solver->region_levels[reg], solver->regions[reg], solver->Tref);
+            }
             levels = &solver->region_levels[reg];
         } else {
             this->levels.reset(new Levels);
             levels = this->levels.get();
-            solver->findEnergyLevels(*levels, solver->regions[reg], T, true);
+            solver->findEnergyLevels(*levels, solver->regions[reg], T);
         }
-        gMod.reset(new kubly::wzmocnienie(std::move(solver->getGainModule(wavelength, T, n, solver->regions[reg], *levels, true))));
+        gMod.reset(new kubly::wzmocnienie(std::move(solver->getGainModule(wavelength, T, n, solver->regions[reg], *levels))));
     }
 
     double E = nm_to_eV(wavelength);
@@ -1020,15 +1009,18 @@ LuminescenceSpectrum<GeometryT>::LuminescenceSpectrum(FermiNewGainSolver<Geometr
 template <typename GeometryT> double LuminescenceSpectrum<GeometryT>::getLuminescence(double wavelength) {
     if (!gMod) {
         Levels* levels;
-        if (solver->build_struct_once && !solver->region_levels[reg]) {
-            solver->findEnergyLevels(solver->region_levels[reg], solver->regions[reg], solver->Tref);
+        if (solver->build_struct_once) {
+            if (!solver->region_levels[reg]) {
+                if (isnan(solver->Tref)) throw ComputationError(solver->getId(), "no reference temperature set for fast levels calculation");
+                solver->findEnergyLevels(solver->region_levels[reg], solver->regions[reg], solver->Tref);
+            }
             levels = &solver->region_levels[reg];
         } else {
             this->levels.reset(new Levels);
             levels = this->levels.get();
-            solver->findEnergyLevels(*levels, solver->regions[reg], T, true);
+            solver->findEnergyLevels(*levels, solver->regions[reg], T);
         }
-        gMod.reset(new kubly::wzmocnienie(std::move(solver->getGainModule(wavelength, T, n, solver->regions[reg], *levels, true))));
+        gMod.reset(new kubly::wzmocnienie(std::move(solver->getGainModule(wavelength, T, n, solver->regions[reg], *levels))));
     }
     double QWfrac = solver->regions[reg].qwtotallen / solver->regions[reg].totallen;
     return sumLuminescence(*gMod, wavelength) / QWfrac;

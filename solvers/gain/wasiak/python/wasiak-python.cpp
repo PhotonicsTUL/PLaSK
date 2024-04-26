@@ -100,7 +100,7 @@ static py::object FermiNew_getLevels(FermiNew::FermiNewGainSolver<GeometryT>& se
         double deltaEg2 = 0.;
         if (self.build_struct_once) {
             if (!self.region_levels[reg])
-                self.findEnergyLevels(self.region_levels[reg], self.regions[reg], self.Tref, true);
+                self.findEnergyLevels(self.region_levels[reg], self.regions[reg], self.Tref);
             double Eg = self.regions[reg].getLayerMaterial(0)->CB(T, 0.) - self.regions[reg].getLayerMaterial(0)->VB(T, 0.);
             // TODO Add strain
             deltaEg2 = 0.5 * (Eg - self.region_levels[reg].Eg);
@@ -108,7 +108,7 @@ static py::object FermiNew_getLevels(FermiNew::FermiNewGainSolver<GeometryT>& se
         } else {
             levels_guard.reset(new FermiNew::Levels);
             levels = levels_guard.get();
-            self.findEnergyLevels(*levels, self.regions[reg], T, true);
+            self.findEnergyLevels(*levels, self.regions[reg], T);
         }
         if (levels->bandsEc)
             for (auto stan : levels->bandsEc->rozwiazania) el.append(stan.poziom + deltaEg2);
@@ -139,14 +139,14 @@ static py::object FermiNew_getFermiLevels(FermiNew::FermiNewGainSolver<GeometryT
     std::unique_ptr<FermiNew::Levels> levels_guard;
     if (self.build_struct_once) {
         if (!self.region_levels[reg])
-            self.findEnergyLevels(self.region_levels[reg], region, self.Tref, true);
+            self.findEnergyLevels(self.region_levels[reg], region, self.Tref);
         levels = &self.region_levels[reg];
     } else {
         levels_guard.reset(new FermiNew::Levels);
         levels = levels_guard.get();
-        self.findEnergyLevels(*levels, region, T, true);
+        self.findEnergyLevels(*levels, region, T);
     }
-    kubly::wzmocnienie gMod{self.getGainModule(1000., T, n, region, *levels, true)};
+    kubly::wzmocnienie gMod{self.getGainModule(1000., T, n, region, *levels)};
 
     double straine =
         self.strains ? self.substrateMaterial->lattC(T, 'a') / region.getLayerMaterial(0)->lattC(T, 'a') - 1. : 0.;
@@ -238,7 +238,7 @@ BOOST_PYTHON_MODULE(wasiak) {
                             "by few angstroms to improve numerical stability.");
         solver.add_property("fast_levels", &__Class__::getBuildStructOnce, &__Class__::setBuildStructOnce,
                             "Compute levels only once and simply shift for different temperatures?\n\n"
-                            "Setting this to True stongly increases computation speed, but makes the results\n"
+                            "Setting this to True strongly increases computation speed, but makes the results\n"
                             "less accurate for high gains.");
         RECEIVER(inTemperature, "");
         RECEIVER(inCarriersConcentration, "");
@@ -273,14 +273,14 @@ BOOST_PYTHON_MODULE(wasiak) {
         py::scope scope = solver;
         py::class_<FermiNew::GainSpectrum<Geometry2DCylindrical>,
                    plask::shared_ptr<FermiNew::GainSpectrum<Geometry2DCylindrical>>>(
-            "Spectrum", "Gain spectrum class. You can call it like a function to get gains for different vavelengths.",
+            "Spectrum", "Gain spectrum class. You can call it like a function to get gains for different wavelengths.",
             py::no_init)
             .def("__call__", &FermiNewGainSpectrum__call__<Geometry2DCylindrical>, py::arg("lam"));
         py::class_<FermiNew::LuminescenceSpectrum<Geometry2DCylindrical>,
                    plask::shared_ptr<FermiNew::LuminescenceSpectrum<Geometry2DCylindrical>>>(
             "LuminescenceSpectrum",
             "Luminescence spectrum class. You can call it like a function to get luminescences for different "
-            "vavelengths.",
+            "wavelengths.",
             py::no_init)
             .def("__call__", &FermiNewLuminescenceSpectrum__call__<Geometry2DCylindrical>, py::arg("lam"));
     }

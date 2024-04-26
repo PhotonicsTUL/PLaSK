@@ -104,7 +104,6 @@
         for initial computation of the energy levels.
       label: Reference temperature
       type: float
-      default: 300
       unit: K
   providers: &providers
   - outGain
