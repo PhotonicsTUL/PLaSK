@@ -191,7 +191,7 @@ inline static std::vector<npy_intp> mesh_dims(const RectangularMesh<3>& mesh) {
 template <typename T> inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<2>& mesh, const size_t nd) {
     std::vector<npy_intp> strides(nd);
     strides[nd-1] = sizeof(T) / type_dim<T>::SIZE;
-    strides[nd-2] = strides[nd-1] * type_dim<T>::DIM;
+    strides[nd-2] = sizeof(T) / type_dim<T>::DIM;
     if (mesh.getIterationOrder() == RectangularMesh<2>::ORDER_10) {
         strides[0] = sizeof(T);
         strides[1] = mesh.axis[0]->size() * sizeof(T);
@@ -212,7 +212,7 @@ template <typename T> inline static std::vector<npy_intp> mesh_strides(const Rec
 template <typename T> inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<3>& mesh, size_t nd) {
     std::vector<npy_intp> strides(nd);
     strides[nd-1] = sizeof(T) / type_dim<T>::SIZE;
-    strides[nd-2] = strides[nd-1] * type_dim<T>::DIM;
+    strides[nd-2] = sizeof(T) / type_dim<T>::DIM;
     typedef RectangularMesh<3> Mesh3D;
     switch (mesh.getIterationOrder()) {
         ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 0, 1, 2)
@@ -394,7 +394,7 @@ static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type 
     };
     npy_intp strides[] = {
         static_cast<npy_intp>(sizeof(T)),
-        static_cast<npy_intp>(sizeof(T) / detail::type_dim<T>::SIZE * detail::type_dim<T>::DIM),
+        static_cast<npy_intp>(sizeof(T) / detail::type_dim<T>::DIM),
         static_cast<npy_intp>(sizeof(T) / detail::type_dim<T>::SIZE)
     };
     PyObject* arr = PyArray_New(&PyArray_Type, nd, dims, detail::typenum<T>(), strides, (void*)self->data(), 0, 0, NULL);
