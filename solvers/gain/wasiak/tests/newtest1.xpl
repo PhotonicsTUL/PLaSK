@@ -36,7 +36,7 @@
 <solvers>
   <gain name="GAIN" solver="WasiakNew2D" lib="wasiak">
     <geometry ref="main" mod="mod"/>
-    <config matrix-elem="10" roughness="1"/>
+    <config matrix-elem="10" roughness="1" Tref="300"/>
   </gain>
 </solvers>
 

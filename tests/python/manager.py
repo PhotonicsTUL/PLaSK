@@ -175,15 +175,15 @@ class ManagerTest(unittest.TestCase):
         <plask>
           <materials>
             <material name="XmlMat" base="dielectric">
-              <nr>1. + 0.001*T + 0.0001*wl</nr>
+              <nr>1. + 0.001*T + 0.0001*lam</nr>
               <absp>1.</absp>
             </material>
             <material name="XmlMat:Mg" base="GaN:Mg">
-              <nr>1. + 0.001*T + 0.0001*wl</nr>
+              <nr>1. + 0.001*T + 0.0001*lam</nr>
               <absp>T * self.doping</absp>
             </material>
             <material name="XmlMatMg20" base="GaN:Mg=1e20">
-              <nr>1. + 0.001*T + 0.0001*wl</nr>
+              <nr>1. + 0.001*T + 0.0001*lam</nr>
               <absp>T * self.doping</absp>
             </material>
             <material name="XmlMatSimple" base="dielectric">

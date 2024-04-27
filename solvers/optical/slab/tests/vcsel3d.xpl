@@ -164,7 +164,7 @@ class OldRule(VCSEL, unittest.TestCase):
 
 
 if __name__ == "__main__":
-    vcsel = MultiInverseRule('testComputations')
+    vcsel = VCSEL()
     vcsel.setUp()
 
     FOURIER3D.initialize()
