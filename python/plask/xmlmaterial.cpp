@@ -287,7 +287,7 @@ class PythonEvalMaterial : public MaterialWithBase {
         if (cls->nr == NULL) return base->nr(lam, T, n);
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
         py::dict locals;
-        locals["lam"] = locals["wl"] = lam;
+        locals["lam"] = lam;
         locals["T"] = T;
         locals["n"] = n;
         return call<double>(cls->nr, locals, "nr");
@@ -297,7 +297,7 @@ class PythonEvalMaterial : public MaterialWithBase {
         if (cls->absp == NULL) return base->absp(lam, T);
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
         py::dict locals;
-        locals["lam"] = locals["wl"] = lam;
+        locals["lam"] = lam;
         locals["T"] = T;
         return call<double>(cls->absp, locals, "absp");
     }
@@ -306,7 +306,7 @@ class PythonEvalMaterial : public MaterialWithBase {
         if (cls->Nr != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             py::dict locals;
-            locals["lam"] = locals["wl"] = lam;
+            locals["lam"] = lam;
             locals["T"] = T;
             locals["n"] = n;
             return call<dcomplex>(cls->Nr, locals, "Nr");
@@ -319,7 +319,7 @@ class PythonEvalMaterial : public MaterialWithBase {
         if (cls->cache.Eps) return *cls->cache.Eps;
         if (cls->Eps != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            py::dict locals; locals["lam"] = locals["wl"] = lam; locals["T"] = T; locals["n"] = n;
+            py::dict locals; locals["lam"] = lam; locals["T"] = T; locals["n"] = n;
             return call<Tensor3<dcomplex>>(cls->Eps, locals, "Eps");
         }
         if (cls->cache.Nr) {
@@ -330,7 +330,7 @@ class PythonEvalMaterial : public MaterialWithBase {
         if (cls->Nr != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             py::dict locals;
-            locals["lam"] = locals["wl"] = lam;
+            locals["lam"] = lam;
             locals["T"] = T;
             locals["n"] = n;
             dcomplex nc = call<dcomplex>(cls->Nr, locals, "Nr");
