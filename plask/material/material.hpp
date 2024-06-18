@@ -43,7 +43,7 @@ This file contains base classes for materials and material database class.
 namespace plask {
 
 /// Global Python lock
-extern PLASK_API OmpNestLock material_omp_lock;
+extern PLASK_API OmpNestedLock material_omp_lock;
 
 /**
  * Get group in periodic table of given @p object.
@@ -375,8 +375,8 @@ struct PLASK_API Material {
     /**
      * Create OpenMP lock guard.
      */
-    virtual OmpLockGuard<OmpNestLock> lock() const {
-        return OmpLockGuard<OmpNestLock>();
+    virtual OmpLockGuard lock() const {
+        return OmpLockGuard();
     }
 
     /// Do nothing.

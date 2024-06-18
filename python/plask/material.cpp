@@ -112,7 +112,7 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     template <typename R, typename F, typename... Args>
     inline R call(const char* name, F f, const plask::optional<R>& cached, Args&&... args) const {
         if (cached) return *cached;
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        OmpLockGuard lock(python_omp_lock);
         if (PyErr_Occurred()) throw py::error_already_set();
         if (overriden_no_recursion(name)) {
             return call_method<R>(name, std::forward<Args>(args)...);
@@ -123,7 +123,7 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     template <typename R, typename... Args>
     inline R call_override(const char* name, const plask::optional<R>& cached, Args&&... args) const {
         if (cached) return *cached;
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        OmpLockGuard lock(python_omp_lock);
         if (PyErr_Occurred()) throw py::error_already_set();
         if (overriden_no_recursion(name)) {
             return call_method<R>(name, std::forward<Args>(args)...);
@@ -140,12 +140,12 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
 
     // Here there are overridden methods from Material class
 
-    OmpLockGuard<OmpNestLock> lock() const override {
-        return OmpLockGuard<OmpNestLock>(python_omp_lock);
+    OmpLockGuard lock() const override {
+        return OmpLockGuard(python_omp_lock);
     }
 
     bool isEqual(const Material& other) const override {
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        OmpLockGuard lock(python_omp_lock);
         auto theother = static_cast<const PythonMaterial&>(other);
         py::object oself { py::borrowed(self) },
                    oother { py::object(py::borrowed(theother.self)) };
@@ -161,7 +161,7 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     }
 
     std::string name() const override {
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        OmpLockGuard lock(python_omp_lock);
         py::object cls = py::object(py::borrowed(self)).attr("__class__");
         py::object oname;
         std::string name;
@@ -177,7 +177,7 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     }
 
     std::string str() const override {
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        OmpLockGuard lock(python_omp_lock);
         if (overriden("__str__")) {
             return call_method<std::string>("__str__");
         }
@@ -201,7 +201,7 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     }
 
     Material::ConductivityType condtype() const override {
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        OmpLockGuard lock(python_omp_lock);
         py::object cls = py::object(py::borrowed(self)).attr("__class__");
         py::object octype;
         try {
@@ -217,7 +217,7 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
 //     }
 
     Material::Kind kind() const override {
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        OmpLockGuard lock(python_omp_lock);
         py::object cls = py::object(py::borrowed(self)).attr("__class__");
         py::object okind;
         try {
@@ -363,7 +363,7 @@ struct PythonMaterialConstructor: public MaterialsDB::MaterialConstructor
 
     shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const override
     {
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        OmpLockGuard lock(python_omp_lock);
         py::tuple args;
         py::dict kwargs;
         // Composition

@@ -285,7 +285,7 @@ PyObject* GeometryObjectIncludesPoints(const shared_ptr<GeometryObjectD<dim>>& s
 
     auto boxes = self->getObjectBoundingBoxes(obj, pth);
 
-#pragma omp parallel for
+PLASK_OMP_PARALLEL_FOR
     for (plask::openmp_size_t i = 0; i < mesh.size(); ++i) {
         auto p = mesh[i];
         data[i] = 0;

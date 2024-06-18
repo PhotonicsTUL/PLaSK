@@ -141,7 +141,7 @@ static py::object FreeCarrierGainSpectrum__call__(typename SolverT::GainSpectrum
 
         std::exception_ptr error;
 
-#pragma omp parallel for
+PLASK_OMP_PARALLEL_FOR
         for (npy_intp i = 0; i < size; ++i) {
             if (!error) try {
                     outdata[i] = self.getGain(indata[i * instride]);

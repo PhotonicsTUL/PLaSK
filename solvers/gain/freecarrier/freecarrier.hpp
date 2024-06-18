@@ -23,7 +23,7 @@ namespace plask { namespace gain { namespace freecarrier {
 
 template <typename BaseT> struct GainSpectrum;
 
-extern OmpNestLock gain_omp_lock;
+extern OmpNestedLock gain_omp_lock;
 
 /**
  * Gain solver using Fermi Golden Rule

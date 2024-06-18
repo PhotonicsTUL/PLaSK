@@ -830,7 +830,7 @@ template <typename FieldT> struct EffectiveIndex2D::FieldDataEfficient : public 
           rect_mesh(rect_mesh),
           valx(rect_mesh->tran()->size()),
           valy(rect_mesh->vert()->size()) {
-#pragma omp parallel
+PLASK_OMP_PARALLEL
         {
 #pragma omp for nowait
             for (plask::openmp_size_t idx = 0; idx < rect_mesh->tran()->size(); ++idx) {
@@ -879,7 +879,7 @@ template <typename FieldT> struct EffectiveIndex2D::FieldDataEfficient : public 
     DataVector<const FieldT> getAll() const override {
         DataVector<FieldT> results(rect_mesh->size());
         if (rect_mesh->getIterationOrder() == RectangularMesh<2>::ORDER_10) {
-#pragma omp parallel for
+PLASK_OMP_PARALLEL_FOR
             for (plask::openmp_size_t i1 = 0; i1 < rect_mesh->axis[1]->size(); ++i1) {
                 FieldT* data = results.data() + i1 * rect_mesh->axis[0]->size();
                 for (size_t i0 = 0; i0 < rect_mesh->axis[0]->size(); ++i0) {
@@ -888,7 +888,7 @@ template <typename FieldT> struct EffectiveIndex2D::FieldDataEfficient : public 
                 }
             }
         } else {
-#pragma omp parallel for
+PLASK_OMP_PARALLEL_FOR
             for (plask::openmp_size_t i0 = 0; i0 < rect_mesh->axis[0]->size(); ++i0) {
                 FieldT* data = results.data() + i0 * rect_mesh->axis[1]->size();
                 for (size_t i1 = 0; i1 < rect_mesh->axis[1]->size(); ++i1) {

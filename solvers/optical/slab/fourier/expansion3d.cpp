@@ -394,7 +394,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
                     T /= W;
                     C /= W;
                     {
-                        OmpLockGuard<OmpNestLock> lock;  // this must be declared before `material` to guard its destruction
+                        OmpLockGuard lock;  // this must be declared before `material` to guard its destruction
                         auto material = geometry->getMaterial(vec(long_mesh->at(l), tran_mesh->at(t), matv));
                         lock = material->lock();
                         cell[j] = material->Eps(lam, T, C);
@@ -1492,7 +1492,7 @@ double ExpansionPW3D::integrateField(WhichField field,
     cmatrix Fz(NN, M, temp.data());
 
     if (field == FIELD_E) {
-#pragma omp parallel for
+PLASK_OMP_PARALLEL_FOR
         for (openmp_size_t m = 0; m < M; m++) {
             for (int it = symmetric_tran() ? 0 : -ordt; it <= ordt; ++it) {
                 for (int il = symmetric_long() ? 0 : -ordl; il <= ordl; ++il) {
@@ -1515,7 +1515,7 @@ double ExpansionPW3D::integrateField(WhichField field,
             }
         }
     } else {  // field == FIELD_H
-#pragma omp parallel for
+PLASK_OMP_PARALLEL_FOR
         for (openmp_size_t m = 0; m < M; m++) {
             for (int it = symmetric_tran() ? 0 : -ordt; it <= ordt; ++it) {
                 for (int il = symmetric_long() ? 0 : -ordl; il <= ordl; ++il) {
@@ -1539,7 +1539,7 @@ double ExpansionPW3D::integrateField(WhichField field,
     double result = 0.;
 
     if (field == FIELD_E) {
-#pragma omp parallel for
+PLASK_OMP_PARALLEL_FOR
         for (openmp_size_t m1 = 0; m1 < M; ++m1) {
             for (openmp_size_t m2 = m1; m2 < M; ++m2) {
                 dcomplex resxy = 0., resz = 0.;
@@ -1561,7 +1561,7 @@ double ExpansionPW3D::integrateField(WhichField field,
         }
 
     } else {  // field == FIELD_H
-#pragma omp parallel for
+PLASK_OMP_PARALLEL_FOR
         for (openmp_size_t m1 = 0; m1 < M; ++m1) {
             for (openmp_size_t m2 = m1; m2 < M; ++m2) {
                 dcomplex resxy = 0., resz = 0.;

@@ -19,7 +19,7 @@ namespace plask { namespace gain { namespace freecarrier {
 
 constexpr double DIFF_STEP = 0.001;
 
-OmpNestLock gain_omp_lock;
+OmpNestedLock gain_omp_lock;
 
 template <typename BaseT>
 FreeCarrierGainSolver<BaseT>::Level::Level(double E, const Tensor2<double>& M, WhichLevel which, const ActiveRegionParams& params)
@@ -212,7 +212,7 @@ FreeCarrierGainSolver<BaseT>::ActiveRegionParams::ActiveRegionParams(const FreeC
         if (!quiet) solver->writelog(LOG_DETAIL, "Band edges taken from material database");
         size_t i = 0;
         for (auto material : region.materials) {
-            OmpLockGuard<OmpNestLock> lockq = material->lock();
+            OmpLockGuard lockq = material->lock();
             double e;
             if (solver->strained) {
                 double latt = material->lattC(T, 'a');
@@ -244,7 +244,7 @@ FreeCarrierGainSolver<BaseT>::ActiveRegionParams::ActiveRegionParams(const FreeC
         auto VB_L = solver->inBandEdges(BandEdges::VALENCE_LIGHT, mesh);
         for (size_t i = 0; i != mesh->vert()->size(); ++i) {
             auto material = region.materials[i];
-            OmpLockGuard<OmpNestLock> lockq = material->lock();
+            OmpLockGuard lockq = material->lock();
             double e;
             if (solver->strained) {
                 double latt = material->lattC(T, 'a');

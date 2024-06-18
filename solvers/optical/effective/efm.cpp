@@ -353,7 +353,7 @@ void EffectiveFrequencyCyl::stageOne() {
             size_t main_stripe = getMainStripe();
             // Compute effective frequencies for all stripes
             std::exception_ptr error;  // needed to handle exceptions from OMP loop
-#pragma omp parallel for
+PLASK_OMP_PARALLEL_FOR
             for (plask::openmp_size_t i = 0; i < rsize; ++i) {
                 if (error != std::exception_ptr()) continue;  // just skip loops after error
                 try {
@@ -947,7 +947,7 @@ template <typename FieldT> struct EffectiveFrequencyCyl::FieldDataEfficient : pu
           valz(rect_mesh->axis[1]->size()) {
         std::exception_ptr error;  // needed to handle exceptions from OMP loop
 
-#pragma omp parallel
+PLASK_OMP_PARALLEL
         {
 #pragma omp for nowait
             for (int idr = 0; idr < int(rect_mesh->axis[0]->size());
@@ -998,7 +998,7 @@ template <typename FieldT> struct EffectiveFrequencyCyl::FieldDataEfficient : pu
         DataVector<FieldT> results(rect_mesh->size());
 
         if (rect_mesh->getIterationOrder() == RectangularMesh<2>::ORDER_10) {
-#pragma omp parallel for
+PLASK_OMP_PARALLEL_FOR
             for (plask::openmp_size_t i1 = 0; i1 < rect_mesh->axis[1]->size(); ++i1) {
                 FieldT* data = results.data() + i1 * rect_mesh->axis[0]->size();
                 for (size_t i0 = 0; i0 < rect_mesh->axis[0]->size(); ++i0) {
@@ -1007,7 +1007,7 @@ template <typename FieldT> struct EffectiveFrequencyCyl::FieldDataEfficient : pu
                 }
             }
         } else {
-#pragma omp parallel for
+PLASK_OMP_PARALLEL_FOR
             for (plask::openmp_size_t i0 = 0; i0 < rect_mesh->axis[0]->size(); ++i0) {
                 FieldT* data = results.data() + i0 * rect_mesh->axis[1]->size();
                 for (size_t i1 = 0; i1 < rect_mesh->axis[1]->size(); ++i1) {

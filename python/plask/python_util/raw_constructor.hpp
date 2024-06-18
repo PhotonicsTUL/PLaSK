@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -31,7 +31,7 @@ namespace detail {
 
         PyObject* operator()(PyObject* args, PyObject* keywords)
         {
-            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+            OmpLockGuard lock(python_omp_lock);
             boost::python::detail::borrowed_reference_t* ra = boost::python::detail::borrowed_reference(args);
             boost::python::tuple a(ra);
             return boost::python::incref(

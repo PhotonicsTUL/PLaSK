@@ -272,7 +272,7 @@ struct FreeCarrierGainSolver2D<GeometryT>::ComputedData : public FreeCarrierGain
 
     void compute(double wavelength, InterpolationMethod interp) {
         // Compute gains on mesh for each active region
-        OmpLockGuard<OmpNestLock> lock(gain_omp_lock);
+        OmpLockGuard lock(gain_omp_lock);
         this->data.resize(this->solver->regions.size());
         for (size_t reg = 0; reg != this->solver->regions.size(); ++reg) {
             if (this->regpoints[reg]->size() == 0) {
@@ -326,7 +326,7 @@ struct FreeCarrierGainSolver2D<GeometryT>::GainData : public FreeCarrierGainSolv
             Fcs.data = this->solver->inFermiLevels(FermiLevels::ELECTRONS, temps.mesh, interp);
             Fvs.data = this->solver->inFermiLevels(FermiLevels::HOLES, temps.mesh, interp);
             plask::openmp_size_t end = this->regpoints[reg]->size();
-#pragma omp parallel for
+            PLASK_OMP_PARALLEL_FOR
             for (plask::openmp_size_t i = 0; i < end; ++i) {
                 if (error) continue;
                 try {
@@ -336,14 +336,14 @@ struct FreeCarrierGainSolver2D<GeometryT>::GainData : public FreeCarrierGainSolv
                     ActiveRegionParams params(this->solver, this->solver->params0[reg], T, bool(i));
                     values[i] = this->solver->getGain(hw, Fcs[i], Fvs[i], T, nr, params);
                 } catch (...) {
-#pragma omp critical
+                    #pragma omp critical
                     error = std::current_exception();
                 }
             }
             if (error) std::rethrow_exception(error);
         } else {
             plask::openmp_size_t end = this->regpoints[reg]->size();
-#pragma omp parallel for
+            PLASK_OMP_PARALLEL_FOR
             for (plask::openmp_size_t i = 0; i < end; ++i) {
                 if (error) continue;
                 try {
@@ -355,7 +355,7 @@ struct FreeCarrierGainSolver2D<GeometryT>::GainData : public FreeCarrierGainSolv
                     this->solver->findFermiLevels(Fc, Fv, conc, T, params);
                     values[i] = this->solver->getGain(hw, Fc, Fv, T, nr, params);
                 } catch (...) {
-#pragma omp critical
+                    #pragma omp critical
                     error = std::current_exception();
                 }
             }
@@ -381,7 +381,7 @@ struct FreeCarrierGainSolver2D<GeometryT>::DgdnData : public FreeCarrierGainSolv
         DataVector<Tensor2<double>> values(this->regpoints[reg]->size());
         std::exception_ptr error;
         plask::openmp_size_t end = this->regpoints[reg]->size();
-#pragma omp parallel for
+        PLASK_OMP_PARALLEL_FOR
         for (plask::openmp_size_t i = 0; i < end; ++i) {
             if (error) continue;
             try {
@@ -396,7 +396,7 @@ struct FreeCarrierGainSolver2D<GeometryT>::DgdnData : public FreeCarrierGainSolv
                 Tensor2<double> gain2 = this->solver->getGain(hw, Fc, Fv, T, nr, params);
                 values[i] = (gain2 - gain1) / (2. * h * conc);
             } catch (...) {
-#pragma omp critical
+                #pragma omp critical
                 error = std::current_exception();
             }
         }
@@ -428,8 +428,7 @@ const LazyData<Tensor2<double>> FreeCarrierGainSolver2D<GeometryT>::getGainData(
 }
 
 template <typename GeometryT>
-struct FreeCarrierGainSolver2D<GeometryT>::EnergyLevelsData
-    : public FreeCarrierGainSolver2D<GeometryT>::DataBaseVector {
+struct FreeCarrierGainSolver2D<GeometryT>::EnergyLevelsData : public FreeCarrierGainSolver2D<GeometryT>::DataBaseVector {
     using typename DataBaseVector::AveragedData;
 
     size_t which;

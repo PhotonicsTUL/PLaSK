@@ -86,7 +86,18 @@ PLASK_PYTHON_API py::object py_eval(std::string string, py::object global, py::o
 
 
 // Parallel locking
-PLASK_PYTHON_API OmpNestLock python_omp_lock;
+
+#ifdef OPENMP_FOUND
+
+struct PythonOmpEnv : public OmpEnv {
+    PyThreadState* thread_state;
+    virtual void enable() { thread_state = PyEval_SaveThread(); };
+    virtual void disable() { PyEval_RestoreThread(thread_state); };
+} python_omp_env;
+
+#endif
+
+PLASK_PYTHON_API OmpPythonLock python_omp_lock;
 
 // Config
 PLASK_PYTHON_API AxisNames current_axes = AxisNames::axisNamesRegister.get("ltv");
@@ -457,21 +468,21 @@ struct SolverWrap: public Solver, Overriden<Solver> {
     }
 
     void onInitialize() override {
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        OmpLockGuard lock(python_omp_lock);
         if (overriden("on_initialize")) {
             py::call_method<void>(self, "on_initialize");
         }
     }
 
     void onInvalidate() override {
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        OmpLockGuard lock(python_omp_lock);
         if (overriden("on_invalidate")) {
             py::call_method<void>(self, "on_invalidate");
         }
     }
 
     void loadConfiguration(XMLReader& source, Manager& manager) override {
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        OmpLockGuard lock(python_omp_lock);
         if (overriden("load_xpl")) {
             py::call_method<void>(self, "load_xpl", boost::ref(source), boost::ref(manager));
         } else {
@@ -519,6 +530,10 @@ BOOST_PYTHON_MODULE(_plask)
 {
     // Initialize numpy
     if (!plask_import_array()) throw(py::error_already_set());
+
+    #ifdef OPENMP_FOUND
+        plask::OmpEnabler::env = &python_omp_env;
+    #endif
 
     py::scope scope; // Default scope
 

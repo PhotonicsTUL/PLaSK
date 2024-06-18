@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -177,8 +177,8 @@ const char* StderrLogger::head(LogLevel level) {
 
 void StderrLogger::writelog(LogLevel level, const std::string& msg) {
 #ifdef OPENMP_FOUND
-    static OmpLock loglock;
-    OmpLockGuard<OmpLock> guard(loglock);
+    static OmpSingleLock loglock;
+    OmpLockGuard guard(loglock);
 #endif
 
     static LogLevel prev_level; static std::string prev_msg;

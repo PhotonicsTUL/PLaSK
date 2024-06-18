@@ -167,7 +167,7 @@ void ExpansionBessel::afterGetEpsilon() {
 Tensor3<dcomplex> ExpansionBessel::getEps(size_t layer, size_t ri, double r, double matz, double lam, double glam) {
     Tensor3<dcomplex> eps;
     {
-        OmpLockGuard<OmpNestLock> lock;  // this must be declared before `material` to guard its destruction
+        OmpLockGuard lock;  // this must be declared before `material` to guard its destruction
         auto material = SOLVER->getGeometry()->getMaterial(vec(r, matz));
         lock = material->lock();
         double T, cc;
@@ -498,7 +498,7 @@ double ExpansionBessel::integrateField(WhichField field, size_t layer, const cma
     double fz = 0.5 / real(k0 * conj(k0));
 
     if (field == FIELD_E) {
-        #pragma omp parallel for
+        PLASK_OMP_PARALLEL_FOR
         for (openmp_size_t m = 0; m < M; m++) {
             cvector Ez(N), Dz(N);
             for (size_t j = 0; j != N; ++j) {
@@ -508,7 +508,7 @@ double ExpansionBessel::integrateField(WhichField field, size_t layer, const cma
         }
         mult_matrix_by_matrix(layers_integrals[layer].V_k, DBz, Fz);
     } else {
-        #pragma omp parallel for
+        PLASK_OMP_PARALLEL_FOR
         for (openmp_size_t m = 0; m < M; m++) {
             for (size_t j = 0; j != N; ++j) {
                 size_t js = idxs(j), jp = idxp(j);
@@ -521,7 +521,7 @@ double ExpansionBessel::integrateField(WhichField field, size_t layer, const cma
     double result = 0.;
 
     if (field == FIELD_E) {
-        #pragma omp parallel for
+        PLASK_OMP_PARALLEL_FOR
         for (openmp_size_t m1 = 0; m1 < M; ++m1) {
             for (openmp_size_t m2 = m1; m2 < M; ++m2) {
                 dcomplex resxy = 0., resz = 0.;
@@ -542,7 +542,7 @@ double ExpansionBessel::integrateField(WhichField field, size_t layer, const cma
             }
         }
     } else {
-        #pragma omp parallel for
+        PLASK_OMP_PARALLEL_FOR
         for (openmp_size_t m1 = 0; m1 < M; ++m1) {
             for (openmp_size_t m2 = m1; m2 < M; ++m2) {
                 dcomplex resxy = 0., resz = 0.;

@@ -216,7 +216,7 @@ const char* PythonSysLogger::head(LogLevel level) {
 }
 
 void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
-    OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+    OmpLockGuard lock(python_omp_lock);
 
     static LogLevel prev_level; static std::string prev_msg;
     if (level == prev_level && msg == prev_msg) return;

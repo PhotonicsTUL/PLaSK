@@ -60,12 +60,12 @@ struct UnstructuredMesh: public MeshD<dim> {
     UnstructuredMesh(const py::object& points): points(points) {}
 
     typename MeshD<dim>::LocalCoords at(std::size_t index) const override {
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        OmpLockGuard lock(python_omp_lock);
         return py::extract<typename MeshD<dim>::LocalCoords>(points[index]);
     }
 
     size_t size() const override {
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        OmpLockGuard lock(python_omp_lock);
         return py::len(points);
     }
 

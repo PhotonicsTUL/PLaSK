@@ -323,7 +323,30 @@ template <typename TK, typename TV> std::map<TK, TV> dict_to_map(const py::objec
 // ----------------------------------------------------------------------------------------------------------------------
 // Parallel locking
 
-extern PLASK_PYTHON_API OmpNestLock python_omp_lock;
+#ifdef OPENMP_FOUND
+
+struct OmpPythonLockState : OmpLockState {
+    PyGILState_STATE gil_state;
+    OmpPythonLockState(const PyGILState_STATE& state) : gil_state(state) {}
+};
+
+class OmpPythonLock : public OmpLock {
+    OmpLockState* lock() override { return new OmpPythonLockState(PyGILState_Ensure()); }
+
+    void unlock(OmpLockState* state) override {
+        OmpPythonLockState* python_state = static_cast<OmpPythonLockState*>(state);
+        PyGILState_Release(python_state->gil_state);
+        delete python_state;
+    }
+};
+
+#else
+
+#    define OmpPythonLock OmpLock
+
+#endif
+
+extern PLASK_PYTHON_API OmpPythonLock python_omp_lock;
 
 // ----------------------------------------------------------------------------------------------------------------------
 // Virtual functions overriding
@@ -397,7 +420,7 @@ template <typename T> struct Overriden {
     }
 
     template <typename R, typename... Args> inline R call_python(const char* name, Args... args) const {
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        OmpLockGuard lock(python_omp_lock);
         if (overriden(name)) {
             return py::call_method<R>(self, name, args...);
         }

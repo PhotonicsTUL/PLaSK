@@ -153,7 +153,7 @@ struct PLASK_SOLVER_API Expansion {
             size_t nlayers = solver->lcount;
             std::exception_ptr error;
             beforeLayersIntegrals(lam, glambda);
-            #pragma omp parallel for
+            PLASK_OMP_PARALLEL_FOR
             for (plask::openmp_size_t l = 0; l < nlayers; ++l) {
                 if (error) continue;
                 try {
@@ -177,7 +177,7 @@ struct PLASK_SOLVER_API Expansion {
             for (size_t l = 0; l != nlayers; ++l) if (solver->lgained[l]) glayers.push_back(l);
             std::exception_ptr error;
             beforeLayersIntegrals(lam, glambda);
-            #pragma omp parallel for
+            PLASK_OMP_PARALLEL_FOR
             for (plask::openmp_size_t l = 0; l < glayers.size(); ++l) {
                 if (error) continue;
                 try {

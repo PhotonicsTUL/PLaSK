@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -12,6 +12,7 @@
  * GNU General Public License for more details.
  */
 #include "bisection.hpp"
+#include <plask/parallel.hpp>
 
 namespace plask { namespace optical { namespace effective {
 
@@ -36,7 +37,7 @@ Contour::Contour(const Solver* solver, const std::function<dcomplex(dcomplex)>& 
     double di = (im1 - im0) / double(imn);
 
     std::exception_ptr error;
-    #pragma omp parallel
+    PLASK_OMP_PARALLEL
     {
         #pragma omp for nowait
         for (int i = 0; i < int(ren); ++i) {
@@ -112,7 +113,7 @@ std::pair<Contour,Contour> Contour::divide(double reps, double ieps) const
         double di = (im1 - im0) / double(imn);
 
         std::exception_ptr error;
-        #pragma omp parallel for
+        PLASK_OMP_PARALLEL_FOR
         for (plask::openmp_size_t i = 1; i < imn; ++i) {
             if (error) continue;
             try {
@@ -156,7 +157,7 @@ std::pair<Contour,Contour> Contour::divide(double reps, double ieps) const
             double dr = (re1 - re0) / double(ren);
 
             std::exception_ptr error;
-            #pragma omp parallel for
+            PLASK_OMP_PARALLEL_FOR
             for (plask::openmp_size_t i = 1; i < ren; ++i) {
                 if (error) continue;
                 try {

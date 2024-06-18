@@ -517,7 +517,7 @@ struct PythonProviderFor<ProviderT, SINGLE_VALUE_PROPERTY, VariadicTemplateTypes
 
     PythonProviderFor(const py::object& function)
         : ProviderFor<typename ProviderT::PropertyTag>::Delegate([this](_ExtraParams... params) -> ProvidedType {
-              OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+              OmpLockGuard lock(python_omp_lock);
               if (PyCallable_Check(this->function.ptr()))
                   return py::extract<ProvidedType>(this->function(params...));
               else
@@ -536,14 +536,14 @@ struct PythonProviderFor<ProviderT, MULTI_VALUE_PROPERTY, VariadicTemplateTypesH
     PythonProviderFor(const py::object& function)
         : ProviderFor<typename ProviderT::PropertyTag>::Delegate(
               [this](typename ProviderT::EnumType n, _ExtraParams... params) -> ProvidedType {
-                  OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+                  OmpLockGuard lock(python_omp_lock);
                   if (PyCallable_Check(this->function.ptr()))
                       return py::extract<ProvidedType>(this->function(n, params...));
                   else
                       return py::extract<ProvidedType>(this->function[n]);
               },
               [this]() -> size_t {
-                  OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+                  OmpLockGuard lock(python_omp_lock);
                   if (PyObject_HasAttrString(this->function.ptr(), "__len__"))
                       return py::extract<size_t>(this->function.attr("__len__")());
                   else
@@ -572,7 +572,7 @@ template <typename T> struct PythonLazyDataImpl : public LazyDataImpl<T> {
     }
 
     T at(std::size_t index) const override {
-        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        OmpLockGuard lock(python_omp_lock);
         return py::extract<T>(object[index]);
     }
 
@@ -612,7 +612,7 @@ struct PythonProviderFor<ProviderT, FIELD_PROPERTY, VariadicTemplateTypesHolder<
               [this](const shared_ptr<const MeshD<ProviderT::SpaceType::DIM>>& dst_mesh,
                      _ExtraParams... params,
                      InterpolationMethod method) -> ProvidedType {
-                  OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+                  OmpLockGuard lock(python_omp_lock);
                   if (PyCallable_Check(this->function.ptr())) {
                       py::object omesh(const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh));
                       py::object result = this->function(omesh, params..., method);
@@ -647,7 +647,7 @@ struct PythonProviderFor<ProviderT, MULTI_FIELD_PROPERTY, VariadicTemplateTypesH
                      const shared_ptr<const MeshD<ProviderT::SpaceType::DIM>>& dst_mesh,
                      _ExtraParams... params,
                      InterpolationMethod method) -> ProvidedType {
-                  OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+                  OmpLockGuard lock(python_omp_lock);
                   if (PyCallable_Check(this->function.ptr())) {
                       py::object omesh(const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh));
                       py::object result = this->function(n, omesh, params..., method);
@@ -668,7 +668,7 @@ struct PythonProviderFor<ProviderT, MULTI_FIELD_PROPERTY, VariadicTemplateTypesH
                   }
               },
               [this]() -> size_t {
-                  OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+                  OmpLockGuard lock(python_omp_lock);
                   if (PyObject_HasAttrString(this->function.ptr(), "__len__"))
                       return py::extract<size_t>(this->function.attr("__len__")());
                   else

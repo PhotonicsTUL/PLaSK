@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -14,154 +14,169 @@
 #ifndef PLASK__PLASK_PARALLEL_H
 #define PLASK__PLASK_PARALLEL_H
 
+#include <plask/config.hpp>
+
 #ifdef OPENMP_FOUND
-#   include <omp.h>
+#    include <omp.h>
 #endif
 
 namespace plask {
 
+/// State of the current lock
+struct OmpLockState {};
+
 #if defined(OPENMP_FOUND) || defined(DOXYGEN)
 
-    /// OMP nest lock class.
-    class OmpNestLock {
+/// OMP environment class
+struct OmpEnv {
+    virtual ~OmpEnv() = default;
+    virtual void enable() = 0;
+    virtual void disable() = 0;
+};
 
-        omp_nest_lock_t lck;
+/**
+ * OMP enabler class
+ *
+ * An instance of this class should be created at before the parallel section.
+ */
+struct OmpEnabler {
+    PLASK_API static OmpEnv* env;
 
-      public:
+    OmpEnabler() {
+        if (env) env->enable();
+    }
 
-        OmpNestLock(const OmpNestLock&) = delete;
-        OmpNestLock& operator=(const OmpNestLock&) = delete;
-        OmpNestLock(OmpNestLock&&) = delete;
-        OmpNestLock& operator=(OmpNestLock&&) = delete;
+    ~OmpEnabler() {
+        if (env) env->disable();
+    }
 
-        /// Initialize the lock
-        OmpNestLock() {
-            omp_init_nest_lock(&lck);
-        }
+    inline operator bool() const { return true; }  // so that it can be used in an `if` statement
+};
 
-        /// Destroy the
-        ~OmpNestLock() {
-            omp_destroy_nest_lock(&lck);
-        }
+#    ifdef _MSC_VER
+#        define PLASK_OMP_PARALLEL \
+            if (plask::OmpEnabler omp_enabler{}) __pragma(omp parallel)
+#        define PLASK_OMP_PARALLEL_FOR \
+            if (plask::OmpEnabler omp_enabler{}) __pragma(omp parallel for)
+#        define PLASK_OMP_PARALLEL_FOR_1 \
+            if (plask::OmpEnabler omp_enabler{}) __pragma(omp parallel for schedule(dynamic,1))
+#    else
+#        define PLASK_OMP_PARALLEL \
+            if (plask::OmpEnabler omp_enabler{}) _Pragma("omp parallel")
+#        define PLASK_OMP_PARALLEL_FOR \
+            if (plask::OmpEnabler omp_enabler{}) _Pragma("omp parallel for")
+#        define PLASK_OMP_PARALLEL_FOR_1 \
+            if (plask::OmpEnabler omp_enabler{}) _Pragma("omp parallel for schedule(dynamic,1)")
+#    endif
 
-        void lock() { omp_set_nest_lock(&lck); }
+/// Abstract OMP lock
+struct OmpLock {
+    OmpLock(const OmpLock&) = delete;
+    OmpLock& operator=(const OmpLock&) = delete;
+    OmpLock(OmpLock&&) = delete;
+    OmpLock& operator=(OmpLock&&) = delete;
 
-        void unlock() { omp_unset_nest_lock(&lck); }
-    };
+    OmpLock() {}
+    virtual ~OmpLock() {}
 
-    /// OMP lock class.
-    class OmpLock {
+    virtual OmpLockState* lock() = 0;
+    virtual void unlock(OmpLockState*) = 0;
+};
 
-        omp_lock_t lck;
+/// OMP nest lock class
+class OmpNestedLock : public OmpLock {
+    omp_nest_lock_t lck;
 
-      public:
+  public:
+    OmpNestedLock() { omp_init_nest_lock(&lck); }
+    ~OmpNestedLock() { omp_destroy_nest_lock(&lck); }
+    OmpLockState* lock() override { omp_set_nest_lock(&lck); return nullptr; }
+    void unlock(OmpLockState*) override { omp_unset_nest_lock(&lck); }
+};
 
-        OmpLock(const OmpLock&) = delete;
-        OmpLock& operator=(const OmpLock&) = delete;
-        OmpLock(OmpLock&&) = delete;
-        OmpLock& operator=(OmpLock&&) = delete;
+/// OMP lock class
+class OmpSingleLock : public OmpLock {
+    omp_lock_t lck;
 
-        /// Initialize the lock
-        OmpLock() {
-            omp_init_lock(&lck);
-        }
+  public:
+    OmpSingleLock() { omp_init_lock(&lck); }
+    ~OmpSingleLock() { omp_destroy_lock(&lck); }
+    OmpLockState* lock() override { omp_set_lock(&lck); return nullptr; }
+    void unlock(OmpLockState*) override { omp_unset_lock(&lck); }
+};
 
-        /// Destroy the
-        ~OmpLock() {
-            omp_destroy_lock(&lck);
-        }
+/// OMP lock guard class
+class OmpLockGuard {
+    OmpLock* lock;
+    OmpLockState* state;
 
-        void lock() { omp_set_lock(&lck); }
-
-        void unlock() { omp_unset_lock(&lck); }
-    };
-
+  public:
+    OmpLockGuard() : lock(nullptr) {}
 
     /**
-     * Template of OMP lock guard class.
-     * @tpatam LockType type of lock, either OmpLock or OmpNestLock
+     * Lock the lock.
+     * In case of OmpNestedLock, if the lock is already locked by the same thread, just increase its depth.
      */
-    template <typename LockType>
-    class OmpLockGuard {
+    OmpLockGuard(OmpLock& lock) : lock(&lock) { state = lock.lock(); }
 
-        LockType* lck;
+    /// Move the lock
+    OmpLockGuard(OmpLockGuard&& orig) : lock(orig.lock) { orig.lock = nullptr; };
 
-      public:
-        OmpLockGuard(): lck(nullptr) {}
+    /// Move the lock
+    OmpLockGuard& operator=(OmpLockGuard&& orig) {
+        if (lock) lock->unlock(state);
+        lock = orig.lock;
+        state = orig.state;
+        orig.lock = nullptr;
+        return *this;
+    }
 
-        /**
-         * Lock the lock.
-         * In case of OmpNestLock, if the lock is already locked by the same thread, just increase its depth.
-         */
-        OmpLockGuard(LockType& lock): lck(&lock) {
-            lck->lock();
-        }
+    OmpLockGuard(const OmpLockGuard&) = delete;
+    OmpLockGuard& operator=(const OmpLockGuard&) = delete;
 
-        /// Move the lock
-        OmpLockGuard(OmpLockGuard<LockType>&& orig): lck(orig.lck) {
-            orig.lck = nullptr;
-        };
-
-        /// Move the lock
-        OmpLockGuard& operator=(OmpLockGuard&& orig) {
-            if (lck) lck->unlock();
-            lck = orig.lck;
-            orig.lck = nullptr;
-            return *this;
-        }
-
-        OmpLockGuard(const OmpLockGuard&) = delete;
-        OmpLockGuard& operator=(const OmpLockGuard&) = delete;
-
-        /// Unlock the lock
-        ~OmpLockGuard() {
-            if (lck) lck->unlock();
-        }
-    };
+    /// Unlock the lock
+    ~OmpLockGuard() {
+        if (lock) lock->unlock(state);
+    }
+};
 
 #else
 
-    // Empty placeholder
-    struct OmpNestLock {
-        OmpNestLock() = default;
-        OmpNestLock(const OmpNestLock&) = delete;
-        OmpNestLock& operator=(const OmpNestLock&) = delete;
-        OmpNestLock(OmpNestLock&&) = delete;
-        OmpNestLock& operator=(OmpNestLock&&) = delete;
+struct OmpEnabler {};
 
-        void lock() {}
-        void unlock() {}
-    };
+#    define PLASK_OMP_PARALLEL
+#    define PLASK_OMP_PARALLEL_FOR
+#    define PLASK_OMP_PARALLEL_FOR_1
 
-    // Empty placeholder
-    struct OmpLock {
-        OmpLock() = default;
-        OmpLock(const OmpLock&) = delete;
-        OmpLock& operator=(const OmpLock&) = delete;
-        OmpLock(OmpNestLock&&) = delete;
-        OmpLock& operator=(OmpLock&&) = delete;
+// Empty placeholder
+struct OmpLock {
+    OmpLock(const OmpLock&) = delete;
+    OmpLock& operator=(const OmpLock&) = delete;
+    OmpLock(OmpLock&&) = delete;
+    OmpLock& operator=(OmpLock&&) = delete;
 
-        void lock() {}
-        void unlock() {}
-    };
+    OmpLock() {}
 
-    // Empty placeholder
-    template <typename LockType>
-    struct OmpLockGuard {
-        OmpLockGuard() {}
-        OmpLockGuard(const LockType&) {}
-        ~OmpLockGuard() {}
-        OmpLockGuard(OmpLockGuard<LockType>&&) = default;
-        OmpLockGuard& operator=(OmpLockGuard<LockType>&&) = default;
-        OmpLockGuard(const OmpLockGuard<LockType>&) = delete;
-        OmpLockGuard& operator=(const OmpLockGuard<LockType>&) = delete;
-    };
+    inline OmpLockState* lock() { return nullptr; }
+    inline void unlock(OmpLockState*) {}
+};
+
+#    define OmpNestedLock OmpLock
+#    define OmpSingleLock OmpLock
+
+// Empty placeholder
+struct OmpLockGuard {
+    OmpLockGuard() {}
+    OmpLockGuard(const OmpLock&) {}
+    ~OmpLockGuard() {}
+    OmpLockGuard(OmpLockGuard&&) = default;
+    OmpLockGuard& operator=(OmpLockGuard&&) = default;
+    OmpLockGuard(const OmpLockGuard&) = delete;
+    OmpLockGuard& operator=(const OmpLockGuard&) = delete;
+};
 
 #endif
 
+}  // namespace plask
 
-} // namespace plask
-
-#endif // PLASK__PLASK_PARALLEL_H
-
-
+#endif  // PLASK__PLASK_PARALLEL_H

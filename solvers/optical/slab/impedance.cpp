@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -61,7 +61,7 @@ void ImpedanceTransfer::findImpedance(std::ptrdiff_t start, std::ptrdiff_t end)
 
     std::exception_ptr error;
 
-    #pragma omp parallel for schedule(dynamic,1)
+    PLASK_OMP_PARALLEL_FOR_1
     for (int l = 0; l < int(diagonalizer->lcount); ++l) {
         try {
             if (!error) diagonalizer->diagonalizeLayer(l);
@@ -243,7 +243,7 @@ void ImpedanceTransfer::determineFields()
         }
         if (start != end) {
             // Zero electric field at the end
-            std::ptrdiff_t n = end + inc; 
+            std::ptrdiff_t n = end + inc;
             fields[n].E0 = cvector(N, 0.);
         }
     }

@@ -260,7 +260,7 @@ struct FreeCarrierGainSolver3D::ComputedData : public FreeCarrierGainSolver3D::D
 
     void compute(double wavelength, InterpolationMethod interp) {
         // Compute gains on mesh for each active region
-        OmpLockGuard<OmpNestLock> lock(gain_omp_lock);
+        OmpLockGuard lock(gain_omp_lock);
         for (size_t reg = 0; reg != this->solver->regions.size(); ++reg) {
             if (this->regions[reg].size() == 0) continue;
             AveragedData temps(this->solver, "temperature", make_shared<ActiveRegionMesh>(this, reg), this->solver->regions[reg]);
@@ -308,7 +308,7 @@ struct FreeCarrierGainSolver3D::GainData : public FreeCarrierGainSolver3D::Compu
             Fvs.name = "quasi Fermi level for holes";
             Fcs.data = this->solver->inFermiLevels(FermiLevels::ELECTRONS, temps.mesh, interp);
             Fvs.data = this->solver->inFermiLevels(FermiLevels::HOLES, temps.mesh, interp);
-#pragma omp parallel for
+PLASK_OMP_PARALLEL_FOR
             for (plask::openmp_size_t i = 0; i < this->regions[reg].size(); ++i) {
                 if (error) continue;
                 try {
@@ -324,7 +324,7 @@ struct FreeCarrierGainSolver3D::GainData : public FreeCarrierGainSolver3D::Compu
             }
             if (error) std::rethrow_exception(error);
         } else {
-#pragma omp parallel for
+PLASK_OMP_PARALLEL_FOR
             for (plask::openmp_size_t i = 0; i < this->regions[reg].size(); ++i) {
                 if (error) continue;
                 try {
@@ -360,7 +360,7 @@ struct FreeCarrierGainSolver3D::DgdnData : public FreeCarrierGainSolver3D::Compu
         const double h = 0.5 * DIFF_STEP;
         DataVector<Tensor2<double>> values(this->regions[reg].size());
         std::exception_ptr error;
-#pragma omp parallel for
+PLASK_OMP_PARALLEL_FOR
         for (plask::openmp_size_t i = 0; i < this->regions[reg].size(); ++i) {
             if (error) continue;
             try {

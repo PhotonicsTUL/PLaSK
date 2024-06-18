@@ -833,7 +833,7 @@ template <int dim, typename SrcT, typename DstT> struct __InterpolateMeta__<pyth
         const shared_ptr<const MeshD<dim>>& dst_mesh,
         InterpolationMethod method,
         const InterpolationFlags& /*flags*/) {
-        OmpLockGuard<OmpNestLock> lock(python::python_omp_lock);
+        OmpLockGuard lock(python::python_omp_lock);
         typedef python::PythonDataVector<const DstT, dim> ReturnedType;
         boost::python::object omesh(const_pointer_cast<MeshD<dim>>(dst_mesh));
         auto source = plask::make_shared<python::PythonDataVector<const SrcT, dim>>(

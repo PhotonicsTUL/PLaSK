@@ -15,6 +15,7 @@
 #define PLASK__LAZYDATA_H
 
 #include "data.hpp"
+#include "parallel.hpp"
 #include "utils/openmp.hpp"
 
 #include "vector/tensor2.hpp"
@@ -56,7 +57,7 @@ struct LazyDataImpl {
     virtual DataVector<const T> getAll() const {
         DataVector<T> res(this->size());
         std::exception_ptr error;
-        #pragma omp parallel for
+        PLASK_OMP_PARALLEL_FOR
         for (openmp_size_t i = 0; i < res.size(); ++i) {
             if (error) continue;
             try {

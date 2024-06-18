@@ -806,7 +806,7 @@ template <typename GeometryT, typename T> struct DataBase : public LazyDataImpl<
                 solver->findEnergyLevels(solver->region_levels[reg], solver->regions[reg], solver->Tref);
             }
             std::exception_ptr error;
-#pragma omp parallel for
+PLASK_OMP_PARALLEL_FOR
             for (int i = 0; i < regpoints[reg]->size(); ++i) {
                 if (error) continue;
                 try {

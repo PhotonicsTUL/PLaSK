@@ -159,7 +159,7 @@ struct PLASK_SOLVER_API ExpansionPW2D : public Expansion {
         C /= W;
         Tensor3<dcomplex> eps;
         {
-            OmpLockGuard<OmpNestLock> lock;  // this must be declared before `material` to guard its destruction
+            OmpLockGuard lock;  // this must be declared before `material` to guard its destruction
             auto material = geometry->getMaterial(vec(mesh->tran()->at(j), maty));
             lock = material->lock();
             eps = material->Eps(lam, T, C);
