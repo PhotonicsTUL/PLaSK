@@ -457,7 +457,7 @@ void register_calculation_spaces() {
 
     py::class_<Geometry2DCartesian, shared_ptr<Geometry2DCartesian>, py::bases<Geometry>>("Cartesian2D",
         u8"Geometry in 2D Cartesian space.\n\n"
-        u8"Cartesian2D(root, length=infty, **edges)\n\n"
+        u8"Cartesian2D(root, length=inf, **edges)\n\n"
         u8"Create a space around a two-dimensional geometry object with a given length.\n\n"
         u8"Args:\n"
         u8"    root (GeometryObject2D Extrusion): Root object of the geometry.\n"

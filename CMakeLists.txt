@@ -14,8 +14,13 @@ cmake_minimum_required(VERSION 3.14)
 
 # Silence unnesessary warning
 cmake_policy(SET CMP0054 NEW)
+
 if(POLICY CMP0148)
     cmake_policy(SET CMP0148 NEW)
+endif()
+
+if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 OLD)
 endif()
 
 project(plask)

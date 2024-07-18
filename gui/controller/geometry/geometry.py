@@ -68,7 +68,7 @@ class GNCartesian2DGeometryController(GNGeometryController):
         self.construct_group('Implicit Extrusion Settings')
         self.length = self.construct_line_edit('Length:', unit=u'µm', node_property_name='length', display_property_name='longitudinal dimension of the geometry')
         self.length.setToolTip(u'&lt;cartesian2d <b>length</b>="" ...&gt;<br/>'
-            u'Longitudinal dimension of the geometry (float, µm). Default value is: +infty.')
+            u'Longitudinal dimension of the geometry (float, µm). Default value is: +inf.')
         super().construct_form()
 
     def fill_form(self):

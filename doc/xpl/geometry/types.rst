@@ -13,7 +13,7 @@ These elements are are placed directly in the :xml:tag`geometry` section. All ot
 
    :attr name: Geometry name for further reference. In the :xml:tag:`script` section, the geometry is available by ``GEO`` table, which is indexed by names of geometry objects. (unique identifier string)
    :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
-   :attr length: Longitudinal dimension of the geometry (float, µm).: Default value is: *+\infty*.
+   :attr length: Longitudinal dimension of the geometry (float, µm).: Default value is: *+\inf*.
    :attr bottom: Specification of the bottom border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr left: Specification of the left border. (any material name, ``mirror``, ``periodic``, or ``extend``)
    :attr right: Specification of the right border. (any material name, ``mirror``, ``periodic``, or ``extend``)

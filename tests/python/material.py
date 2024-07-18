@@ -210,7 +210,7 @@ class TestMaterial(unittest.TestCase):
         class Therm(material.Material):
             def thermk(self, T, t): return T + t
 
-        self.assertEqual(ptest.material_thermk("Therm", material.db, 300.), (infty,infty))
+        self.assertEqual(ptest.material_thermk("Therm", material.db, 300.), (inf,inf))
         self.assertEqual(ptest.material_thermk("Therm", material.db, 300., 2.), (302.,302.))
 
     def testComparison(self):
@@ -269,7 +269,7 @@ class TestMaterial(unittest.TestCase):
 
         @material.simple('bas')
         class Mat(material.Material):
-            def thermk(self, T=300., h=infty):
+            def thermk(self, T=300., h=inf):
                 val = 3. * self.base.thermk(T, h)[0]
                 return (val, val)
             def cond(self, T=300.):

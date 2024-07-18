@@ -44,7 +44,11 @@ template <typename OT, typename IT = OT, typename F> py::object UFUNC(F f, py::o
         }
         NpyIter_IterNextFunc* iternext = NpyIter_GetIterNext(iter, NULL);
         npy_intp innerstride = NpyIter_GetInnerStrideArray(iter)[0];
+#if NPY_API_VERSION >= 0x00000012
+        npy_intp itemsize = PyDataType_ELSIZE(op_dtypes[1]);
+#else
         npy_intp itemsize = op_dtypes[1]->elsize;
+#endif
         npy_intp* innersizeptr = NpyIter_GetInnerLoopSizePtr(iter);
         char** dataptrarray = NpyIter_GetDataPtrArray(iter);
         do {
@@ -101,7 +105,11 @@ py::object PARALLEL_UFUNC(F f, py::object input, const char* name, const char* a
         }
         NpyIter_IterNextFunc* iternext = NpyIter_GetIterNext(iter, NULL);
         npy_intp innerstride = NpyIter_GetInnerStrideArray(iter)[0];
+#if NPY_API_VERSION >= 0x00000012
+        npy_intp itemsize = PyDataType_ELSIZE(op_dtypes[1]);
+#else
         npy_intp itemsize = op_dtypes[1]->elsize;
+#endif
         npy_intp* innersizeptr = NpyIter_GetInnerLoopSizePtr(iter);
         char** dataptrarray = NpyIter_GetDataPtrArray(iter);
         std::exception_ptr error;
