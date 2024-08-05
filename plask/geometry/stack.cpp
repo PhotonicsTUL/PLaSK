@@ -640,8 +640,11 @@ shared_ptr<Material> MultiStackContainer<UpperClass>::getMaterial(
 
 template <typename UpperClass>
 shared_ptr<GeometryObject> MultiStackContainer<UpperClass>::getChildNo(std::size_t child_no) const {
-    if (child_no >= getChildrenCount())
-        throw OutOfBoundsException("getChildNo", "child_no", child_no, 0, getChildrenCount() - 1);
+    if (child_no >= getChildrenCount()) {
+        auto children_count = getChildrenCount();
+        if (children_count == 0) throw OutOfBoundsException("getChildNo", "child_no", child_no, "nothing", "nothing");
+        throw OutOfBoundsException("getChildNo", "child_no", child_no, 0, children_count - 1);
+    }
     if (child_no < children.size()) return children[child_no];
     auto result = children[child_no % children.size()]->copyShallow();
     result->translation[UpperClass::GROWING_DIR] +=

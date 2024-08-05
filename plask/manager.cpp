@@ -474,7 +474,7 @@ struct PositionValidator {
         else {
             std::size_t c = obj->getRealChildrenCount();
             for (std::size_t i = 0; i < c; ++i)
-                fill(obj->getChildNo(i).get(), s);
+                fill(obj->getRealChildNo(i).get(), s);
         }
     }
 
