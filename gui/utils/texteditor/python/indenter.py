@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -17,9 +17,9 @@ from ....qt.QtGui import *
 
 indent_re = re.compile(r'''([^#'"]|"[^"]"|'[^']')+:\s*(#.*)?$''')
 prev_unindent_re = re.compile(r'''([^#'"]|"[^"]"|'[^']')*'''
-                               '''((return|raise)(\s([^#'"]|"[^"]"|'[^']')+)?|pass|break|continue)\s*(#.*)?$''')
+                              r'''((return|raise)(\s([^#'"]|"[^"]"|'[^']')+)?|pass|break|continue)\s*(#.*)?$''')
 current_unindent_re = re.compile(r'''([^#'"]|"[^"]"|'[^']')*'''
-                                  '''((elif|except)(\s([^#'"]|"[^"]"|'[^']')+)?|else|finally):\s*(#.*)?$''')
+                                 r'''((elif|except)(\s([^#'"]|"[^"]"|'[^']')+)?|else|finally):\s*(#.*)?$''')
 
 
 def indent(editor, col=0):

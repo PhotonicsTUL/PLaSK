@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -23,10 +23,10 @@ def empty_to_none(str):
 def none_to_empty(str):
     return '' if str is None else str
 
-_re_br = re.compile("<br */>\s*")
-_re_i = re.compile("<i>(.*?)</i>")
-_re_sub = re.compile("<sub>\$?(.*?)\$?</sub>")
-_re_sup = re.compile("<sup>\$?(.*?)\$?</sup>")
+_re_br = re.compile(r"<br */>\s*")
+_re_i = re.compile(r"<i>(.*?)</i>")
+_re_sub = re.compile(r"<sub>\$?(.*?)\$?</sub>")
+_re_sup = re.compile(r"<sup>\$?(.*?)\$?</sup>")
 
 
 def html_to_tex(s):

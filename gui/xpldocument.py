@@ -234,7 +234,7 @@ class XPLDocument:
 
 
 class FieldParser:
-    subst = re.compile('\{([^}]*)\}')
+    subst = re.compile(r"\{([^}]*)\}")
 
     def __init__(self, document):
         self.defines = dict()

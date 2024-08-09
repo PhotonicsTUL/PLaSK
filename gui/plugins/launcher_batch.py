@@ -650,7 +650,7 @@ else:
             'a': 'FAIL'
         }
 
-        _value_suffix_re = re.compile("([\d.]*)(\D*)")
+        _value_suffix_re = re.compile(r"([\d.]*)(\D*)")
 
         def __init__(self, name, userhost=None, port=22, program='', color=False, keep=None, compress=True, bp='',
                      run1='', runn='', partitions=None, qos=None, params=None):

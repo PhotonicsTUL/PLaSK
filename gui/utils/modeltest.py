@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -481,7 +481,7 @@ class ModelTest(QObject):
             #          state == Qt.CheckState.Checked )
 
     def rowsAboutToBeInserted (self, parent, start, end):
-        """
+        r"""
         Store what is about to be inserted to make sure it actually happens
 
         \sa rowsInserted()
@@ -500,7 +500,7 @@ class ModelTest(QObject):
 
 
     def rowsInserted(self, parent, start, end):
-        """
+        r"""
         Confirm that what was said was going to happen actually did
 
         \sa rowsAboutToBeInserted()
@@ -541,7 +541,7 @@ class ModelTest(QObject):
 
 
     def rowsAboutToBeRemoved(self, parent, start, end):
-        """
+        r"""
         Store what is about to be inserted to make sure it actually happens
 
         \sa rowsRemoved()
@@ -555,7 +555,7 @@ class ModelTest(QObject):
         self._remove.append( c )
 
     def rowsRemoved(self, parent, start, end):
-        """
+        r"""
         Confirm that what was said was going to happen actually did
 
         \sa rowsAboutToBeRemoved()

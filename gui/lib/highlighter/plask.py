@@ -29,10 +29,10 @@ plask_syntax = {
     },
 
     'tokens': [
-        ('provider', 'out[A-Z]\w*', '\\.'),
-        ('receiver', 'in[A-Z]\w*', '\\.'),
-        ('member', '[A-Za-z_]\w*', '\\.'),
-        ('plask', [
+        ('provider', r'out[A-Z]\w*', '\\.'),
+        ('receiver', r'in[A-Z]\w*', '\\.'),
+        ('member', r'[A-Za-z_]\w*', '\\.'),
+        ('plask', [\
             # 'plask',
             'geometry',
             'mesh',
@@ -61,7 +61,7 @@ plask_syntax = {
             'plot_profile',
             'wl',
         ], '(^|[^\\.\\w]|\\bplask\\.)', '(?:[\x08\\W]|$)'),
-        ('log', 'LOG_[A-Z_]+(?!\w)'),
+        ('log', r'LOG_[A-Z_]+(?!\w)'),
         ('loaded', [
             'DEF',
             'GEO',
