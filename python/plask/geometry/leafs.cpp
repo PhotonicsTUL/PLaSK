@@ -194,6 +194,16 @@ static shared_ptr<Cylinder> Cylinder_constructor(double radius, double height, c
     return result;
 }
 
+// Hollow cylinder constructor wraps
+static shared_ptr<HollowCylinder> HollowCylinder_constructor(double inner_radius,
+                                                             double outer_radius,
+                                                             double height,
+                                                             const py::object& material) {
+    auto result = plask::make_shared<HollowCylinder>(inner_radius, outer_radius, height);
+    setLeafMaterialFast<3>(result, material);
+    return result;
+}
+
 // Circle constructor wraps
 template <int dim> static shared_ptr<Circle<dim>> Circle_constructor(double radius, const py::object& material) {
     auto result = plask::make_shared<Circle<dim>>(radius);
@@ -428,8 +438,7 @@ void register_geometry_leafs() {
         u8"Cylinder(radius, height, material)\n\n"
         u8"Vertical cylinder (3D geometry object).\n\n"
         u8"The cylinder base always lies in the horizontal (longitudinal-transverse)\n"
-        u8"plane and it height spans in the vertical\n"
-        u8"direction.\n\n"
+        u8"plane and it height spans in the vertical direction.\n\n"
         u8"Args:\n"
         u8"    radius (float): Cylinder radius.\n"
         u8"    height (float): Cylinder height.\n"
@@ -439,6 +448,26 @@ void register_geometry_leafs() {
              py::make_constructor(&Cylinder_constructor, py::default_call_policies(), (py::arg("radius"), "height", "material")))
         .add_property("radius", py::make_getter(&Cylinder::radius), &Cylinder::setRadius, u8"Radius of the cylinder.")
         .add_property("height", py::make_getter(&Cylinder::height), &Cylinder::setHeight, u8"Height of the cylinder.");
+
+    py::class_<HollowCylinder, shared_ptr<HollowCylinder>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable>(
+        "Tube",
+        u8"Tube(inner_radius, outer_radius, height, material)\n\n"
+        u8"Vertically oriented tube i.e. hollow cylinder (3D geometry object).\n\n"
+        u8"The tube base always lies in the horizontal (longitudinal-transverse)\n"
+        u8"plane and it height spans in the vertical direction.\n\n"
+        u8"Args:\n"
+        u8"    inner_radius (float): Tube inner radius.\n"
+        u8"    outer_radius (float): Tube outer radius.\n"
+        u8"    height (float): Cylinder height.\n"
+        u8"    material (Material): Cylinder material.\n",
+        py::no_init)
+        .def("__init__", py::make_constructor(&HollowCylinder_constructor, py::default_call_policies(),
+                                              (py::arg("inner_radius"), "outer_radius", "height", "material")))
+        .add_property("inner_radius", py::make_getter(&HollowCylinder::inner_radius), &HollowCylinder::setInnerRadius,
+                      u8"Inner tube radius.")
+        .add_property("outer_radius", py::make_getter(&HollowCylinder::outer_radius), &HollowCylinder::setOuterRadius,
+                      u8"Outer tube radius.")
+        .add_property("height", py::make_getter(&HollowCylinder::height), &HollowCylinder::setHeight, u8"Height of the Tube.");
 
     py::class_<Prism, shared_ptr<Prism>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> prism(
         "Prism",

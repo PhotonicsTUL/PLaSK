@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -9,8 +9,6 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
-
 
 _NAMES = {
     'cartesian2d': "Cartesian&2D",
@@ -27,6 +25,7 @@ _NAMES = {
     'python': "[Define object in Python]",
 }
 
+
 def gname(key, menu=False):
     try:
         if menu:
@@ -39,13 +38,12 @@ def gname(key, menu=False):
         return key.title()
 
 
+from .again_copy import GNAgain, GNCopy
+from .container import GNAlignContainer, GNShelf, GNStack
 from .geometry import GNCartesian, GNCylindrical
-from .leaf import GNBlock, GNCircle, GNCylinder, GNTriangle, GNPrism
-from .container import GNStack, GNAlignContainer, GNShelf
-from .transform import GNClip, GNExtrusion, GNFlip, GNMirror, GNRevolution,\
-    GNTranslation, GNIntersection, GNArrange, GNLattice
-from .again_copy import GNCopy, GNAgain
+from .leaf import GNBlock, GNCircle, GNCylinder, GNPrism, GNTriangle, GNTube
 from .python_object import GNPython
+from .transform import GNArrange, GNClip, GNExtrusion, GNFlip, GNIntersection, GNLattice, GNMirror, GNRevolution, GNTranslation
 
 geometry_types_2d_core_leafs = {  # only unique names of types, displayed in add menu
     'rectangle': GNBlock.from_xml_2d,
@@ -88,6 +86,7 @@ geometry_types_3d_core_leafs = {
     'cuboid': GNBlock.from_xml_3d,
     'sphere': GNCircle.from_xml_3d,
     'cylinder': GNCylinder.from_xml_3d,
+    'tube': GNTube.from_xml_3d,
     'prism': GNPrism.from_xml_3d,
 }
 geometry_types_3d_core_containers = {
@@ -130,13 +129,11 @@ geometry_types_3d = {   # all names: geometry_types_2d_core + aliases
 }
 geometry_types_3d.update(geometry_types_3d_core)
 
-
 geometry_types_other = {
     'again': GNAgain.from_xml,
     'copy': GNCopy.from_xml,
     'python': GNPython.from_xml,
 }
-
 
 geometry_types_geometries_core = {
     'cartesian2d': GNCartesian.from_xml_2d,
@@ -144,7 +141,7 @@ geometry_types_geometries_core = {
     'cylindrical': GNCylindrical.from_xml_2d,
 }
 
-geometry_types_geometries = {   # with alternative names
+geometry_types_geometries = {  # with alternative names
     'cylindrical2d': GNCylindrical.from_xml_2d,
 }
 geometry_types_geometries.update(geometry_types_geometries_core)

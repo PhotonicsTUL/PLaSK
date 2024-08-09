@@ -468,6 +468,27 @@ def draw_Cylinder(env, geometry_object, transform, clipbox, plask_real_path):
 _geometry_drawers[plask.geometry.Cylinder] = draw_Cylinder
 
 
+def draw_Tube(env, geometry_object, transform, clipbox, plask_real_path):
+    if env.axes == (0, 1) or env.axes == (1, 0):
+        env.append(matplotlib.patches.Circle((0.0, 0.0), geometry_object.outer_radius, transform=transform),
+                clipbox, geometry_object, plask_real_path
+        )
+        env.append(matplotlib.patches.Circle((0.0, 0.0), geometry_object.inner_radius, transform=transform),
+                clipbox, geometry_object, plask_real_path
+        )
+    else:
+        env.append(matplotlib.patches.Rectangle(
+            (-geometry_object.inner_radius, 0), 2 * geometry_object.inner_radius, geometry_object.height,
+            transform=transform
+        ), clipbox, geometry_object, plask_real_path)
+        env.append(matplotlib.patches.Rectangle(
+            (-geometry_object.outer_radius, 0), 2 * geometry_object.outer_radius, geometry_object.height,
+            transform=transform
+        ), clipbox, geometry_object, plask_real_path)
+
+_geometry_drawers[plask.geometry.Tube] = draw_Tube
+
+
 def draw_Prism(env, geometry_object, transform, clipbox, plask_real_path):
     p1 = geometry_object.a
     p2 = geometry_object.b

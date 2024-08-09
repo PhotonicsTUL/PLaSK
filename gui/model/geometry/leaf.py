@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -189,6 +189,59 @@ class GNCylinder(GNLeaf):
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNCylinder()
+        result.load_xml_element(element, conf)
+        return result
+
+
+class GNTube(GNLeaf):
+
+    def __init__(self, parent=None):
+        super().__init__(parent=parent, dim=3)
+        self.inner_radius = None  #required in PLaSK but not in GUI
+        self.outer_radius = None  #required in PLaSK but not in GUI
+        self.height = None  #required in PLaSK but not in GUI
+
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super()._attributes_from_xml(attribute_reader, conf)
+        if attribute_reader is None:
+            self.inner_radius = self.outer_radius = self.height = None
+        else:
+            self.inner_radius = attribute_reader.get('inner-radius')
+            self.outer_radius = attribute_reader.get('outer-radius')
+            self.height = attribute_reader.get('height')
+
+    def _attributes_to_xml(self, element, conf):
+        super()._attributes_to_xml(element, conf)
+        if self.inner_radius is not None: element.attrib['inner-radius'] = self.inner_radius
+        if self.outer_radius is not None: element.attrib['outer-radius'] = self.outer_radius
+        if self.height is not None: element.attrib['height'] = self.height
+
+    def tag_name(self, full_name=True):
+        return "tube"
+
+    def python_type(self):
+        return 'geometry.Tube'
+
+    def major_properties(self):
+        res = super().major_properties()
+        res.append(('inner-radius', self.inner_radius))
+        res.append(('outer-radius', self.outer_radius))
+        res.append(('height', self.height))
+        return res
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.leaf import GNTubeController
+        return GNTubeController(document, model, self)
+
+    def create_info(self, res, names):
+        super().create_info(res, names)
+        if not can_be_float(self.inner_radius, required=True): self._require(res, 'inner_radius', 'inner-radius', type='float')
+        if not can_be_float(self.outer_radius, required=True): self._require(res, 'outer_radius', 'outer-radius', type='float')
+        if not can_be_float(self.height, required=True): self._require(res, 'height', type='float')
+
+    @staticmethod
+    def from_xml_3d(element, conf):
+        result = GNTube()
         result.load_xml_element(element, conf)
         return result
 

@@ -330,6 +330,11 @@
       <cuboid material="air" dx="2" dy="2" dz="0.1"/>
     </stack>
   </cartesian3d>
+  <cartesian3d name="tubic" axes="x,y,z">
+    <stack x="0" y="0">
+      <tube material="GaAs" inner-radius="1" outer-radius="2" height="3"/>
+    </stack>
+  </cartesian3d>
 </geometry>
 
 <grids>

@@ -89,3 +89,22 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
    :attr required radius: Radius of the sphere. (float, µm)
    :attr steps-num: Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform.
    :attr steps-dist: Minimum step size if the object is non-uniform.
+
+.. xml:tag:: <tube/>
+
+   Corresponding Python class: :py:class:`plask.geometry.Tube`.
+
+   Tube (i.e. hollow tube)  with its base lying in the horizontal plane. Its origin is located at the center of the lower circular base.
+
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
+   :attr role: Object role. Important for some solvers.
+   :attr material: Definition of the tube material (for solid tubes).
+   :attr material-bottom: Definition of the material of the bottom of the tube (for tubes with material changing from bottom to top). You should also set ``material-top`` and both materials can differs only in composition or amount of dopant.
+   :attr material-top: Definition of the material of top of the tube (see also ``material-bottom``).
+   :attr material-shape: Exponent for graded materials. Setting this value to anything different than one allows non-linear change the tube material.
+   :attr required inner-radius: Inner radius of the tube base.
+   :attr required outer-radius: Outer radius of the tube base.
+   :attr required height: Height of the tube.
+   :attr steps-num: Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform.
+   :attr steps-dist: Minimum step size if the object is non-uniform.
