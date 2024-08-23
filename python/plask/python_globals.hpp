@@ -362,6 +362,7 @@ template <typename T> struct Overriden {
     Overriden(PyObject* self) : self(self) {}
 
     bool overriden(char const* name) const {
+        OmpLockGuard lock(python_omp_lock);
         py::converter::registration const& r = py::converter::registered<T>::converters;
         PyTypeObject* class_object = r.get_class_object();
         if (self) {

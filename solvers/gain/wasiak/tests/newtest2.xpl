@@ -14,60 +14,60 @@
 
 <materials>
   <material name="GaAsP014" base="GaAsP(0.14)">
-    <nr>{nr}</nr>
+    <nr>nr</nr>
     <Me>0.07358</Me>
     <Mlh>0.1054</Mlh>
     <Mhh>0.3314</Mhh>
     <CB>0.</CB>
-    <VB>-{Eg}</VB>
-    <Dso>{dso}</Dso>
+    <VB>-eval(Eg)</VB>
+    <Dso>dso</Dso>
   </material>
   <material name="In023GaAs" base="In(0.23)GaAs">
-    <nr>{nr}</nr>
+    <nr>nr</nr>
     <Me>0.0556932</Me>
     <Mlh>0.07551</Mlh>
     <Mhh>0.3139</Mhh>
-    <Dso>{dso}</Dso>
+    <Dso>dso</Dso>
   </material>
   <material name="well1" base="In023GaAs">
     <CB>-0.184323</CB>
-    <VB>0.0993083 - {Eg} if hole == 'L' else 0.236561 - {Eg}</VB>
+    <VB>0.0993083 - eval(Eg) if hole == 'L' else 0.236561 - eval(Eg)</VB>
   </material>
   <material name="well2" base="In023GaAs">
     <CB>-0.184423</CB>
-    <VB>0.0992083 - {Eg} if hole == 'L' else 0.236461 - {Eg}</VB>
+    <VB>0.0992083 - eval(Eg) if hole == 'L' else 0.236461 - eval(Eg)</VB>
   </material>
   <material name="well3" base="In023GaAs">
     <CB>-0.184523</CB>
-    <VB>0.0991083 - {Eg} if hole == 'L' else 0.236361 - {Eg}</VB>
+    <VB>0.0991083 - eval(Eg) if hole == 'L' else 0.236361 - eval(Eg)</VB>
   </material>
   <material name="well4" base="In023GaAs">
     <CB>-0.184623</CB>
-    <VB>0.0990083 - {Eg} if hole == 'L' else 0.236261 - {Eg}</VB>
+    <VB>0.0990083 - eval(Eg) if hole == 'L' else 0.236261 - eval(Eg)</VB>
   </material>
   <material name="well5" base="In023GaAs">
     <CB>-0.184723</CB>
-    <VB>0.098983 - {Eg} if hole == 'L' else 0.236161 - {Eg}</VB>
+    <VB>0.098983 - eval(Eg) if hole == 'L' else 0.236161 - eval(Eg)</VB>
   </material>
   <material name="well1_mod" base="well1">
     <CB>-0.184423</CB>
-    <VB>0.0994083 - {Eg} if hole == 'L' else 0.236661 - {Eg}</VB>
+    <VB>0.0994083 - eval(Eg) if hole == 'L' else 0.236661 - eval(Eg)</VB>
   </material>
   <material name="well2_mod" base="well2">
     <CB>-0.184523</CB>
-    <VB>0.0993083 - {Eg} if hole == 'L' else 0.236561 - {Eg}</VB>
+    <VB>0.0993083 - eval(Eg) if hole == 'L' else 0.236561 - eval(Eg)</VB>
   </material>
   <material name="well3_mod" base="well3">
     <CB>-0.184623</CB>
-    <VB>0.0992083 - {Eg} if hole == 'L' else 0.236461 - {Eg}</VB>
+    <VB>0.0992083 - eval(Eg) if hole == 'L' else 0.236461 - eval(Eg)</VB>
   </material>
   <material name="well4_mod" base="well4">
     <CB>-0.184723</CB>
-    <VB>0.0991083 - {Eg} if hole == 'L' else 0.236361 - {Eg}</VB>
+    <VB>0.0991083 - eval(Eg) if hole == 'L' else 0.236361 - eval(Eg)</VB>
   </material>
   <material name="well5_mod" base="well5">
     <CB>-0.184823</CB>
-    <VB>0.099283 - {Eg} if hole == 'L' else 0.236261 - {Eg}</VB>
+    <VB>0.099283 - eval(Eg) if hole == 'L' else 0.236261 - eval(Eg)</VB>
   </material>
 </materials>
 

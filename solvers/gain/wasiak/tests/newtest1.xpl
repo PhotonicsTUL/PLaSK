@@ -92,6 +92,10 @@ class NewGainValues(unittest.TestCase):
         m = mesh.Rectangular2D([0.5], [0.034])
         self.assertAlmostEqual(GAIN.outGain(m, 840.)[0][0], expected_gain, 1)
 
+    def testBarrier(self):
+        m = mesh.Rectangular2D([0.5], [0.025])
+        self.assertEqual(GAIN.outGain(m, 840.)[0][0], 0.)
+
     def testGainSpectrum(self):
         spectrum = GAIN.spectrum(0.5, 0.034)
         self.assertAlmostEqual(spectrum(840), expected_gain, 1)

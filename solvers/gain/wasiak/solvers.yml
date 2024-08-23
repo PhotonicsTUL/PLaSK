@@ -66,12 +66,12 @@
       help: >
         Name of the substrate material. This attribute is used only if the <i>strained</i> attribute is set to <i>yes</i>.
         If this attribute is not set then the substrate material must be specified by a layer with the role "<i>substrate</i>".
-    - attr: cond-shift
+    - attr: cond-qw-shift
       help: Additional conduction band shift for quantum wells.
       label: Conduction band shift
       type: float
       unit: eV
-    - attr: vale-shift
+    - attr: vale-qw-shift
       label: Valence band shift
       type: float
       help: Additional valence band shift for quantum wells.
@@ -93,7 +93,7 @@
     - attr: fast-levels
       help: >
         Compute levels only once and simply shift for different temperatures?
-        Setting this to True stongly increases computation speed, but makes the results
+        Setting this to True strongly increases computation speed, but makes the results
         less accurate for high gains."
       label: Fast levels
       type: bool
