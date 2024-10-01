@@ -36,7 +36,7 @@ set(SPHINX_OPTIONS "" CACHE STRING "Other Sphinx options")
 # Internal variables.
 set(PAPEROPT_a4 -D latex_paper_size=a4)
 set(PAPEROPT_letter -D latex_paper_size=letter)
-set(ALLSPHINXOPTS -d ${CMAKE_CURRENT_BINARY_DIR}/doctrees ${PAPEROPT_${SPHINX_PAPER}} ${SPHINX_OPTIONS} ${CMAKE_CURRENT_SOURCE_DIR})
+set(ALLSPHINXOPTS -d ${CMAKE_CURRENT_BINARY_DIR}/doctrees ${PAPEROPT_${SPHINX_PAPER}paper} ${SPHINX_OPTIONS} ${CMAKE_CURRENT_SOURCE_DIR})
 # the i18n builder cannot share the environment and doctrees with the others
 set(I18NSPHINXOPTS ${PAPEROPT_${SPHINX_PAPER}} ${SPHINX_OPTIONS} ${CMAKE_CURRENT_SOURCE_DIR})
 

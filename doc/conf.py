@@ -54,7 +54,7 @@ else:
 templates_path = ['_templates']
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = {'.rst': 'restructuredtext'}
 
 # The encoding of source files.
 #source_encoding = 'utf-8-sig'
@@ -128,7 +128,7 @@ def process_generate_options(app):
     genfiles = app.config.autosummary_generate
     if genfiles and not hasattr(genfiles, '__len__'):
         env = app.builder.env
-        genfiles = [env.doc2path(x,None) for x in env.found_docs
+        genfiles = [str(env.doc2path(x,None)) for x in env.found_docs
                     if os.path.isfile(env.doc2path(x))]
     if not genfiles:
         return
