@@ -113,7 +113,7 @@ void ExpansionPW3D::init() {
             double dx = 0.5 * Ll * double(refl - 1) / double(refl * nNa);
             long_mesh = RegularAxis(-dx, front + dx, nMl);
         }
-    }                                                           // N = 3  nN = 5  refine = 5  M = 25
+    }  // N = 3  nN = 5  refine = 5  M = 25
     if (!symmetric_tran()) {                                    //  . . 0 . . . . 1 . . . . 2 . . . . 3 . . . . 4 . .
         Lt = right - left;                                      //  ^ ^ ^ ^ ^
         Nt = 2 * SOLVER->getTranSize() + 1;                     // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
@@ -272,7 +272,7 @@ void ExpansionPW3D::reset() {
     temporary.reset();
 }
 
-void ExpansionPW3D::beforeLayersIntegrals(double lam, double glam) { SOLVER->prepareExpansionIntegrals(this, mesh, lam, glam); }
+void ExpansionPW3D::beforeLayersIntegrals(dcomplex lam, dcomplex glam) { SOLVER->prepareExpansionIntegrals(this, mesh, lam, glam); }
 
 template <typename T1, typename T2>
 inline static Tensor3<decltype(T1() * T2())> commutator(const Tensor3<T1>& A, const Tensor3<T2>& B) {
@@ -319,6 +319,10 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
         }
     }
 
+    if (epsilon_connected && solver->lcomputed[layer]) {
+        SOLVER->writelog(LOG_DEBUG, "Layer {:d} takes some materials parameters from inEpsilon", layer);
+        if (isnan(glam)) glam = lam;
+    }
     if (gain_connected && solver->lgained[layer]) {
         SOLVER->writelog(LOG_DEBUG, "Layer {:d} has gain", layer);
         if (isnan(glam)) glam = lam;
@@ -380,55 +384,77 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
             Vec<2> norm(0., 0.);
             for (size_t t = tbegin, j = 0; t != tend; ++t) {
                 for (size_t l = lbegin; l != lend; ++l, ++j) {
-                    double T = 0., W = 0., C = 0.;
-                    for (size_t k = 0, v = mesh->index(l, t, 0); k != mesh->vert()->size(); ++v, ++k) {
-                        if (solver->stack[k] == layer) {
-                            double w = (k == 0 || k == mesh->vert()->size() - 1)
-                                           ? 1e-6
-                                           : solver->vbounds->at(k) - solver->vbounds->at(k - 1);
-                            T += w * temperature[v];
-                            C += w * carriers[v];
-                            W += w;
-                        }
-                    }
-                    T /= W;
-                    C /= W;
-                    {
-                        OmpLockGuard lock;  // this must be declared before `material` to guard its destruction
-                        auto material = geometry->getMaterial(vec(long_mesh->at(l), tran_mesh->at(t), matv));
-                        lock = material->lock();
-                        cell[j] = material->Eps(lam, T, C);
-                        if (isnan(cell[j]))
-                            throw BadInput(solver->getId(),
-                                           "complex permittivity tensor (Eps) for {} is NaN at lam={}nm, T={}K n={}/cm3",
-                                           material->name(), lam, T, C);
-                    }
-                    if (gain_connected && solver->lgained[layer]) {
-                        auto roles = geometry->getRolesAt(vec(long_mesh->at(l), tran_mesh->at(t), matv));
-                        if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() ||
-                            roles.find("gain") != roles.end()) {
-                            Tensor2<double> g = 0.;
-                            W = 0.;
-                            for (size_t k = 0, v = mesh->index(l, t, 0); k != mesh->vert()->size(); ++v, ++k) {
-                                if (solver->stack[k] == layer) {
-                                    double w = (k == 0 || k == mesh->vert()->size() - 1)
-                                                   ? 1e-6
-                                                   : solver->vbounds->at(k) - solver->vbounds->at(k - 1);
-                                    g += w * gain[v];
-                                    W += w;
-                                }
+                    std::set<std::string> roles;
+                    if (epsilon_connected && solver->lcomputed[layer] || gain_connected && solver->lgained[layer])
+                        roles = geometry->getRolesAt(vec(long_mesh->at(l), tran_mesh->at(t), matv));
+                    bool computed = epsilon_connected && solver->lcomputed[layer] && roles.find("inEpsilon") != roles.end();
+                    if (computed) {
+                        double W = 0.;
+                        Tensor3<dcomplex> val(0.);
+                        for (size_t k = 0, v = mesh->index(l, t, 0); k != mesh->vert()->size(); ++v, ++k) {
+                            if (solver->stack[k] == layer) {
+                                if (isnan(epsilons[v]))
+                                    throw BadInput(solver->getId(), "complex permittivity tensor got from inEpsilon is NaN at {}",
+                                                   mesh->at(v));
+                                double w = (k == 0 || k == mesh->vert()->size() - 1)
+                                               ? 1e-6
+                                               : solver->vbounds->at(k) - solver->vbounds->at(k - 1);
+                                val += w * epsilons[v];
+                                W += w;
                             }
-                            Tensor2<double> ni = glam * g / W * (0.25e-7 / PI);
-                            double n00 = sqrt(cell[j].c00).real(), n11 = sqrt(cell[j].c11).real(), n22 = sqrt(cell[j].c22).real();
-                            cell[j].c00 = dcomplex(n00 * n00 - ni.c00 * ni.c00, 2 * n00 * ni.c00);
-                            cell[j].c11 = dcomplex(n11 * n11 - ni.c00 * ni.c00, 2 * n11 * ni.c00);
-                            cell[j].c22 = dcomplex(n22 * n22 - ni.c11 * ni.c11, 2 * n22 * ni.c11);
-                            cell[j].c01.imag(0.);
-                            cell[j].c02.imag(0.);
-                            cell[j].c10.imag(0.);
-                            cell[j].c12.imag(0.);
-                            cell[j].c20.imag(0.);
-                            cell[j].c21.imag(0.);
+                        }
+                        cell[j] = val / W;
+                    } else {
+                        double T = 0., W = 0., C = 0.;
+                        for (size_t k = 0, v = mesh->index(l, t, 0); k != mesh->vert()->size(); ++v, ++k) {
+                            if (solver->stack[k] == layer) {
+                                double w = (k == 0 || k == mesh->vert()->size() - 1)
+                                               ? 1e-6
+                                               : solver->vbounds->at(k) - solver->vbounds->at(k - 1);
+                                T += w * temperature[v];
+                                C += w * carriers[v];
+                                W += w;
+                            }
+                        }
+                        T /= W;
+                        C /= W;
+                        {
+                            OmpLockGuard lock;  // this must be declared before `material` to guard its destruction
+                            auto material = geometry->getMaterial(vec(long_mesh->at(l), tran_mesh->at(t), matv));
+                            lock = material->lock();
+                            cell[j] = material->Eps(lam, T, C);
+                            if (isnan(cell[j]))
+                                throw BadInput(solver->getId(),
+                                               "complex permittivity tensor (Eps) for {} is NaN at lam={}nm, T={}K n={}/cm3",
+                                               material->name(), lam, T, C);
+                        }
+                        if (gain_connected && solver->lgained[layer]) {
+                            if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() ||
+                                roles.find("gain") != roles.end()) {
+                                Tensor2<double> g = 0.;
+                                W = 0.;
+                                for (size_t k = 0, v = mesh->index(l, t, 0); k != mesh->vert()->size(); ++v, ++k) {
+                                    if (solver->stack[k] == layer) {
+                                        double w = (k == 0 || k == mesh->vert()->size() - 1)
+                                                       ? 1e-6
+                                                       : solver->vbounds->at(k) - solver->vbounds->at(k - 1);
+                                        g += w * gain[v];
+                                        W += w;
+                                    }
+                                }
+                                Tensor2<double> ni = glam * g / W * (0.25e-7 / PI);
+                                double n00 = sqrt(cell[j].c00).real(), n11 = sqrt(cell[j].c11).real(),
+                                       n22 = sqrt(cell[j].c22).real();
+                                cell[j].c00 = dcomplex(n00 * n00 - ni.c00 * ni.c00, 2 * n00 * ni.c00);
+                                cell[j].c11 = dcomplex(n11 * n11 - ni.c00 * ni.c00, 2 * n11 * ni.c00);
+                                cell[j].c22 = dcomplex(n22 * n22 - ni.c11 * ni.c11, 2 * n22 * ni.c11);
+                                cell[j].c01.imag(0.);
+                                cell[j].c02.imag(0.);
+                                cell[j].c10.imag(0.);
+                                cell[j].c12.imag(0.);
+                                cell[j].c20.imag(0.);
+                                cell[j].c21.imag(0.);
+                            }
                         }
                     }
 
@@ -1492,7 +1518,7 @@ double ExpansionPW3D::integrateField(WhichField field,
     cmatrix Fz(NN, M, temp.data());
 
     if (field == FIELD_E) {
-PLASK_OMP_PARALLEL_FOR
+        PLASK_OMP_PARALLEL_FOR
         for (openmp_size_t m = 0; m < M; m++) {
             for (int it = symmetric_tran() ? 0 : -ordt; it <= ordt; ++it) {
                 for (int il = symmetric_long() ? 0 : -ordl; il <= ordl; ++il) {
@@ -1515,7 +1541,7 @@ PLASK_OMP_PARALLEL_FOR
             }
         }
     } else {  // field == FIELD_H
-PLASK_OMP_PARALLEL_FOR
+        PLASK_OMP_PARALLEL_FOR
         for (openmp_size_t m = 0; m < M; m++) {
             for (int it = symmetric_tran() ? 0 : -ordt; it <= ordt; ++it) {
                 for (int il = symmetric_long() ? 0 : -ordl; il <= ordl; ++il) {
@@ -1539,7 +1565,7 @@ PLASK_OMP_PARALLEL_FOR
     double result = 0.;
 
     if (field == FIELD_E) {
-PLASK_OMP_PARALLEL_FOR
+        PLASK_OMP_PARALLEL_FOR
         for (openmp_size_t m1 = 0; m1 < M; ++m1) {
             for (openmp_size_t m2 = m1; m2 < M; ++m2) {
                 dcomplex resxy = 0., resz = 0.;
@@ -1561,7 +1587,7 @@ PLASK_OMP_PARALLEL_FOR
         }
 
     } else {  // field == FIELD_H
-PLASK_OMP_PARALLEL_FOR
+        PLASK_OMP_PARALLEL_FOR
         for (openmp_size_t m1 = 0; m1 < M; ++m1) {
             for (openmp_size_t m2 = m1; m2 < M; ++m2) {
                 dcomplex resxy = 0., resz = 0.;

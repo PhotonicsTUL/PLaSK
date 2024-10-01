@@ -136,7 +136,7 @@ struct PLASK_SOLVER_API ExpansionPW2D : public Expansion {
 
     FFT::Forward1D matFFT;  ///< FFT object for material coefficients
 
-    void beforeLayersIntegrals(double lam, double glam) override;
+    void beforeLayersIntegrals(dcomplex lam, dcomplex glam) override;
 
     void layerIntegrals(size_t layer, double lam, double glam) override;
 
@@ -146,26 +146,47 @@ struct PLASK_SOLVER_API ExpansionPW2D : public Expansion {
                                  double lam,
                                  double glam,
                                  size_t j) {
-        double T = 0., W = 0., C = 0.;
-        for (size_t k = 0, v = j * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
-            if (solver->stack[k] == layer) {
-                double w = (k == 0 || k == mesh->vert()->size() - 1) ? 1e-6 : solver->vbounds->at(k) - solver->vbounds->at(k - 1);
-                T += w * temperature[v];
-                C += w * carriers[v];
-                W += w;
-            }
-        }
-        T /= W;
-        C /= W;
         Tensor3<dcomplex> eps;
-        {
-            OmpLockGuard lock;  // this must be declared before `material` to guard its destruction
-            auto material = geometry->getMaterial(vec(mesh->tran()->at(j), maty));
-            lock = material->lock();
-            eps = material->Eps(lam, T, C);
-            if (isnan(eps))
-                throw BadInput(solver->getId(), "complex permittivity tensor (Eps) for {} is NaN at lam={}nm, T={}K, n={}/cm3",
-                               material->name(), lam, T, C);
+        std::set<std::string> roles;
+        if (epsilon_connected && solver->lcomputed[layer] || gain_connected && solver->lgained[layer])
+            roles = geometry->getRolesAt(vec(mesh->tran()->at(j), maty));
+        bool computed = epsilon_connected && solver->lcomputed[layer] && roles.find("inEpsilon") != roles.end();
+        if (computed) {
+            eps = Zero<Tensor3<dcomplex>>();
+            double W = 0.;
+            for (size_t k = 0, v = j * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
+                if (solver->stack[k] == layer) {
+                    if (isnan(epsilons[v]))
+                        throw BadInput(solver->getId(), "complex permittivity tensor got from inEpsilon is NaN at {}", mesh->at(v));
+                    double w =
+                        (k == 0 || k == mesh->vert()->size() - 1) ? 1e-6 : solver->vbounds->at(k) - solver->vbounds->at(k - 1);
+                    eps += w * epsilons[v];
+                    W += w;
+                }
+            }
+            eps /= W;
+        } else {
+            double T = 0., W = 0., C = 0.;
+            for (size_t k = 0, v = j * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
+                if (solver->stack[k] == layer) {
+                    double w =
+                        (k == 0 || k == mesh->vert()->size() - 1) ? 1e-6 : solver->vbounds->at(k) - solver->vbounds->at(k - 1);
+                    T += w * temperature[v];
+                    C += w * carriers[v];
+                    W += w;
+                }
+            }
+            T /= W;
+            C /= W;
+            {
+                OmpLockGuard lock;  // this must be declared before `material` to guard its destruction
+                auto material = geometry->getMaterial(vec(mesh->tran()->at(j), maty));
+                lock = material->lock();
+                eps = material->Eps(lam, T, C);
+                if (isnan(eps))
+                    throw BadInput(solver->getId(), "complex permittivity tensor (Eps) for {} is NaN at lam={}nm, T={}K, n={}/cm3",
+                                   material->name(), lam, T, C);
+            }
         }
         if (eps.c01 != 0. || eps.c10 != 0.) {
             if (symmetric())
@@ -177,31 +198,29 @@ struct PLASK_SOLVER_API ExpansionPW2D : public Expansion {
         if (eps.c02 != 0. || eps.c21 != 0. || eps.c12 != 0. || eps.c20 != 0.) {
             throw BadInput(solver->getId(), "symmetry not allowed for structure with non-diagonal permittivity tensor");
         }
-        if (gain_connected && solver->lgained[layer]) {
-            auto roles = geometry->getRolesAt(vec(mesh->tran()->at(j), maty));
-            if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-                Tensor2<double> g = 0.;
-                W = 0.;
-                for (size_t k = 0, v = j * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
-                    if (solver->stack[k] == layer) {
-                        double w =
-                            (k == 0 || k == mesh->vert()->size() - 1) ? 1e-6 : solver->vbounds->at(k) - solver->vbounds->at(k - 1);
-                        g += w * gain[v];
-                        W += w;
-                    }
+        if (!computed && gain_connected && solver->lgained[layer] && roles.find("QW") != roles.end() ||
+            roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
+            Tensor2<double> g = 0.;
+            double W = 0.;
+            for (size_t k = 0, v = j * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
+                if (solver->stack[k] == layer) {
+                    double w =
+                        (k == 0 || k == mesh->vert()->size() - 1) ? 1e-6 : solver->vbounds->at(k) - solver->vbounds->at(k - 1);
+                    g += w * gain[v];
+                    W += w;
                 }
-                Tensor2<double> ni = glam * g / W * (0.25e-7 / PI);
-                double n00 = sqrt(eps.c00).real(), n11 = sqrt(eps.c11).real(), n22 = sqrt(eps.c22).real();
-                eps.c00 = dcomplex(n00 * n00 - ni.c00 * ni.c00, 2 * n00 * ni.c00);
-                eps.c11 = dcomplex(n11 * n11 - ni.c00 * ni.c00, 2 * n11 * ni.c00);
-                eps.c22 = dcomplex(n22 * n22 - ni.c11 * ni.c11, 2 * n22 * ni.c11);
-                eps.c01.imag(0.);
-                eps.c02.imag(0.);
-                eps.c10.imag(0.);
-                eps.c12.imag(0.);
-                eps.c20.imag(0.);
-                eps.c21.imag(0.);
             }
+            Tensor2<double> ni = glam * g / W * (0.25e-7 / PI);
+            double n00 = sqrt(eps.c00).real(), n11 = sqrt(eps.c11).real(), n22 = sqrt(eps.c22).real();
+            eps.c00 = dcomplex(n00 * n00 - ni.c00 * ni.c00, 2 * n00 * ni.c00);
+            eps.c11 = dcomplex(n11 * n11 - ni.c00 * ni.c00, 2 * n11 * ni.c00);
+            eps.c22 = dcomplex(n22 * n22 - ni.c11 * ni.c11, 2 * n22 * ni.c11);
+            eps.c01.imag(0.);
+            eps.c02.imag(0.);
+            eps.c10.imag(0.);
+            eps.c12.imag(0.);
+            eps.c20.imag(0.);
+            eps.c21.imag(0.);
         }
         return eps;
     }
@@ -254,7 +273,7 @@ struct PLASK_SOLVER_API ExpansionPW2D : public Expansion {
     dcomplex epszx(size_t l, int i) { return coeffs[l].zx[(i >= 0) ? i : i + nN]; }  ///< Get element of \f$ \varepsilon_{zx} \f$
     dcomplex epsxz(size_t l, int i) {
         return conj(coeffs[l].zx[(i >= 0) ? i : i + nN]);
-    }                                                              ///< Get element of \f$ \varepsilon_{zx} \f$
+    }  ///< Get element of \f$ \varepsilon_{zx} \f$
     dcomplex muzz(int i) { return mag[(i >= 0) ? i : i + nN]; }    ///< Get element of \f$ \mu_{zz} \f$
     dcomplex muxx(int i) { return mag[(i >= 0) ? i : i + nN]; }    ///< Get element of \f$ \mu_{xx} \f$
     dcomplex muyy(int i) { return mag[(i >= 0) ? i : i + nN]; }    ///< Get element of \f$ \mu_{yy} \f$

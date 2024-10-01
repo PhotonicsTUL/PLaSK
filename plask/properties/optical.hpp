@@ -24,7 +24,7 @@ namespace plask {
 /**
  * Refractive index
  */
-struct PLASK_API RefractiveIndex: MultiFieldProperty<dcomplex> {
+struct PLASK_API RefractiveIndex: MultiFieldProperty<dcomplex, dcomplex> {
     enum EnumType {
         COMPONENT_VERT = 0,
         COMPONENT_LONG = 1,
@@ -39,7 +39,7 @@ struct PLASK_API RefractiveIndex: MultiFieldProperty<dcomplex> {
 /**
  * Permittivity tensor
  */
-struct PLASK_API Epsilon: FieldProperty<Tensor3<dcomplex>> {
+struct PLASK_API Epsilon: FieldProperty<Tensor3<dcomplex>, dcomplex> {
     static constexpr const char* NAME = "permittivity tensor";
     static constexpr const char* UNIT = "-";
     static inline Tensor3<dcomplex> getDefaultValue() { return Tensor3<dcomplex>(1.); }

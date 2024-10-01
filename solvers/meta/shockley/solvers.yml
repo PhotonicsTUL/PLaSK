@@ -902,13 +902,13 @@
     - &update-gain
       attr: update-gain
       var: optical.update_gain
-      label: Always update gain
+      label: Recompute dynamic parameters
       type: bool
       default: false
       help: >
         If this attribute is set to 'yes', material parameters are always recomputed for layers with
-        gains. This allows to set 'lam0' for better efficiency and still update gain for slight changes
-        of wavelength.
+        gain or permittivity provided by inEpsilon. This allows to set 'lam0' for better efficiency
+        and still consider slight changes of wavelength, where it matters the most.
     - attr: domain
       var: optical.domain
       label: Computational domain

@@ -54,8 +54,14 @@ struct PLASK_SOLVER_API Expansion {
     /// Flag indicating if the gain is connected
     bool gain_connected;
 
+    /// Flag indicating if inEpsilon is connected
+    bool epsilon_connected;
+
     /// Obtained gain
     LazyData<Tensor2<double>> gain;
+
+    /// Obtained epsilons
+    LazyData<Tensor3<dcomplex>> epsilons;
 
     /// Carriers concentration
     LazyData<double> carriers;
@@ -70,7 +76,7 @@ struct PLASK_SOLVER_API Expansion {
     }
 
   private:
-    double glambda;
+    dcomplex glambda;
 
   protected:
 
@@ -79,7 +85,7 @@ struct PLASK_SOLVER_API Expansion {
     /**
      * Method called before layer integrals are computed
      */
-    virtual void beforeLayersIntegrals(double PLASK_UNUSED(lam), double PLASK_UNUSED(glam)) {}
+    virtual void beforeLayersIntegrals(dcomplex PLASK_UNUSED(lam), dcomplex PLASK_UNUSED(glam)) {}
 
     /**
      * Method called after layer integrals are computed
@@ -91,7 +97,7 @@ struct PLASK_SOLVER_API Expansion {
     }
 
     /**
-     * Compute itegrals for RE and RH matrices
+     * Compute integrals for RE and RH matrices
      * \param layer layer number
      * \param lam wavelength
      * \param glam wavelength for gain
@@ -141,9 +147,9 @@ struct PLASK_SOLVER_API Expansion {
 
     /// Compute all expansion coefficients
     void computeIntegrals() {
-        double lambda = real(2e3*PI/k0);
+        dcomplex lambda = 2e3*PI/k0;
         if (solver->recompute_integrals) {
-            double lam;
+            dcomplex lam;
             if (!isnan(lam0)) {
                 lam = lam0;
                 glambda = (solver->always_recompute_gain)? lambda : lam;
@@ -157,7 +163,7 @@ struct PLASK_SOLVER_API Expansion {
             for (plask::openmp_size_t l = 0; l < nlayers; ++l) {
                 if (error) continue;
                 try {
-                    layerIntegrals(l, lam, glambda);
+                    layerIntegrals(l, real(lam), real(glambda));
                 } catch(...) {
                     #pragma omp critical
                     error = std::current_exception();
@@ -169,19 +175,20 @@ struct PLASK_SOLVER_API Expansion {
             solver->recompute_gain_integrals = false;
         } else if (solver->recompute_gain_integrals ||
                    (solver->always_recompute_gain && !is_zero(lambda - glambda))) {
-            double lam = isnan(lam0)? lambda : solver->lam0;
-            glambda = (solver->always_recompute_gain)? lambda : lam;
-            std::vector<size_t> glayers;
+            dcomplex lam = isnan(lam0)? lambda : solver->lam0;
+            glambda = solver->always_recompute_gain? lambda : lam;
+            std::vector<size_t> recomputed_layers;
             size_t nlayers = solver->lcount;
-            glayers.reserve(nlayers);
-            for (size_t l = 0; l != nlayers; ++l) if (solver->lgained[l]) glayers.push_back(l);
+            recomputed_layers.reserve(nlayers);
+            for (size_t l = 0; l != nlayers; ++l) if (solver->lgained[l] || solver->lcomputed[l])
+                recomputed_layers.push_back(l);
             std::exception_ptr error;
             beforeLayersIntegrals(lam, glambda);
             PLASK_OMP_PARALLEL_FOR
-            for (plask::openmp_size_t l = 0; l < glayers.size(); ++l) {
+            for (plask::openmp_size_t l = 0; l < recomputed_layers.size(); ++l) {
                 if (error) continue;
                 try {
-                    layerIntegrals(glayers[l], lam, glambda);
+                    layerIntegrals(recomputed_layers[l], real(lam), real(glambda));
                 } catch(...) {
                     #pragma omp critical
                     error = std::current_exception();

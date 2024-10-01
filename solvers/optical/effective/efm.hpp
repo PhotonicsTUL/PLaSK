@@ -617,6 +617,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl : public SolverWithMesh<Geometry2D
     /// Get used refractive index
     const LazyData<dcomplex> getRefractiveIndex(RefractiveIndex::EnumType component,
                                                 const shared_ptr<const MeshD<2>>& dst_mesh,
+                                                dcomplex lam,
                                                 InterpolationMethod = INTERPOLATION_DEFAULT);
 
     /// Get generated/absorbed heat

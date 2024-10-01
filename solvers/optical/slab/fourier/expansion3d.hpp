@@ -253,7 +253,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     FFT::Forward2D matFFT;                  ///< FFT object for material coefficients
     FFT::Forward2D cos2FFT, cssnFFT;        ///< FFT object for gradients
 
-    void beforeLayersIntegrals(double lam, double glam) override;
+    void beforeLayersIntegrals(dcomplex lam, dcomplex glam) override;
 
     void layerIntegrals(size_t layer, double lam, double glam) override;
 

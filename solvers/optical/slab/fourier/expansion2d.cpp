@@ -230,7 +230,7 @@ void ExpansionPW2D::reset() {
 }
 
 
-void ExpansionPW2D::beforeLayersIntegrals(double lam, double glam) {
+void ExpansionPW2D::beforeLayersIntegrals(dcomplex lam, dcomplex glam) {
     SOLVER->prepareExpansionIntegrals(this, mesh, lam, glam);
 }
 
@@ -266,6 +266,10 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         if (isnan(lam))
             throw BadInput(SOLVER->getId(), "no wavelength given: specify 'lam' or 'lam0'");
 
+        if (epsilon_connected && solver->lcomputed[layer]) {
+            SOLVER->writelog(LOG_DEBUG, "Layer {:d} takes some materials parameters from inEpsilon", layer);
+            if (isnan(glam)) glam = lam;
+        }
         if (gain_connected && solver->lgained[layer]) {
             SOLVER->writelog(LOG_DEBUG, "Layer {:d} has gain", layer);
             if (isnan(glam)) glam = lam;
@@ -470,6 +474,10 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         if (isnan(lam))
             throw BadInput(SOLVER->getId(), "no wavelength given: specify 'lam' or 'lam0'");
 
+        if (epsilon_connected && solver->lcomputed[layer]) {
+            SOLVER->writelog(LOG_DEBUG, "Layer {:d} takes some materials parameters from inEpsilon", layer);
+            if (isnan(glam)) glam = lam;
+        }
         if (gain_connected && solver->lgained[layer]) {
             SOLVER->writelog(LOG_DEBUG, "Layer {:d} has gain", layer);
             if (isnan(glam)) glam = lam;

@@ -97,7 +97,7 @@ class LayerSetTest(unittest.TestCase):
         self.assertEqual(stack, [5] + 25*[0,1] + [4,2,3,2] + 30*[1,0])
 
 
-class MergeTestTest(unittest.TestCase):
+class MergeTest(unittest.TestCase):
 
     def setUp(self):
       rect = geometry.Rectangle(1., 1., 'GaAs')
@@ -151,8 +151,60 @@ class TestAnisotropic(unittest.TestCase):
     def testRefractiveIndex(self):
       self.assertAlmostEqual(3., self.solver.outRefractiveIndex(self.mesh)[0])
       self.assertAlmostEqual(1., self.solver.outRefractiveIndex('ll', self.mesh)[0])
-      self.assertAlmostEqual(2., self.solver.outRefractiveIndex('tt', self.mesh)[0])
+      self.assertAlmostEqual(2., self.solver.outRefractiveIndex('tt', self.mesh, 'default')[0])
       self.assertAlmostEqual(3., self.solver.outRefractiveIndex('vv', self.mesh)[0])
       self.assertAlmostEqual(1., self.solver.outRefractiveIndex('xx', self.mesh)[0])
       self.assertAlmostEqual(2., self.solver.outRefractiveIndex('yy', self.mesh)[0])
       self.assertAlmostEqual(3., self.solver.outRefractiveIndex('zz', self.mesh)[0])
+
+
+class ProviderTest(unittest.TestCase):
+
+    @staticmethod
+    def value(msh, lam, interp):
+        return np.array(len(msh) * [lam.imag], dtype=complex)
+
+    def setUp(self):
+        plask.config.axes = 'xyz'
+        self.manager = plask.Manager()
+        self.manager.load('''
+          <plask>
+            <geometry>
+              <cartesian2d axes="yz" name="test2" left="mirror" right="periodic">
+                <stack>
+                  <block dy="2" dz="2" material="air"/>
+                  <block dy="2" dz="2" material="air" role="inEpsilon"/>
+                  <block dy="2" dz="2" material="air"/>
+                </stack>
+              </cartesian2d>
+              <cartesian3d axes="xyz" name="test3" back="mirror" front="periodic" left="mirror" right="periodic">
+                <stack>
+                  <block dx="2" dy="2" dz="2" material="air"/>
+                  <block dx="2" dy="2" dz="2" material="air" role="inEpsilon"/>
+                  <block dx="2" dy="2" dz="2" material="air"/>
+                </stack>
+              </cartesian3d>
+            </geometry>
+            <solvers>
+              <optical name="solver2" solver="Fourier2D">
+                <geometry ref="test2"/>
+              </optical>
+              <optical name="solver3" solver="Fourier3D">
+                <geometry ref="test3"/>
+              </optical>
+            </solvers>
+          </plask>''')
+        self.solver2 = self.manager.solvers.solver2
+        self.solver2.wavelength = 1000 + 4j
+        self.mesh2 = mesh.Rectangular2D([1.0], [3.0])
+        self.solver3 = self.manager.solvers.solver3
+        self.solver3.wavelength = 1000 + 9j
+        self.mesh3 = mesh.Rectangular3D([1.0], [1.0], [3.0])
+        self.solver2.inEpsilon = flow.EpsilonProvider2D(self.value)
+        self.solver3.inEpsilon = flow.EpsilonProvider3D(self.value)
+
+    def test2D(self):
+       self.assertAlmostEqual(2., self.solver2.outRefractiveIndex(self.mesh2)[0])
+
+    def test3D(self):
+       self.assertAlmostEqual(3., self.solver3.outRefractiveIndex(self.mesh3)[0])

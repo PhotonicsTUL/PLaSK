@@ -1082,7 +1082,9 @@ const LazyData<Vec<3, dcomplex>> EffectiveFrequencyCyl::getElectricField(std::si
 
 const LazyData<dcomplex> EffectiveFrequencyCyl::getRefractiveIndex(RefractiveIndex::EnumType,
                                                                    const shared_ptr<const MeshD<2>>& dst_mesh,
+                                                                   dcomplex lam,
                                                                    InterpolationMethod) {
+    if (!isnan(real(lam))) throw BadInput(this->getId(), "wavelength cannot be specified for outRefractiveIndex in this solver");
     this->writelog(LOG_DEBUG, "Getting refractive indices");
     dcomplex lam0 = 2e3 * PI / k0;
     updateCache();

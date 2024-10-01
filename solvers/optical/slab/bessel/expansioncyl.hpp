@@ -145,7 +145,7 @@ struct PLASK_SOLVER_API ExpansionBessel : public Expansion {
     /// Computed integrals
     std::vector<Integrals> layers_integrals;
 
-    void beforeLayersIntegrals(double lam, double glam) override;
+    void beforeLayersIntegrals(dcomplex lam, dcomplex glam) override;
 
     Tensor3<dcomplex> getEps(size_t layer, size_t ri, double r, double matz, double lam, double glam);
 

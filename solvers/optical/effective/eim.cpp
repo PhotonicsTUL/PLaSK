@@ -925,7 +925,9 @@ const LazyData<Vec<3, dcomplex>> EffectiveIndex2D::getElectricField(std::size_t 
 
 const LazyData<dcomplex> EffectiveIndex2D::getRefractiveIndex(RefractiveIndex::EnumType,
                                                               shared_ptr<const MeshD<2>> dst_mesh,
+                                                              dcomplex lam,
                                                               InterpolationMethod) {
+    if (!isnan(real(lam))) throw BadInput(this->getId(), "wavelength cannot be specified for outRefractiveIndex in this solver");
     this->writelog(LOG_DEBUG, "Getting refractive indices");
     updateCache();
     InterpolationFlags flags(geometry);

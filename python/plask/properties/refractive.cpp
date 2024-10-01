@@ -73,6 +73,56 @@ void RefractiveIndexComponent::construct(PyObject* obj, boost::python::converter
     data->convertible = storage;
 }
 
+namespace detail {
+
+template <typename GeometryT> struct ProviderAdditionalDefs<ProviderFor<RefractiveIndex, GeometryT>> {
+    typedef ProviderFor<RefractiveIndex, GeometryT> ProviderT;
+    typedef typename ProviderT::ValueType ValueT;
+    typedef typename ProviderT::EnumType EnumType;
+    static const int DIMS = GeometryT::DIM;
+
+    static PythonDataVector<const ValueT, DIMS> __call__n(ProviderT& self,
+                                                          EnumType num,
+                                                          const shared_ptr<MeshD<DIMS>>& mesh,
+                                                          InterpolationMethod method) {
+        if (!mesh) throw TypeError(u8"you must provide proper mesh to {0} provider", self.name());
+        int n = int(num);
+        if (n < 0) num = EnumType(self.size() + n);
+        if (n < 0 || std::size_t(n) >= self.size()) throw NoValue(format("{0} [{1}]", self.name(), num).c_str());
+        return PythonDataVector<const ValueT, DIMS>(self(num, mesh, dcomplex(NAN, NAN), method), mesh);
+    }
+    static PythonDataVector<const ValueT, DIMS> __call__0(ProviderT& self,
+                                                          const shared_ptr<MeshD<DIMS>>& mesh,
+                                                          InterpolationMethod method) {
+        if (!mesh) throw TypeError(u8"you must provide proper mesh to {0} provider", self.name());
+        return PythonDataVector<const ValueT, DIMS>(self(EnumType(0), mesh, dcomplex(NAN, NAN), method), mesh);
+    }
+
+    inline static void extend(py::class_<ProviderT, shared_ptr<ProviderT>, boost::noncopyable>& cls) {
+        cls.def("__call__", &__call__0, (py::arg("self"), "mesh", py::arg("interpolation") = INTERPOLATION_DEFAULT));
+        cls.def("__call__", &__call__n, (py::arg("self"), "comp", "mesh", py::arg("interpolation") = INTERPOLATION_DEFAULT));
+    }
+};
+
+template <typename GeometryT> struct ProviderAdditionalDefs<ProviderFor<Epsilon, GeometryT>> {
+    typedef ProviderFor<Epsilon, GeometryT> ProviderT;
+    typedef typename ProviderT::ValueType ValueT;
+    static const int DIMS = GeometryT::DIM;
+
+    static PythonDataVector<const ValueT, DIMS> __call__(ProviderT& self,
+                                                         const shared_ptr<MeshD<DIMS>>& mesh,
+                                                         InterpolationMethod method) {
+        if (!mesh) throw TypeError(u8"you must provide proper mesh to {0} provider", self.name());
+        return PythonDataVector<const ValueT, DIMS>(self(mesh, dcomplex(NAN, NAN), method), mesh);
+    }
+
+    inline static void extend(py::class_<ProviderT, shared_ptr<ProviderT>, boost::noncopyable>& cls) {
+        cls.def("__call__", &__call__, (py::arg("self"), "mesh", py::arg("interpolation") = INTERPOLATION_DEFAULT));
+    }
+};
+
+}  // namespace detail
+
 void register_standard_properties_refractive(const py::object& flow_module) {
     registerProperty<RefractiveIndex>(flow_module);
     registerProperty<Epsilon>(flow_module);

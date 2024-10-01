@@ -142,31 +142,45 @@ void ExpansionBessel::init3() {
     m_changed = false;
 }
 
-void ExpansionBessel::beforeLayersIntegrals(double lam, double glam) {
+void ExpansionBessel::beforeLayersIntegrals(dcomplex lam, dcomplex glam) {
     if (m_changed) init2();
     SOLVER->prepareExpansionIntegrals(this, mesh, lam, glam);
 }
 
 void ExpansionBessel::beforeGetEpsilon() {
-    double lambda = real(2e3*PI/k0);
+    double lambda = real(2e3 * PI / k0);
     double lam, glam;
     if (!isnan(lam0)) {
         lam = lam0;
-        glam = (solver->always_recompute_gain)? lambda : lam;
-    } else{
+        glam = (solver->always_recompute_gain) ? lambda : lam;
+    } else {
         lam = glam = lambda;
     }
     beforeLayersIntegrals(lam, glam);
 }
 
-void ExpansionBessel::afterGetEpsilon() {
-    afterLayersIntegrals();
-}
-
+void ExpansionBessel::afterGetEpsilon() { afterLayersIntegrals(); }
 
 Tensor3<dcomplex> ExpansionBessel::getEps(size_t layer, size_t ri, double r, double matz, double lam, double glam) {
     Tensor3<dcomplex> eps;
-    {
+    std::set<std::string> roles;
+    if (epsilon_connected && solver->lcomputed[layer] || gain_connected && solver->lgained[layer])
+        roles = SOLVER->getGeometry()->getRolesAt(vec(r, matz));
+    bool computed = epsilon_connected && solver->lcomputed[layer] && roles.find("inEpsilon") != roles.end();
+    if (computed) {
+        eps = Zero<Tensor3<dcomplex>>();
+        double W = 0.;
+        for (size_t k = 0, v = ri * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
+            if (solver->stack[k] == layer) {
+                if (isnan(epsilons[v]))
+                    throw BadInput(solver->getId(), "complex permittivity tensor got from inEpsilon is NaN at {}", mesh->at(v));
+                double w = (k == 0 || k == mesh->vert()->size() - 1) ? 1e-6 : solver->vbounds->at(k) - solver->vbounds->at(k - 1);
+                eps += w * epsilons[v];
+                W += w;
+            }
+        }
+        eps /= W;
+    } else {
         OmpLockGuard lock;  // this must be declared before `material` to guard its destruction
         auto material = SOLVER->getGeometry()->getMaterial(vec(r, matz));
         lock = material->lock();
@@ -177,11 +191,10 @@ Tensor3<dcomplex> ExpansionBessel::getEps(size_t layer, size_t ri, double r, dou
             throw BadInput(solver->getId(), "complex permittivity tensor (Eps) for {} is NaN at lam={}nm, T={}K, n={}/cm3",
                            material->name(), lam, T, cc);
     }
-    if (!is_zero(eps.c00 - eps.c11) ||
-        eps.c01 != 0. || eps.c02 != 0. || eps.c10 != 0. || eps.c12 != 0. || eps.c20 != 0. || eps.c21 != 0.)
+    if (!is_zero(eps.c00 - eps.c11) || eps.c01 != 0. || eps.c02 != 0. || eps.c10 != 0. || eps.c12 != 0. || eps.c20 != 0. ||
+        eps.c21 != 0.)
         throw BadInput(solver->getId(), "lateral anisotropy not allowed for this solver");
-    if (gain_connected && solver->lgained[layer]) {
-        auto roles = SOLVER->getGeometry()->getRolesAt(vec(r, matz));
+    if (!computed && gain_connected && solver->lgained[layer]) {
         if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
             Tensor2<double> g = 0.;
             double W = 0.;
@@ -195,8 +208,8 @@ Tensor3<dcomplex> ExpansionBessel::getEps(size_t layer, size_t ri, double r, dou
             }
             Tensor2<double> ni = glam * g / W * (0.25e-7 / PI);
             double n00 = sqrt(eps.c00).real(), n22 = sqrt(eps.c22).real();
-            eps.c00 = eps.c11 = dcomplex(n00*n00 - ni.c00*ni.c00, 2 * n00 * ni.c00);
-            eps.c22 = dcomplex(n22*n22 - ni.c11*ni.c11, 2 * n22 * ni.c11);
+            eps.c00 = eps.c11 = dcomplex(n00 * n00 - ni.c00 * ni.c00, 2 * n00 * ni.c00);
+            eps.c22 = dcomplex(n22 * n22 - ni.c11 * ni.c11, 2 * n22 * ni.c11);
         }
     }
     return eps;
@@ -220,6 +233,10 @@ void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam) {
 
     size_t nr = raxis->size(), N = SOLVER->size;
 
+    if (epsilon_connected && solver->lcomputed[layer]) {
+        SOLVER->writelog(LOG_DEBUG, "Layer {:d} takes some materials parameters from inEpsilon", layer);
+        if (isnan(glam)) glam = lam;
+    }
     if (gain_connected && solver->lgained[layer]) {
         SOLVER->writelog(LOG_DEBUG, "Layer {:d} has gain", layer);
         if (isnan(glam)) glam = lam;
@@ -442,8 +459,8 @@ LazyData<Vec<3, dcomplex>> ExpansionBessel::getField(size_t layer,
 }
 
 LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialEps(size_t layer,
-                                                           const shared_ptr<const typename LevelsAdapter::Level>& level,
-                                                           InterpolationMethod interp) {
+                                                            const shared_ptr<const typename LevelsAdapter::Level>& level,
+                                                            InterpolationMethod interp) {
     if (interp == INTERPOLATION_DEFAULT) interp = INTERPOLATION_NEAREST;
 
     assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
@@ -452,9 +469,9 @@ LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialEps(size_t layer,
     double lam, glam;
     if (!isnan(lam0)) {
         lam = lam0;
-        glam = (solver->always_recompute_gain) ? real(02e3 * PI / k0) : lam;
+        glam = (solver->always_recompute_gain) ? real(2e3 * PI / k0) : lam;
     } else {
-        lam = glam = real(02e3 * PI / k0);
+        lam = glam = real(2e3 * PI / k0);
     }
 
     auto raxis = mesh->tran();
@@ -478,11 +495,14 @@ double ExpansionBessel::integratePoyntingVert(const cvector& E, const cvector& H
         size_t ip = idxp(i);
         result += real(-E[is] * conj(H[is]) + E[ip] * conj(H[ip])) * fieldFactor(i);
     }
-    return 4e-12 * PI * result;  // ÂµmÂ² -> mÂ²
+    return 4e-12 * PI * result;  // µm² -> m²
 }
 
-double ExpansionBessel::integrateField(WhichField field, size_t layer, const cmatrix& TE, const cmatrix& TH,
-                                       const std::function<std::pair<dcomplex,dcomplex>(size_t, size_t)>& vertical) {
+double ExpansionBessel::integrateField(WhichField field,
+                                       size_t layer,
+                                       const cmatrix& TE,
+                                       const cmatrix& TH,
+                                       const std::function<std::pair<dcomplex, dcomplex>(size_t, size_t)>& vertical) {
     assert(TE.rows() == matrixSize());
     assert(TH.rows() == matrixSize());
 
@@ -492,7 +512,7 @@ double ExpansionBessel::integrateField(WhichField field, size_t layer, const cma
     size_t N = SOLVER->size;
 
     TempMatrix temp = getTempMatrix();
-    cmatrix Fz(N, M, temp.data()), DBz(N, M, temp.data() + N*M);
+    cmatrix Fz(N, M, temp.data()), DBz(N, M, temp.data() + N * M);
 
     double R = rbounds[rbounds.size() - 1];
     double fz = 0.5 / real(k0 * conj(k0));
@@ -503,7 +523,7 @@ double ExpansionBessel::integrateField(WhichField field, size_t layer, const cma
             cvector Ez(N), Dz(N);
             for (size_t j = 0; j != N; ++j) {
                 size_t js = idxs(j), jp = idxp(j);
-                DBz(j,m) = TH(js,m) + TH(jp,m);
+                DBz(j, m) = TH(js, m) + TH(jp, m);
             }
         }
         mult_matrix_by_matrix(layers_integrals[layer].V_k, DBz, Fz);
@@ -512,7 +532,7 @@ double ExpansionBessel::integrateField(WhichField field, size_t layer, const cma
         for (openmp_size_t m = 0; m < M; m++) {
             for (size_t j = 0; j != N; ++j) {
                 size_t js = idxs(j), jp = idxp(j);
-                DBz(j,m) = TE(js,m) + TE(jp,m);
+                DBz(j, m) = TE(js, m) + TE(jp, m);
             }
         }
         Fz = getHzMatrix(DBz, Fz);
@@ -529,14 +549,14 @@ double ExpansionBessel::integrateField(WhichField field, size_t layer, const cma
                     double eta = fieldFactor(i);
                     size_t is = idxs(i);
                     size_t ip = idxp(i);
-                    resxy += (TE(is,m1) * conj(TE(is,m2)) + TE(ip,m1) * conj(TE(ip,m2))) * eta;
-                    resz += Fz(i,m1) * conj(Fz(i,m2)) * eta;
+                    resxy += (TE(is, m1) * conj(TE(is, m2)) + TE(ip, m1) * conj(TE(ip, m2))) * eta;
+                    resz += Fz(i, m1) * conj(Fz(i, m2)) * eta;
                 }
                 if (!(is_zero(resxy) && is_zero(resz))) {
                     auto vert = vertical(m1, m2);
                     double res = real(resxy * vert.first + fz * resz * vert.second);
                     if (m2 != m1) res *= 2;
-                    #pragma omp atomic
+#pragma omp atomic
                     result += res;
                 }
             }
@@ -550,14 +570,14 @@ double ExpansionBessel::integrateField(WhichField field, size_t layer, const cma
                     double eta = fieldFactor(i);
                     size_t is = idxs(i);
                     size_t ip = idxp(i);
-                    resxy += (TH(is,m1) * conj(TH(is,m2)) + TH(ip,m1) * conj(TH(ip,m2))) * eta;
-                    resz += Fz(i,m1) * conj(Fz(i,m2)) * eta;
+                    resxy += (TH(is, m1) * conj(TH(is, m2)) + TH(ip, m1) * conj(TH(ip, m2))) * eta;
+                    resz += Fz(i, m1) * conj(Fz(i, m2)) * eta;
                 }
                 if (!(is_zero(resxy) && is_zero(resz))) {
                     auto vert = vertical(m1, m2);
                     double res = real(resxy * vert.second + fz * resz * vert.first);
                     if (m2 != m1) res *= 2;
-                    #pragma omp atomic
+#pragma omp atomic
                     result += res;
                 }
             }

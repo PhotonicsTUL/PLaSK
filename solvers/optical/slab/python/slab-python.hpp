@@ -1149,6 +1149,7 @@ inline void export_base(Class solver) {
                         "If :attr:`temp_diff` is not ``None``, this is the minimum thickness of sublayers\n"
                         "resulting from temperature-gradient division.\n");
     solver.template add_receiver<ReceiverFor<Temperature, typename Solver::SpaceType>, Solver>("inTemperature", &Solver::inTemperature, "");
+    solver.template add_receiver<ReceiverFor<Epsilon, typename Solver::SpaceType>, Solver>("inEpsilon", &Solver::inEpsilon, "");
     solver.template add_receiver<ReceiverFor<Gain, typename Solver::SpaceType>, Solver>("inGain", &Solver::inGain, "");
     solver.template add_receiver<ReceiverFor<CarriersConcentration, typename Solver::SpaceType>, Solver>("inCarriersConcentration", &Solver::inCarriersConcentration, "");
     solver.add_provider("outEpsilon", &Solver::outEpsilon, "");
@@ -1209,11 +1210,12 @@ inline void export_base(Class solver) {
                         "inefficient.\n"
                        );
     solver.def_readwrite("update_gain", &Solver::always_recompute_gain,
-                        "Always update gain.\n\n"
-                        "If this attribute is set to True, material parameters are always recomputed for\n"
-                        "layers with gains. This allows to set py:attr:`lam0` for better efficiency and\n"
-                        "still update gain for slight changes of wavelength.\n"
-                       );
+                         "Recompute dynamic parameters.\n\n"
+                         "If this attribute is set to True, material parameters are always recomputed for\n"
+                         "layers with gain or permittivity provided by py::attr:`inEpsilon`. This allows\n"
+                         "to set 'lam0' for better efficiency and still consider slight changes of wavelength,\n"
+                         "where it matters the most.\n"
+                        );
     solver.def("integrateEE", &getIntegralEE_0<Solver>, (py::arg("z1"), "z2"));
     solver.def("integrateEE", &getIntegralEE<Solver>, (py::arg("num"), "z1", "z2"),
                u8"Get average integral of the squared electric field:\n\n"

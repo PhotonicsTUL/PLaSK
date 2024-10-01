@@ -98,6 +98,9 @@ struct PLASK_SOLVER_API SlabBase {
     /// Information if the layer has gain
     std::vector<bool> lgained;
 
+    /// Information if the layer has data from inEpsilon
+    std::vector<bool> lcomputed;
+
     /// Organization of layers in the stack
     std::vector<std::size_t> stack;
 
@@ -155,7 +158,7 @@ struct PLASK_SOLVER_API SlabBase {
           k0(NAN),
           vpml(dcomplex(1., -2.), 2.0, 10., 0),
           recompute_integrals(true),
-          always_recompute_gain(false),
+          always_recompute_gain(true),
           group_layers(true),
           max_temp_diff(NAN),
           temp_dist(0.5),

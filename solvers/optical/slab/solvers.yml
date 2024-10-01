@@ -26,13 +26,13 @@
         is most accurate, but can be very inefficient.
     - &update-gain
       attr: update-gain
-      label: Always update gain
+      label: Recompute dynamic parameters
       type: bool
-      default: false
+      default: true
       help: >
         If this attribute is set to 'yes', material parameters are always recomputed for layers with
-        gains. This allows to set 'lam0' for better efficiency and still update gain for slight changes
-        of wavelength.
+        gain or permittivity provided by inEpsilon. This allows to set 'lam0' for better efficiency
+        and still consider slight changes of wavelength, where it matters the most.
     - &size
       attr: size
       label: Expansion size
@@ -370,6 +370,7 @@
   receivers: &receivers
   - inTemperature
   - inGain
+  - inEpsilon
   - inCarriersConcentration
 
 ###########################################################################################

@@ -30,17 +30,17 @@ template <typename PropertyT> inline const char* docstring_provider_multi_param_
 
 template <> struct PropertyArgsField<Gain> {
     static py::detail::keywords<4> value() {
-        return boost::python::arg("self"), boost::python::arg("mesh"), boost::python::arg("wavelength"), boost::python::arg("interpolation")=INTERPOLATION_DEFAULT;
+        return boost::python::arg("self"), boost::python::arg("mesh"), boost::python::arg("lam"), boost::python::arg("interpolation")=INTERPOLATION_DEFAULT;
     }
 };
 template <> struct PropertyArgsMultiField<Gain> {
     static py::detail::keywords<5> value() {
-        return boost::python::arg("self"), boost::python::arg("deriv"), boost::python::arg("mesh"), boost::python::arg("wavelength"), boost::python::arg("interpolation")=INTERPOLATION_DEFAULT;
+        return boost::python::arg("self"), boost::python::arg("deriv"), boost::python::arg("mesh"), boost::python::arg("lam"), boost::python::arg("interpolation")=INTERPOLATION_DEFAULT;
     }
 };
-template <> inline const char* docstrig_property_optional_args<Gain>() { return ", wavelength"; }
+template <> inline const char* docstrig_property_optional_args<Gain>() { return ", lam"; }
 template <> inline const char* docstrig_property_optional_args_desc<Gain>() { return
-    u8":param float wavelength: The wavelength at which the gain is computed (nm).\n";
+    u8":param float lam: The wavelength at which the gain is computed (nm).\n";
 }
 template <> inline const char* docstring_provider_multi_param<Gain>() { return "deriv=''"; }
 template <> inline const char* docstring_provider_multi_param_desc<Gain>() {
@@ -51,12 +51,12 @@ template <> inline const char* docstring_provider_multi_param_desc<Gain>() {
 
 template <> struct PropertyArgsField<Luminescence> {
     static py::detail::keywords<4> value() {
-        return boost::python::arg("self"), boost::python::arg("mesh"), boost::python::arg("wavelength"), boost::python::arg("interpolation")=INTERPOLATION_DEFAULT;
+        return boost::python::arg("self"), boost::python::arg("mesh"), boost::python::arg("lam"), boost::python::arg("interpolation")=INTERPOLATION_DEFAULT;
     }
 };
-template <> inline const char* docstrig_property_optional_args<Luminescence>() { return ", wavelength"; }
+template <> inline const char* docstrig_property_optional_args<Luminescence>() { return ", lam"; }
 template <> inline const char* docstrig_property_optional_args_desc<Luminescence>() { return
-    u8":param float wavelength: The wavelength at which the luminescence is computed (nm).\n";
+    u8":param float lam: The wavelength at which the luminescence is computed (nm).\n";
 }
 
 
@@ -86,6 +86,36 @@ template <> inline const char* docstring_provider_multi_param_desc<ModeLightH>()
     return u8":param int n: Number of the mode found with :meth:`find_mode`.\n";
 }
 
+template <> struct PropertyArgsField<RefractiveIndex> {
+    static py::detail::keywords<4> value() {
+        return boost::python::arg("self"), boost::python::arg("mesh"), boost::python::arg("lam"), boost::python::arg("interpolation")=INTERPOLATION_DEFAULT;
+    }
+};
+template <> struct PropertyArgsMultiField<RefractiveIndex> {
+    static py::detail::keywords<5> value() {
+        return boost::python::arg("self"), boost::python::arg("comp"), boost::python::arg("mesh"), boost::python::arg("lam"), boost::python::arg("interpolation")=INTERPOLATION_DEFAULT;
+    }
+};
+template <> inline const char* docstrig_property_optional_args<RefractiveIndex>() { return ", lam=DEFAULT"; }
+template <> inline const char* docstrig_property_optional_args_desc<RefractiveIndex>() { return
+    u8":param float lam: Complex wavelength at which the refractive index is computed (nm).\n";
+}
+template <> inline const char* docstring_provider_multi_param<RefractiveIndex>() { return "comp"; }
+template <> inline const char* docstring_provider_multi_param_desc<RefractiveIndex>() {
+    return ":param str comp: Component of a diagonal refractive index derivative to return.\n"
+           "                 Can be 'll', 'tt', 'vv', or equivalent using current axes names.\n"
+           "                 For scalar solvers this argument is ignored and can be skipped.\n";
+}
+
+template <> struct PropertyArgsField<Epsilon> {
+    static py::detail::keywords<4> value() {
+        return boost::python::arg("self"), boost::python::arg("mesh"), boost::python::arg("lam"), boost::python::arg("interpolation")=INTERPOLATION_DEFAULT;
+    }
+};
+template <> inline const char* docstrig_property_optional_args<Epsilon>() { return ", lam=DEFAULT"; }
+template <> inline const char* docstrig_property_optional_args_desc<Epsilon>() { return
+    u8":param float lam: Complex wavelength at which the epsilon tensor is computed (nm).\n";
+}
 
 }} // namespace plask
 

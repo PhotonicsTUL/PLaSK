@@ -310,6 +310,7 @@ template <typename BaseT> void SlabSolver<BaseT>::setupLayers() {
     verts->addPoint(vbounds->at(vbounds->size() - 1) + 2. * OrderedAxis::MIN_DISTANCE);
 
     lgained.clear();
+    lcomputed.clear();
     stack.clear();
     stack.reserve(verts->size());
     lcount = 0;
@@ -323,7 +324,7 @@ template <typename BaseT> void SlabSolver<BaseT>::setupLayers() {
     std::vector<std::vector<LayerItem>> layers;
 
     for (size_t v = 0; v != verts->size(); ++v) {
-        bool gain = false;
+        bool gain = false, computed = false;
         bool unique = !group_layers || layers.size() == 0;
 
         std::vector<LayerItem> layer(adapter.size());
@@ -336,6 +337,9 @@ template <typename BaseT> void SlabSolver<BaseT>::setupLayers() {
                 else if (role == "unique") {
                     layer[i].roles.insert(role);
                     unique = true;
+                } else if (role == "inEpsilon") {
+                    layer[i].roles.insert(role);
+                    computed = true;
                 } else if (role == "QW" || role == "QD" || role == "gain") {
                     layer[i].roles.insert(role);
                     gain = true;
@@ -362,6 +366,7 @@ template <typename BaseT> void SlabSolver<BaseT>::setupLayers() {
             stack.push_back(lcount++);
             layers.emplace_back(std::move(layer));
             lgained.push_back(gain);
+            lcomputed.push_back(computed);
         }
     }
     assert(vbounds->size() == stack.size() - 1);
@@ -373,7 +378,7 @@ template <typename BaseT> void SlabSolver<BaseT>::setupLayers() {
     if (group_layers && inTemperature.hasProvider() && !isnan(max_temp_diff) && !isinf(max_temp_diff) && !isnan(temp_dist) &&
         !isinf(temp_dist) && !isnan(temp_layer) && !isinf(temp_layer)) {
         auto temp = inTemperature(adapter.mesh);
-        size_t nl = lcount;  // number of idependent layers to consider (stays fixed)
+        size_t nl = lcount;  // number of independent layers to consider (stays fixed)
         for (size_t l = 0; l != nl; ++l) {
             std::vector<size_t> indices;
             std::list<std::list<size_t>> groups;
@@ -388,7 +393,7 @@ template <typename BaseT> void SlabSolver<BaseT>::setupLayers() {
             size_t n = indices.size();
             // Make distance matrix
             std::unique_ptr<double[]> dists(new double[n * n]);
-#define dists_at(a, b) dists[(a)*n + (b)]  // TODO develop plask::UniquePtr2D<> and remove this macro
+#define dists_at(a, b) dists[(a) * n + (b)]  // TODO develop plask::UniquePtr2D<> and remove this macro
             for (size_t i = 0; i != n; ++i) {
                 dists_at(i, i) = INFINITY;  // the simplest way to avoid clustering with itself
                 for (size_t j = i + 1; j != n; ++j) {
@@ -426,11 +431,13 @@ template <typename BaseT> void SlabSolver<BaseT>::setupLayers() {
             for (++g; g != groups.end(); ++g) {
                 for (ItemIterator i = g->begin(); i != g->end(); ++i) stack[indices[*i]] = lcount;
                 lgained.push_back(lgained[l]);
+                lcomputed.push_back(lcomputed[l]);
                 ++lcount;
             }
         }
     }
     assert(lgained.size() == lcount);
+    assert(lcomputed.size() == lcount);
 
     if (!isnan(interface_position)) {
         interface = std::lower_bound(vbounds->begin(), vbounds->end(), interface_position - 0.5 * OrderedAxis::MIN_DISTANCE) -
@@ -472,7 +479,7 @@ template <typename BaseT> void SlabSolver<BaseT>::setupLayers() {
     // DEBUG
     // for (size_t i = 0; i < stack.size(); ++i) {
     //     if (i != 0) std::cerr << "---- " << vbounds->at(i-1) << "\n";
-    //     std::cerr << stack[i] << (lgained[stack[i]]? "*\n" : "\n");
+    //     std::cerr << stack[i] << (lgained[stack[i]]? "+" : "") << (lgained[stack[i]]? "*\n" : "\n");
     // }
 
     if (interface >= 0) {
@@ -487,7 +494,9 @@ template <typename BaseT> void SlabSolver<BaseT>::setupLayers() {
 template <typename BaseT>
 DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getEpsilonProfile(
     const shared_ptr<const MeshD<BaseT::SpaceType::DIM>>& dst_mesh,
+    dcomplex lam,
     InterpolationMethod interp) {
+    if (!isnan(real(lam))) throw BadInput(this->getId(), "wavelength cannot be specified for outEpsilon in this solver");
     Solver::initCalculation();
     Expansion& expansion = getExpansion();
     setExpansionDefaults(false);
@@ -515,9 +524,11 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getEpsilonProfile(
 template <typename BaseT>
 LazyData<dcomplex> SlabSolver<BaseT>::getRefractiveIndex(RefractiveIndex::EnumType component,
                                                          const shared_ptr<const MeshD<BaseT::SpaceType::DIM>>& dst_mesh,
+                                                         dcomplex lam,
                                                          InterpolationMethod interp) {
+    if (!isnan(real(lam))) throw BadInput(this->getId(), "wavelength cannot be specified for outRefractiveIndex in this solver");
     Solver::initCalculation();
-    DataVector<const Tensor3<dcomplex>> epsilon = getEpsilonProfile(dst_mesh, interp);
+    DataVector<const Tensor3<dcomplex>> epsilon = getEpsilonProfile(dst_mesh, NAN, interp);
     switch (component) {
         case RefractiveIndex::COMPONENT_LONG:
             return LazyData<dcomplex>(epsilon.size(), [epsilon](size_t i) { return sqrt(epsilon[i].c00); });

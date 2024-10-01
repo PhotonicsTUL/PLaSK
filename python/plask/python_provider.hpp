@@ -106,6 +106,11 @@ namespace detail {
 
 template <typename ReceiverT, PropertyType propertyType, typename VariadicTemplateTypesHolder> struct RegisterReceiverImpl;
 
+template <typename ReceiverT>
+struct ReceiverAdditionalDefs {
+    inline static void extend(py::class_<ReceiverT, py::bases<ReceiverBase>, boost::noncopyable>& cls) {}
+};
+
 template <typename ReceiverT> struct RegisterReceiverBase {
     typedef typename ReceiverT::PropertyTag PropertyT;
     typedef ProviderFor<PropertyT, typename ReceiverT::SpaceType> ProviderT;
@@ -308,6 +313,7 @@ struct RegisterReceiverImpl<ReceiverT, SINGLE_VALUE_PROPERTY, VariadicTemplateTy
     RegisterReceiverImpl() {
         this->receiver_class.def("attach", &Class::setter, format(docstring_receiver_attach, this->property_name).c_str(),
                                  py::arg("source"));
+        ReceiverAdditionalDefs<ReceiverT>::extend(this->receiver_class);
         this->receiver_class.def("__call__", &__call__, PropertyArgsSingleValue<PropertyT>::value(),
                                  "Get value from the connected provider");
     }
@@ -341,6 +347,7 @@ struct RegisterReceiverImpl<ReceiverT, MULTI_VALUE_PROPERTY, VariadicTemplateTyp
     RegisterReceiverImpl() {
         this->receiver_class.def("attach", &Class::setter, format(docstring_receiver_attach, this->property_name).c_str(),
                                  py::arg("source"));
+        ReceiverAdditionalDefs<ReceiverT>::extend(this->receiver_class);
         this->receiver_class.def("__call__", &__call__0, PropertyArgsSingleValue<PropertyT>::value(),
                                  u8"Get value from the connected provider");
         this->receiver_class.def("__call__", &__call__n, PropertyArgsMultiValue<PropertyT>::value(),
@@ -392,6 +399,7 @@ struct RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY, VariadicTemplateTypesHold
                                           spaceName<typename ReceiverT::SpaceType>()) {
         this->receiver_class.def("attach", &Class::setter, format(docstring_receiver_attach, this->property_name).c_str(),
                                  py::arg("source"));
+        ReceiverAdditionalDefs<ReceiverT>::extend(this->receiver_class);
         this->receiver_class.def("__call__", &__call__, PropertyArgsField<PropertyT>::value(),
                                  u8"Get value from the connected provider");
     }
@@ -461,6 +469,7 @@ struct RegisterReceiverImpl<ReceiverT, MULTI_FIELD_PROPERTY, VariadicTemplateTyp
                                           spaceName<typename ReceiverT::SpaceType>()) {
         this->receiver_class.def("attach", &Class::setter, format(docstring_receiver_attach, this->property_name).c_str(),
                                  py::arg("source"));
+        ReceiverAdditionalDefs<ReceiverT>::extend(this->receiver_class);
         this->receiver_class.def("__call__", &__call__0, PropertyArgsField<PropertyT>::value(),
                                  u8"Get value from the connected provider");
         this->receiver_class.def("__call__", &__call__n, PropertyArgsMultiField<PropertyT>::value(),
@@ -836,6 +845,11 @@ template <typename CombinedProviderT> struct RegisterCombinedProvider {
 
 namespace detail {
 
+template <typename ProviderT>
+struct ProviderAdditionalDefs {
+    inline static void extend(py::class_<ProviderT, shared_ptr<ProviderT>, boost::noncopyable>& cls) {}
+};
+
 template <typename ProviderT> struct RegisterProviderBase {
     typedef PythonProviderFor<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>
         PythonProviderType;
@@ -844,6 +858,7 @@ template <typename ProviderT> struct RegisterProviderBase {
     RegisterProviderBase(const std::string& suffix = "", const std::string& space = "")
         : property_name(type_name<typename ProviderT::PropertyTag>()),
           provider_class((property_name + "Provider" + suffix).c_str(), py::no_init) {
+        ProviderAdditionalDefs<ProviderT>::extend(this->provider_class);
         py::class_<PythonProviderType, shared_ptr<PythonProviderType>, py::bases<ProviderT>, boost::noncopyable>(
             (property_name + "Provider" + suffix).c_str(),
             format(docstring_provider<typename ProviderT::PropertyTag>(), property_name, suffix,

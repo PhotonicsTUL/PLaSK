@@ -79,6 +79,9 @@ template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, publ
     /// Receiver for the gain
     ReceiverFor<Gain, typename BaseT::SpaceType> inGain;
 
+    /// Receiver for the dynamic epsilon
+    ReceiverFor<Epsilon, typename BaseT::SpaceType> inEpsilon;
+
     /// Receiver for carriers concentration
     ReceiverFor<CarriersConcentration, typename BaseT::SpaceType> inCarriersConcentration;
 
@@ -232,13 +235,18 @@ template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, publ
 
     void prepareExpansionIntegrals(Expansion* expansion,
                                    const shared_ptr<MeshD<BaseT::SpaceType::DIM>>& mesh,
-                                   double lam,
-                                   double glam) {
+                                   dcomplex lam,
+                                   dcomplex glam) {
         expansion->temperature = inTemperature(mesh);
         expansion->gain_connected = inGain.hasProvider();
+        expansion->epsilon_connected = inEpsilon.hasProvider();
         if (expansion->gain_connected) {
             if (isnan(glam)) glam = lam;
-            expansion->gain = inGain(mesh, glam);
+            expansion->gain = inGain(mesh, real(glam));
+        }
+        if (expansion->epsilon_connected) {
+            if (isnan(glam)) glam = lam;
+            expansion->epsilons = inEpsilon(mesh, glam);
         }
         expansion->carriers = inCarriersConcentration.hasProvider() ? inCarriersConcentration(CarriersConcentration::MAJORITY, mesh)
                                                                     : LazyData<double>(mesh->size(), 0.);
@@ -286,6 +294,7 @@ template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, publ
      * \param method interpolation method
      */
     DataVector<const Tensor3<dcomplex>> getEpsilonProfile(const shared_ptr<const MeshD<BaseT::SpaceType::DIM>>& dst_mesh,
+                                                          dcomplex lam,
                                                           InterpolationMethod interp = INTERPOLATION_DEFAULT);
 
     /**
@@ -295,6 +304,7 @@ template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, publ
      */
     LazyData<dcomplex> getRefractiveIndex(RefractiveIndex::EnumType component,
                                           const shared_ptr<const MeshD<BaseT::SpaceType::DIM>>& dst_mesh,
+                                          dcomplex lam,
                                           InterpolationMethod interp = INTERPOLATION_DEFAULT);
 
     /**
