@@ -160,20 +160,20 @@ namespace detail {
             out << "plask.tensor(" << pyformat(to_print.c00) << ", " << pyformat(to_print.c11) << ")";
             return out.str();
         }
-        static py::object __array__(py::object self, py::object dtype) {
+        static py::object __array__(py::object self, py::object dtype, py::object copy) {
             Tensor<2, T>* tensor = py::extract<Tensor<2, T>*>(self);
             npy_intp dims[] = {2};
             PyObject* arr = PyArray_SimpleNewFromData(1, dims, detail::typenum<T>(), (void*)(&tensor->c00));
             if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from tensor");
-            confirm_array<T>(arr, self, dtype);
+            confirm_array<T>(arr, self, dtype, copy);
             return py::object(py::handle<>(arr));
         }
-        py::object list__array__(py::object self, py::object dtype) {
+        py::object list__array__(py::object self, py::object dtype, py::object copy) {
             std::vector<Tensor<2, T>>* list = py::extract<std::vector<Tensor<2, T>>*>(self);
             npy_intp dims[] = {(npy_int)list->size(), 2};
             PyObject* arr = PyArray_SimpleNewFromData(2, dims, detail::typenum<T>(), (void*)(&(*list)[0].c00));
             if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from tensor list");
-            confirm_array<T>(arr, self, dtype);
+            confirm_array<T>(arr, self, dtype, copy);
             return py::object(py::handle<>(arr));
         }
     };
@@ -200,20 +200,20 @@ namespace detail {
                 << pyformat(to_print.c21) << ")";
             return out.str();
         }
-        static py::object __array__(py::object self, py::object dtype) {
+        static py::object __array__(py::object self, py::object dtype, py::object copy) {
             Tensor<3, T>* tensor = py::extract<Tensor<3, T>*>(self);
             npy_intp dims[] = {3, 3};
             PyObject* arr = PyArray_SimpleNewFromData(2, dims, detail::typenum<T>(), (void*)(&tensor->c00));
             if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from tensor");
-            confirm_array<T>(arr, self, dtype);
+            confirm_array<T>(arr, self, dtype, copy);
             return py::object(py::handle<>(arr));
         }
-        py::object list__array__(py::object self, py::object dtype) {
+        py::object list__array__(py::object self, py::object dtype, py::object copy) {
             std::vector<Tensor<2, T>>* list = py::extract<std::vector<Tensor<2, T>>*>(self);
             npy_intp dims[] = {(npy_int)list->size(), 3, 3};
             PyObject* arr = PyArray_SimpleNewFromData(3, dims, detail::typenum<T>(), (void*)(&(*list)[0].c00));
             if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from tensor list");
-            confirm_array<T>(arr, self, dtype);
+            confirm_array<T>(arr, self, dtype, copy);
             return py::object(py::handle<>(arr));
         }
     };
@@ -365,13 +365,13 @@ template <int dim, typename T> inline static py::class_<Tensor<dim, T>> register
              u8"to modify the copy without changing the source.\n")
         .add_static_property("dtype", &tensor_dtype<dim, T>,
                              u8"Type od the tensor components. This is always either ``float`` or ``complex``.\n")
-        .def("__array__", &detail::TensorMethods<dim, T>::__array__, py::arg("dtype") = py::object());
+        .def("__array__", &detail::TensorMethods<dim, T>::__array__, (py::arg("dtype")=py::object(), py::arg("copy")=py::object()));
     tensor_class.attr("__module__") = "plask";
 
     detail::TensorFromPython<dim, T>();
 
     register_vector_of<Tensor<dim, T>>(name).def("__array__", &detail::TensorMethods<dim, T>::list__array__,
-                                                 py::arg("dtype") = py::object());
+                                                 (py::arg("dtype")=py::object(), py::arg("copy")=py::object()));
 
     py::scope tensor_scope = tensor_class;
 

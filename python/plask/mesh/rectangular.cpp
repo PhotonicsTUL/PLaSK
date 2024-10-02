@@ -83,12 +83,12 @@ struct OrderedAxis_from_SingleNumber {
 
 }  // namespace detail
 
-static py::object OrderedAxis__array__(py::object self, py::object dtype) {
+static py::object OrderedAxis__array__(py::object self, py::object dtype, py::object copy) {
     OrderedAxis* axis = py::extract<OrderedAxis*>(self);
     npy_intp dims[] = {npy_intp(axis->size())};
     PyObject* arr = PyArray_SimpleNewFromData(1, dims, NPY_DOUBLE, (void*)&(*axis->begin()));
     if (arr == nullptr) throw TypeError("cannot create array");
-    confirm_array<double>(arr, self, dtype);
+    confirm_array<double>(arr, self, dtype, copy);
     return py::object(py::handle<>(arr));
 }
 
@@ -1062,7 +1062,7 @@ void register_mesh_rectangular() {
         .def("__delitem__", &OrderedAxis__delitem__)
         .def("__str__", &__str__<OrderedAxis>)
         .def("__repr__", &OrderedAxis__repr__)
-        .def("__array__", &OrderedAxis__array__, py::arg("dtype") = py::object())
+        .def("__array__", &OrderedAxis__array__, (py::arg("dtype")=py::object(), py::arg("copy")=py::object()))
         .def("insert", (bool (OrderedAxis::*)(double)) & OrderedAxis::addPoint, "Insert point into the mesh",
              (py::arg("point")))
         .def("extend", &OrderedAxis_extend, "Insert points from the sequence to the mesh", (py::arg("points")))

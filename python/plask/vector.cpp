@@ -171,22 +171,22 @@ template <int dim, typename T> inline static py::handle<> vec_dtype() { return d
 
 
 // vector.__array__
-template <int dim, typename T>  py::object vec__array__(py::object self, py::object dtype) {
+template <int dim, typename T>  py::object vec__array__(py::object self, py::object dtype, py::object copy) {
     Vec<dim,T>* vec = py::extract<Vec<dim,T>*>(self);
     npy_intp dims[] = { dim };
     PyObject* arr = PyArray_SimpleNewFromData(1, dims, detail::typenum<T>(), (void*)vec->begin());
     if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from vector");
-    confirm_array<T>(arr, self, dtype);
+    confirm_array<T>(arr, self, dtype, copy);
     return py::object(py::handle<>(arr));
 }
 
 // vector_list.__array__
-template <int dim, typename T>  py::object vec_list__array__(py::object self, py::object dtype) {
+template <int dim, typename T>  py::object vec_list__array__(py::object self, py::object dtype, py::object copy) {
     std::vector<Vec<dim,T>>* list = py::extract<std::vector<Vec<dim,T>>*>(self);
     npy_intp dims[] = { (npy_int)list->size(), dim };
     PyObject* arr = PyArray_SimpleNewFromData(2, dims, detail::typenum<T>(), (void*)((*list)[0].begin()));
     if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from vector list");
-    confirm_array<T>(arr, self, dtype);
+    confirm_array<T>(arr, self, dtype, copy);
     return py::object(py::handle<>(arr));
 }
 
@@ -290,14 +290,14 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
              u8"to modify the copy without changing the source.\n")
         .add_static_property("dtype", &vec_dtype<dim,T>,
              u8"Type od the vector components. This is always either ``float`` or ``complex``.\n")
-        .def("__array__", &vec__array__<dim,T>, py::arg("dtype")=py::object())
+        .def("__array__", &vec__array__<dim,T>, (py::arg("dtype")=py::object(), py::arg("copy")=py::object()))
     ;
     vec_class.attr("__module__") = "plask";
 
     detail::Vec_from_Sequence<dim,T>();
 
     register_vector_of<Vec<dim,T>>(name)
-        .def("__array__", &vec_list__array__<dim,T>, py::arg("dtype")=py::object())
+        .def("__array__", &vec_list__array__<dim,T>, (py::arg("dtype")=py::object(), py::arg("copy")=py::object()))
     ;
 
     py::scope vec_scope = vec_class;

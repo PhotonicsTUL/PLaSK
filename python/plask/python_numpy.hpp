@@ -57,12 +57,15 @@ namespace detail {
  * Either make sure the object stays alive as long as array, or make a copy to the desired dtype
  */
 template <typename T>
-inline void confirm_array(PyObject*& arr, py::object& self, py::object& dtype) {
+inline void confirm_array(PyObject*& arr, const py::object& self, const py::object& dtype, const py::object& copy) {
     PyHandle<PyArray_Descr> descr;
     if(!dtype.is_none() && PyArray_DescrConverter(dtype.ptr(), &descr.ref()) && descr->type_num != detail::typenum<T>()) {
         PyHandle<PyArrayObject> oarr = reinterpret_cast<PyArrayObject*>(arr);
         arr = PyArray_CastToType(oarr, descr, 1);
         if (arr == nullptr) throw TypeError(u8"cannot convert array to required dtype");
+    } else if (!copy.is_none() && py::extract<bool>(copy)()) {
+        arr = PyArray_FromArray(reinterpret_cast<PyArrayObject*>(arr), descr, NPY_ARRAY_ENSURECOPY);
+        if (arr == nullptr) throw plask::CriticalException(u8"cannot copy array");
     } else {
         py::incref(self.ptr());
         PyArray_SetBaseObject((PyArrayObject*)arr, self.ptr()); // Make sure the data vector stays alive as long as the array

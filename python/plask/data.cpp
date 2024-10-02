@@ -383,7 +383,8 @@ template <typename T, int dim> py::handle<> DataVector_dtype() { return detail::
 template <typename T, int dim>
 static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type PythonDataVector__array__(
     py::object oself,
-    py::object dtype = py::object()) {
+    py::object dtype = py::object(),
+    py::object copy = py::object()) {
     const PythonDataVector<T, dim>* self = py::extract<const PythonDataVector<T, dim>*>(oself);
     if (self->mesh_changed) throw Exception(u8"cannot create array, mesh changed since data retrieval");
     const int nd = detail::type_dim<T>::SHAPE;
@@ -399,14 +400,15 @@ static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type 
     };
     PyObject* arr = PyArray_New(&PyArray_Type, nd, dims, detail::typenum<T>(), strides, (void*)self->data(), 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from data");
-    confirm_array<T>(arr, oself, dtype);
+    confirm_array<T>(arr, oself, dtype, copy);
     return py::object(py::handle<>(arr));
 }
 
 template <typename T, int dim>
 static typename std::enable_if<!detail::isBasicData<T>::value, py::object>::type PythonDataVector__array__(
     py::object oself,
-    py::object dtype = py::object()) {
+    py::object dtype = py::object(),
+    py::object copy = py::object()) {
     const PythonDataVector<T, dim>* self = py::extract<const PythonDataVector<T, dim>*>(oself);
     if (!dtype.is_none()) throw ValueError(u8"dtype for this data must not be specified");
     if (self->mesh_changed) throw Exception(u8"cannot create array, mesh changed since data retrieval");
@@ -723,7 +725,7 @@ static inline py::class_<PythonDataVector<const T, dim>, shared_ptr<PythonDataVe
         .def("__getitem__", &PythonDataVector_getitem<const T, dim>)
         .def("__contains__", &PythonDataVector_contains<const T, dim>)
         .def("__iter__", py::range(&PythonDataVector_begin<const T, dim>, &PythonDataVector_end<const T, dim>))
-        .def("__array__", &PythonDataVector__array__<const T, dim>, py::arg("dtype") = py::object())
+        .def("__array__", &PythonDataVector__array__<const T, dim>, (py::arg("dtype")=py::object(), py::arg("copy")=py::object()))
         .def("__eq__", &PythonDataVector__eq__<const T, dim>)
         .add_property("array", &PythonDataVector_Array<const T, dim>,
                       u8"Array formatted by the mesh.\n\n"
