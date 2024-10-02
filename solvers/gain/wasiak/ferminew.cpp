@@ -15,6 +15,8 @@
 
 namespace plask { namespace solvers { namespace FermiNew {
 
+using phys::nm_to_eV;
+
 template <typename T> struct ptrVector {
     std::vector<T*> data;
     ~ptrVector() {
@@ -49,8 +51,7 @@ template <typename GeometryType> FermiNewGainSolver<GeometryType>::~FermiNewGain
     inCarriersConcentration.changedDisconnectMethod(this, &FermiNewGainSolver<GeometryType>::onInputChange);
 }
 
-template <typename GeometryType>
-void FermiNewGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager& manager) {
+template <typename GeometryType> void FermiNewGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager& manager) {
     // Load a configuration parameter from XML.
     while (reader.requireTagOrEnd()) {
         std::string param = reader.getNodeName();
@@ -156,8 +157,8 @@ void FermiNewGainSolver<GeometryType>::compute() {
 }*/
 
 template <typename GeometryType>
-std::list<typename FermiNewGainSolver<GeometryType>::ActiveRegionData>
-FermiNewGainSolver<GeometryType>::detectActiveRegions(const shared_ptr<GeometryType>& geometry) {
+std::list<typename FermiNewGainSolver<GeometryType>::ActiveRegionData> FermiNewGainSolver<GeometryType>::detectActiveRegions(
+    const shared_ptr<GeometryType>& geometry) {
     std::list<typename FermiNewGainSolver<GeometryType>::ActiveRegionData> regions;
 
     shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(geometry->getChild());
@@ -197,8 +198,7 @@ FermiNewGainSolver<GeometryType>::detectActiveRegions(const shared_ptr<GeometryT
                 }
             }
 
-            if (QW && !active)
-                throw Exception("{0}: All marked quantum wells must belong to marked active region.", this->getId());
+            if (QW && !active) throw Exception("{0}: All marked quantum wells must belong to marked active region.", this->getId());
 
             if (c < ileft) {
                 if (active) throw Exception("{0}: Left edge of the active region not aligned.", this->getId());
@@ -227,8 +227,7 @@ FermiNewGainSolver<GeometryType>::detectActiveRegions(const shared_ptr<GeometryT
                         if (*layer_material != *geometry->getMaterial(point))
                             throw Exception("{0}: Non-uniform active region layer.", this->getId());
                         if (layer_QW != QW)
-                            throw Exception("{0}: Quantum-well role of the active region layer not consistent.",
-                                            this->getId());
+                            throw Exception("{0}: Quantum-well role of the active region layer not consistent.", this->getId());
                     }
                 } else if (had_active) {
                     if (!in_active) {
@@ -245,8 +244,7 @@ FermiNewGainSolver<GeometryType>::detectActiveRegions(const shared_ptr<GeometryT
         if (!regions.empty()) {
             ActiveRegionData& region = regions.back();
             if (!added_bottom_cladding) {
-                if (r == 0)
-                    throw Exception("{0}: Active region cannot start from the edge of the structure.", this->getId());
+                if (r == 0) throw Exception("{0}: Active region cannot start from the edge of the structure.", this->getId());
                 // add layer below active region (cladding) LUKASZ
                 auto bottom_material = geometry->getMaterial(points->at(ileft, r - 1));
                 for (size_t cc = ileft; cc < iright; ++cc)
@@ -269,8 +267,7 @@ FermiNewGainSolver<GeometryType>::detectActiveRegions(const shared_ptr<GeometryT
                     last = static_pointer_cast<Block<2>>(
                         static_pointer_cast<Translation<2>>(region.layers->getChildNo(n - 1))->getChild());
                 assert(!last || last->size.c0 == w);
-                if (last && layer_material == last->getRepresentativeMaterial() &&
-                    layer_QW == region.isQW(region.size() - 1)) {
+                if (last && layer_material == last->getRepresentativeMaterial() && layer_QW == region.isQW(region.size() - 1)) {
                     // TODO check if usage of getRepresentativeMaterial is fine here (was material)
                     last->setSize(w, last->size.c1 + h);
                 } else {
@@ -305,8 +302,8 @@ FermiNewGainSolver<GeometryType>::detectActiveRegions(const shared_ptr<GeometryT
     for (auto& region : regions) {
         if (region.layers->getChildrenCount() <= 2) throw Exception("not enough layers in the active region {}", n);
         region.summarize(this);
-        this->writelog(LOG_INFO, "Active region {0}: {1} nm single QW, {2} nm all QW, {3} nm total", n++,
-                       0.1 * region.qwlen, 0.1 * region.qwtotallen, 0.1 * region.totallen);
+        this->writelog(LOG_INFO, "Active region {0}: {1} nm single QW, {2} nm all QW, {3} nm total", n++, 0.1 * region.qwlen,
+                       0.1 * region.qwtotallen, 0.1 * region.totallen);
     }
 
     // energy levels for active region with two identical QWs won't be calculated so QW widths must be changed
@@ -364,8 +361,8 @@ template <typename GeometryType> void FermiNewGainSolver<GeometryType>::prepareA
     if (geometry_mod) {
         regs = detectActiveRegions(this->geometry_mod);
         if (regs.size() != regions.size())
-            throw Exception("modified geometry has different number of active regions ({}) than the main one ({})",
-                            regs.size(), regions.size());
+            throw Exception("modified geometry has different number of active regions ({}) than the main one ({})", regs.size(),
+                            regions.size());
         auto region = regions.begin();
         for (const auto& reg : regs) (region++)->mod.reset(std::move(reg));
     }
@@ -397,12 +394,11 @@ void FermiNewGainSolver<GeometryType>::findEnergyLevels(Levels& levels, const Ac
         modholes.reserve(2);
         if (levels.modbandsEvhh) modholes.push_back(levels.modbandsEvhh.get());
         if (levels.modbandsEvlh) modholes.push_back(levels.modbandsEvlh.get());
-        levels.activeRegion =
-            plask::make_shared<kubly::obszar_aktywny>(levels.bandsEc.get(), holes, levels.modbandsEc.get(), modholes,
-                                                      levels.Eg, dso, roughness, matrixElem, T);
+        levels.activeRegion = plask::make_shared<kubly::obszar_aktywny>(levels.bandsEc.get(), holes, levels.modbandsEc.get(),
+                                                                        modholes, levels.Eg, dso, roughness, matrixElem, T);
     } else {
-        levels.activeRegion = plask::make_shared<kubly::obszar_aktywny>(levels.bandsEc.get(), holes, levels.Eg, dso,
-                                                                        roughness, matrixElem, T);
+        levels.activeRegion =
+            plask::make_shared<kubly::obszar_aktywny>(levels.bandsEc.get(), holes, levels.Eg, dso, roughness, matrixElem, T);
     }
     levels.activeRegion->zrob_macierze_przejsc();
 }
@@ -414,14 +410,12 @@ void FermiNewGainSolver<GeometryType>::buildStructure(double T,
                                                       std::unique_ptr<kubly::struktura>& bandsEvhh,
                                                       std::unique_ptr<kubly::struktura>& bandsEvlh) {
     if (strains) {
-        if (!this->substrateMaterial)
-            throw ComputationError(this->getId(), "no layer with role 'substrate' has been found");
+        if (!this->substrateMaterial) throw ComputationError(this->getId(), "no layer with role 'substrate' has been found");
         if (maxLoglevel >= LOG_DEBUG) {
             for (int i = 0; i < region.size(); ++i) {
                 double e = (this->substrateMaterial->lattC(T, 'a') - region.getLayerMaterial(i)->lattC(T, 'a')) /
                            region.getLayerMaterial(i)->lattC(T, 'a');
-                if ((i == 0) || (i == region.size()-1))
-                    e = 0.;
+                if ((i == 0) || (i == region.size() - 1)) e = 0.;
                 this->writelog(LOG_DEBUG, "Layer {0} - strain: {1}{2}", i + 1, e * 100., '%');
             }
         }
@@ -432,8 +426,7 @@ void FermiNewGainSolver<GeometryType>::buildStructure(double T,
     kubly::struktura* Evlh = buildEvlh(T, region);
 
     if (!Ec)
-        throw BadInput(this->getId(),
-                       "Conduction QW depth negative for electrons, check CB values of active-region materials");
+        throw BadInput(this->getId(), "Conduction QW depth negative for electrons, check CB values of active-region materials");
     if (!Evhh && !Evlh)
         throw BadInput(this->getId(),
                        "Valence QW depth negative for both heavy holes and light holes, check VB values of "
@@ -472,8 +465,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T, const Acti
     double x = 0.;
     double Ec = region.getLayerMaterial(0)->CB(T, 0.) - DEc;
     this->writelog(LOG_DEBUG, "Layer {0} CB: {1} eV", 1, region.getLayerMaterial(0)->CB(T, 0.));
-    levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::lewa,
-                                                      region.getLayerMaterial(0)->Me(T, 0.).c11,
+    levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::lewa, region.getLayerMaterial(0)->Me(T, 0.).c11,
                                                       region.getLayerMaterial(0)->Me(T, 0.).c00, x,
                                                       Ec));  // left cladding
     for (int i = 1; i < N - 1; ++i) {
@@ -482,8 +474,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T, const Acti
         double CBshift = 0.;
         if (region.isQW(i)) CBshift = condQWshift;
         Ec = region.getLayerMaterial(i)->CB(T, straine) + CBshift - DEc;
-        this->writelog(LOG_DEBUG, "Layer {0} CB: {1} eV", i + 1,
-                        region.getLayerMaterial(i)->CB(T, straine) + CBshift);
+        this->writelog(LOG_DEBUG, "Layer {0} CB: {1} eV", i + 1, region.getLayerMaterial(i)->CB(T, straine) + CBshift);
         levels.data.emplace_back(new kubly::warstwa(region.getLayerMaterial(i)->Me(T, straine).c11,
                                                     region.getLayerMaterial(i)->Me(T, straine).c00, x, Ec, (x + h),
                                                     Ec));  // wells and barriers
@@ -493,8 +484,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T, const Acti
 
     Ec = (region.getLayerMaterial(N - 1)->CB(T, 0.) - DEc);
     this->writelog(LOG_DEBUG, "Layer {0} CB: {1} eV", N, region.getLayerMaterial(N - 1)->CB(T, 0.));
-    levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::prawa,
-                                                      region.getLayerMaterial(N - 1)->Me(T, 0.).c11,
+    levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::prawa, region.getLayerMaterial(N - 1)->Me(T, 0.).c11,
                                                       region.getLayerMaterial(N - 1)->Me(T, 0.).c00, x,
                                                       Ec));  // right cladding
 
@@ -503,8 +493,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T, const Acti
 }
 
 template <typename GeometryType>
-kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T,
-                                                              const ActiveRegionData& region) {
+kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T, const ActiveRegionData& region) {
     ptrVector<kubly::warstwa> levels;
 
     int N = region.size();  // number of all layers int the active region (QW, barr, external)
@@ -520,8 +509,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T,
     double x = 0.;
     double Evhh = -(region.getLayerMaterial(0)->VB(T, 0., '*', 'H') - DEvhh);
     this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", 1, region.getLayerMaterial(0)->VB(T, 0., '*', 'H'));
-    levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::lewa,
-                                                      region.getLayerMaterial(0)->Mhh(T, 0.).c11,
+    levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::lewa, region.getLayerMaterial(0)->Mhh(T, 0.).c11,
                                                       region.getLayerMaterial(0)->Mhh(T, 0.).c00, x,
                                                       Evhh));  // left cladding
     for (int i = 1; i < N - 1; ++i) {
@@ -531,7 +519,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T,
         if (region.isQW(i)) VBshift = valeQWshift;
         Evhh = -(region.getLayerMaterial(i)->VB(T, straine, '*', 'H') + VBshift - DEvhh);
         this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", i + 1,
-                        region.getLayerMaterial(i)->VB(T, straine, '*', 'H') + VBshift);
+                       region.getLayerMaterial(i)->VB(T, straine, '*', 'H') + VBshift);
         levels.data.emplace_back(new kubly::warstwa(region.getLayerMaterial(i)->Mhh(T, straine).c11,
                                                     region.getLayerMaterial(i)->Mhh(T, straine).c00, x, Evhh, (x + h),
                                                     Evhh));  // wells and barriers
@@ -540,10 +528,8 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T,
     }
 
     Evhh = -(region.getLayerMaterial(N - 1)->VB(T, 0., '*', 'H') - DEvhh);
-    this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", N,
-                    region.getLayerMaterial(N - 1)->VB(T, 0., '*', 'H'));
-    levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::prawa,
-                                                      region.getLayerMaterial(N - 1)->Mhh(T, 0.).c11,
+    this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", N, region.getLayerMaterial(N - 1)->VB(T, 0., '*', 'H'));
+    levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::prawa, region.getLayerMaterial(N - 1)->Mhh(T, 0.).c11,
                                                       region.getLayerMaterial(N - 1)->Mhh(T, 0.).c00, x, Evhh));
 
     this->writelog(LOG_DETAIL, "Computing energy levels for heavy holes");
@@ -551,8 +537,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T,
 }
 
 template <typename GeometryType>
-kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvlh(double T,
-                                                              const ActiveRegionData& region) {
+kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvlh(double T, const ActiveRegionData& region) {
     ptrVector<kubly::warstwa> levels;
 
     int N = region.size();  // number of all layers int the active region (QW, barr, external)
@@ -568,8 +553,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvlh(double T,
     double x = 0.;
     double Evlh = -(region.getLayerMaterial(0)->VB(T, 0., '*', 'L') - DEvlh);
     this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", 1, region.getLayerMaterial(0)->VB(T, 0., '*', 'L'));
-    levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::lewa,
-                                                      region.getLayerMaterial(0)->Mlh(T, 0.).c11,
+    levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::lewa, region.getLayerMaterial(0)->Mlh(T, 0.).c11,
                                                       region.getLayerMaterial(0)->Mlh(T, 0.).c00, x,
                                                       Evlh));  // left cladding
     for (int i = 1; i < N - 1; ++i) {
@@ -579,7 +563,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvlh(double T,
         if (region.isQW(i)) VBshift = valeQWshift;
         Evlh = -(region.getLayerMaterial(i)->VB(T, straine, '*', 'L') + VBshift - DEvlh);
         this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", i + 1,
-                        region.getLayerMaterial(i)->VB(T, straine, '*', 'L') + VBshift);
+                       region.getLayerMaterial(i)->VB(T, straine, '*', 'L') + VBshift);
         levels.data.emplace_back(new kubly::warstwa(region.getLayerMaterial(i)->Mlh(T, straine).c11,
                                                     region.getLayerMaterial(i)->Mlh(T, straine).c00, x, Evlh, (x + h),
                                                     Evlh));  // wells and barriers
@@ -589,10 +573,8 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvlh(double T,
     }
 
     Evlh = -(region.getLayerMaterial(N - 1)->VB(T, 0., '*', 'L') - DEvlh);
-    this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", N,
-                    region.getLayerMaterial(N - 1)->VB(T, 0., '*', 'L'));
-    levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::prawa,
-                                                      region.getLayerMaterial(N - 1)->Mlh(T, 0.).c11,
+    this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", N, region.getLayerMaterial(N - 1)->VB(T, 0., '*', 'L'));
+    levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::prawa, region.getLayerMaterial(N - 1)->Mlh(T, 0.).c11,
                                                       region.getLayerMaterial(N - 1)->Mlh(T, 0.).c00, x, Evlh));
 
     this->writelog(LOG_DETAIL, "Computing energy levels for light holes");
@@ -618,8 +600,8 @@ void FermiNewGainSolver<GeometryType>::showEnergyLevels(std::string str,
             }
         }
         if (calc_avg)
-            this->writelog(plask::LOG_DETAIL, "QW {0} - average energy level for {1}: {2} eV from cladding band edge",
-                           iQW, str, avg_energy_level / nQW);
+            this->writelog(plask::LOG_DETAIL, "QW {0} - average energy level for {1}: {2} eV from cladding band edge", iQW, str,
+                           avg_energy_level / nQW);
     }
 }
 
@@ -652,9 +634,8 @@ kubly::wzmocnienie FermiNewGainSolver<GeometryType>::getGainModule(double wavele
     double deltaEg = Eg - levels.Eg;
 
     // this->writelog(LOG_DEBUG, "Creating gain module");
-    kubly::wzmocnienie gainModule(
-        levels.activeRegion.get(), n * (QWh * 1e-8), T, QWnr, deltaEg, QWh,  // QWh in Å
-        region.mod ? kubly::wzmocnienie::Z_POSZERZENIEM : kubly::wzmocnienie::Z_CHROPOWATOSCIA);
+    kubly::wzmocnienie gainModule(levels.activeRegion.get(), n * (QWh * 1e-8), T, QWnr, deltaEg, QWh,  // QWh in Å
+                                  region.mod ? kubly::wzmocnienie::Z_POSZERZENIEM : kubly::wzmocnienie::Z_CHROPOWATOSCIA);
 
     // this->writelog(LOG_DEBUG, "Recalculating carrier concentrations..");
     // double step = 1e-1 * n;  // TODO
@@ -693,9 +674,8 @@ kubly::wzmocnienie FermiNewGainSolver<GeometryType>::getGainModule(double wavele
         std::vector<double> nlh = levels.bandsEvlh->koncentracje_w_warstwach(-qFv, T);
         std::vector<double> nhh = levels.bandsEvhh->koncentracje_w_warstwach(-qFv, T);
         for (int i = 0; i <= (int)ne.size() - 1; i++)
-            this->writelog(LOG_DEBUG, "Carriers concentration in layer {:d} [cm(-3)]: el:{:.3e} lh:{:.3e} hh:{:.3e} ",
-                           i + 1, kubly::struktura::koncentracja_na_cm_3(ne[i]),
-                           kubly::struktura::koncentracja_na_cm_3(nlh[i]),
+            this->writelog(LOG_DEBUG, "Carriers concentration in layer {:d} [cm(-3)]: el:{:.3e} lh:{:.3e} hh:{:.3e} ", i + 1,
+                           kubly::struktura::koncentracja_na_cm_3(ne[i]), kubly::struktura::koncentracja_na_cm_3(nlh[i]),
                            kubly::struktura::koncentracja_na_cm_3(nhh[i]));
     }
 
@@ -733,8 +713,7 @@ template <typename GeometryT, typename T> struct DataBase : public LazyDataImpl<
             double val = 0.;
             for (size_t j = 0; j != mesh->axis[1]->size(); ++j) {
                 auto v = data[mesh->index(i, j)];
-                if (isnan(v))
-                    throw ComputationError(solver->getId(), "wrong {0} ({1}) at {2}", name, v, mesh->at(i, j));
+                if (isnan(v)) throw ComputationError(solver->getId(), "wrong {0} ({1}) at {2}", name, v, mesh->at(i, j));
                 v = max(v, 1e-6);  // To avoid hangs
                 val += v;
             }
@@ -744,7 +723,7 @@ template <typename GeometryT, typename T> struct DataBase : public LazyDataImpl<
 
     FermiNewGainSolver<GeometryT>* solver;        ///< Solver
     std::vector<shared_ptr<MeshAxis>> regpoints;  ///< Points in each active region
-    std::vector<LazyData<double>> data;           ///< Computed interpolations in each active region
+    std::vector<LazyData<T>> data;                ///< Computed interpolations in each active region
     shared_ptr<const MeshD<2>> dest_mesh;         ///< Destination mesh
 
     void setupFromAxis(const shared_ptr<MeshAxis>& axis) {
@@ -792,27 +771,28 @@ template <typename GeometryT, typename T> struct DataBase : public LazyDataImpl<
         data.resize(solver->regions.size());
         for (size_t reg = 0; reg != solver->regions.size(); ++reg) {
             if (regpoints[reg]->size() == 0) {
-                data[reg] = LazyData<double>(dest_mesh->size(), 0.);
+                data[reg] = LazyData<T>(dest_mesh->size(), Zero<T>());
                 continue;
             }
-            DataVector<double> values(regpoints[reg]->size());
+            DataVector<T> values(regpoints[reg]->size());
             AveragedData temps(solver, "temperature", regpoints[reg], solver->regions[reg]);
             AveragedData concs(temps);
             concs.name = "carriers concentration";
             temps.data = solver->inTemperature(temps.mesh, interp);
             concs.data = solver->inCarriersConcentration(temps.mesh, interp);
             if (solver->build_struct_once && !solver->region_levels[reg]) {
-                if (isnan(solver->Tref)) throw ComputationError(solver->getId(), "no reference temperature set for fast levels calculation");
+                if (isnan(solver->Tref))
+                    throw ComputationError(solver->getId(), "no reference temperature set for fast levels calculation");
                 solver->findEnergyLevels(solver->region_levels[reg], solver->regions[reg], solver->Tref);
             }
             std::exception_ptr error;
-PLASK_OMP_PARALLEL_FOR
+            PLASK_OMP_PARALLEL_FOR
             for (int i = 0; i < regpoints[reg]->size(); ++i) {
                 if (error) continue;
                 try {
                     if (solver->build_struct_once) {
-                        values[i] = getValue(wavelength, temps[i], max(concs[i], 1e-9), solver->regions[reg],
-                                             solver->region_levels[reg]);
+                        values[i] =
+                            getValue(wavelength, temps[i], max(concs[i], 1e-9), solver->regions[reg], solver->region_levels[reg]);
                     } else {
                         Levels levels;
                         solver->findEnergyLevels(levels, solver->regions[reg], temps[i]);
@@ -824,16 +804,15 @@ PLASK_OMP_PARALLEL_FOR
                 }
             }
             if (error) std::rethrow_exception(error);
-            data[reg] = interpolate(plask::make_shared<RectangularMesh<2>>(regpoints[reg], zero_axis), values,
-                                    dest_mesh, interp);
+            data[reg] = interpolate(plask::make_shared<RectangularMesh<2>>(regpoints[reg], zero_axis), values, dest_mesh, interp);
         }
     }
 
-    virtual double getValue(double wavelength,
-                            double temp,
-                            double conc,
-                            const typename FermiNewGainSolver<GeometryT>::ActiveRegionInfo& region,
-                            const Levels& levels) = 0;
+    virtual T getValue(double wavelength,
+                       double temp,
+                       double conc,
+                       const typename FermiNewGainSolver<GeometryT>::ActiveRegionInfo& region,
+                       const Levels& levels) = 0;
 
     size_t size() const override { return dest_mesh->size(); }
 
@@ -841,74 +820,83 @@ PLASK_OMP_PARALLEL_FOR
         for (size_t reg = 0; reg != solver->regions.size(); ++reg)
             //             if (solver->regions[reg].contains(dest_mesh->at(i)))
             if (solver->regions[reg].inQW(dest_mesh->at(i))) return data[reg][i];
-        return 0.;
+        return Zero<T>();
     }
 };
 
 template <typename GeometryT> struct GainData : public DataBase<GeometryT, Tensor2<double>> {
     template <typename... Args> GainData(Args... args) : DataBase<GeometryT, Tensor2<double>>(args...) {}
 
-    double getValue(double wavelength,
-                    double temp,
-                    double conc,
-                    const typename FermiNewGainSolver<GeometryT>::ActiveRegionInfo& region,
-                    const Levels& levels) override {
+    Tensor2<double> getValue(double wavelength,
+                             double temp,
+                             double conc,
+                             const typename FermiNewGainSolver<GeometryT>::ActiveRegionInfo& region,
+                             const Levels& levels) override {
         kubly::wzmocnienie gainModule = this->solver->getGainModule(wavelength, temp, conc, region, levels);
 
+        double E = nm_to_eV(wavelength);
         if (!this->solver->lifetime || region.mod)
-            return gainModule.wzmocnienie_calk_bez_splotu(nm_to_eV(wavelength));
-        else
-            return gainModule.wzmocnienie_calk_ze_splotem(nm_to_eV(wavelength),
-                                                          phys::hb_eV * 1e12 / this->solver->lifetime);
+            return Tensor2<double>(gainModule.wzmocnienie_calk_bez_splotu(E, 0.), gainModule.wzmocnienie_calk_bez_splotu(E, 1.));
+        else {
+            double beta = phys::hb_eV * 1e12 / this->solver->lifetime;
+            return Tensor2<double>(gainModule.wzmocnienie_calk_ze_splotem(E, beta, 0.),
+                                   gainModule.wzmocnienie_calk_ze_splotem(E, beta, 1.));
+        }
     }
 };
 
 template <typename GeometryT> struct DgDnData : public DataBase<GeometryT, Tensor2<double>> {
     template <typename... Args> DgDnData(Args... args) : DataBase<GeometryT, Tensor2<double>>(args...) {}
 
-    double getValue(double wavelength,
-                    double temp,
-                    double conc,
-                    const typename FermiNewGainSolver<GeometryT>::ActiveRegionInfo& region,
-                    const Levels& levels) override {
+    Tensor2<double> getValue(double wavelength,
+                             double temp,
+                             double conc,
+                             const typename FermiNewGainSolver<GeometryT>::ActiveRegionInfo& region,
+                             const Levels& levels) override {
         double h = 0.5 * this->solver->differenceQuotient;
         double conc1 = (1. - h) * conc, conc2 = (1. + h) * conc;
 
         kubly::wzmocnienie gainModule1 = this->solver->getGainModule(wavelength, temp, conc1, region, levels);
         kubly::wzmocnienie gainModule2 = this->solver->getGainModule(wavelength, temp, conc2, region, levels);
 
-        double gain1, gain2;
+        double E = nm_to_eV(wavelength);
+        Tensor2<double> gain1, gain2;
         if (!this->solver->lifetime || region.mod) {
-            gain1 = gainModule1.wzmocnienie_calk_bez_splotu(nm_to_eV(wavelength));
-            gain2 = gainModule2.wzmocnienie_calk_bez_splotu(nm_to_eV(wavelength));
+            gain1 = Tensor2<double>(gainModule1.wzmocnienie_calk_bez_splotu(E, 0.),  //
+                                    gainModule1.wzmocnienie_calk_bez_splotu(E, 1.));
+            gain2 = Tensor2<double>(gainModule2.wzmocnienie_calk_bez_splotu(E, 0.),  //
+                                    gainModule2.wzmocnienie_calk_bez_splotu(E, 1.));
         } else {
-            gain1 = gainModule1.wzmocnienie_calk_ze_splotem(nm_to_eV(wavelength),
-                                                            phys::hb_eV * 1e12 / this->solver->lifetime);
-            gain2 = gainModule2.wzmocnienie_calk_ze_splotem(nm_to_eV(wavelength),
-                                                            phys::hb_eV * 1e12 / this->solver->lifetime);
+            double beta = phys::hb_eV * 1e12 / this->solver->lifetime;
+            gain1 = Tensor2<double>(gainModule1.wzmocnienie_calk_ze_splotem(E, beta, 0.),
+                                    gainModule1.wzmocnienie_calk_ze_splotem(E, beta, 1.));
+            gain2 = Tensor2<double>(gainModule2.wzmocnienie_calk_ze_splotem(E, beta, 0.),
+                                    gainModule2.wzmocnienie_calk_ze_splotem(E, beta, 1.));
         }
         return (gain2 - gain1) / (2. * h * conc);
     }
 };
 
-inline static double sumLuminescence(kubly::wzmocnienie& gain, double wavelength) {
+inline static Tensor2<double> sumLuminescence(kubly::wzmocnienie& gain, double wavelength) {
     double E = nm_to_eV(wavelength);
-    //double result = 0.;
-    //for (int nr_c = 0; nr_c <= (int)gain.pasma->pasmo_przew.size() - 1; nr_c++)
-    //    for (int nr_v = 0; nr_v <= (int)gain.pasma->pasmo_wal.size() - 1; nr_v++)
-    //        result += gain.spont_od_pary_pasm(E, nr_c, nr_v, 0);  // TODO: consider other polarization (now only TE)
-    //return result;
-    return gain.lumin(E, 0.); // TODO: consider not only 0.<->TE,   TODO: add 1.<->TM, 2.<->TE+TM
+    double resultTE = 0., resultTM = 0.;
+    for (int nr_c = 0; nr_c <= (int)gain.pasma->pasmo_przew.size() - 1; nr_c++) {
+        for (int nr_v = 0; nr_v <= (int)gain.pasma->pasmo_wal.size() - 1; nr_v++) {
+            resultTE += gain.spont_od_pary_pasm(E, nr_c, nr_v, 0.0);
+            resultTM += gain.spont_od_pary_pasm(E, nr_c, nr_v, 1.0);
+        }
+    }
+    return Tensor2<double>(resultTE, resultTM);
 }
 
-template <typename GeometryT> struct LuminescenceData : public DataBase<GeometryT, double> {
-    template <typename... Args> LuminescenceData(Args... args) : DataBase<GeometryT, double>(args...) {}
+template <typename GeometryT> struct LuminescenceData : public DataBase<GeometryT, Tensor2<double>> {
+    template <typename... Args> LuminescenceData(Args... args) : DataBase<GeometryT, Tensor2<double>>(args...) {}
 
-    double getValue(double wavelength,
-                    double temp,
-                    double conc,
-                    const typename FermiNewGainSolver<GeometryT>::ActiveRegionInfo& region,
-                    const Levels& levels) override {
+    Tensor2<double> getValue(double wavelength,
+                             double temp,
+                             double conc,
+                             const typename FermiNewGainSolver<GeometryT>::ActiveRegionInfo& region,
+                             const Levels& levels) override {
         kubly::wzmocnienie gainModule = this->solver->getGainModule(wavelength, temp, conc, region, levels);
 
         double QWfrac = region.qwtotallen / region.totallen;
@@ -937,21 +925,20 @@ const LazyData<Tensor2<double>> FermiNewGainSolver<GeometryType>::getGain(Gain::
 }
 
 template <typename GeometryType>
-const LazyData<double> FermiNewGainSolver<GeometryType>::getLuminescence(const shared_ptr<const MeshD<2>>& dst_mesh,
-                                                                         double wavelength,
-                                                                         InterpolationMethod interp) {
+const LazyData<Tensor2<double>> FermiNewGainSolver<GeometryType>::getLuminescence(const shared_ptr<const MeshD<2>>& dst_mesh,
+                                                                                  double wavelength,
+                                                                                  InterpolationMethod interp) {
     this->writelog(LOG_DETAIL, "Calculating luminescence");
     this->initCalculation();  // This must be called before any calculation!
 
     LuminescenceData<GeometryType>* data = new LuminescenceData<GeometryType>(this, dst_mesh);
     data->compute(wavelength, getInterpolationMethod<INTERPOLATION_SPLINE>(interp));
 
-    return LazyData<double>(data);
+    return LazyData<Tensor2<double>>(data);
 }
 
 template <typename GeometryT>
-GainSpectrum<GeometryT>::GainSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point)
-    : solver(solver), point(point) {
+GainSpectrum<GeometryT>::GainSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point) : solver(solver), point(point) {
     auto mesh = plask::make_shared<const OnePointMesh<2>>(point);
     T = solver->inTemperature(mesh)[0];
     n = solver->inCarriersConcentration(mesh)[0];
@@ -965,12 +952,13 @@ GainSpectrum<GeometryT>::GainSpectrum(FermiNewGainSolver<GeometryT>* solver, con
     throw BadInput(solver->getId(), "point {0} does not belong to any active region", point);
 }
 
-template <typename GeometryT> double GainSpectrum<GeometryT>::getGain(double wavelength) {
+template <typename GeometryT> Tensor2<double> GainSpectrum<GeometryT>::getGain(double wavelength) {
     if (!gMod) {
         Levels* levels;
         if (solver->build_struct_once) {
             if (!solver->region_levels[reg]) {
-                if (isnan(solver->Tref)) throw ComputationError(solver->getId(), "no reference temperature set for fast levels calculation");
+                if (isnan(solver->Tref))
+                    throw ComputationError(solver->getId(), "no reference temperature set for fast levels calculation");
                 solver->findEnergyLevels(solver->region_levels[reg], solver->regions[reg], solver->Tref);
             }
             levels = &solver->region_levels[reg];
@@ -985,9 +973,11 @@ template <typename GeometryT> double GainSpectrum<GeometryT>::getGain(double wav
     double E = nm_to_eV(wavelength);
     double tau = solver->getLifeTime();
     if (!tau || solver->regions[reg].mod)
-        return (gMod->wzmocnienie_calk_bez_splotu(E));  // 20.10.2014 adding lifetime
-    else
-        return (gMod->wzmocnienie_calk_ze_splotem(E, phys::hb_eV * 1e12 / tau));  // 20.10.2014 adding lifetime
+        return Tensor2<double>(gMod->wzmocnienie_calk_bez_splotu(E, 0.), gMod->wzmocnienie_calk_bez_splotu(E, 1.));
+    else {
+        double beta = phys::hb_eV * 1e12 / tau;
+        return Tensor2<double>(gMod->wzmocnienie_calk_ze_splotem(E, beta, 0.), gMod->wzmocnienie_calk_ze_splotem(E, beta, 1.));
+    }
 }
 
 template <typename GeometryT>
@@ -1006,12 +996,13 @@ LuminescenceSpectrum<GeometryT>::LuminescenceSpectrum(FermiNewGainSolver<Geometr
     throw BadInput(solver->getId(), "point {0} does not belong to any active region", point);
 }
 
-template <typename GeometryT> double LuminescenceSpectrum<GeometryT>::getLuminescence(double wavelength) {
+template <typename GeometryT> Tensor2<double> LuminescenceSpectrum<GeometryT>::getLuminescence(double wavelength) {
     if (!gMod) {
         Levels* levels;
         if (solver->build_struct_once) {
             if (!solver->region_levels[reg]) {
-                if (isnan(solver->Tref)) throw ComputationError(solver->getId(), "no reference temperature set for fast levels calculation");
+                if (isnan(solver->Tref))
+                    throw ComputationError(solver->getId(), "no reference temperature set for fast levels calculation");
                 solver->findEnergyLevels(solver->region_levels[reg], solver->regions[reg], solver->Tref);
             }
             levels = &solver->region_levels[reg];
@@ -1026,8 +1017,7 @@ template <typename GeometryT> double LuminescenceSpectrum<GeometryT>::getLumines
     return sumLuminescence(*gMod, wavelength) / QWfrac;
 }
 
-template <typename GeometryType>
-GainSpectrum<GeometryType> FermiNewGainSolver<GeometryType>::getGainSpectrum(const Vec<2>& point) {
+template <typename GeometryType> GainSpectrum<GeometryType> FermiNewGainSolver<GeometryType>::getGainSpectrum(const Vec<2>& point) {
     this->initCalculation();
     return GainSpectrum<GeometryType>(this, point);
 }

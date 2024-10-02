@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -74,7 +74,7 @@ double InP_Si::absp(double lam, double /*T*/) const {
     else if ((lam > 8900.) && (lam < 9100.)) // only for 9000 nm TODO
         tAbsp = 58. * (Nf_RT/1e18);
     else if ((lam > 9200.) && (lam < 10000.)) { // only for about 9500 nm (based on www.ioffe.ru/SVA/NSM/Semicond/InP)
-        double tEf = phys::PhotonEnergy(lam),
+        double tEf = phys::nm_to_eV(lam),
                tAbsp_n2e16 = 0.01435*pow(tEf,-2.5793),
                tAbsp_n2e17 = 0.04715*pow(tEf,-2.6173),
                tAbsp_n4e17 = 0.04331*pow(tEf,-3.0428);

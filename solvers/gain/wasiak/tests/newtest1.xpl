@@ -1,7 +1,10 @@
 <plask loglevel="debug">
 
 <defines>
-  <define name="expected_gain" value="566.89"/>
+  <define name="expected_gain_te" value="566.89"/>
+  <define name="expected_gain_tm" value="85.943"/>
+  <define name="expected_luminescence_te" value="31.212"/>
+  <define name="expected_luminescence_tm" value="4.732"/>
 </defines>
 
 <materials>
@@ -90,7 +93,9 @@ class NewGainValues(unittest.TestCase):
 
     def testGain(self):
         m = mesh.Rectangular2D([0.5], [0.034])
-        self.assertAlmostEqual(GAIN.outGain(m, 840.)[0][0], expected_gain, 1)
+        gain = GAIN.outGain(m, 840.)[0]
+        self.assertAlmostEqual(gain[0], expected_gain_te, 2)
+        self.assertAlmostEqual(gain[1], expected_gain_tm, 2)
 
     def testBarrier(self):
         m = mesh.Rectangular2D([0.5], [0.025])
@@ -98,7 +103,21 @@ class NewGainValues(unittest.TestCase):
 
     def testGainSpectrum(self):
         spectrum = GAIN.spectrum(0.5, 0.034)
-        self.assertAlmostEqual(spectrum(840), expected_gain, 1)
+        gain = spectrum(840)
+        self.assertAlmostEqual(gain[0], expected_gain_te, 2)
+        self.assertAlmostEqual(gain[1], expected_gain_tm, 2)
+
+    def testLuminescence(self):
+        m = mesh.Rectangular2D([0.5], [0.034])
+        lumin = GAIN.outLuminescence(m, 840.)[0] * 1e-27
+        self.assertAlmostEqual(lumin[0], expected_luminescence_te, 2)
+        self.assertAlmostEqual(lumin[1], expected_luminescence_tm, 2)
+
+    def testLuminescenceSpectrum(self):
+        spectrum = GAIN.luminescence_spectrum(0.5, 0.034)
+        lumin = spectrum(840) * 1e-27
+        self.assertAlmostEqual(lumin[0], expected_luminescence_te, 2)
+        self.assertAlmostEqual(lumin[1], expected_luminescence_tm, 2)
 
 
 if __name__ == '__main__':

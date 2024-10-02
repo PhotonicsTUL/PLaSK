@@ -10,8 +10,6 @@
 #include "jama/jama_svd.h"
 #include "tnt/tnt.h"
 
-#include "../../../../plask/phys/functions.hpp"
-
 #include <cmath>
 #include <complex>
 #include <fstream>
@@ -38,7 +36,7 @@ namespace kubly
 
 /*******************************************************************/
 // MD: Nie bedziemy drukowac bledow na ekranie i przerywac programu,
-// MD: ale bedziemy wyrzucac poprawny wyjacek (GCC wydrukuje komunikat)
+// MD: ale bedziemy wyrzucac poprawny wyjatek (GCC wydrukuje komunikat)
 class Error : public std::exception
 {
   std::ostringstream oss;
@@ -143,7 +141,6 @@ class warstwa_skraj : public warstwa
   friend class wzmocnienie;
 
  public:
-
   enum strona
   {
     lewa,
@@ -225,15 +222,15 @@ class struktura
   double dol;
 
   warstwa_skraj lewa, prawa;
-  //std::vector<int> gwiazdki;
+  // std::vector<int> gwiazdki;
   std::vector<warstwa> kawalki; // Wewnetrzne warstwy
   std::vector<double> progi; // Poziome bariery dajace falszywe zera
-  //std::vector<stan> rozwiazania;
+  // std::vector<stan> rozwiazania;
 
   void zrobmacierz(double, A2D &);
   double sieczne(double (struktura::*f)(double), double pocz, double kon);
-  //1.5
-  //  double bisekcja(double (struktura::*f)(double), double pocz, double kon);
+  // 1.5
+  //   double bisekcja(double (struktura::*f)(double), double pocz, double kon);
   double bisekcja(double (struktura::*f)(double), double pocz, double kon, double dokl = 1e-9);
   //
   double norma_stanu(stan & st);
@@ -292,7 +289,7 @@ class struktura
 
   void profil(double Ek, double rozdz);
   std::vector<std::vector<double> > rysowanie_funkcji(double E, double x0, double xk, double krok);
-  //dopisek 1.5
+  // dopisek 1.5
   parad sklejanie_od_lewej(double E);
   int ilezer_ffal(double E, std::vector<parad> & W);
   std::vector<parad> wsp_sklejanie_od_lewej(double E);
@@ -330,7 +327,7 @@ class obszar_aktywny
   std::vector<double> DeltaSO; // DeltySO w warstwach wzgledem zerowego pasma walencyjnego
   std::vector<double> el_mac; // Elementy macierzowe w warstwach
   double T_ref; // Temperatura odniesienia, dla ktorej ustawione sa przerwy energetyczne
-  //double element(int nr_war); // przenioslem do publicznych LUKASZ 23.05.2023
+  // double element(int nr_war); // przenioslem do publicznych LUKASZ 23.05.2023
 
  public:
   obszar_aktywny(struktura * elektron, const std::vector<struktura *> & dziury, double Eg,
@@ -428,20 +425,25 @@ class wzmocnienie
   double pozFerm_wal();
   double rozn_poz_Ferm();
   double szerdowzmoc();
-  double wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_v, int poz_v);
-  double wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v);
+  double wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_v, int poz_v,
+                                      double polar); // MD - dodalem polar 2024-09-02
+  double wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v, double polar); // MD - dodalem polar 2024-09-02
   double spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_v, int poz_v, double polar);
   double spont_od_pary_pasm(double E, size_t nr_c, size_t nr_v, double polar);
-  double wzmocnienie_calk_ze_splotem(double E, double b,
+  double wzmocnienie_calk_ze_splotem(double E, double b, double polar, // MD - dodalem polar 2024-09-02
                                      double blad = 0.02); // podzial na kawalek o promieniu Rb wokol 0 i reszte
-  double wzmocnienie_calk_bez_splotu(double E);
-  double wzmocnienie_calk_bez_splotu_L(double lambda); // dodalem metode LUKASZ LUKI 23.05.2023
-  double lumin(double E, double polar = 2.); // polar = 0. -> TE,   polar = 1. -> TM,   polar = 2. -> TE + TM,  
+  double wzmocnienie_calk_bez_splotu(double E, double polar); // MD - dodalem polar 2024-09-02
+  double
+  wzmocnienie_calk_bez_splotu_L(double lambda,
+                                double polar); // dodalem metode LUKASZ LUKI 23.05.2023, MD - dodalem polar 2024-09-02
+  double lumin(double E, double polar = 2.); // polar = 0. -> TE,   polar = 1. -> TM,   polar = 2. -> TE + TM,
   void profil_wzmocnienia_ze_splotem_dopliku(std::ofstream & plik, double pocz, double kon, double krok, double b);
   void profil_wzmocnienia_bez_splotu_dopliku(std::ofstream & plik, double pocz, double kon, double krok);
-  void profil_wzmocnienia_bez_splotu_dopliku_L(std::ofstream & plik, double pocz, double kon, double krok); // dodalem metode LUKASZ LUKI 23.05.2023
+  void profil_wzmocnienia_bez_splotu_dopliku_L(std::ofstream & plik, double pocz, double kon,
+                                               double krok); // dodalem metode LUKASZ LUKI 23.05.2023
   void profil_lumin_dopliku(std::ofstream & plik, double pocz, double kon, double krok);
-  void profil_lumin_dopliku_L(std::ofstream & plik, double pocz, double kon, double krok); // dodalem metode LUKASZ LUKI 5.09.2023
+  void profil_lumin_dopliku_L(std::ofstream & plik, double pocz, double kon,
+                              double krok); // dodalem metode LUKASZ LUKI 5.09.2023
 
   double moc_lumin();
   static double L(double x, double b);

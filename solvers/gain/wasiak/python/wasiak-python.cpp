@@ -33,7 +33,7 @@ static FermiNew::GainSpectrum<GeometryT> FermiNewGetGainSpectrum2(FermiNew::Ferm
 
 template <typename GeometryT>
 static py::object FermiNewGainSpectrum__call__(FermiNew::GainSpectrum<GeometryT>& self, py::object wavelengths) {
-    return UFUNC<double>([&](double x) { return self.getGain(x); }, wavelengths, "Spectrum", "lam");
+    return UFUNC<Tensor2<double>, double>([&](double x) { return self.getGain(x); }, wavelengths, "Spectrum", "lam");
 }
 
 template <typename GeometryT>
@@ -45,7 +45,7 @@ FermiNewGetLuminescenceSpectrum2(FermiNew::FermiNewGainSolver<GeometryT>* solver
 template <typename GeometryT>
 static py::object FermiNewLuminescenceSpectrum__call__(FermiNew::LuminescenceSpectrum<GeometryT>& self,
                                                        py::object wavelengths) {
-    return UFUNC<double>([&](double x) { return self.getLuminescence(x); }, wavelengths, "Spectrum", "lam");
+    return UFUNC<Tensor2<double>, double>([&](double x) { return self.getLuminescence(x); }, wavelengths, "Spectrum", "lam");
 }
 
 /*template <typename GeometryT>
@@ -263,10 +263,10 @@ BOOST_PYTHON_MODULE(wasiak) {
                    py::with_custodian_and_ward_postcall<0, 1>());
         solver.def("spectrum", FermiNewGetGainSpectrum2<Geometry2DCylindrical>, "Get gain spectrum at given point",
                    (py::arg("c0"), "c1"), py::with_custodian_and_ward_postcall<0, 1>());
-        solver.def("luminescencespectrum", &__Class__::getLuminescenceSpectrum,
+        solver.def("luminescence_spectrum", &__Class__::getLuminescenceSpectrum,
                    "Get luminescence spectrum at given point", py::arg("point"),
                    py::with_custodian_and_ward_postcall<0, 1>());
-        solver.def("luminescencespectrum", FermiNewGetLuminescenceSpectrum2<Geometry2DCylindrical>,
+        solver.def("luminescence_spectrum", FermiNewGetLuminescenceSpectrum2<Geometry2DCylindrical>,
                    "Get luminescence spectrum at given point", (py::arg("c0"), "c1"),
                    py::with_custodian_and_ward_postcall<0, 1>());
 

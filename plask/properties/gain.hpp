@@ -50,7 +50,7 @@ struct PLASK_API Gain : public MultiFieldProperty<Tensor2<double>, double> {
 /**
  * Luminescence [?].
  */
-struct PLASK_API Luminescence : public FieldProperty<double, double> {
+struct PLASK_API Luminescence : public FieldProperty<Tensor2<double>, double> {
     static constexpr const char* NAME = "luminescence";
     static constexpr const char* UNIT = "a.u.";
     // static inline double getDefaultValue() { return NAN; }

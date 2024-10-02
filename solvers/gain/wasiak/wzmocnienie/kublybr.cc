@@ -47,6 +47,13 @@ using std::min;
 
 #endif
 
+#ifdef PLASK
+#include <plask/phys/functions.hpp>
+using plask::phys::nm_to_eV;
+#else
+inline static double nm_to_eV(double wavelength) { return 1239.84193009 / wavelength; } // h_eV*c*1e9 = 1239.84193009
+#endif
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -4865,7 +4872,7 @@ double wzmocnienie::sieczne(double (wzmocnienie::*f)(double), double pocz, doubl
 /*****************************************************************************/
 double wzmocnienie::L(double x, double b) { return 1 / (M_PI * b) / (1 + x / b * x / b); }
 /*****************************************************************************/
-double wzmocnienie::wzmocnienie_calk_ze_splotem(double E, double b,
+double wzmocnienie::wzmocnienie_calk_ze_splotem(double E, double b, double polar,
                                                 double blad) // podzial na kawalek o promieniu Rb wokol 0 i reszte
 {
   //  double blad = 0.005;
@@ -4942,8 +4949,8 @@ double wzmocnienie::wzmocnienie_calk_ze_splotem(double E, double b,
       x2j = -R * b + 2 * j * h;
       x2jm1 = x2j - h;
       x2jm2 = x2jm1 - h;
-      calka1 += L(x2jm2, b) * wzmocnienie_calk_bez_splotu(E - x2jm2) +
-        4 * L(x2jm1, b) * wzmocnienie_calk_bez_splotu(E - x2jm1) + L(x2j, b) * wzmocnienie_calk_bez_splotu(E - x2j);
+      calka1 += L(x2jm2, b) * wzmocnienie_calk_bez_splotu(E - x2jm2, polar) +
+        4 * L(x2jm1, b) * wzmocnienie_calk_bez_splotu(E - x2jm1, polar) + L(x2j, b) * wzmocnienie_calk_bez_splotu(E - x2j, polar);
     }
   calka1 *= h / 3;
   // dla -32b < x  -Rb
@@ -4955,16 +4962,16 @@ double wzmocnienie::wzmocnienie_calk_ze_splotem(double E, double b,
       x2j = -32 * b + 2 * j * h;
       x2jm1 = x2j - h;
       x2jm2 = x2jm1 - h;
-      calka2 += L(x2jm2, b) * wzmocnienie_calk_bez_splotu(E - x2jm2) +
-        4 * L(x2jm1, b) * wzmocnienie_calk_bez_splotu(E - x2jm1) + L(x2j, b) * wzmocnienie_calk_bez_splotu(E - x2j);
+      calka2 += L(x2jm2, b) * wzmocnienie_calk_bez_splotu(E - x2jm2, polar) +
+        4 * L(x2jm1, b) * wzmocnienie_calk_bez_splotu(E - x2jm1, polar) + L(x2j, b) * wzmocnienie_calk_bez_splotu(E - x2j, polar);
     }
   for(j = 1; j <= nR / 2; j++) // dodatnie pol
     {
       x2j = R * b + 2 * j * h;
       x2jm1 = x2j - h;
       x2jm2 = x2jm1 - h;
-      calka2 += L(x2jm2, b) * wzmocnienie_calk_bez_splotu(E - x2jm2) +
-        4 * L(x2jm1, b) * wzmocnienie_calk_bez_splotu(E - x2jm1) + L(x2j, b) * wzmocnienie_calk_bez_splotu(E - x2j);
+      calka2 += L(x2jm2, b) * wzmocnienie_calk_bez_splotu(E - x2jm2, polar) +
+        4 * L(x2jm1, b) * wzmocnienie_calk_bez_splotu(E - x2jm1, polar) + L(x2j, b) * wzmocnienie_calk_bez_splotu(E - x2j, polar);
     }
   calka2 *= h / 3;
   double calka = calka1 + calka2;
@@ -4975,7 +4982,7 @@ double wzmocnienie::wzmocnienie_calk_ze_splotem(double E, double b,
   return calka;
 }
 /*****************************************************************************/
-double wzmocnienie::wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v)
+double wzmocnienie::wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v, double polar)
 {
   //  std::cerr<<"\npasmo walencyjna nr "<<nr_v<<"\n";
   struktura * el = pasma->pasmo_przew[nr_c];
@@ -5011,7 +5018,7 @@ double wzmocnienie::wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v)
         if(((*m_prz)[nrpoz_el][nrpoz_dziu] > 0.005) && (E - E0 > -8 * posz_en)) // czy warto tracic czas
           {
             // std::cout << "\t\tcalc gain from pair of levels (if)\n"; // LUKASZ dodalem linie
-            wzmoc += wzmocnienie_od_pary_poziomow(E, nr_c, nrpoz_el, nr_v, nrpoz_dziu);
+            wzmoc += wzmocnienie_od_pary_poziomow(E, nr_c, nrpoz_el, nr_v, nrpoz_dziu, polar);
             //	      std::cerr<<"\nnowy wzmoc = "<<wzmoc;
           }
       }
@@ -5060,7 +5067,7 @@ double wzmocnienie::spont_od_pary_pasm(double E, size_t nr_c, size_t nr_v,
   return spont;
 }
 /*****************************************************************************/
-double wzmocnienie::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_v, int poz_v)
+double wzmocnienie::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_c, size_t nr_v, int poz_v, double polar)
 {
   // std::cout << "\t\tgain from pair of levels (0) - " << "nr_c: " << nr_c << ", nr_v: " << nr_v << ", poz_c: " <<
   //               poz_c << ", poz_v: " << poz_v << "\n";
@@ -5127,7 +5134,8 @@ double wzmocnienie::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_
   //      std::cerr<<"lewa po calkikawalki\n";
   przekr_w_war = calki_kawalki[0];
   //      std::cerr<<"lewa przed wynikiem\n";
-  mnoznik_pol = (dziu->typ == struktura::hh) ? (1 + cos2tet) / 2 : (5 - 3 * cos2tet) / 6; // polaryzacja TE
+  mnoznik_pol = (dziu->typ == struktura::hh) ? (1 + cos2tet + polar * (1 - 3 * cos2tet)) / 2
+                                             : (5 - 3 * cos2tet + 3 * polar * (3 - cos2tet)) / 6;
   // if (dziu->typ == struktura::hh) std::cout << "\t\tgain from pair of levels (1) - struktura: hh\n"; // LUKASZ
   // else std::cout << "\t\tgain from pair of levels (1) - struktura: lh\n"; // LUKASZ dodalem linie
   wynik = sqrt(pasma->el_mac[0] * mnoznik_pol) * przekr_w_war;
@@ -5138,7 +5146,8 @@ double wzmocnienie::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_
         dziu->kawalki[i].y_pocz; // y_pocz na szybko, moze co innego powinno byc
       //      cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
       cos2tet = (E0 > Eg) ? (E0 - Eg) / (sr_E_E0_dod + E0 - Eg) : 1.;
-      mnoznik_pol = (dziu->typ == struktura::hh) ? (1 + cos2tet) / 2 : (5 - 3 * cos2tet) / 6;
+      mnoznik_pol = (dziu->typ == struktura::hh) ? (1 + cos2tet + polar * (1 - 3 * cos2tet)) / 2
+                                                : (5 - 3 * cos2tet + 3 * polar * (3 - cos2tet)) / 6;
       // if (dziu->typ == struktura::hh) std::cout << "\t\tgain from pair of levels (for) - struktura: hh\n"; // LUKASZ
       // else std::cout << "\t\tgain from pair of levels (for) - struktura: lh\n"; // LUKASZ dodalem linie
       //      std::cerr<<"\nkawalek "<<i
@@ -5160,7 +5169,8 @@ double wzmocnienie::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_
   Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c];
   //  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
   cos2tet = (E0 > Eg) ? (E0 - Eg) / (sr_E_E0_dod + E0 - Eg) : 1.;
-  mnoznik_pol = (dziu->typ == struktura::hh) ? (1 + cos2tet) / 2 : (5 - 3 * cos2tet) / 6;
+  mnoznik_pol = (dziu->typ == struktura::hh) ? (1 + cos2tet + polar * (1 - 3 * cos2tet)) / 2
+                                             : (5 - 3 * cos2tet + 3 * polar * (3 - cos2tet)) / 6;
   // if (dziu->typ == struktura::hh) std::cout << "\t\tgain from pair of levels (2) - struktura: hh\n"; // LUKASZ
   // else std::cout << "\t\tgain from pair of levels (2) - struktura: lh\n"; // LUKASZ dodalem linie
   wynik += sqrt(pasma->el_mac.back() * mnoznik_pol) * przekr_w_war;
@@ -5285,39 +5295,39 @@ double wzmocnienie::spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, siz
     (struktura::przelm * struktura::przelm * struktura::przelm) * 1e24 / struktura::przels * 1e12; // w 1/(cm^3 s)
 }
 /*****************************************************************************/
-double wzmocnienie::wzmocnienie_calk_bez_splotu(double E)
+double wzmocnienie::wzmocnienie_calk_bez_splotu(double E, double polar)
 {
   double wynik = 0.;
   for(int nr_c = 0; nr_c <= (int)pasma->pasmo_przew.size() - 1; nr_c++)
     for(int nr_v = 0; nr_v <= (int)pasma->pasmo_wal.size() - 1; nr_v++)
-      wynik += wzmocnienie_od_pary_pasm(E, nr_c, nr_v);
+      wynik += wzmocnienie_od_pary_pasm(E, nr_c, nr_v, polar);
   return wynik;
 }
 /*****************************************************************************/
-double wzmocnienie::wzmocnienie_calk_bez_splotu_L(double lambda)
+double wzmocnienie::wzmocnienie_calk_bez_splotu_L(double lambda, double polar)
 {
   double wynik = 0.;
   for(int nr_c = 0; nr_c <= (int) pasma->pasmo_przew.size() - 1; nr_c++)
     for(int nr_v = 0; nr_v <= (int) pasma->pasmo_wal.size() - 1; nr_v++)
-      wynik += wzmocnienie_od_pary_pasm(plask::phys::PhotonEnergy(lambda), nr_c, nr_v);
-      //wynik += wzmocnienie_od_pary_pasm(cFunc::LamtoE(lambda), nr_c, nr_v);
+      wynik += wzmocnienie_od_pary_pasm(nm_to_eV(lambda), nr_c, nr_v, polar);
   return wynik;
 }
 /*****************************************************************************/
 void wzmocnienie::profil_wzmocnienia_bez_splotu_dopliku(std::ofstream & plik, double pocz, double kon, double krok)
 {
-  double wynik;
+  double wynikTE, wynikTM;
   for(double E = pocz; E <= kon; E += krok)
     {
-      wynik = 0;
+      wynikTE = 0; wynikTM = 0;
       for(int nr_c = 0; nr_c <= (int)pasma->pasmo_przew.size() - 1; nr_c++)
         for(int nr_v = 0; nr_v <= (int)pasma->pasmo_wal.size() - 1; nr_v++)
 	  {
-          wynik += wzmocnienie_od_pary_pasm(E, nr_c, nr_v);
-	    std::cerr<<E<<" "<<wynik<<"\n";
+          wynikTE += wzmocnienie_od_pary_pasm(E, nr_c, nr_v, 0.);
+          wynikTE += wzmocnienie_od_pary_pasm(E, nr_c, nr_v, 1.);
+	    std::cerr<<E<<" "<<wynikTE<<" "<<wynikTM<<"\n";
 	  }
 
-      plik << E << " " << wynik << "\n";
+      plik << E << " " << wynikTE << " " << wynikTM << "\n";
     }
 }
 /*****************************************************************************/
@@ -5326,7 +5336,7 @@ void wzmocnienie::profil_wzmocnienia_ze_splotem_dopliku(std::ofstream & plik, do
 {
   for(double E = pocz; E <= kon; E += krok)
     {
-      plik << E << " " << wzmocnienie_calk_ze_splotem(E, b) << "\n";
+      plik << E << " " << wzmocnienie_calk_ze_splotem(E, b, 0.) << " " << wzmocnienie_calk_ze_splotem(E, b, 1.) << "\n";
     }
 }
 /*****************************************************************************/
@@ -5382,8 +5392,8 @@ void wzmocnienie::profil_lumin_dopliku_L(std::ofstream & plik, double pocz, doub
       for(int nr_c = 0; nr_c <= (int) pasma->pasmo_przew.size() - 1; nr_c++)
 	for(int nr_v = 0; nr_v <= (int) pasma->pasmo_wal.size() - 1; nr_v++)
 	  {
-        wynikTE += spont_od_pary_pasm(plask::phys::PhotonEnergy(L), nr_c, nr_v, 0.0);
-        wynikTM += spont_od_pary_pasm(plask::phys::PhotonEnergy(L), nr_c, nr_v, 1.0);
+        wynikTE += spont_od_pary_pasm(nm_to_eV(L), nr_c, nr_v, 0.0);
+        wynikTM += spont_od_pary_pasm(nm_to_eV(L), nr_c, nr_v, 1.0);
 	  }
       plik<<L<<" "<<wynikTE<<" "<<wynikTM<<"\n";
     }

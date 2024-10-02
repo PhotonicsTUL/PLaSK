@@ -36,18 +36,13 @@ struct Levels {
     std::unique_ptr<kubly::struktura> bandsEc, bandsEvhh, bandsEvlh;
     std::unique_ptr<kubly::struktura> modbandsEc, modbandsEvhh, modbandsEvlh;
     plask::shared_ptr<kubly::obszar_aktywny> activeRegion;
-    operator bool() const {
-        return bool(bandsEc) || bool(bandsEvhh) || bool(bandsEvlh);
-    }
+    operator bool() const { return bool(bandsEc) || bool(bandsEvhh) || bool(bandsEvlh); }
 };
-
-inline static double nm_to_eV(double wavelength) { return (plask::phys::h_eV * plask::phys::c) / (wavelength * 1e-9); }
 
 /**
  * Gain solver using Fermi Golden Rule
  */
-template <typename GeometryType>
-struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType, MeshAxis> {
+template <typename GeometryType> struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType, MeshAxis> {
     /**
      *  Structure containing information about each active region
      */
@@ -72,8 +67,7 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
 
         /// Return material of \p n-th layer
         shared_ptr<Material> getLayerMaterial(size_t n) const {
-            auto block =
-                static_cast<Block<2>*>(static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild().get());
+            auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild().get());
             if (auto m = block->singleMaterial()) return m;
             throw plask::Exception("FermiNewGainSolver requires solid layers.");
         }
@@ -84,9 +78,7 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
         }
 
         /// Return \p true if given layer is quantum well
-        bool isQW(size_t n) const {
-            return static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild()->hasRole("QW");
-        }
+        bool isQW(size_t n) const { return static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild()->hasRole("QW"); }
 
         /// Return bounding box of the whole active region
         Box2D getBoundingBox() const { return layers->getBoundingBox() + origin; }
@@ -106,14 +98,12 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
          * \param solver solver
          */
         void summarize(const FermiNewGainSolver<GeometryType>* solver) {
-            totallen = 1e4 * (layers->getBoundingBox().height() -
-                              static_pointer_cast<GeometryObjectD<GeometryType::DIM>>(layers->getChildNo(0))
-                                  ->getBoundingBox()
-                                  .height() -
-                              static_pointer_cast<GeometryObjectD<GeometryType::DIM>>(
-                                  layers->getChildNo(layers->getChildrenCount() - 1))
-                                  ->getBoundingBox()
-                                  .height());  // 1e4: µm -> Å
+            totallen =
+                1e4 * (layers->getBoundingBox().height() -
+                       static_pointer_cast<GeometryObjectD<GeometryType::DIM>>(layers->getChildNo(0))->getBoundingBox().height() -
+                       static_pointer_cast<GeometryObjectD<GeometryType::DIM>>(layers->getChildNo(layers->getChildrenCount() - 1))
+                           ->getBoundingBox()
+                           .height());  // 1e4: µm -> Å
             size_t qwn = 0;
             qwtotallen = 0.;
             bool lastbarrier = true;
@@ -252,11 +242,7 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
 
     void showEnergyLevels(std::string str, const std::unique_ptr<kubly::struktura>& structure, double nQW);
 
-    kubly::wzmocnienie getGainModule(double wavelength,
-                                     double T,
-                                     double n,
-                                     const ActiveRegionInfo& region,
-                                     const Levels& levels);
+    kubly::wzmocnienie getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region, const Levels& levels);
 
     void prepareLevels(kubly::wzmocnienie& gmodule, const ActiveRegionInfo& region) {}
 
@@ -271,9 +257,8 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
 
     /// Notify that gain was chaged
     void onInputChange(ReceiverBase&, ReceiverBase::ChangeReason) {
-        outGain.fireChanged();  // the input changed, so we inform the world that everybody should get the new gain
-        outLuminescence
-            .fireChanged();  // the input changed, so we inform the world that everybody should get the new luminescence
+        outGain.fireChanged();          // the input changed, so we inform the world that everybody should get the new gain
+        outLuminescence.fireChanged();  // the input changed, so we inform the world that everybody should get the new luminescence
     }
 
     /**
@@ -299,9 +284,9 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
                                             double wavelength,
                                             InterpolationMethod interp = INTERPOLATION_DEFAULT);
 
-    const LazyData<double> getLuminescence(const shared_ptr<const MeshD<2>>& dst_mesh,
-                                           double wavelength,
-                                           InterpolationMethod interp = INTERPOLATION_DEFAULT);
+    const LazyData<Tensor2<double>> getLuminescence(const shared_ptr<const MeshD<2>>& dst_mesh,
+                                                    double wavelength,
+                                                    InterpolationMethod interp = INTERPOLATION_DEFAULT);
 
     bool strains;            ///< Consider strain in QWs and barriers?
     bool adjust_widths;      ///< Adjust widths of the QWs?
@@ -418,8 +403,7 @@ template <typename GeometryT> struct PLASK_SOLVER_API GainSpectrum {
 
     GainSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point);
 
-    GainSpectrum(const GainSpectrum& orig)
-        : solver(orig.solver), point(orig.point), reg(orig.reg), T(orig.T), n(orig.n) {}
+    GainSpectrum(const GainSpectrum& orig) : solver(orig.solver), point(orig.point), reg(orig.reg), T(orig.T), n(orig.n) {}
 
     GainSpectrum(GainSpectrum&& orig) = default;
 
@@ -437,11 +421,11 @@ template <typename GeometryT> struct PLASK_SOLVER_API GainSpectrum {
     }
 
     /**
-     * Get gain at given valenegth
+     * Get gain at given wavelength
      * \param wavelength wavelength to get gain
      * \return gain
      */
-    double getGain(double wavelength);
+    Tensor2<double> getGain(double wavelength);
 };
 
 /**
@@ -484,7 +468,7 @@ template <typename GeometryT> struct PLASK_SOLVER_API LuminescenceSpectrum {
      * \param wavelength wavelength to get luminescence
      * \return luminescence
      */
-    double getLuminescence(double wavelength);
+    Tensor2<double> getLuminescence(double wavelength);
 };
 
 }}}  // namespace plask::solvers::FermiNew
