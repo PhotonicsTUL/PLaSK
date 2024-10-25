@@ -236,10 +236,14 @@ def runxpl(source, defs={}):
     env.update(defs)
     loadxpl(source, defs, destination=env)
     if type(source) == str:
-        filename = source
+        if not source.lstrip().startswith('<plask'):
+            filename = source
+        else:
+            filename = "<source>"
     else:
         try: filename = source.name
         except: filename = "<source>"
+    env.update(env['__manager__'].defs)
     try:
         code = compile(env['__script__'], filename, 'exec')
         exec(code, env)
