@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#ifndef PLASK__SOLVER_SLAB_FFT_H
-#define PLASK__SOLVER_SLAB_FFT_H
+#ifndef PLASK__SOLVER_OPTICAL_MODAL_FFT_H
+#define PLASK__SOLVER_OPTICAL_MODAL_FFT_H
 
 #include <plask/plask.hpp>
 
@@ -167,4 +167,4 @@ struct PLASK_SOLVER_API Backward2D {
 
 }}}} // namespace plask::optical::modal::FFT
 
-#endif // PLASK__SOLVER_SLAB_FFT_H
+#endif // PLASK__SOLVER_OPTICAL_MODAL_FFT_H

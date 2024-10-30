@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#ifndef PLASK__SOLVER_SLAB_SOLVER_H
-#define PLASK__SOLVER_SLAB_SOLVER_H
+#ifndef PLASK__SOLVER_OPTICAL_MODAL_SOLVER_H
+#define PLASK__SOLVER_OPTICAL_MODAL_SOLVER_H
 
 #include <plask/plask.hpp>
 #include "expansion.hpp"
@@ -348,4 +348,4 @@ template <typename BaseT> class PLASK_SOLVER_API ModalSolver : public BaseT, pub
 
 }}}  // namespace plask::optical::modal
 
-#endif  // PLASK__SOLVER_SLAB_SOLVER_H
+#endif  // PLASK__SOLVER_OPTICAL_MODAL_SOLVER_H

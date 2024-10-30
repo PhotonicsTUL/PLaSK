@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#ifndef PLASK__SOLVER_SLAB_TOEPLITZ_H
-#define PLASK__SOLVER_SLAB_TOEPLITZ_H
+#ifndef PLASK__SOLVER_OPTICAL_MODAL_TOEPLITZ_H
+#define PLASK__SOLVER_OPTICAL_MODAL_TOEPLITZ_H
 
 #include <plask/plask.hpp>
 #include "../matrices.hpp"
@@ -85,4 +85,4 @@ void ToeplitzLevinson(const DataVector<D>& TM, Matrix<D>& X)
 
 
 }}} // namespace plask::optical::modal
-#endif // PLASK__SOLVER_SLAB_TOEPLITZ_H
+#endif // PLASK__SOLVER_OPTICAL_MODAL_TOEPLITZ_H

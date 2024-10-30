@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#ifndef PLASK__SOLVER_SLAB_TEMPMATRIX_H
-#define PLASK__SOLVER_SLAB_TEMPMATRIX_H
+#ifndef PLASK__SOLVER_OPTICAL_MODAL_TEMPMATRIX_H
+#define PLASK__SOLVER_OPTICAL_MODAL_TEMPMATRIX_H
 
 #include <plask/plask.hpp>
 
@@ -156,4 +156,4 @@ inline TempMatrix TempMatrixPool::get(size_t rows, size_t cols) {
 
 }}} // namespace plask
 
-#endif // PLASK__SOLVER_SLAB_TEMPMATRIX_H
+#endif // PLASK__SOLVER_OPTICAL_MODAL_TEMPMATRIX_H

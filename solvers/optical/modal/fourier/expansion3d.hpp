@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#ifndef PLASK__SOLVER_SLAB_EXPANSION_PW3D_H
-#define PLASK__SOLVER_SLAB_EXPANSION_PW3D_H
+#ifndef PLASK__SOLVER_OPTICAL_MODAL_EXPANSION_PW3D_H
+#define PLASK__SOLVER_OPTICAL_MODAL_EXPANSION_PW3D_H
 
 #include <plask/plask.hpp>
 
@@ -394,4 +394,4 @@ struct ExpansionPW3D::Gradient::Vertex {
 
 }}} // namespace plask
 
-#endif // PLASK__SOLVER_SLAB_EXPANSION_PW3D_H
+#endif // PLASK__SOLVER_OPTICAL_MODAL_EXPANSION_PW3D_H

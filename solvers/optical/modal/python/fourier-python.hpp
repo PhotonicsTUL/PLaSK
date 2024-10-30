@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#ifndef PLASK__SOLVER__OPTICAL__SLAB_FOURIER_PYTHON_H
-#define PLASK__SOLVER__OPTICAL__SLAB_FOURIER_PYTHON_H
+#ifndef PLASK__SOLVER_OPTICAL_MODAL_FOURIER_PYTHON_H
+#define PLASK__SOLVER_OPTICAL_MODAL_FOURIER_PYTHON_H
 
 #include <cmath>
 #include <plask/python.hpp>
@@ -26,4 +26,4 @@ namespace plask { namespace optical { namespace modal { namespace python {
 
 }}}} // # namespace plask::optical::modal::python
 
-#endif // PLASK__SOLVER__OPTICAL__SLAB_FOURIER_PYTHON_H
+#endif // PLASK__SOLVER_OPTICAL_MODAL_FOURIER_PYTHON_H

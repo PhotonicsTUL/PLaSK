@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#ifndef PLASK__SOLVER_SLAB_ADMITTANCE_H
-#define PLASK__SOLVER_SLAB_ADMITTANCE_H
+#ifndef PLASK__SOLVER_OPTICAL_MODAL_ADMITTANCE_H
+#define PLASK__SOLVER_OPTICAL_MODAL_ADMITTANCE_H
 
 #include "matrices.hpp"
 #include "xance.hpp"
@@ -49,4 +49,4 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public XanceTransfer {
 
 }}} // namespace plask::optical::modal
 
-#endif // PLASK__SOLVER_SLAB_ADMITTANCE_H
+#endif // PLASK__SOLVER_OPTICAL_MODAL_ADMITTANCE_H

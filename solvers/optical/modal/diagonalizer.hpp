@@ -14,8 +14,8 @@
 /**
  *  \file   diagonalizer.h  Module responsible for calculating and holding diagonalized matrices
  */
-#ifndef PLASK__SOLVER_SLAB_DIAGONALIZER_H
-#define PLASK__SOLVER_SLAB_DIAGONALIZER_H
+#ifndef PLASK__SOLVER_OPTICAL_MODAL_DIAGONALIZER_H
+#define PLASK__SOLVER_OPTICAL_MODAL_DIAGONALIZER_H
 
 #include <utility>
 
@@ -137,4 +137,4 @@ class SimpleDiagonalizer : public Diagonalizer
 };
 
 }}} // namespace plask::optical::modal
-#endif // PLASK__SOLVER_SLAB_DIAGONALIZER_H
+#endif // PLASK__SOLVER_OPTICAL_MODAL_DIAGONALIZER_H

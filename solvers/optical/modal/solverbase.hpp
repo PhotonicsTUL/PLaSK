@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#ifndef PLASK__SOLVER_SLAB_SOLVERBASE_H
-#define PLASK__SOLVER_SLAB_SOLVERBASE_H
+#ifndef PLASK__SOLVER_OPTICAL_MODAL_SOLVERBASE_H
+#define PLASK__SOLVER_OPTICAL_MODAL_SOLVERBASE_H
 
 #include <plask/plask.hpp>
 #include "rootdigger.hpp"
@@ -307,4 +307,4 @@ struct PLASK_SOLVER_API ModalBase {
 
 }}}  // namespace plask::optical::modal
 
-#endif  // PLASK__SOLVER_SLAB_SOLVERBASE_H
+#endif  // PLASK__SOLVER_OPTICAL_MODAL_SOLVERBASE_H

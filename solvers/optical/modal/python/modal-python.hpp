@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#ifndef PLASK__SOLVER__OPTICAL__SLAB_PYTHON_H
-#define PLASK__SOLVER__OPTICAL__SLAB_PYTHON_H
+#ifndef PLASK__SOLVER_OPTICAL_MODAL_PYTHON_H
+#define PLASK__SOLVER_OPTICAL_MODAL_PYTHON_H
 
 #include <cmath>
 #include <cstring>
@@ -1256,4 +1256,4 @@ inline void export_base(Class solver) {
 
 }}}} // # namespace plask::optical::modal::python
 
-#endif // PLASK__SOLVER__OPTICAL__SLAB_PYTHON_H
+#endif // PLASK__SOLVER_OPTICAL_MODAL_PYTHON_H

@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#ifndef PLASK__SOLVER__OPTICAL__SLAB_BESSELCYL_PYTHON_H
-#define PLASK__SOLVER__OPTICAL__SLAB_BESSELCYL_PYTHON_H
+#ifndef PLASK__SOLVER_OPTICAL_MODAL_BESSELCYL_PYTHON_H
+#define PLASK__SOLVER_OPTICAL_MODAL_BESSELCYL_PYTHON_H
 
 #include "../bessel/solvercyl.hpp"
 
@@ -23,4 +23,4 @@ void export_BesselSolverCyl();
 
 }}}} // # namespace plask::optical::modal::python
 
-#endif // PLASK__SOLVER__OPTICAL__SLAB_BESSELCYL_PYTHON_H
+#endif // PLASK__SOLVER_OPTICAL_MODAL_BESSELCYL_PYTHON_H
