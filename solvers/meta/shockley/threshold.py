@@ -988,7 +988,7 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
     the voltage and electric current ensuring no optical loss in the
     laser cavity.
 
-    This solver uses vector optical solver :class:`~plask.optical.slab.BesselCyl`.
+    This solver uses vector optical solver :class:`~plask.optical.modal.BesselCyl`.
 
     The computations can be executed using `compute` method, after which
     the results may be save to the HDF5 file with `save` or presented visually
@@ -1038,7 +1038,7 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
     ":class:`gain.freecarrier.FreeCarrierCyl` solver used for gain calculations."
 
     optical = attribute("BesselCyl()")
-    ":class:`optical.slab.BesselFrequencyCyl` solver used for optical calculations."
+    ":class:`optical.modal.BesselFrequencyCyl` solver used for optical calculations."
 
     tfreq = 6.0
     """
@@ -1118,7 +1118,7 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
     """
 
     def __init__(self, name=''):
-        from optical.slab import BesselCyl
+        from optical.modal import BesselCyl
         self._Optical = BesselCyl
         super().__init__(name)
         self.maxlam = None
@@ -1482,7 +1482,7 @@ class ThresholdSearchFourier2D(ThresholdSearch):
     the voltage and electric current ensuring no optical loss in the
     laser cavity.
 
-    This solver uses vector optical solver :class:`~plask.optical.slab.Fourier2D`.
+    This solver uses vector optical solver :class:`~plask.optical.modal.Fourier2D`.
 
     The computations can be executed using `compute` method, after which
     the results may be save to the HDF5 file with `save` or presented visually
@@ -1534,7 +1534,7 @@ class ThresholdSearchFourier2D(ThresholdSearch):
     ":class:`gain.freecarrier.FreeCarrier2D` solver used for gain calculations."
 
     optical = attribute("Fourier2D()")
-    ":class:`optical.slab.Fourier2D` solver used for optical calculations."
+    ":class:`optical.modal.Fourier2D` solver used for optical calculations."
 
     tfreq = 6.0
     """
@@ -1594,7 +1594,7 @@ class ThresholdSearchFourier2D(ThresholdSearch):
     """
 
     def __init__(self, name=''):
-        from optical.slab import Fourier2D
+        from optical.modal import Fourier2D
         self._Optical = Fourier2D
         super().__init__(name)
 

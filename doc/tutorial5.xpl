@@ -61,7 +61,7 @@
 </geometry>
 
 <solvers>
-  <optical name="FOURIER" solver="Fourier3D" lib="slab">
+  <optical name="FOURIER" solver="Fourier3D" lib="modal">
     <geometry ref="main"/>
     <expansion lam0="980" size="{N}" update-gain="no"/>
     <mode symmetry-long="Etran" symmetry-tran="Etran"/>

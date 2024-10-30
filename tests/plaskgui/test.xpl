@@ -445,7 +445,7 @@
     </temperature>
     <!--L-->
   </thermal>
-  <optical name="fourier2" solver="Fourier2D" lib="slab">
+  <optical name="fourier2" solver="Fourier2D" lib="modal">
     <geometry ref="geo2d"/>
   </optical>
   <gain name="gain2" solver="FreeCarrierCyl" lib="freecarrier">
@@ -529,7 +529,7 @@
     </temperature>
   </meta>
   <!-- COMMENT 1 -->
-  <optical name="F3D" solver="Fourier3D" lib="slab">
+  <optical name="F3D" solver="Fourier3D" lib="modal">
     <!-- COMMENT 2 -->
     <geometry ref="vcsel"/>
     <!-- COMMENT 3 -->

@@ -239,7 +239,7 @@
     <mesh ref="optical"/>
     <mode emission="top" lam0="1300" vat="0"/>
   </optical>
-  <optical name="O_BESSEL" solver="BesselCyl" lib="slab">
+  <optical name="O_BESSEL" solver="BesselCyl" lib="modal">
     <geometry ref="optical"/>
     <expansion lam0="1300" size="20"/>
     <interface object="active"/>
@@ -257,7 +257,7 @@ from scipy.optimize import newton, brentq
 from scipy.optimize import fsolve, broyden1, broyden2
 
 from thermal.dynamic import DynamicCyl
-from optical.slab import BesselCyl
+from optical.modal import BesselCyl
 
 THERMAL    = eval(THERMAL)
 ELECTRICAL = eval(ELECTRICAL)

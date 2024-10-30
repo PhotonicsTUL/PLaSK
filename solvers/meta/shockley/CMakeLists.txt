@@ -22,7 +22,7 @@ include(PLaSK)
 # Uncomment and edit the line below if your solver should be built after any
 # other targets. This is most useful for meta-solvers.
 set(SOLVER_DEPENDS solver-thermalstatic-python solver-electricalshockley-python
-                   solver-opticaleffective-python solver-opticalslab-python solver-gainfreecarrier-python)
+                   solver-opticaleffective-python solver-opticalmodal-python solver-gainfreecarrier-python)
 
 
 # To add unit tests to your project create appropriate targets (binary executables,
