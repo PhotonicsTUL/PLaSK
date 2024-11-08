@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -27,6 +27,7 @@ This file contains base class for geometries objects.
 #include <vector>
 
 #include <boost/variant.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "../material/air.hpp"
 #include "../material/material.hpp"
@@ -446,9 +447,13 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
     /// Predicate which check if given object belong to class with given name.
     struct PLASK_API PredicateHasRole {
         std::string role_name;
-        PredicateHasRole(const std::string& role_name) : role_name(role_name){};
-        PredicateHasRole(std::string&& role_name) : role_name(std::move(role_name)){};
-        bool operator()(const GeometryObject& obj) const { return obj.hasRole(role_name); }
+        PredicateHasRole(const std::string& role_name) : role_name(role_name) {
+            boost::algorithm::trim(this->role_name);
+        };
+        PredicateHasRole(std::string&& role_name) : role_name(std::move(role_name)) {
+            boost::algorithm::trim(this->role_name);
+        };
+        bool operator()(const GeometryObject& obj) const { return obj.roles.find(role_name) != obj.roles.end(); }
     };
 
     /**
@@ -750,19 +755,28 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
      * @param role_name name of class/tag to check
      * @return @c true only if this belongs to class @p role_name
      */
-    bool hasRole(const std::string& role_name) const { return roles.find(role_name) != roles.end(); }
+    bool hasRole(std::string role_name) const {
+        boost::algorithm::trim(role_name);
+        return roles.find(role_name) != roles.end();
+    }
 
     /**
      * Add this to given class.
      * @param role_name name of class where this should be added
      */
-    void addRole(const std::string& role_name) { roles.insert(role_name); }
+    void addRole(std::string role_name) {
+        boost::algorithm::trim(role_name);
+        roles.insert(role_name);
+    }
 
     /**
      * Remove this from given class, do nothing if this is not in given class.
      * @param role_name name of class from where this should be removed
      */
-    void removeRole(const std::string& role_name) { roles.erase(role_name); }
+    void removeRole(std::string role_name) {
+        boost::algorithm::trim(role_name);
+        roles.erase(role_name);
+    }
 
     /**
      * Clear set of roles of this.
@@ -1571,7 +1585,7 @@ template <int dim> struct PLASK_API GeometryObjectD : public GeometryObject {
     // }
 
     // /*
-    //  * Get instances of the object withing subtree with root in this. Returned 
+    //  * Get instances of the object withing subtree with root in this. Returned
     //  * are wrapped in transformations, which transform them to the root coordinates.
     //  * @param object object to extract
     //  * @param path

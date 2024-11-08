@@ -30,7 +30,7 @@ class ManagerTest(unittest.TestCase):
           <geometry>
             <cartesian2d name="Space-1" axes="xy">
               <stack name="Stack-2">
-                <item path="Path-4"><rectangle name="Block-3" dx="5" dy="{y}" material="GaN" /></item>
+                <item path="Path-4"><rectangle name="Block-3" dx="5" dy="{y}" material="GaN" role="a, b"/></item>
                 <again ref="Block-3"/>
               </stack>
             </cartesian2d>
@@ -65,6 +65,9 @@ class ManagerTest(unittest.TestCase):
 
     def testRefcount(self):
         self.assertEqual(sys.getrefcount(self.manager), 2)
+
+    def testRoles(self):
+        self.assertEqual(set(self.manager.geo.Block_3.roles), {'a', 'b'})
 
     def testGeometry(self):
         self.assertEqual(len(self.manager.geo), 3)
