@@ -1,6 +1,7 @@
 Args
 attr
 BLAS
+Broyden
 cdiagonal
 cmatrix
 coeffs
@@ -9,6 +10,7 @@ dcomplex
 dedentation
 diagonalization
 diagonalizer
+eigenmode
 Elong
 Etran
 Hankel
@@ -28,8 +30,12 @@ preconditioner
 preconditioners
 predonditioners
 redmine
+rootdigger
 rtype
+SOLVERBASE
 SOLVERCYL
+tolf
+tolx
 transmittivity
 unbuffered
 vpml

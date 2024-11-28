@@ -33,7 +33,7 @@ struct PML {
 };
 
 /**
- * Common base with layer details independent on the geomety
+ * Common base with layer details independent on the geometry
  */
 struct PLASK_SOLVER_API ModalBase {
     /// Directions of the possible emission
@@ -138,7 +138,7 @@ struct PLASK_SOLVER_API ModalBase {
     /// Maximum temperature difference for grouped layers (NAN means ignore temperature)
     double max_temp_diff;
 
-    /// Approxximate lateral distance between points for temperature investigation
+    /// Approximate lateral distance between points for temperature investigation
     double temp_dist;
 
     /// Minimum layer thickness for the purpose of temperature-based layers division
