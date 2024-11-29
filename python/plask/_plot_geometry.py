@@ -689,6 +689,17 @@ _geometry_drawers[plask.geometry.Cartesian2D] = draw_geometry2d
 _geometry_drawers[plask.geometry.Cylindrical] = draw_geometry2d
 
 
+def draw_Polygon(env, geometry_object, transform, clipbox, plask_real_path):
+    vertices = [tuple(v) for v in geometry_object.vertices]
+    if not vertices: return
+    while len(vertices) < 2:
+        vertices.append(vertices[0])
+    env.append(matplotlib.patches.Polygon(vertices, closed=True, transform=transform),
+            clipbox, geometry_object, plask_real_path
+    )
+
+_geometry_drawers[plask.geometry.Polygon] = draw_Polygon
+
 
 def draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_path=None):
     """

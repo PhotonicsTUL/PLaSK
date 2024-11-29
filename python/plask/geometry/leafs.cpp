@@ -17,6 +17,7 @@
 #include "plask/geometry/cuboid.hpp"
 #include "plask/geometry/cylinder.hpp"
 #include "plask/geometry/leaf.hpp"
+#include "plask/geometry/polygon.hpp"
 #include "plask/geometry/prism.hpp"
 #include "plask/geometry/triangle.hpp"
 
@@ -305,6 +306,94 @@ template <int dim, int axis> static void Block__setdim(Block<dim>& self, double 
     self.setSize(dims);
 }
 
+static shared_ptr<Polygon> Polygon_constructor(const py::object& vetrices, const py::object& material) {
+    std::vector<Vec<2, double>> verts;
+    for (size_t i = 0; i < py::len(vetrices); ++i) {
+        verts.push_back(py::extract<Vec<2, double>>(vetrices[i]));
+    }
+    auto result = plask::make_shared<Polygon>(verts);
+    setLeafMaterialFast<2>(result, material);
+    return result;
+}
+
+static void Polygon_setVertices(Polygon& self, const py::object& vertices) {
+    std::vector<Vec<2, double>> verts;
+    for (size_t i = 0; i < py::len(vertices); ++i) {
+        verts.push_back(py::extract<Vec<2, double>>(vertices[i]));
+    }
+    self.setVertices(verts);
+}
+
+class PolygonVertices {
+    shared_ptr<Polygon> polygon;
+
+    size_t index(int i) const {
+        size_t n = polygon->getVertices().size();
+        if (i < 0) i += n;
+        if (i < 0 || i >= n) throw IndexError("vertex index out of range");
+        return i;
+    }
+
+  public:
+    PolygonVertices(shared_ptr<Polygon> polygon) : polygon(polygon) {}
+
+    static PolygonVertices fromPolygon(shared_ptr<Polygon> polygon) { return PolygonVertices(polygon); }
+
+    size_t size() const { return polygon->getVertices().size(); }
+
+    Vec<2, double> __getitem__(int i) const { return polygon->getVertices()[index(i)]; }
+
+    void __setitem__(int i, const Vec<2, double>& v) { polygon->setVertex(index(i), v); }
+
+    void append(const Vec<2, double>& v) { polygon->addVertex(v); }
+
+    void insert(int i, const Vec<2, double>& v) {
+        size_t n = polygon->getVertices().size();
+        if (i < 0) i += n;
+        if (i < 0 || i > n) throw IndexError("vertex index out of range");
+        if (i == n)
+            polygon->addVertex(v);
+        else
+            polygon->insertVertex(i, v);
+    }
+
+    void __delitem__(int i) { polygon->removeVertex(index(i)); }
+
+    std::string __str__() const {
+        std::string result = "[";
+        for (size_t i = 0; i < polygon->getVertices().size(); ++i) {
+            result += str(polygon->getVertices()[i]);
+            result += (i != polygon->getVertices().size() - 1)? ", " : "]";
+        }
+        return result;
+    }
+
+    std::string __repr__() const {
+        std::string result = "[";
+        for (size_t i = 0; i < polygon->getVertices().size(); ++i) {
+            result += format("plask.vec({}, {})", polygon->getVertices()[i].c0, polygon->getVertices()[i].c1);
+            result += (i != polygon->getVertices().size() - 1)? ", " : "]";
+        }
+        return result;
+    }
+
+    struct Iterator {
+        shared_ptr<Polygon> polygon;
+        size_t i;
+
+        Iterator(const PolygonVertices* pv) : polygon(pv->polygon), i(0) {}
+
+        Vec<2, double> __next__() {
+            if (i >= polygon->getVertices().size()) throw StopIteration();
+            return polygon->getVertex(i++);
+        }
+
+        Iterator* __iter__() { return this; }
+    };
+
+    Iterator __iter__() const { return Iterator(this); }
+};
+
 void register_geometry_leafs() {
     py::scope scope;
 
@@ -375,7 +464,7 @@ void register_geometry_leafs() {
     py::class_<Triangle, shared_ptr<Triangle>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> triangle(
         "Triangle",
         u8"Triangle(a0, a1, b0, b1, material)\n"
-        u8"Triangle(a, b, material)\n"
+        u8"Triangle(a, b, material)\n\n"
         u8"Triangle (2D geometry object).\n\n"
         u8"Three triangle vertices are located at points (0, 0), *a*, and *b*.\n\n"
         u8"Args:\n"
@@ -509,6 +598,41 @@ void register_geometry_leafs() {
         .add_property("height", py::make_getter(&Prism::height), &Prism::setHeight, "Prism height.")
         .def("__getattr__", &Triangle__getattr__<Prism>)
         .def("__setattr__", &Triangle__setattr__<Prism>);
+
+    py::class_<Polygon, shared_ptr<Polygon>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> polygon(
+        "Polygon",
+        u8"Polygon(vertices, material)\n\n"
+        u8"Polygon (2D geometry object).\n\n"
+        u8"Polygon with specified vertices.\n\n"
+        u8"Args:\n"
+        u8"    vertices (list of plask.vec): List of polygon vertices.\n"
+        u8"    material (Material): Polygon material.\n",
+        py::no_init);
+    polygon
+        .def("__init__", py::make_constructor(&Polygon_constructor, py::default_call_policies(), (py::arg("vertices"), "material")))
+        .add_property("vertices", &PolygonVertices::fromPolygon, &Polygon_setVertices, "List of polygon vertices.");
+
+    {
+        py::scope polygon_scope = polygon;
+
+        py::class_<PolygonVertices> vertices("Vertices", py::no_init);
+        vertices  //
+            .def("__len__", &PolygonVertices::size)
+            .def("__getitem__", &PolygonVertices::__getitem__)
+            .def("__setitem__", &PolygonVertices::__setitem__)
+            .def("append", &PolygonVertices::append)
+            .def("insert", &PolygonVertices::insert)
+            .def("__delitem__", &PolygonVertices::__delitem__)
+            .def("__str__", &PolygonVertices::__str__)
+            .def("__repr__", &PolygonVertices::__repr__)
+            .def("__iter__", &PolygonVertices::__iter__);
+
+        py::scope vertices_scope = vertices;
+
+        py::class_<PolygonVertices::Iterator>("Iterator", py::no_init)  //
+            .def("__iter__", &PolygonVertices::Iterator::__iter__, py::return_self<>())
+            .def("__next__", &PolygonVertices::Iterator::__next__);
+    }
 }
 
 }}  // namespace plask::python

@@ -14,6 +14,7 @@ import weakref
 
 from .object import GNObjectController
 from ...utils.str import empty_to_none, none_to_empty
+from ...qt.QtCore import *
 from ...qt.QtWidgets import *
 from ...utils.qsignals import BlockQtSignals
 from ...utils.widgets import ComboBox
@@ -265,7 +266,7 @@ class GNPrismController(GNLeafController):
     def _on_point_set(self, index, value):
 
         def setter(n, v):
-            n.points = n.points[0:index] + (v, ) + n.points[index + 1:]
+            n.points = n.points[0:index] + (v, ) + n.points[index+1:]
 
         self._set_node_by_setter_undoable(
             setter, value, self.node.points[index], 'change {} triangle point'.format('first' if index == 0 else 'second')
@@ -301,3 +302,26 @@ class GNPrismController(GNLeafController):
             self.points[0][i].setText(none_to_empty(self.node.points[0][i]))
             self.points[1][i].setText(none_to_empty(self.node.points[1][i]))
         self.height.setText(none_to_empty(self.node.height))
+
+
+class GNPolygonController(GNLeafController):
+
+    # def _on_vertex_set(self, index, value):
+
+    #     def setter(n, v):
+    #         n.vertices = n.vertices[0:index] + (v, ) + n.vertices[index+1:]
+
+    #     self._set_node_by_setter_undoable(
+    #         setter, value, self.node.vertices[index], 'change polygon vertex')
+
+    def construct_form(self):
+        self.construct_group('Vertex List')
+        self.vertices = self.construct_line_edit(
+            'Vertices:', unit='µm', node_property_name='vertices',
+            display_property_name="list of vertices in a the form 'x1 y1; x2 y2; ...'",
+        )
+        super().construct_form()
+
+    def fill_form(self):
+        self.vertices.setText(none_to_empty(self.node.vertices))
+        super().fill_form()

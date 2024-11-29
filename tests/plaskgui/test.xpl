@@ -335,6 +335,9 @@
       <tube material="GaAs" inner-radius="1" outer-radius="2" height="3"/>
     </stack>
   </cartesian3d>
+  <cartesian2d name="polygons" axes="x,y">
+    <polygon name="polygon" material="GaN">{'; '.join(f'{sin(i*1.2*pi)} {cos(i*1.2*pi)}' for i in range(5))}</polygon>
+  </cartesian2d>
 </geometry>
 
 <grids>

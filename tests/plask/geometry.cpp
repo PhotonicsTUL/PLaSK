@@ -167,4 +167,12 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         BOOST_CHECK_EQUAL(lattice->getChildrenCount(), 3*5 - 1);
     }
 
+    // BOOST_AUTO_TEST_CASE(polygon) {
+    //     plask::shared_ptr<plask::Polygon> nonpolygon(new plask::Polygon({plask::vec(0,0), plask::vec(2,0), plask::vec(0,1), plask::vec(2,2)}));
+    //     BOOST_CHECK(!nonpolygon->checkSegments());
+
+    //     plask::shared_ptr<plask::Polygon> polygon(new plask::Polygon({plask::vec(0,0), plask::vec(2,0), plask::vec(2,2), plask::vec(0,1)}));
+    //     BOOST_CHECK(polygon->checkSegments());
+    // }
+
 BOOST_AUTO_TEST_SUITE_END()

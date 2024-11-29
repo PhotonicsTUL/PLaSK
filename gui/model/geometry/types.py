@@ -41,7 +41,7 @@ def gname(key, menu=False):
 from .again_copy import GNAgain, GNCopy
 from .container import GNAlignContainer, GNShelf, GNStack
 from .geometry import GNCartesian, GNCylindrical
-from .leaf import GNBlock, GNCircle, GNCylinder, GNPrism, GNTriangle, GNTube
+from .leaf import GNBlock, GNCircle, GNCylinder, GNPrism, GNTriangle, GNTube, GNPolygon
 from .python_object import GNPython
 from .transform import GNArrange, GNClip, GNExtrusion, GNFlip, GNIntersection, GNLattice, GNMirror, GNRevolution, GNTranslation
 
@@ -49,6 +49,7 @@ geometry_types_2d_core_leafs = {  # only unique names of types, displayed in add
     'rectangle': GNBlock.from_xml_2d,
     'circle': GNCircle.from_xml_2d,
     'triangle': GNTriangle.from_xml_2d,
+    'polygon': GNPolygon.from_xml_2d,
 }
 geometry_types_2d_core_containers = {  # only unique names of types, displayed in add menu
     'stack2d': GNStack.from_xml_2d,

@@ -390,8 +390,8 @@ void Lattice::refillContainer() {
             for (int x = segment.first.c0; x <= segment.second.c0; ++x)
                 dst.insert(x);  // we immediately add all points which lie on side
         } else {
-            result[segment.first.c1].insert(segment.first.c0);    // we immediately add all vertexes
-            result[segment.second.c1].insert(segment.second.c0);  // we immediately add all vertexes
+            result[segment.first.c1].insert(segment.first.c0);    // we immediately add all vertices
+            result[segment.second.c1].insert(segment.second.c0);  // we immediately add all vertices
 
             Vec<2, int> low_y, hi_y;
             if (segment.first.c1 > segment.second.c1) {
@@ -515,13 +515,13 @@ shared_ptr<GeometryObject> read_lattice(GeometryReader& reader) {
     int cords_in_current_point = 0;
     for (const std::string& t : tokens) {
         if (t == ";" || t == "^") {  // end of point or segment
-            if (cords_in_current_point != 2) throw Exception("each point must have two coordinates.");
+            if (cords_in_current_point != 2) throw Exception("each point must have two coordinates");
             cords_in_current_point = 0;
             if (t == "^")  // end of segment, add new one
                 result->segments.emplace_back();
         } else {  // end of point coordinate
             if (cords_in_current_point == 2)
-                throw Exception("end of point (\";\") or segment (\"^\") was expected, but got \"{0}\".", t);
+                throw Exception("end of point (\";\") or segment (\"^\") was expected, but got \"{0}\"", t);
             if (cords_in_current_point == 0) result->segments.back().emplace_back();
             result->segments.back().back()[cords_in_current_point++] = boost::lexical_cast<int>(t);
         }

@@ -83,6 +83,7 @@ struct AttributeError : public Exception {
 };
 
 struct StopIteration : public Exception {
+    StopIteration() : Exception("") {}
     template <typename... T> StopIteration(const std::string& msg, const T&... args) : Exception(msg, args...) {}
 };
 

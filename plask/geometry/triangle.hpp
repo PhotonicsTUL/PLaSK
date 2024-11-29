@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -40,8 +40,8 @@ struct PLASK_API Triangle : public GeometryObjectLeaf<2> {
     std::string getTypeName() const override;
 
     /**
-     * Construct a solid triangle with vertexes at points: (0, 0), @p p0, @p p1
-     * @param p0, p1 coordinates of the triangle vertexes
+     * Construct a solid triangle with vertices at points: (0, 0), @p p0, @p p1
+     * @param p0, p1 coordinates of the triangle vertices
      * @param material material inside the whole triangle
      */
     explicit Triangle(const DVec& p0 = Primitive<2>::ZERO_VEC,
@@ -49,8 +49,8 @@ struct PLASK_API Triangle : public GeometryObjectLeaf<2> {
                       const shared_ptr<Material>& material = shared_ptr<Material>());
 
     /**
-     * Construct a triangle with vertexes at points: (0, 0), @p p0, @p p1
-     * @param p0, p1 coordinates of the triangle vertexes
+     * Construct a triangle with vertices at points: (0, 0), @p p0, @p p1
+     * @param p0, p1 coordinates of the triangle vertices
      * @param materialTopBottom describes materials inside the triangle
      */
     explicit Triangle(const DVec& p0,

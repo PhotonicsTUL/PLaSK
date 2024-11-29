@@ -59,6 +59,7 @@ void register_python_log();
 void register_standard_properties();
 
 PLASK_PYTHON_API PyObject* pyXmlError;
+PLASK_PYTHON_API PyObject* pyGeometryException;
 PLASK_PYTHON_API PyObject* pyComputationError;
 
 PLASK_PYTHON_API std::string getPythonExceptionMessage() {
@@ -497,13 +498,13 @@ struct SolverWrap: public Solver, Overriden<Solver> {
 /// Custom wrapper for XMLError
 template <>
 void register_exception<plask::XMLException>(PyObject* py_exc) {
-    py::register_exception_translator<plask::XMLException>( [=](const plask::XMLException& err) {
+    py::register_exception_translator<plask::XMLException>([=](const plask::XMLException& err) {
         py::object excType(py::handle<>(py::borrowed(py_exc)));
         py::object exc = excType(err.what());
         if (err.line == -1) exc.attr("line") = py::object();
         else exc.attr("line") = err.line;
         PyErr_SetObject(py_exc, exc.ptr());
-    } );
+    });
 }
 
 
@@ -720,6 +721,11 @@ BOOST_PYTHON_MODULE(_plask)
     pyXmlError = PyErr_NewExceptionWithDoc((char*)"plask.XMLError", (char*)u8"Error in XML file.", NULL, NULL);
     register_exception<plask::XMLException>(pyXmlError);
     py::scope().attr("XMLError") = py::handle<>(py::incref(pyXmlError));
+
+    pyGeometryException = PyErr_NewExceptionWithDoc((char*)"plask.GeometryException", (char*)u8"Error in PLaSK geometry specification.",
+                                                            NULL, NULL);
+    register_exception<plask::GeometryException>(pyGeometryException);
+    py::scope().attr("GeometryException") = py::handle<>(py::incref(pyGeometryException));
 
     pyComputationError = PyErr_NewExceptionWithDoc((char*)"plask.ComputationError", (char*)u8"Computational error in some PLaSK solver.",
                                                             PyExc_ArithmeticError, NULL);

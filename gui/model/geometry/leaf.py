@@ -11,8 +11,10 @@
 # GNU General Public License for more details.
 
 
+from lxml import etree
+
 from .object import GNObject
-from ...utils.validators import can_be_int, can_be_float
+from ...utils.validators import can_be_int, can_be_float, can_be_double_float, can_be_list
 from ...utils.xml import xml_to_attr, attr_to_xml
 
 
@@ -403,5 +405,47 @@ class GNPrism(GNLeaf):
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNPrism()
+        result.load_xml_element(element, conf)
+        return result
+
+
+class GNPolygon(GNLeaf):
+
+    def __init__(self, parent=None):
+        super().__init__(parent=parent, dim=2)
+        self.vertices = ""
+
+    def tag_name(self, full_name=True):
+        return "polygon"
+
+    def python_type(self):
+        return 'geometry.Polygon'
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.leaf import GNPolygonController
+        return GNPolygonController(document, model, self)
+
+    def create_info(self, res, names):
+        super().create_info(res, names)
+        vertices = self.vertices.strip()
+        if not can_be_list(vertices, required=True, item_validator=lambda v: can_be_double_float(v, required=True)):
+            axes = self.get_axes_conf()
+            self._require(res, 'vertices', f"list of vertices coordinates ({axes[-2]} {axes[-1]}) separated by semicolons")
+
+    def make_xml_element(self, conf):
+        el = super().make_xml_element(conf)
+        el.text = self.vertices
+        return el
+
+    def _children_from_xml(self, ordered_reader, conf):
+        self.vertices = ordered_reader.parent_element.text
+        if self.vertices is None:
+            self.vertices = ""
+        self.vertices = self.vertices.strip()
+        ordered_reader.require_end()
+
+    @staticmethod
+    def from_xml_2d(element, conf):
+        result = GNPolygon()
         result.load_xml_element(element, conf)
         return result

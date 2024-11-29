@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -100,3 +100,45 @@ def can_be_bool(value, required=False):
         - value represents a valid boolean
     """
     return can_be_one_of(value, 'true', 'false', 'yes', 'no', '1', '0', required=required)
+
+
+def can_be_double_float(value, required=False):
+    """
+    Check if given value can represent a valid double float (two floats separated by a space).
+    :param str value: value to check, can be None
+    :param bool required: only if True, the function returns False if value is None or empty string
+    :return bool: True only if:
+        - value includes '{' or
+        - value is None or empty and required is False or
+        - value represents a valid double float
+    """
+    if value is None: return not required
+    value = value.strip()
+    if not value: return not required
+    if '{' in value:
+        return bool(FLOAT_RE.match(value))
+    parts = value.split()
+    if len(parts) != 2: return False
+    return FLOAT_RE.match(parts[0].strip()) and FLOAT_RE.match(parts[1].strip())
+
+
+def can_be_list(value, separator=';', required=False, item_validator=None):
+    """
+    Check if given value can represent a valid list of items.
+    :param str value: value to check, can be None
+    :param str separator: separator of items in the list
+    :param bool required: only if True, the function returns False if value is None or empty string
+    :param item_validator: optional validator of list items, callable which takes item and returns bool
+    :return bool: True only if:
+        - value includes '{' or
+        - value is None or empty and required is False or
+        - value represents a valid list of items and item_validator is None or returns True for all items in the list
+    """
+    if value is None: return not required
+    value = value.strip()
+    if not value: return not required
+    if '{' in value:
+        return bool(WITH_DEFINE_RE.match(value))
+    items = value.split(separator)
+    if not items: return False
+    return all(item_validator(item.strip()) if item_validator else True for item in items)

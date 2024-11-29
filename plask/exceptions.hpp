@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -268,117 +268,125 @@ public:
 //-------------- Connected with geometry: -----------------------
 
 /**
+ * Base class for all geometry exceptions thrown by plask library.
+ */
+struct PLASK_API GeometryException: public Exception {
+    template <typename... T>
+    GeometryException(const T&... args): Exception(args...) {}
+};
+
+/**
  * Exceptions of this class are thrown when solvers don't have geometry set
  */
-struct PLASK_API NoGeometryException: public Exception {
-    NoGeometryException(const std::string& where): Exception("{0}: No geometry specified", where) {}
+struct PLASK_API NoGeometryException: public GeometryException {
+    NoGeometryException(const std::string& where): GeometryException("{0}: No geometry specified", where) {}
 };
 
 /**
  * Exceptions of this class are thrown by some geometry object classes when there is no required child.
  */
-struct PLASK_API NoChildException: public Exception {
-    NoChildException(): Exception("Incomplete geometry tree") {}
+struct PLASK_API NoChildException: public GeometryException {
+    NoChildException(): GeometryException("Incomplete geometry tree") {}
 };
 
 /**
  * Exceptions of this class are thrown by some geometry object classes
  */
-struct PLASK_API NotUniqueObjectException: public Exception {
-    NotUniqueObjectException(): Exception("Unique object instance required") {}
-    NotUniqueObjectException(const std::string& msg): Exception(msg) {}
+struct PLASK_API NotUniqueObjectException: public GeometryException {
+    NotUniqueObjectException(): GeometryException("Unique object instance required") {}
+    NotUniqueObjectException(const std::string& msg): GeometryException(msg) {}
 
     template <typename... T>
-    NotUniqueObjectException(const std::string& msg, const T&... args): Exception(msg, args...) {}
+    NotUniqueObjectException(const std::string& msg, const T&... args): GeometryException(msg, args...) {}
 };
 
 /**
  * Exceptions of this class are thrown when called operation on geometry graph will cause cyclic reference.
  */
-struct PLASK_API CyclicReferenceException: public Exception {
-    CyclicReferenceException(): Exception("Detected cycle in geometry tree") {}
+struct PLASK_API CyclicReferenceException: public GeometryException {
+    CyclicReferenceException(): GeometryException("Detected cycle in geometry tree") {}
 };
 
 /**
  * This exception is thrown when geometry object (typically with given name) is not found.
  */
-struct PLASK_API NoSuchGeometryObjectType: public Exception {
+struct PLASK_API NoSuchGeometryObjectType: public GeometryException {
     //std::string materialName;
 
     /**
      * @param object_type_name name of object type which is not found
      */
     NoSuchGeometryObjectType(const std::string& object_type_name)
-        : Exception("No geometry object with given type name \"" + object_type_name + "\"")/*, materialName(material_name)*/ {}
+        : GeometryException("No geometry object with given type name \"" + object_type_name + "\"")/*, materialName(material_name)*/ {}
 };
 
 /**
  * Exceptions of this class are thrownby some geometry object classes when there is no required child.
  */
-struct PLASK_API NamesConflictException: public Exception {
+struct PLASK_API NamesConflictException: public GeometryException {
 
     /**
      * @param what type of object
      * @param object_name name of object which is already exists
      */
     NamesConflictException(const std::string& what, const std::string& object_name):
-        Exception(what + " with name \"" + object_name + "\" already exists") {}
+        GeometryException(what + " with name \"" + object_name + "\" already exists") {}
 };
 
 /**
  * This exception is thrown when geometry object (typically with given name) is not found.
  */
-struct PLASK_API NoSuchGeometryObject: public Exception {
+struct PLASK_API NoSuchGeometryObject: public GeometryException {
     //std::string materialName;
 
     /**
      * @param object_name name of object which is not found
      */
     NoSuchGeometryObject(const std::string& object_name)
-    : Exception("No geometry object with name \"" + object_name + "\"") {}
+    : GeometryException("No geometry object with name \"" + object_name + "\"") {}
 
     NoSuchGeometryObject()
-    : Exception("No geometry object found") {}
+    : GeometryException("No geometry object found") {}
 };
 
 /**
  * This exception is thrown when geometry (typically with given name) is not found.
  */
-struct PLASK_API NoSuchGeometry: public Exception {
+struct PLASK_API NoSuchGeometry: public GeometryException {
     /**
      * @param object_name name of object which is not found
      */
     NoSuchGeometry(const std::string& object_name)
-    : Exception("No geometry of required type with name \"" + object_name + "\"") {}
+    : GeometryException("No geometry of required type with name \"" + object_name + "\"") {}
 };
 
 /**
  * This exception is thrown when named PatHints are not found.
  */
-struct PLASK_API NoSuchPath: public Exception {
+struct PLASK_API NoSuchPath: public GeometryException {
     /**
      * @param object_name name of object which is not found
      */
     NoSuchPath(const std::string& object_name)
-    : Exception("No path with name \"" + object_name + "\"") {}
+    : GeometryException("No path with name \"" + object_name + "\"") {}
 };
 
 /**
  * This exception is thrown when geometry object has type different than expectation (for example is 3d but expected 2d).
  */
-struct PLASK_API UnexpectedGeometryObjectTypeException: public Exception {
-    UnexpectedGeometryObjectTypeException(): Exception("Geometry object has unexpected type") {}
+struct PLASK_API UnexpectedGeometryObjectTypeException: public GeometryException {
+    UnexpectedGeometryObjectTypeException(): GeometryException("Geometry object has unexpected type") {}
 };
 
 /**
  * This exception is thrown when axis (typically with given name) is not found.
  */
-struct PLASK_API NoSuchAxisNames: public Exception {
+struct PLASK_API NoSuchAxisNames: public GeometryException {
     //std::string materialName;
 
     /// @param axis_names name of axis which not exists
     NoSuchAxisNames(const std::string& axis_names)
-        : Exception("No such axis names \"{0}\"", axis_names) {}
+        : GeometryException("No such axis names \"{0}\"", axis_names) {}
 };
 
 

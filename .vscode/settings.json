@@ -79,5 +79,6 @@
     },
     "cmake.preferredGenerators": [
         "Ninja"
-    ]
+    ],
+    "editor.detectIndentation": false
 }

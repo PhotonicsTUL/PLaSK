@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -23,7 +23,7 @@ This file contains all plask geometry headers.
 @section geometry_about About
 Geometry in PLaSK is represented by a directed, acyclic graph, which has geometry objects in its vertices
 (see plask::GeometryObject and @ref GEOMETRY_OBJ). Very often this graph is a tree, in which each object has pointers to its children.
-PLaSK uses terminology inhrtited from the tree theory i.e. object C is a child of P only if there is arc from P to C,
+PLaSK uses terminology inheritted from the tree theory i.e. object C is a child of P only if there is arc from P to C,
 and then P is called the parent of C).
 
 Each vertex is represented by an object of class inherited from the plask::GeometryObject type.
@@ -100,7 +100,7 @@ assert block_5_3.getMaterial(6.0, 2.0) == None
 container = plask.geometry.TranslationContainer2D();
 container.append(block_5_3)
 container.append(block_5_3, plask.vec(3.0, 3.0))
-# now our graphs has 3 vertexes: 1 container and 2 (identical) blocks in it
+# now our graphs has 3 vertices: 1 container and 2 (identical) blocks in it
 # check some container properties:
 assert container.boundingBox == plask.geometry.Box2D(0.0, 0.0, 8.0, 6.0)
 assert container.getMaterial(6.0, 6.0) == exampleMaterial
@@ -119,7 +119,7 @@ assert(block_5_3->getMaterial(plask::vec(6.0, 2.0)) == nullptr);
 plask::shared_ptr<plask::TranslationContainer<2>> container(new plask::TranslationContainer<2>);
 container->add(block_5_3);
 container->add(block_5_3, plask::vec(3.0, 3.0));
-// now our graphs has 3 vertexes: 1 container and 2 (identical) blocks in it
+// now our graphs has 3 vertices: 1 container and 2 (identical) blocks in it
 // check some container properties:
 assert(container->getBoundingBox() == plask::(plask::vec(0.0, 0.0), plask::vec(8.0, 6.0)));
 assert(container->getMaterial(plask::vec(6.0, 6.0)) == exampleMaterial);
@@ -218,6 +218,7 @@ Good base classes for geometries objects are, for example:
 #include "circle.hpp"
 #include "cylinder.hpp"
 #include "prism.hpp"
+#include "polygon.hpp"
 
 #include "transform.hpp"
 #include "intersection.hpp"

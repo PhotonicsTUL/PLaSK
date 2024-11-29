@@ -241,9 +241,9 @@ class Containers(unittest.TestCase):
         path2 = stack.append(self.block1)
         self.assertEqual(stack.index(self.block1, path0), 0)
         self.assertEqual(stack.index(self.block1, path2), 2)
-        with self.assertRaises(ValueError):  # multiple instances
+        with self.assertRaises(plask.GeometryException):  # multiple instances
             stack.index(self.block1)
-        with self.assertRaises(ValueError):  # no instance
+        with self.assertRaises(plask.GeometryException):  # no instance
             stack.index(self.block2)
 
     def testStackZero(self):
@@ -251,9 +251,9 @@ class Containers(unittest.TestCase):
         stack.append(self.block1)
         stack.append(self.block1)
         path = stack.append(self.block1)
-        self.assertEqual(stack.bbox, geometry.Box2D(0, 0, 5, 9))
+        self.assertEqual(stack.bbox, plask.geometry.Box2D(0, 0, 5, 9))
         stack.set_zero_below(self.block1, path)
-        self.assertEqual(stack.bbox, geometry.Box2D(0, -6, 5, 3))
+        self.assertEqual(stack.bbox, plask.geometry.Box2D(0, -6, 5, 3))
 
     def testStackZeroInObject(self):
         stack2 = plask.geometry.Stack2D()
@@ -263,8 +263,8 @@ class Containers(unittest.TestCase):
         stack1 = plask.geometry.Stack2D()
         stack1.append(stack2)
         stack1.align_zero_on(stack2, -1)
-        self.assertEqual(stack2.bbox, geometry.Box2D(0, -3, 5, 3))
-        self.assertEqual(stack1.bbox, geometry.Box2D(0, -2, 5, 4))
+        self.assertEqual(stack2.bbox, plask.geometry.Box2D(0, -3, 5, 3))
+        self.assertEqual(stack1.bbox, plask.geometry.Box2D(0, -2, 5, 4))
 
     def testRoles(self):
         stack = plask.geometry.Stack2D()
@@ -287,10 +287,10 @@ class Edges(unittest.TestCase):
     def testSymmetricPeriodic(self):
         GaN = plask.material.GaN()
         AlN = plask.material.AlN()
-        shelf = geometry.Shelf2D()
-        shelf.append(geometry.Block2D(2., 2., GaN))
-        shelf.append(geometry.Block2D(3., 2., AlN))
-        space = geometry.Cartesian2D(shelf, left='mirror', right='periodic')
+        shelf = plask.geometry.Shelf2D()
+        shelf.append(plask.geometry.Block2D(2., 2., GaN))
+        shelf.append(plask.geometry.Block2D(3., 2., AlN))
+        space = plask.geometry.Cartesian2D(shelf, left='mirror', right='periodic')
         self.assertEqual(space.get_material(1., 1.), GaN)
         self.assertEqual(space.get_material(3., 1.), AlN)
         self.assertEqual(space.get_material(4., 1.), AlN)
@@ -360,6 +360,61 @@ class TubeTest(unittest.TestCase):
         tube = manager.geo['tube']
         self.assertTrue(tube.contains(3., 0., 1.))
         self.assertFalse(tube.contains(0., 1., 1.))
+
+
+class PolygonTest(unittest.TestCase):
+
+    # def testInvalid(self):
+    #     poly = plask.geometry.Polygon([(0,0), (2,1), (2,0), (0, 2)], 'GaAs')
+    #     with self.assertRaises(plask.GeometryException):
+    #         poly.validate()
+
+    def testPentagram(self):
+        poly = plask.geometry.Polygon([(0, 0), (2, 5), (4, 0), (-1, 3), (5, 3)], 'GaAs')
+        self.assertTrue(poly.contains(1, 1))
+        self.assertTrue(poly.contains(3, 2))
+        self.assertTrue(poly.contains(0, 2.5))
+        self.assertTrue(poly.contains(4, 2.5))
+        self.assertTrue(poly.contains(2, 2))
+        self.assertTrue(poly.contains(2, 3))
+        self.assertTrue(poly.contains(2, 4))
+        self.assertFalse(poly.contains(0, 2))
+        self.assertFalse(poly.contains(2, 1))
+
+    def testPointsAndModifications(self):
+        poly = plask.geometry.Polygon([(0, 0), (1, 1), (2, 1), (1, 0), (2, 0), (4, 2), (1, 2), (0, 1)], 'GaAs')
+        self.assertTrue(poly.contains(1.2, 0.1))
+        self.assertFalse(poly.contains(1.1, 0.2))
+        self.assertTrue(poly.contains(1.5, 1.5))
+
+        self.assertTrue(poly.contains(0.6, 1.5))
+        self.assertFalse(poly.contains(0.2, 1.5))
+        poly.vertices[-1] = (0, 2)
+        self.assertTrue(poly.contains(0.5, 1.5))
+        del poly.vertices[-1]
+        self.assertFalse(poly.contains(0.6, 1.5))
+
+    def testXpl(self):
+        manager = plask.Manager()
+        manager.load(
+            """
+            <plask>
+                <defines>
+                    <define name="x" value="1"/>
+                </defines>
+
+                <geometry>
+                    <cartesian2d name="test" axes="xy">
+                        <polygon name="poly" material="GaAs">0 0; {x} 0; {x} 1; 0 1</polygon>
+                    </cartesian2d>
+                </geometry>
+            </plask>
+            """
+        )
+        poly = manager.geo['poly']
+        self.assertEqual(len(poly.vertices), 4)
+        self.assertTrue(poly.contains(0.5, 0.5))
+        self.assertEqual(list(poly.vertices), [plask.vec(0, 0), plask.vec(1, 0), plask.vec(1, 1), plask.vec(0, 1)])
 
 
 if __name__ == '__main__':
