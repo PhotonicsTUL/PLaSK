@@ -339,7 +339,7 @@ class PolygonVertices {
 
     static PolygonVertices fromPolygon(shared_ptr<Polygon> polygon) { return PolygonVertices(polygon); }
 
-    size_t size() const { return polygon->getVertices().size(); }
+    size_t __len__() const { return polygon->getVertices().size(); }
 
     Vec<2, double> __getitem__(int i) const { return polygon->getVertices()[index(i)]; }
 
@@ -617,7 +617,7 @@ void register_geometry_leafs() {
 
         py::class_<PolygonVertices> vertices("Vertices", py::no_init);
         vertices  //
-            .def("__len__", &PolygonVertices::size)
+            .def("__len__", &PolygonVertices::__len__)
             .def("__getitem__", &PolygonVertices::__getitem__)
             .def("__setitem__", &PolygonVertices::__setitem__)
             .def("append", &PolygonVertices::append)

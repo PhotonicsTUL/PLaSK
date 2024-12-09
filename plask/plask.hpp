@@ -76,6 +76,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 
 #include "vector/tensor2.hpp"
 #include "vector/tensor3.hpp"
+#include "vector/lateral.hpp"
 
 #include "material/material.hpp"
 #include "material/db.hpp"

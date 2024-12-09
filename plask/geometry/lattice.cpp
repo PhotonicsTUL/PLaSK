@@ -12,6 +12,7 @@
  * GNU General Public License for more details.
  */
 #include "lattice.hpp"
+
 #include "../manager.hpp"
 #include "reader.hpp"
 
@@ -287,7 +288,7 @@ struct YEnds {
     }
 
     // void add(int x, int y) { add_d(2*x, y); }
-    void add(Vec<2, int> p) { add_d(2 * p.c0, p.c1); }
+    void add(LateralVec<int> p) { add_d(2 * p.c0, p.c1); }
 };
 
 /**
@@ -298,9 +299,9 @@ struct YEnds {
  * }
  */
 struct SegmentsIterator {
-    const std::vector<std::vector<Vec<2, int>>>& segments;
+    const std::vector<std::vector<LateralVec<int>>>& segments;
 
-    Vec<2, int> first, second;
+    LateralVec<int> first, second;
 
     std::size_t seg_nr;
     std::ptrdiff_t point_nr;
@@ -310,7 +311,7 @@ struct SegmentsIterator {
      * @param segments vector of closed polygons, each consist of number of successive verticles, one side is between
      * last and first vertex. These polygons are xored. Sides must not cross each other.
      */
-    SegmentsIterator(const std::vector<std::vector<Vec<2, int>>>& segments)
+    SegmentsIterator(const std::vector<std::vector<LateralVec<int>>>& segments)
         : segments(segments), seg_nr(0), point_nr(-1) {}
 
     /**
@@ -393,7 +394,7 @@ void Lattice::refillContainer() {
             result[segment.first.c1].insert(segment.first.c0);    // we immediately add all vertices
             result[segment.second.c1].insert(segment.second.c0);  // we immediately add all vertices
 
-            Vec<2, int> low_y, hi_y;
+            LateralVec<int> low_y, hi_y;
             if (segment.first.c1 > segment.second.c1) {
                 low_y = segment.second;
                 hi_y = segment.first;
@@ -477,11 +478,11 @@ void Lattice::writeXMLChildren(XMLWriter::Element& dest_xml_object,
     {  // write <segments>
         XMLElement segments_tag(dest_xml_object, LATTICE_XML_SEGMENTS_TAG_NAME);
         bool first = true;
-        for (const std::vector<Vec<2, int>>& s : segments) {
+        for (const std::vector<LateralVec<int>>& s : segments) {
             if (!first) segments_tag.writeText(" ^\n");
             first = false;
             bool first_point = true;
-            for (Vec<2, int> p : s) {
+            for (LateralVec<int> p : s) {
                 if (!first_point) {
                     segments_tag.writeText("; ");
                 }
@@ -494,7 +495,7 @@ void Lattice::writeXMLChildren(XMLWriter::Element& dest_xml_object,
     GeometryObjectTransform<3>::writeXML(dest_xml_object, write_cb, axes);
 }
 
-void Lattice::setSegments(std::vector<std::vector<Vec<2, int>>> new_segments) {
+void Lattice::setSegments(std::vector<std::vector<LateralVec<int>>> new_segments) {
     this->segments = std::move(new_segments);
     refillContainer();
 }

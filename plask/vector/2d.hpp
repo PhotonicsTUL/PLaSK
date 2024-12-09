@@ -275,7 +275,12 @@ PLASK_NO_WARNING_END
      * @param scale scalar
      * @return this vector divided by scalar
      */
-    constexpr Vec<2,T> operator/(const T scale) const { return Vec<2,T>(c0 / scale, c1 / scale); }
+    template <typename OtherT>
+    constexpr auto operator/(const OtherT scale) const -> Vec<2,decltype(c0/scale)> {
+PLASK_NO_CONVERSION_WARNING_BEGIN
+        return Vec<2,decltype(c0*scale)>(c0 / scale, c1 / scale);
+PLASK_NO_WARNING_END
+    }
 
     /**
      * Divide coordinates of this vector by @p scalar.
@@ -469,7 +474,6 @@ inline bool is_zero(const Vec<2,T>& v) {
 
 PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(Vec<2, double>)
 PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(Vec<2, std::complex<double> >)
-PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(Vec<2, int>)
 
 } //namespace plask
 

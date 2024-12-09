@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -17,6 +17,7 @@
 #include <cmath>
 
 #include "../log/log.hpp"
+#include "../vector/lateral.hpp"
 #include "transform.hpp"
 
 #include "translation_container.hpp"  // used by lattiece
@@ -170,7 +171,7 @@ struct PLASK_API Lattice : public GeometryObjectTransform<3> {
      * Vector of closed polygons, each consist of number of successive verticles, one side is between last and first
      * vertex. These polygons are xored. Sides must not cross each other.
      */
-    std::vector<std::vector<Vec<2, int>>> segments;  // TODO checking somewhere if sides do not cross each other
+    std::vector<std::vector<LateralVec<int>>> segments;
 
     std::string getTypeName() const override { return NAME; }
 
@@ -268,7 +269,7 @@ struct PLASK_API Lattice : public GeometryObjectTransform<3> {
     // probably unused
     Box fromChildCoords(const typename ChildType::Box& child_bbox) const override { return child_bbox; }
 
-    void setSegments(std::vector<std::vector<Vec<2, int>>> new_segments);
+    void setSegments(std::vector<std::vector<LateralVec<int>>> new_segments);
 
     // protected:
 

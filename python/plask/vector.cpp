@@ -16,140 +16,155 @@
 #define PY_ARRAY_UNIQUE_SYMBOL PLASK_ARRAY_API
 #define NO_IMPORT_ARRAY
 
-#include "plask/vec.hpp"
-#include "plask/exceptions.hpp"
 #include <plask/config.hpp>
+#include "plask/exceptions.hpp"
+#include "plask/vec.hpp"
+#include "plask/vector/lateral.hpp"
 
 #include "python_globals.hpp"
 #include "python_numpy.hpp"
 #include "python_util/raw_constructor.hpp"
 
-#include <boost/python/stl_iterator.hpp>
 #include <boost/concept_check.hpp>
+#include <boost/python/stl_iterator.hpp>
 
 namespace plask { namespace python {
 
-
 namespace detail {
-    template <int dim, typename T> struct MakeVecFromNumpyImpl;
+template <typename V> struct MakeVecFromNumpyImpl;
 
-    template <int dim> struct MakeVecFromNumpyImpl<dim,double> {
-        static inline void call(void* storage, PyObject* obj) {
-            if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_LONG) {
-                new(storage) Vec<dim,double>(Vec<dim,double>::fromIterator(static_cast<long*>(PyArray_DATA((PyArrayObject*)obj))));
-            } else if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_DOUBLE)
-                new(storage) Vec<dim,double>(Vec<dim,double>::fromIterator(static_cast<double*>(PyArray_DATA((PyArrayObject*)obj))));
-            else
-                throw py::error_already_set();
-        }
-    };
+template <> struct MakeVecFromNumpyImpl<LateralVec<int>> {
+    static inline void call(void* storage, PyObject* obj) {
+        if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_INT)
+            new (storage) LateralVec<int>(LateralVec<int>::fromIterator(static_cast<int*>(PyArray_DATA((PyArrayObject*)obj))));
+        else
+            throw py::error_already_set();
+    }
+};
 
-    template <int dim> struct MakeVecFromNumpyImpl<dim,dcomplex> {
-        static inline void call(void* storage, PyObject* obj) {
-            if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_LONG) {
-                Vec<dim,dcomplex> *vec = new(storage) Vec<dim,dcomplex>; for (int i = 0; i < dim; ++i) (*vec)[i] = double( *(static_cast<long*>(PyArray_DATA((PyArrayObject*)obj)) + i) );
-            } else if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_DOUBLE)
-                new(storage) Vec<dim,dcomplex>(Vec<dim,dcomplex>::fromIterator(static_cast<double*>(PyArray_DATA((PyArrayObject*)obj))));
-            else if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_CDOUBLE)
-                new(storage) Vec<dim,dcomplex>(Vec<dim,dcomplex>::fromIterator(static_cast<dcomplex*>(PyArray_DATA((PyArrayObject*)obj))));
-            else
-                throw py::error_already_set();
-        }
-    };
+template <> struct MakeVecFromNumpyImpl<LateralVec<double>> {
+    static inline void call(void* storage, PyObject* obj) {
+        if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_LONG) {
+            new (storage)
+                LateralVec<double>(LateralVec<double>::fromIterator(static_cast<long*>(PyArray_DATA((PyArrayObject*)obj))));
+        } else if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_DOUBLE)
+            new (storage)
+                LateralVec<double>(LateralVec<double>::fromIterator(static_cast<double*>(PyArray_DATA((PyArrayObject*)obj))));
+        else
+            throw py::error_already_set();
+    }
+};
 
-    template <int dim, typename T>
-    struct Vec_from_Sequence {
-        Vec_from_Sequence() {
-            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<Vec<dim,T>>());
-        }
+template <int dim> struct MakeVecFromNumpyImpl<Vec<dim,double>> {
+    static inline void call(void* storage, PyObject* obj) {
+        if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_LONG) {
+            new (storage) Vec<dim,double>(Vec<dim,double>::fromIterator(static_cast<long*>(PyArray_DATA((PyArrayObject*)obj))));
+        } else if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_DOUBLE)
+            new (storage) Vec<dim,double>(Vec<dim,double>::fromIterator(static_cast<double*>(PyArray_DATA((PyArrayObject*)obj))));
+        else
+            throw py::error_already_set();
+    }
+};
 
-        // Determine if obj can be converted into an Aligner
-        static void* convertible(PyObject* obj) {
-            if (!PyList_Check(obj) && !PyTuple_Check(obj) && !PyArray_Check(obj)) return NULL;
-            return obj;
-        }
+template <int dim> struct MakeVecFromNumpyImpl<Vec<dim, dcomplex>> {
+    static inline void call(void* storage, PyObject* obj) {
+        if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_LONG) {
+            Vec<dim, dcomplex>* vec = new (storage) Vec<dim, dcomplex>;
+            for (int i = 0; i < dim; ++i) (*vec)[i] = double(*(static_cast<long*>(PyArray_DATA((PyArrayObject*)obj)) + i));
+        } else if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_DOUBLE)
+            new (storage)
+                Vec<dim, dcomplex>(Vec<dim, dcomplex>::fromIterator(static_cast<double*>(PyArray_DATA((PyArrayObject*)obj))));
+        else if (PyArray_DESCR((PyArrayObject*)obj)->type_num == NPY_CDOUBLE)
+            new (storage)
+                Vec<dim, dcomplex>(Vec<dim, dcomplex>::fromIterator(static_cast<dcomplex*>(PyArray_DATA((PyArrayObject*)obj))));
+        else
+            throw py::error_already_set();
+    }
+};
 
-        static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
-            void* storage = ((boost::python::converter::rvalue_from_python_storage<Vec<dim,T>>*)data)->storage.bytes;
-            try {
-                if (PyArray_Check(obj)) {
-                    if (PyArray_NDIM((PyArrayObject*)obj) != 1 || PyArray_DIMS((PyArrayObject*)obj)[0] != dim) throw py::error_already_set();
-                    MakeVecFromNumpyImpl<dim,T>::call(storage, obj);
-                } else {
-                    auto seq = py::object(py::handle<>(py::borrowed(obj)));
-                    if (py::len(seq) != dim || (PyArray_Check(obj) && PyArray_NDIM((PyArrayObject*)obj) != 1)) throw py::error_already_set();
-                    py::stl_input_iterator<T> begin(seq);
-                    new(storage) Vec<dim,T>(Vec<dim,T>::fromIterator(begin));
-                }
-                data->convertible = storage;
-            } catch (py::error_already_set&) {
-                throw TypeError("must provide either plask.vector or a sequence of length {0} of proper dtype", dim);
+template <int dim, typename T, typename V = Vec<dim, T>> struct Vec_from_Sequence {
+    Vec_from_Sequence() { boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<V>()); }
+
+    // Determine if obj can be converted into an Aligner
+    static void* convertible(PyObject* obj) {
+        if (!PyList_Check(obj) && !PyTuple_Check(obj) && !PyArray_Check(obj)) return NULL;
+        return obj;
+    }
+
+    static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+        void* storage = ((boost::python::converter::rvalue_from_python_storage<V>*)data)->storage.bytes;
+        try {
+            if (PyArray_Check(obj)) {
+                if (PyArray_NDIM((PyArrayObject*)obj) != 1 || PyArray_DIMS((PyArrayObject*)obj)[0] != dim)
+                    throw py::error_already_set();
+                MakeVecFromNumpyImpl<V>::call(storage, obj);
+            } else {
+                auto seq = py::object(py::handle<>(py::borrowed(obj)));
+                if (py::len(seq) != dim || (PyArray_Check(obj) && PyArray_NDIM((PyArrayObject*)obj) != 1))
+                    throw py::error_already_set();
+                py::stl_input_iterator<T> begin(seq);
+                new (storage) V(V::fromIterator(begin));
             }
+            data->convertible = storage;
+        } catch (py::error_already_set&) {
+            throw TypeError("must provide either plask.vector or a sequence of length {0} of proper dtype", dim);
         }
-    };
+    }
+};
 
-    /*template <typename T>
-    struct Vec1_to_Python {
-        static PyObject* convert(Vec<1,T> const& v) {
-            return boost::python::incref(boost::python::object(T(v)).ptr());
-        }
-    };*/
+/*template <typename T>
+struct Vec1_to_Python {
+    static PyObject* convert(Vec<1,T> const& v) {
+        return boost::python::incref(boost::python::object(T(v)).ptr());
+    }
+};*/
 
-}
-
+}  // namespace detail
 
 // v = vector[i]
-template <int dim, typename T>
-static T vec__getitem__(Vec<dim,T>& self, int i) {
+template <int dim, typename T, typename V = Vec<dim, T>> static T vec__getitem__(V& self, int i) {
     if (i < 0) i = dim + i;
     if (i >= dim || i < 0) throw IndexError("vector index out of range");
     return self[i];
 }
 
-// vector[i] = v
-template <int dim, typename T>
-static void vec__setitem__(Vec<dim,T>& self, int i, T v) {
-    if (i < 0) i = dim + i;
-    if (i >= dim || i < 0) throw IndexError("vector index out of range");
-    self[i] = v;
-}
+// // vector[i] = v
+// template <int dim, typename T>
+// static void vec__setitem__(Vec<dim,T>& self, int i, T v) {
+//     if (i < 0) i = dim + i;
+//     if (i >= dim || i < 0) throw IndexError("vector index out of range");
+//     self[i] = v;
+// }
 
 // len(v)
-template <int dim>
-static int vec__len__(const py::object&) { return dim; }
+template <int dim> static int vec__len__(const py::object&) { return dim; }
 
 // __str__(v)
-template <int dim, typename T>
-std::string vec__str__(const Vec<dim,T>& to_print) {
+template <int dim, typename T, typename V = Vec<dim, T>> std::string vec__str__(const V& to_print) {
     std::stringstream out;
     out << "[";
-    for (int i = 0; i < dim; ++i) out << pyformat(to_print[i]) << (i!=dim-1 ? ", " : "]");
+    for (int i = 0; i < dim; ++i) out << pyformat(to_print[i]) << (i != dim - 1 ? ", " : "]");
     return out.str();
 }
 
 // __repr__(v)
-template <int dim, typename T>
-std::string vec__repr__(const Vec<dim,T>& to_print) {
+template <int dim, typename T, typename V = Vec<dim, T>> std::string vec__repr__(const V& to_print) {
     std::stringstream out;
     out << "plask.vec(";
-    for (int i = 0; i < dim; ++i) out << pyformat(to_print[i]) << (i!=dim-1 ? ", " : ")");
+    for (int i = 0; i < dim; ++i) out << pyformat(to_print[i]) << (i != dim - 1 ? ", " : ")");
     return out.str();
 }
 
 // v.__iter__
-template <int dim, typename T>
-struct Vec_iterator
-{
-    Vec<dim,T>* vec;
+template <int dim, typename T, typename V = Vec<dim, T>> struct Vec_iterator {
+    V* vec;
     int i;
 
-    static Vec_iterator<dim, T> new_iterator(Vec<dim,T>& v) {
-        return Vec_iterator<dim, T>(v);
-    }
+    static Vec_iterator<dim, T, V> new_iterator(V& v) { return Vec_iterator<dim, T, V>(v); }
 
-    Vec_iterator(Vec<dim,T>& v) : vec(&v), i(0) {}
+    Vec_iterator(V& v) : vec(&v), i(0) {}
 
-    Vec_iterator<dim, T>* __iter__() { return this; }
+    Vec_iterator<dim, T, V>* __iter__() { return this; }
 
     T next() {
         if (i >= dim) {
@@ -160,20 +175,14 @@ struct Vec_iterator
     }
 };
 
-// copy v
-template <int dim, typename T>
-static Vec<dim,T> copy_vec(const Vec<dim,T>& v) {
-    return v;
-}
-
 // dtype
-template <int dim, typename T> inline static py::handle<> vec_dtype() { return detail::dtype<T>(); }
-
+template <typename T> inline static py::handle<> vec_dtype() { return detail::dtype<T>(); }
 
 // vector.__array__
-template <int dim, typename T>  py::object vec__array__(py::object self, py::object dtype, py::object copy) {
-    Vec<dim,T>* vec = py::extract<Vec<dim,T>*>(self);
-    npy_intp dims[] = { dim };
+template <int dim, typename T, typename V = Vec<dim, T>>
+py::object vec__array__(py::object self, py::object dtype, py::object copy) {
+    V* vec = py::extract<V*>(self);
+    npy_intp dims[] = {dim};
     PyObject* arr = PyArray_SimpleNewFromData(1, dims, detail::typenum<T>(), (void*)vec->begin());
     if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from vector");
     confirm_array<T>(arr, self, dtype, copy);
@@ -181,72 +190,81 @@ template <int dim, typename T>  py::object vec__array__(py::object self, py::obj
 }
 
 // vector_list.__array__
-template <int dim, typename T>  py::object vec_list__array__(py::object self, py::object dtype, py::object copy) {
-    std::vector<Vec<dim,T>>* list = py::extract<std::vector<Vec<dim,T>>*>(self);
-    npy_intp dims[] = { (npy_int)list->size(), dim };
+template <int dim, typename T, typename V = Vec<dim, T>>
+py::object vec_list__array__(py::object self, py::object dtype, py::object copy) {
+    std::vector<V>* list = py::extract<std::vector<V>*>(self);
+    npy_intp dims[] = {(npy_int)list->size(), dim};
     PyObject* arr = PyArray_SimpleNewFromData(2, dims, detail::typenum<T>(), (void*)((*list)[0].begin()));
     if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from vector list");
     confirm_array<T>(arr, self, dtype, copy);
     return py::object(py::handle<>(arr));
 }
 
-
 // Access components by name
-template <int dim>
-inline static int vec_attr_indx(const std::string& attr) {
+template <int dim> inline static int vec_attr_indx(const std::string& attr) {
     int i = int(current_axes[attr]) - 3 + dim;
     if (i < 0 || i >= dim) {
-        if (attr == "x" || attr == "y" || attr == "z" || attr == "r" || attr == "phi" ||
-            attr == "lon" || attr == "tran" || attr == "up")
-            throw AttributeError(u8"vector attribute '{}' has no sense for {:d}D vector if config.axes = '{}'", attr, dim, current_axes.str());
+        if (attr == "x" || attr == "y" || attr == "z" || attr == "r" || attr == "phi" || attr == "lon" || attr == "tran" ||
+            attr == "up")
+            throw AttributeError(u8"vector attribute '{}' has no sense for {:d}D vector if config.axes = '{}'", attr, dim,
+                                 current_axes.str());
         else
             throw AttributeError(u8"'vec' object has no attribute '{}'", attr);
     }
     return i;
 }
 
-template <int dim, typename T>
-struct VecAttr {
+template <int dim, typename T> struct VecAttr {
     typedef Vec<dim, T> V;
     static T get(const V& self, const std::string& attr) { return self[vec_attr_indx<dim>(attr)]; }
-//     static void set(V& self, const std::string& attr, T val) { self[vec_attr_indx<dim>(attr)] = val; }
-    static void set(V& /*self*/, const std::string& attr, T /*val*/) { throw TypeError("vector attribute '{}' cannot be changed", attr); }
+    //     static void set(V& self, const std::string& attr, T val) { self[vec_attr_indx<dim>(attr)] = val; }
+    static void set(V& /*self*/, const std::string& attr, T /*val*/) {
+        throw TypeError("vector attribute '{}' cannot be changed", attr);
+    }
 };
 
-template <int dim, typename T>
-static Vec<dim,T> vector__div__float(const Vec<dim,T>& self, double f) { return self/f; }
+template <typename T> struct LateralVecAttr {
+    typedef LateralVec<T> V;
+    static T get(const V& self, const std::string& attr) {
+        int i = vec_attr_indx<3>(attr);
+        if (i == 2) throw AttributeError(u8"vector attribute '{}' has no sense for 2D lateral vector", attr);
+        return self[i];
+    }
+    static void set(V& /*self*/, const std::string& attr, T /*val*/) {
+        throw TypeError("vector attribute '{}' cannot be changed", attr);
+    }
+};
 
-template <int dim, typename T>
-static Vec<dim,dcomplex> vector__div__complex(const Vec<dim,T>& self, dcomplex f) { return self * (1./f); }
+template <typename V> static V vector__div__float(const V& self, double f) { return self / f; }
 
+template <int dim, typename T> static Vec<dim, dcomplex> vector__div__complex(const Vec<dim, T>& self, dcomplex f) {
+    return self * (1. / f);
+}
 
 // Register vector class to python
-template <int dim, typename T>
-inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vector")
-{
-    typedef Vec<dim,T> V;
-    typedef Vec<dim,double> VR;
-    typedef Vec<dim,dcomplex> VC;
+template <int dim, typename T> inline static py::class_<Vec<dim, T>> register_vector_class(std::string name = "vector") {
+    typedef Vec<dim, T> V;
+    typedef Vec<dim, double> VR;
+    typedef Vec<dim, dcomplex> VC;
 
-    T (*dr)(const V&, const VR&) = &dot<T,double>;
-    dcomplex (*dc)(const V&, const VC&) = &dot<T,dcomplex>;
+    T (*dr)(const V&, const VR&) = &dot<T, double>;
+    dcomplex (*dc)(const V&, const VC&) = &dot<T, dcomplex>;
 
     V (*c)(const V&) = &plask::conj<T>;
 
     py::class_<V> vec_class = py::class_<V>(name.c_str(),
-        "PLaSK vector.\n\n"
-        "See Also:\n"
-        "    vec: create a new vector.\n"
-        , py::no_init);
-    vec_class
-        .def("__getattr__", &VecAttr<dim,T>::get)
-        .def("__setattr__", &VecAttr<dim,T>::set)
-        .def("__getitem__", &vec__getitem__<dim,T>)
+                                            "PLaSK vector.\n\n"
+                                            "See Also:\n"
+                                            "    vec: create a new vector.\n",
+                                            py::no_init);
+    vec_class.def("__getattr__", &VecAttr<dim, T>::get)
+        .def("__setattr__", &VecAttr<dim, T>::set)
+        .def("__getitem__", &vec__getitem__<dim, T>)
         // .def("__setitem__", &vec__setitem__<dim,T>)
-        .def("__iter__", &Vec_iterator<dim,T>::new_iterator, py::with_custodian_and_ward_postcall<0,1>())
+        .def("__iter__", &Vec_iterator<dim, T>::new_iterator, py::with_custodian_and_ward_postcall<0, 1>())
         .def("__len__", &vec__len__<dim>)
-        .def("__str__", &vec__str__<dim,T>)
-        .def("__repr__", &vec__repr__<dim,T>)
+        .def("__str__", &vec__str__<dim, T>)
+        .def("__repr__", &vec__repr__<dim, T>)
         .def(py::self == py::other<VC>())
         .def(py::self == py::other<VR>())
         .def(py::self != py::other<VC>())
@@ -255,65 +273,99 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
         .def(py::self + py::other<VR>())
         .def(py::self - py::other<VC>())
         .def(py::self - py::other<VR>())
-        .def( - py::self)
+        .def(-py::self)
         .def(py::self * dcomplex())
         .def(py::self * double())
         .def(dcomplex() * py::self)
         .def(double() * py::self)
-        .def(py::self += py::other<V>())
-        .def(py::self -= py::other<V>())
-        .def(py::self *= T())
-        .def("__div__", &vector__div__float<dim,T>)
-        .def("__truediv__", &vector__div__float<dim,T>)
-        .def("__div__", &vector__div__complex<dim,T>)
-        .def("__truediv__", &vector__div__complex<dim,T>)
+        // .def(py::self += py::other<V>())
+        // .def(py::self -= py::other<V>())
+        // .def(py::self *= T())
+        .def("__div__", &vector__div__float<V>)
+        .def("__truediv__", &vector__div__float<V>)
+        .def("__div__", &vector__div__complex<dim, T>)
+        .def("__truediv__", &vector__div__complex<dim, T>)
         .def("__mul__", dc)
         .def("__mul__", dr)
         .def("dot", dc, py::arg("other"))
         .def("dot", dr, py::arg("other"),
              u8"Dot product with another vector. It is equal to `self` * `other`, so the\n"
              u8"`self` vector is conjugated.\n")
-        .def("conjugate", c,
-             u8"Conjugate of the vector. Alias for :meth:`conj`.\n")
+        .def("conjugate", c, u8"Conjugate of the vector. Alias for :meth:`conj`.\n")
         .def("conj", c,
              u8"Conjugate of the vector. It can be called for real vectors, but then it\n"
              u8"simply returns `self`\n")
-        .def("abs2", (double (*)(const Vec<dim,T>&))&abs2<dim,T>,
+        .def("abs2", (double (*)(const Vec<dim, T>&)) & abs2<dim, T>,
              u8"Squared magnitude of the vector. It is always a real number equal to\n"
              u8"``v * v``.\n")
-        .def("abs", (double (*)(const Vec<dim,T>&))&abs<dim,T>,
-             u8"Magnitude of the vector. It is always a real number.\n")
-        .def("__abs__", (double (*)(const Vec<dim,T>&))&abs<dim,T>)
-        .def("copy", &copy_vec<dim,T>,
-             u8"Copy of the vector. Normally vectors behave like Python containers, and\n"
-             u8"assignment operation makes shallow copy only. Use this method if you want\n"
-             u8"to modify the copy without changing the source.\n")
-        .add_static_property("dtype", &vec_dtype<dim,T>,
-             u8"Type od the vector components. This is always either ``float`` or ``complex``.\n")
-        .def("__array__", &vec__array__<dim,T>, (py::arg("dtype")=py::object(), py::arg("copy")=py::object()))
-    ;
+        .def("abs", (double (*)(const Vec<dim, T>&)) & abs<dim, T>, u8"Magnitude of the vector. It is always a real number.\n")
+        .def("__abs__", (double (*)(const Vec<dim, T>&)) & abs<dim, T>)
+        .add_static_property("dtype", &vec_dtype<T>,
+                             u8"Type od the vector components. This is always either ``float`` or ``complex``.\n")
+        .def("__array__", &vec__array__<dim, T>, (py::arg("dtype") = py::object(), py::arg("copy") = py::object()));
     vec_class.attr("__module__") = "plask";
 
-    detail::Vec_from_Sequence<dim,T>();
+    detail::Vec_from_Sequence<dim, T>();
 
-    register_vector_of<Vec<dim,T>>(name)
-        .def("__array__", &vec_list__array__<dim,T>, (py::arg("dtype")=py::object(), py::arg("copy")=py::object()))
-    ;
+    register_vector_of<Vec<dim, T>>(name).def("__array__", &vec_list__array__<dim, T>,
+                                              (py::arg("dtype") = py::object(), py::arg("copy") = py::object()));
 
     py::scope vec_scope = vec_class;
 
-    py::class_<Vec_iterator<dim,T>>("_Iterator", py::no_init)
-        .def("__iter__", &Vec_iterator<dim,T>::__iter__, py::return_self<>())
-        .def("__next__", &Vec_iterator<dim,T>::next)
-    ;
+    py::class_<Vec_iterator<dim, T>>("_Iterator", py::no_init)
+        .def("__iter__", &Vec_iterator<dim, T>::__iter__, py::return_self<>())
+        .def("__next__", &Vec_iterator<dim, T>::next);
 
     return vec_class;
 }
 
+// Register vector class to python
+template <typename T> inline static py::class_<LateralVec<T>> register_lateral_vector_class(std::string name = "vector") {
+    typedef LateralVec<T> V;
+
+    typedef T (*dot_t)(const LateralVec<T>& v1, const LateralVec<T>& v2);
+    dot_t dot = &plask::dot<T, T>;
+
+    py::class_<V> vec_class = py::class_<V>(name.c_str(), "PLaSK lateral vector.\n", py::no_init);
+    vec_class.def("__getattr__", &LateralVecAttr<T>::get)
+        .def("__setattr__", &LateralVecAttr<T>::set)
+        .def("__getitem__", &vec__getitem__<2, T, LateralVec<T>>)
+        // .def("__setitem__", &vec__setitem__<dim,T>)
+        .def("__iter__", &Vec_iterator<2, T, LateralVec<T>>::new_iterator, py::with_custodian_and_ward_postcall<0, 1>())
+        .def("__len__", &vec__len__<2>)
+        .def("__str__", &vec__str__<2, T, LateralVec<T>>)
+        .def("__repr__", &vec__repr__<2, T, LateralVec<T>>)
+        .def(py::self == py::other<V>())
+        .def(py::self != py::other<V>())
+        .def(py::self + py::other<V>())
+        .def(py::self - py::other<V>())
+        .def(-py::self)
+        .def(py::self * T())
+        .def(T() * py::self)
+        .def("__div__", &vector__div__float<V>)
+        .def("__truediv__", &vector__div__float<V>)
+        .def("__mul__", dot)
+        .def("dot", dot, py::arg("other"), u8"Dot product with another vector. It is equal to `self` * `other`.\n")
+        .add_static_property("dtype", &vec_dtype<T>, u8"Type od the vector components.\n")
+        .def("__array__", &vec__array__<2, T, V>, (py::arg("dtype") = py::object(), py::arg("copy") = py::object()));
+    vec_class.attr("__module__") = "plask";
+
+    detail::Vec_from_Sequence<2, T, V>();
+
+    register_vector_of<LateralVec<T>>(name).def("__array__", &vec_list__array__<2, T, V>,
+                                                (py::arg("dtype") = py::object(), py::arg("copy") = py::object()));
+
+    py::scope vec_scope = vec_class;
+
+    py::class_<Vec_iterator<2, T, V>>("_Iterator", py::no_init)
+        .def("__iter__", &Vec_iterator<2, T, V>::__iter__, py::return_self<>())
+        .def("__next__", &Vec_iterator<2, T, V>::next);
+
+    return vec_class;
+}
 
 // Python constructor
-static py::object new_vector(py::tuple args, py::dict kwargs)
-{
+static py::object new_vector(py::tuple args, py::dict kwargs) {
     auto n = py::len(args), nk = py::len(kwargs);
 
     py::list params;
@@ -326,15 +378,17 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
         py::object dtype;
         dtype = kwargs["dtype"];
         if (!dtype.is_none()) {
-            if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyFloat_Type)) force_double = true;
-            else if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyComplex_Type)) force_complex = true;
+            if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyFloat_Type))
+                force_double = true;
+            else if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyComplex_Type))
+                force_complex = true;
             else {
                 throw TypeError(u8"wrong dtype (can be only float or complex)");
             }
         }
     }
 
-    if (n == 0) { // Extract components from kwargs
+    if (n == 0) {  // Extract components from kwargs
 
         n = nk;
         py::object comp[3];
@@ -344,15 +398,15 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
             if (*key == "dtype") continue;
             py::object val = kwargs[*key];
             try {
-                if (n == 2) comp[vec_attr_indx<2>(*key)] = val;
-                else if (n == 3) comp[vec_attr_indx<3>(*key)] = val;
+                if (n == 2)
+                    comp[vec_attr_indx<2>(*key)] = val;
+                else if (n == 3)
+                    comp[vec_attr_indx<3>(*key)] = val;
             } catch (AttributeError&) {
                 throw TypeError(u8"wrong component name for {:d}D vector if config.axes = '{}'", n, current_axes.str());
             }
-
         }
-        for (int i = 0; i < n; i++)
-            params.append(comp[i]);
+        for (int i = 0; i < n; i++) params.append(comp[i]);
 
     } else if (nk > 0) {
         throw TypeError(u8"components must be provided entirely in a list or by names");
@@ -367,20 +421,30 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
     // Now detect the dtype
     py::object result;
     try {
-        if (force_complex) { PyErr_SetNone(PyExc_TypeError); throw py::error_already_set(); }
-        if (n == 2) return py::object(Vec<2,double>(py::extract<double>(params[0]), py::extract<double>(params[1])));
-        return py::object(Vec<3,double>(py::extract<double>(params[0]), py::extract<double>(params[1]), py::extract<double>(params[2])));
-    } catch (py::error_already_set&) { PyErr_Clear(); try {
-        if (force_double) { PyErr_SetNone(PyExc_TypeError); throw py::error_already_set(); }
-        if (n == 2) return py::object(Vec<2,dcomplex>(py::extract<dcomplex>(params[0]), py::extract<dcomplex>(params[1])));
-        return py::object(Vec<3,dcomplex>(py::extract<dcomplex>(params[0]), py::extract<dcomplex>(params[1]), py::extract<dcomplex>(params[2])));
+        if (force_complex) {
+            PyErr_SetNone(PyExc_TypeError);
+            throw py::error_already_set();
+        }
+        if (n == 2) return py::object(Vec<2, double>(py::extract<double>(params[0]), py::extract<double>(params[1])));
+        return py::object(
+            Vec<3, double>(py::extract<double>(params[0]), py::extract<double>(params[1]), py::extract<double>(params[2])));
     } catch (py::error_already_set&) {
-        throw TypeError(u8"wrong vector argument types");
-    }}
+        PyErr_Clear();
+        try {
+            if (force_double) {
+                PyErr_SetNone(PyExc_TypeError);
+                throw py::error_already_set();
+            }
+            if (n == 2) return py::object(Vec<2, dcomplex>(py::extract<dcomplex>(params[0]), py::extract<dcomplex>(params[1])));
+            return py::object(Vec<3, dcomplex>(py::extract<dcomplex>(params[0]), py::extract<dcomplex>(params[1]),
+                                               py::extract<dcomplex>(params[2])));
+        } catch (py::error_already_set&) {
+            throw TypeError(u8"wrong vector argument types");
+        }
+    }
 
     return py::object();
 }
-
 
 // Python doc
 const static char* __doc__ =
@@ -476,20 +540,21 @@ const static char* __doc__ =
     "    >>> v3.conj()\n"
     "    plask.vec(0, 1-2j)\n"
     "    >>> v3.abs2()\n"
-    "    5.0\n\n"
-    ;
+    "    5.0\n\n";
 
-void register_vectors()
-{
-    //py::to_python_converter<Vec<1,double>, detail::Vec1_to_Python<double>>();
+void register_vectors() {
+    // py::to_python_converter<Vec<1,double>, detail::Vec1_to_Python<double>>();
 
-    register_vector_class<2,double>("vec");
-    register_vector_class<2,dcomplex>("vec");
-    register_vector_class<3,double>("vec");
-    register_vector_class<3,dcomplex>("vec");
+    register_vector_class<2, double>("vec");
+    register_vector_class<2, dcomplex>("vec");
+    register_vector_class<3, double>("vec");
+    register_vector_class<3, dcomplex>("vec");
+
+    register_lateral_vector_class<double>("vec");
+    register_lateral_vector_class<int>("vec");
 
     py::def("vec", py::raw_function(&new_vector));
     py::scope().attr("vec").attr("__doc__") = __doc__;
 }
 
-}} // namespace plask::python
+}}  // namespace plask::python

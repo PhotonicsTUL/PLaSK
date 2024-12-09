@@ -100,6 +100,12 @@ struct PLASK_API Polygon : public GeometryObjectLeaf<2> {
     const std::vector<Vec<2>>& getVertices() const { return vertices; }
 
     /**
+     * Get the polygon vertices.
+     * \return vector of polygon vertices
+     */
+    std::vector<Vec<2>>& getVertices() { return vertices; }
+
+    /**
      * Set the polygon vertices.
      * \return vector of polygon vertices
      */

@@ -417,6 +417,25 @@ class PolygonTest(unittest.TestCase):
         self.assertEqual(list(poly.vertices), [plask.vec(0, 0), plask.vec(1, 0), plask.vec(1, 1), plask.vec(0, 1)])
 
 
+class LatticeTest(unittest.TestCase):
+
+    def setUp(self):
+        item = plask.geometry.Cylinder(0.2, 1.0, 'GaAs')
+        self.lattice = plask.geometry.Lattice(item, (1, 0, 0), (0, 1, 0))
+        self.lattice.segments = [[(0, 0), (0, 5), (5, 5), (5, 0)], \
+                                 [(1, 1), (1, 4), (4, 4), (4, 1)], \
+                                 [(2, 2), (2, 3), (3, 3), (3, 2)]]
+        return super().setUp()
+
+    def testDeletion(self):
+        s1 = self.lattice.segments[1]
+        s2 = self.lattice.segments[2]
+        del self.lattice.segments[1]
+        self.assertEqual(str(s2), "[[2, 2], [3, 2], [3, 3], [2, 3]]")
+        with self.assertRaises(IndexError):
+            print(s1)
+
+
 if __name__ == '__main__':
     test = unittest.main(exit=False)
     sys.exit(not test.result.wasSuccessful())
