@@ -339,7 +339,7 @@
     <polygon name="polygon" material="GaN">{'; '.join(f'{sin(i*1.2*pi)} {cos(i*1.2*pi)}' for i in range(5))}</polygon>
   </cartesian2d>
   <cartesian3d name="prismatic" axes="x,y,z">
-    <prism material="GaAs" height="2.0">0 0; 1 0; 1 1; 2 1; 2 0; 3 0; 3 2; 0 2</prism>
+    <prism material="GaAs" height="2.0">20.0 0.0; 0.0 34.6; 20.0 69.3; 33.7 69.3; 33.7 61.0; 24.8 61.0; 9.5 34.6; 24.8 8.2; 55.2 8.2; 70.5 34.6; 55.2 61.0; 46.3 61.0; 46.3 69.3; 60.0 69.3; 80.0 34.6; 60.0 0.0</prism>
   </cartesian3d>
 </geometry>
 
