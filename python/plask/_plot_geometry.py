@@ -23,7 +23,7 @@ import matplotlib.lines
 import matplotlib.patches
 import matplotlib.artist
 
-from numpy import array
+import numpy as np
 
 from collections.abc import Callable
 from zlib import crc32
@@ -77,7 +77,7 @@ class BBoxIntersection(matplotlib.transforms.BboxBase):
             else:
                 self._points = matplotlib.transforms.Bbox.from_bounds(0, 0, -1, -1).get_points()
             self._invalid = 0
-        return array(self._points)
+        return np.array(self._points)
     get_points.__doc__ = matplotlib.transforms.Bbox.get_points.__doc__
 
 
@@ -87,8 +87,8 @@ class TertiaryColors:
     """
 
     def __init__(self, color1, color2, x=None):
-        self.color2 = array(to_rgb(color2))
-        self.color12 = array(to_rgb(color1)) - self.color2
+        self.color2 = np.array(to_rgb(color2))
+        self.color12 = np.array(to_rgb(color1)) - self.color2
         self.x = x
 
     def __call__(self, x=None, **kwargs):
@@ -111,7 +111,7 @@ class ColorFromDict:
         tertiary: Automatically create combinations for these tertiary materials.
     """
 
-    DOPING_TINTS = dict(N=array([0.0, 0.2, 0.2]), P=array([0.2, 0.0, 0.0]))
+    DOPING_TINTS = dict(N=np.array([0.0, 0.2, 0.2]), P=np.array([0.2, 0.0, 0.0]))
 
     def __init__(self, material_dict, axes=None, tint_doping=True,
                  tertiary=(('In', 'Al', 'Ga'), ('As', 'N', 'P', 'Sb'))):
@@ -202,7 +202,7 @@ class ColorFromDict:
                 pass
             else:
                 if doping > 0:
-                    result = array(to_rgb(result))
+                    result = np.array(to_rgb(result))
                     result += tint * max(math.log10(doping)-15., 0.) / 5.
                     result[result > 1.] = 1.
                     result[result < 0.] = 0.
@@ -505,7 +505,10 @@ def draw_TriangularPrism(env, geometry_object, transform, clipbox, plask_real_pa
         box = matplotlib.patches.Rectangle((pts[0], 0.), pts[-1] - pts[0], height, transform=transform)
         env.append(box, clipbox, geometry_object, plask_real_path)
         if pts[1] != pts[0] and pts[1] != pts[2]:
-            line = matplotlib.patches.Polygon(((pts[1], 0.), (pts[1], height)), transform=transform)
+            if env.axes[1] == 2:
+                line = matplotlib.patches.Polygon(((pts[1], 0.), (pts[1], height)), transform=transform)
+            else:
+                line = matplotlib.patches.Polygon(((0., pts[1]), (height, pts[1])), transform=transform)
             env.append(line, clipbox, geometry_object, plask_real_path)
         draw_Block(env, geometry_object, transform, clipbox, plask_real_path)
 
@@ -691,8 +694,6 @@ _geometry_drawers[plask.geometry.Cylindrical] = draw_geometry2d
 def draw_Polygon(env, geometry_object, transform, clipbox, plask_real_path):
     vertices = [tuple(v) for v in geometry_object.vertices]
     if not vertices: return
-    while len(vertices) < 2:
-        vertices.append(vertices[0])
     env.append(matplotlib.patches.Polygon(vertices, closed=True, transform=transform),
             clipbox, geometry_object, plask_real_path
     )
@@ -711,12 +712,27 @@ def draw_Prism(env, geometry_object, transform, clipbox, plask_real_path):
         )
     else:
         axis = [a for a in env.axes if a != 2][0]
+        verts = np.empty((2 * len(geometry_object.vertices) + 4, 2))
+        codes = np.empty(verts.shape[0], dtype=matplotlib.path.Path.code_type)
         height = geometry_object.height
-        for i in range(len(geometry_object.vertices)):
-            x1 = geometry_object.vertices[i-1][axis]
-            x2 = geometry_object.vertices[i][axis]
-            box = matplotlib.patches.Rectangle((x1, 0.), x2 - x1, height, transform=transform)
-            env.append(box, clipbox, geometry_object, plask_real_path)
+        xx = [v[axis] for v in geometry_object.vertices]
+        for i,x in enumerate(xx):
+            i2 = 2*i
+            verts[i2] = (x, 0)
+            verts[i2+1] = (x, height)
+            codes[i2] = codes[i2+1] = matplotlib.path.Path.MOVETO
+            codes[i2+1] = matplotlib.path.Path.LINETO
+        n = 2 * len(xx)
+        verts[n] = min(xx), 0
+        verts[n+1] = max(xx), 0
+        verts[n+2] = verts[n][0], height
+        verts[n+3] = verts[n+1][0], height
+        codes[n] = codes[n+2] = matplotlib.path.Path.MOVETO
+        codes[n+1] = codes[n+3] = matplotlib.path.Path.LINETO
+        path = matplotlib.path.Path(verts, codes)
+        if env.axes[0] == 2:
+            verts = verts[:,::-1]
+        env.append(matplotlib.patches.PathPatch(path, transform=transform), clipbox, geometry_object, plask_real_path)
 
 _geometry_drawers[plask.geometry.Prism] = draw_Prism
 
@@ -859,9 +875,9 @@ def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=
                 ("bottom", "top"))
 
     try:
-        bg = (1. - edge_alpha)  * array(to_rgb(axes.get_facecolor()))
+        bg = (1. - edge_alpha)  * np.array(to_rgb(axes.get_facecolor()))
     except AttributeError:
-        bg = (1. - edge_alpha)  * array(to_rgb(axes.get_axis_bgcolor()))
+        bg = (1. - edge_alpha)  * np.array(to_rgb(axes.get_axis_bgcolor()))
 
     if zorder is None:
         zorder = 0.5 if fill else 2.0
@@ -880,10 +896,10 @@ def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=
         geometry_edges = (None, None), (None, None)
 
     if edge_lw is None: edge_lw = lw
-    eec = edge_alpha * array(to_rgb(env.color)) + bg
+    eec = edge_alpha * np.array(to_rgb(env.color)) + bg
 
     _get_color = env.get_color
-    edge_get_color = lambda m: edge_alpha * array(to_rgb(_get_color(m))) + bg
+    edge_get_color = lambda m: edge_alpha * np.array(to_rgb(_get_color(m))) + bg
 
     ezo = zorder - 0.001
     epzo = zorder - 0.002

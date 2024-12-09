@@ -15,8 +15,9 @@
 import re
 
 WITH_DEFINE_RE = re.compile(r'^.*(?:{.*})?.*$')
-FLOAT_RE = re.compile(r'^\d*(?:{.*})?\d*(?:\.\d*(?:{.})?\d*)?$')
+FLOAT_RE = re.compile(r'^-?\d*(?:{.*})?\d*(?:\.\d*(?:{.})?\d*)?$')
 INT_RE = re.compile(r'^\d*(?:{.*})?\d*$')
+REMOVE_BRACES_RE = re.compile(r'(.*){.*}(.*)')
 
 def can_be_float(value, required=False, float_validator=None):
     """
@@ -116,7 +117,7 @@ def can_be_double_float(value, required=False):
     value = value.strip()
     if not value: return not required
     if '{' in value:
-        return bool(FLOAT_RE.match(value))
+        return True
     parts = value.split()
     if len(parts) != 2: return False
     return FLOAT_RE.match(parts[0].strip()) and FLOAT_RE.match(parts[1].strip())

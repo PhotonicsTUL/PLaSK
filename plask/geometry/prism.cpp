@@ -196,7 +196,7 @@ void Prism::validate() const {
     // }
 }
 
-// bool PolyPrism::checkSegments() const {
+// bool Prism::checkSegments() const {
 //     for (size_t i = 0; i < vertices.size(); ++i) {
 //         LateralVec<double> a1 = vertices[i];
 //         LateralVec<double> b1 = vertices[(i + 1) % vertices.size()];
@@ -328,6 +328,16 @@ void Prism::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& a
 }
 
 shared_ptr<GeometryObject> read_prism(GeometryReader& reader) {
+
+    // DEPRECATED: use TriangularPrism instead
+    if (reader.source.hasAttribute("a" + reader.getAxisLongName()) ||
+        reader.source.hasAttribute("a" + reader.getAxisTranName()) ||
+        reader.source.hasAttribute("b" + reader.getAxisLongName()) ||
+        reader.source.hasAttribute("b" + reader.getAxisTranName())) {
+        writelog(LOG_WARNING, "<prism> with vertices a and b is deprecated, use <triangular-prism> instead");
+        return read_triangular_prism(reader);
+    }
+
     shared_ptr<Prism> prism = make_shared<Prism>();
     prism->readMaterial(reader);
     if (reader.manager.draft)

@@ -10,8 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-
-from lxml import etree
+import re  # DEPRECATED
 
 from .object import GNObject
 from ...utils.validators import can_be_int, can_be_float, can_be_double_float, can_be_list
@@ -473,7 +472,7 @@ class GNPrism(GNLeaf):
         vertices = self.vertices.strip()
         if not can_be_list(vertices, required=True, item_validator=lambda v: can_be_double_float(v, required=True)):
             axes = self.get_axes_conf()
-            self._require(res, 'vertices', f"list of lateral vertices coordinates ({axes[-2]} {axes[-1]}) separated by semicolons")
+            self._require(res, 'vertices', f"list of lateral vertices coordinates ({axes[0]} {axes[1]}) separated by semicolons")
 
     def major_properties(self):
         res = super().major_properties()
@@ -501,8 +500,18 @@ class GNPrism(GNLeaf):
         self.vertices = self.vertices.strip()
         ordered_reader.require_end()
 
+    OLD_ATTR_RE = re.compile(r'[ab][xyzrpltv]')  # DEPRECATED
+
     @staticmethod
     def from_xml_3d(element, conf):
+
+        for a in element.attrib:
+            # DEPRECATED
+            if GNPrism.OLD_ATTR_RE.match(a):
+                result = GNTriangularPrism()
+                result.load_xml_element(element, conf)
+                return result
+
         result = GNPrism()
         result.load_xml_element(element, conf)
         return result

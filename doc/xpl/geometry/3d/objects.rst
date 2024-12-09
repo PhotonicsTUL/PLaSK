@@ -78,7 +78,7 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
    .. code-block:: xml
 
       <cartesian3d name="example" axes="xyz">
-        <prism height="2" material="GaAs"> -2 -2; -2 3; 2 3; 2 -2 </poly-prism>
+        <prism height="2" material="GaAs"> -2 -2; -2 3; 2 3; 2 -2 </prism>
       </cartesian3d>
 
 .. xml:tag:: <sphere/> (or <circle3d/>)

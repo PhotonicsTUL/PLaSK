@@ -464,7 +464,7 @@ class PrismTest(unittest.TestCase):
                 </defines>
 
                 <geometry>
-                    <cartesian3d name="test" axes="xy">
+                    <cartesian3d name="test" axes="xyz">
                         <prism name="prism" height="1" material="GaAs">0 0; {x} 0; {x} 1; 0 1</prism>
                     </cartesian3d>
                 </geometry>
@@ -475,6 +475,23 @@ class PrismTest(unittest.TestCase):
         self.assertEqual(len(prism.vertices), 4)
         self.assertTrue(prism.contains(0.5, 0.5, 0.5))
         self.assertEqual(list(prism.vertices), [plask.vec(0, 0), plask.vec(1, 0), plask.vec(1, 1), plask.vec(0, 1)])
+
+    def testDeprecatedXpl(self):
+        """DEPRECATED"""
+        manager = plask.Manager()
+        manager.load(
+            """
+            <plask>
+                <geometry>
+                    <cartesian3d name="test" axes="xyz">
+                        <prism name="prism" height="1" material="GaAs" ax="1" ay="0" bx="0" by="1"/>
+                    </cartesian3d>
+                </geometry>
+            </plask>
+            """
+        )
+        prism = manager.geo['prism']
+        self.assertIsInstance(prism, plask.geometry.TriangularPrism)
 
 
 if __name__ == '__main__':
