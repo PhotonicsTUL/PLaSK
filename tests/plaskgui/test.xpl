@@ -245,9 +245,9 @@
   <cartesian2d name="main" axes="x,y">
     <rectangle material="mat" dx="1" dy="{wl('mat', 1000)}"/>
   </cartesian2d>
-  <cartesian3d name="prismatic" axes="x,y,z">
+  <cartesian3d name="tridi" axes="x,y,z">
     <stack>
-      <prism material="AlAs" ax="0.9" ay="-0.5" bx="-0.1" by="1.5" height="1.0"/>
+      <triangular-prism material="AlAs" ax="0.9" ay="-0.5" bx="-0.1" by="1.5" height="1.0"/>
       <cuboid material="GaAs" dx="1.0" dy="2.0" dz="0.5"/>
     </stack>
   </cartesian3d>
@@ -338,6 +338,9 @@
   <cartesian2d name="polygons" axes="x,y">
     <polygon name="polygon" material="GaN">{'; '.join(f'{sin(i*1.2*pi)} {cos(i*1.2*pi)}' for i in range(5))}</polygon>
   </cartesian2d>
+  <cartesian3d name="prismatic" axes="x,y,z">
+    <prism material="GaAs" height="2.0">0 0; 1 0; 1 1; 2 1; 2 0; 3 0; 3 2; 0 2</prism>
+  </cartesian3d>
 </geometry>
 
 <grids>

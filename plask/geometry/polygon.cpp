@@ -137,10 +137,12 @@ void Polygon::addLineSegmentsToSet(std::set<typename GeometryObjectD<2>::LineSeg
         double d = std::sqrt(dot(ab, ab));
         unsigned steps = std::max(1u, static_cast<unsigned>(d / min_step_size));
         steps = std::min(steps, max_steps);
-        for (unsigned j = 0; j <= steps; ++j) {
+        Vec<2> p0 = a;
+        for (unsigned j = 1; j <= steps; ++j) {
             double t = static_cast<double>(j) / steps;
             Vec<2> p = a * (1 - t) + b * t;
-            segments.insert({p, p + Vec<2>(0, 1)});
+            segments.insert({p0, p});
+            p0 = p;
         }
     }
 }

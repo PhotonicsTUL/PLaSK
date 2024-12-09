@@ -261,7 +261,7 @@ class GNTubeController(GNLeafController):
         self.height.setText(none_to_empty(self.node.height))
 
 
-class GNPrismController(GNLeafController):
+class GNTriangularPrismController(GNLeafController):
 
     def _on_point_set(self, index, value):
 
@@ -315,13 +315,42 @@ class GNPolygonController(GNLeafController):
     #         setter, value, self.node.vertices[index], 'change polygon vertex')
 
     def construct_form(self):
-        self.construct_group('Vertex List')
+        self.construct_group('Polygon Settings')
         self.vertices = self.construct_line_edit(
             'Vertices:', unit='µm', node_property_name='vertices',
             display_property_name="list of vertices in a the form 'x1 y1; x2 y2; ...'",
         )
+        self.vertices.setToolTip(
+            f'&lt;{self.node.tag_name(False)}&gt;<b>\'x1 y1; x2 y2; ...\'</b>&lt;/{self.node.tag_name(False)}&gt;<br/>'
+            f'List of vertices. ((float float) (µm), required)'
+        )
         super().construct_form()
 
     def fill_form(self):
+        self.vertices.setText(none_to_empty(self.node.vertices))
+        super().fill_form()
+
+
+class GNPrismController(GNLeafController):
+
+    def construct_form(self):
+        self.construct_group('Prism Settings')
+        self.height = self.construct_line_edit(
+            'Prism Height:', unit='µm', node_property_name='height', display_property_name='height of the prism'
+        )
+        self.height.setToolTip(f'&lt;{self.node.tag_name(False)} <b>height</b>="" ...&gt;<br/>'
+                               f'Height of the prism. (float (µm), required)')
+        self.vertices = self.construct_line_edit(
+            'Vertices:', unit='µm', node_property_name='vertices',
+            display_property_name="list of vertices in a the form 'x1 y1; x2 y2; ...'",
+        )
+        self.vertices.setToolTip(
+            f'&lt;{self.node.tag_name(False)}&gt;<b>\'x1 y1; x2 y2; ...\'</b>&lt;/{self.node.tag_name(False)}&gt;<br/>'
+            f'List of base vertices. ((float float) (µm), required)'
+        )
+        super().construct_form()
+
+    def fill_form(self):
+        self.height.setText(none_to_empty(self.node.height))
         self.vertices.setText(none_to_empty(self.node.vertices))
         super().fill_form()

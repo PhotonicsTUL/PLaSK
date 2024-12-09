@@ -43,6 +43,36 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
    :attr steps-num: Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform.
    :attr steps-dist: Minimum step size if the object is non-uniform.
 
+.. xml:tag:: <polygon/>
+
+   Corresponding Python class: :py:class:`plask.geometry.Polygon`.
+
+   Polygon with vertices at specified points.
+
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
+   :attr role: Object role. Important for some solvers.
+   :attr material-bottom: Definition of the material of the bottom of the polygon (for polygons with material changing from bottom to top). You should also set ``material-top`` and both materials can differs only in composition or amount of dopant.
+   :attr material-top: Definition of the material of top of the polygon (see also ``material-bottom``).
+   :attr material-shape: Exponent for graded materials. Setting this value to anything different than one allows non-linear change the polygon material.
+   :attr steps-num: Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform.
+   :attr steps-dist: Minimum step size if the object is non-uniform.
+
+   .. xml:contents::
+
+      Polygon vertices separated by semicolons. Each vertex is defined by two coordinates separated by space.
+
+   Example:
+
+   .. _lis-polygon:
+   .. code-block:: xml
+
+      <cartesian2d name="example" axes="xy">
+        <polygon material="GaAs">
+          -2 -2; -2 3; 2 3; 2 -2
+        </polygon>
+      </cartesian2d>
+
 .. xml:tag:: <rectangle/>
 
    Alias for :xml:tag:`<block2d/>`.

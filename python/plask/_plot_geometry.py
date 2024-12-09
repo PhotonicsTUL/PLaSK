@@ -489,7 +489,7 @@ def draw_Tube(env, geometry_object, transform, clipbox, plask_real_path):
 _geometry_drawers[plask.geometry.Tube] = draw_Tube
 
 
-def draw_Prism(env, geometry_object, transform, clipbox, plask_real_path):
+def draw_TriangularPrism(env, geometry_object, transform, clipbox, plask_real_path):
     p1 = geometry_object.a
     p2 = geometry_object.b
     if env.axes == (0, 1) or env.axes == (1, 0):
@@ -507,11 +507,10 @@ def draw_Prism(env, geometry_object, transform, clipbox, plask_real_path):
         if pts[1] != pts[0] and pts[1] != pts[2]:
             line = matplotlib.patches.Polygon(((pts[1], 0.), (pts[1], height)), transform=transform)
             env.append(line, clipbox, geometry_object, plask_real_path)
-
         draw_Block(env, geometry_object, transform, clipbox, plask_real_path)
 
 
-_geometry_drawers[plask.geometry.Prism] = draw_Prism
+_geometry_drawers[plask.geometry.TriangularPrism] = draw_TriangularPrism
 
 
 def draw_Extrusion(env, geometry_object, transform, clipbox, plask_real_path):
@@ -699,6 +698,27 @@ def draw_Polygon(env, geometry_object, transform, clipbox, plask_real_path):
     )
 
 _geometry_drawers[plask.geometry.Polygon] = draw_Polygon
+
+
+def draw_Prism(env, geometry_object, transform, clipbox, plask_real_path):
+    if env.axes == (0, 1) or env.axes == (1, 0):
+        vertices = [(v[env.axes[0]], v[env.axes[1]]) for v in geometry_object.vertices]
+        if not vertices: return
+        while len(vertices) < 2:
+            vertices.append((vertices[0]))
+        env.append(matplotlib.patches.Polygon(vertices, closed=True, transform=transform),
+                clipbox, geometry_object, plask_real_path
+        )
+    else:
+        axis = [a for a in env.axes if a != 2][0]
+        height = geometry_object.height
+        for i in range(len(geometry_object.vertices)):
+            x1 = geometry_object.vertices[i-1][axis]
+            x2 = geometry_object.vertices[i][axis]
+            box = matplotlib.patches.Rectangle((x1, 0.), x2 - x1, height, transform=transform)
+            env.append(box, clipbox, geometry_object, plask_real_path)
+
+_geometry_drawers[plask.geometry.Prism] = draw_Prism
 
 
 def draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_path=None):

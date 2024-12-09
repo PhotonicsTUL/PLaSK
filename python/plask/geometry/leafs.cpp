@@ -213,22 +213,22 @@ template <int dim> static shared_ptr<Circle<dim>> Circle_constructor(double radi
 }
 
 // Prism constructor wraps
-static shared_ptr<Prism> Prism_constructor_vec(const Vec<2, double>& p0,
-                                               const Vec<2, double>& p1,
-                                               double height,
-                                               const py::object& material) {
-    auto result = plask::make_shared<Prism>(p0, p1, height);
+static shared_ptr<TriangularPrism> TriangularPrism_constructor_vec(const LateralVec<double>& p0,
+                                                                   const LateralVec<double>& p1,
+                                                                   double height,
+                                                                   const py::object& material) {
+    auto result = plask::make_shared<TriangularPrism>(p0, p1, height);
     setLeafMaterialFast<3>(result, material);
     return result;
 }
 
-static shared_ptr<Prism> Prism_constructor_pts(double x0,
-                                               double y0,
-                                               double x1,
-                                               double y1,
-                                               double height,
-                                               const py::object& material) {
-    auto result = plask::make_shared<Prism>(vec(x0, y0), vec(x1, y1), height);
+static shared_ptr<TriangularPrism> TriangularPrism_constructor_pts(double x0,
+                                                                   double y0,
+                                                                   double x1,
+                                                                   double y1,
+                                                                   double height,
+                                                                   const py::object& material) {
+    auto result = plask::make_shared<TriangularPrism>(vec(x0, y0), vec(x1, y1), height);
     setLeafMaterialFast<3>(result, material);
     return result;
 }
@@ -272,7 +272,7 @@ template <typename T> static void Triangle__setattr__(py::object self, const std
         size_t axis = current_axes[name.substr(1)] - 1;
         if (axis < 2) {
             T& t = py::extract<T&>(self);
-            Vec<2, double> v = zero ? t.p0 : t.p1;
+            decltype(t.p0) v = zero ? t.p0 : t.p1;
             v[axis] = py::extract<double>(value);
             if (zero)
                 t.setP0(v);
@@ -316,16 +316,18 @@ static shared_ptr<Polygon> Polygon_constructor(const py::object& vetrices, const
     return result;
 }
 
-static void Polygon_setVertices(Polygon& self, const py::object& vertices) {
-    std::vector<Vec<2, double>> verts;
-    for (size_t i = 0; i < py::len(vertices); ++i) {
-        verts.push_back(py::extract<Vec<2, double>>(vertices[i]));
+static shared_ptr<Prism> Prism_constructor(const py::object& vetrices, double height, const py::object& material) {
+    std::vector<LateralVec<double>> verts;
+    for (size_t i = 0; i < py::len(vetrices); ++i) {
+        verts.push_back(py::extract<LateralVec<double>>(vetrices[i]));
     }
-    self.setVertices(verts);
+    auto result = plask::make_shared<Prism>(height, verts);
+    setLeafMaterialFast<3>(result, material);
+    return result;
 }
 
-class PolygonVertices {
-    shared_ptr<Polygon> polygon;
+template <typename PolyT, typename VecT> class Vertices2D {
+    shared_ptr<PolyT> polygon;
 
     size_t index(int i) const {
         size_t n = polygon->getVertices().size();
@@ -335,13 +337,13 @@ class PolygonVertices {
     }
 
   public:
-    PolygonVertices(shared_ptr<Polygon> polygon) : polygon(polygon) {}
+    Vertices2D(shared_ptr<PolyT> polygon) : polygon(polygon) {}
 
-    static PolygonVertices fromPolygon(shared_ptr<Polygon> polygon) { return PolygonVertices(polygon); }
+    static Vertices2D fromPolygon(shared_ptr<PolyT> polygon) { return Vertices2D(polygon); }
 
     size_t __len__() const { return polygon->getVertices().size(); }
 
-    Vec<2, double> __getitem__(int i) const { return polygon->getVertices()[index(i)]; }
+    VecT __getitem__(int i) const { return polygon->getVertices()[index(i)]; }
 
     void __setitem__(int i, const Vec<2, double>& v) { polygon->setVertex(index(i), v); }
 
@@ -363,7 +365,7 @@ class PolygonVertices {
         std::string result = "[";
         for (size_t i = 0; i < polygon->getVertices().size(); ++i) {
             result += str(polygon->getVertices()[i]);
-            result += (i != polygon->getVertices().size() - 1)? ", " : "]";
+            result += (i != polygon->getVertices().size() - 1) ? ", " : "]";
         }
         return result;
     }
@@ -372,18 +374,18 @@ class PolygonVertices {
         std::string result = "[";
         for (size_t i = 0; i < polygon->getVertices().size(); ++i) {
             result += format("plask.vec({}, {})", polygon->getVertices()[i].c0, polygon->getVertices()[i].c1);
-            result += (i != polygon->getVertices().size() - 1)? ", " : "]";
+            result += (i != polygon->getVertices().size() - 1) ? ", " : "]";
         }
         return result;
     }
 
     struct Iterator {
-        shared_ptr<Polygon> polygon;
+        shared_ptr<PolyT> polygon;
         size_t i;
 
-        Iterator(const PolygonVertices* pv) : polygon(pv->polygon), i(0) {}
+        Iterator(const Vertices2D* pv) : polygon(pv->polygon), i(0) {}
 
-        Vec<2, double> __next__() {
+        VecT __next__() {
             if (i >= polygon->getVertices().size()) throw StopIteration();
             return polygon->getVertex(i++);
         }
@@ -392,6 +394,34 @@ class PolygonVertices {
     };
 
     Iterator __iter__() const { return Iterator(this); }
+
+    static void register_class() {
+        py::class_<Vertices2D> vertices("Vertices", py::no_init);
+        vertices  //
+            .def("__len__", &Vertices2D::__len__)
+            .def("__getitem__", &Vertices2D::__getitem__)
+            .def("__setitem__", &Vertices2D::__setitem__)
+            .def("append", &Vertices2D::append)
+            .def("insert", &Vertices2D::insert)
+            .def("__delitem__", &Vertices2D::__delitem__)
+            .def("__str__", &Vertices2D::__str__)
+            .def("__repr__", &Vertices2D::__repr__)
+            .def("__iter__", &Vertices2D::__iter__);
+
+        py::scope vertices_scope = vertices;
+
+        py::class_<Vertices2D::Iterator>("Iterator", py::no_init)  //
+            .def("__iter__", &Vertices2D::Iterator::__iter__, py::return_self<>())
+            .def("__next__", &Vertices2D::Iterator::__next__);
+    }
+
+    static void setVertices(PolyT& self, const py::object& vertices) {
+        std::vector<VecT> verts;
+        for (size_t i = 0; i < py::len(vertices); ++i) {
+            verts.push_back(py::extract<VecT>(vertices[i]));
+        }
+        self.setVertices(verts);
+    }
 };
 
 void register_geometry_leafs() {
@@ -558,11 +588,11 @@ void register_geometry_leafs() {
                       u8"Outer tube radius.")
         .add_property("height", py::make_getter(&HollowCylinder::height), &HollowCylinder::setHeight, u8"Height of the Tube.");
 
-    py::class_<Prism, shared_ptr<Prism>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> prism(
-        "Prism",
-        u8"Prism(a0, a1, b0, b1, height, material)\n"
-        u8"Prism(a, b, height, material)\n"
-        u8"Prism (3D geometry object).\n\n"
+    py::class_<TriangularPrism, shared_ptr<TriangularPrism>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> triangular_prism(
+        "TriangularPrism",
+        u8"TriangularPrism(a0, a1, b0, b1, height, material)\n"
+        u8"TriangularPrism(a, b, height, material)\n"
+        u8"TriangularPrism (3D geometry object).\n\n"
         u8"Three triangle vertices are located at points (0, 0, 0), (*a*, 0), and (*b*, 0).\n\n"
         u8"Args:\n"
         u8"    plask.vec a: Local coordinates of the first triangle vertex.\n"
@@ -578,26 +608,28 @@ void register_geometry_leafs() {
         u8"    height (float): Prism height\n"
         u8"    material (Material): Prism material.\n",
         py::no_init);
-    prism
-        .def("__init__",
-             py::make_constructor(&Prism_constructor_vec, py::default_call_policies(), (py::arg("a"), "b", "height", "material")))
-        .def("__init__", py::make_constructor(&Prism_constructor_pts, py::default_call_policies(),
+    triangular_prism
+        .def("__init__", py::make_constructor(&TriangularPrism_constructor_vec, py::default_call_policies(),
+                                              (py::arg("a"), "b", "height", "material")))
+        .def("__init__", py::make_constructor(&TriangularPrism_constructor_pts, py::default_call_policies(),
                                               (py::arg("a0"), "a1", "b0", "b1", "height", "material")))
-        .add_property("a", py::make_getter(&Prism::p0, py::return_value_policy<py::return_by_value>()),
-                      (void(Prism::*)(const Vec<2>&)) & Prism::setP0, "Horizontal coordinates of the first base vertex.")
-        .add_property("b", py::make_getter(&Prism::p1, py::return_value_policy<py::return_by_value>()),
-                      (void(Prism::*)(const Vec<2>&)) & Prism::setP1, "Horizontal coordinates of the second base vertex.")
-        .add_property("a0", &Triangle_get_a<Prism, 0>, &Triangle_set_a<Prism, 0>,
+        .add_property("a", py::make_getter(&TriangularPrism::p0, py::return_value_policy<py::return_by_value>()),
+                      (void(TriangularPrism::*)(const Vec<2>&)) & TriangularPrism::setP0,
+                      "Horizontal coordinates of the first base vertex.")
+        .add_property("b", py::make_getter(&TriangularPrism::p1, py::return_value_policy<py::return_by_value>()),
+                      (void(TriangularPrism::*)(const Vec<2>&)) & TriangularPrism::setP1,
+                      "Horizontal coordinates of the second base vertex.")
+        .add_property("a0", &Triangle_get_a<TriangularPrism, 0>, &Triangle_set_a<TriangularPrism, 0>,
                       "Horizontal coordinate of the first base vertex.\n\nInstead of 0 you can use longitudinal axis name.")
-        .add_property("a1", &Triangle_get_a<Prism, 1>, &Triangle_set_a<Prism, 1>,
+        .add_property("a1", &Triangle_get_a<TriangularPrism, 1>, &Triangle_set_a<TriangularPrism, 1>,
                       "Vertical coordinate of the first base vertex.\n\nInstead of 1 you can use transverse axis name.")
-        .add_property("b0", &Triangle_get_b<Prism, 0>, &Triangle_set_b<Prism, 0>,
+        .add_property("b0", &Triangle_get_b<TriangularPrism, 0>, &Triangle_set_b<TriangularPrism, 0>,
                       "Horizontal coordinate of the second base vertex.\n\nInstead of 0 you can use longitudinal axis name.")
-        .add_property("b1", &Triangle_get_b<Prism, 1>, &Triangle_set_b<Prism, 1>,
+        .add_property("b1", &Triangle_get_b<TriangularPrism, 1>, &Triangle_set_b<TriangularPrism, 1>,
                       "Vertical coordinate of the second base vertex.\n\nInstead of 1 you can use transverse axis name.")
-        .add_property("height", py::make_getter(&Prism::height), &Prism::setHeight, "Prism height.")
-        .def("__getattr__", &Triangle__getattr__<Prism>)
-        .def("__setattr__", &Triangle__setattr__<Prism>);
+        .add_property("height", py::make_getter(&TriangularPrism::height), &TriangularPrism::setHeight, "Prism height.")
+        .def("__getattr__", &Triangle__getattr__<TriangularPrism>)
+        .def("__setattr__", &Triangle__setattr__<TriangularPrism>);
 
     py::class_<Polygon, shared_ptr<Polygon>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> polygon(
         "Polygon",
@@ -610,28 +642,35 @@ void register_geometry_leafs() {
         py::no_init);
     polygon
         .def("__init__", py::make_constructor(&Polygon_constructor, py::default_call_policies(), (py::arg("vertices"), "material")))
-        .add_property("vertices", &PolygonVertices::fromPolygon, &Polygon_setVertices, "List of polygon vertices.");
+        .add_property("vertices", &Vertices2D<Polygon, Vec<2, double>>::fromPolygon,
+                      &Vertices2D<Polygon, Vec<2, double>>::setVertices, "List of polygon vertices.");
 
     {
         py::scope polygon_scope = polygon;
+        Vertices2D<Polygon, Vec<2, double>>::register_class();
+    }
 
-        py::class_<PolygonVertices> vertices("Vertices", py::no_init);
-        vertices  //
-            .def("__len__", &PolygonVertices::__len__)
-            .def("__getitem__", &PolygonVertices::__getitem__)
-            .def("__setitem__", &PolygonVertices::__setitem__)
-            .def("append", &PolygonVertices::append)
-            .def("insert", &PolygonVertices::insert)
-            .def("__delitem__", &PolygonVertices::__delitem__)
-            .def("__str__", &PolygonVertices::__str__)
-            .def("__repr__", &PolygonVertices::__repr__)
-            .def("__iter__", &PolygonVertices::__iter__);
+    py::class_<Prism, shared_ptr<Prism>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> prism(
+        "Prism",
+        "Prism with base defined by polygon with specified vertices\n\n"
+        u8"Prism(vertices, material)\n\n"
+        u8"Prism (3D geometry object).\n\n"
+        u8"Prism with specified vertices.\n\n"
+        u8"Args:\n"
+        u8"    vertices (list of plask.vec): List of polygon vertices.\n"
+        u8"    height (float): Prism height.\n"
+        u8"    material (Material): Prism material.\n",
+        py::no_init);
+    prism
+        .def("__init__",
+             py::make_constructor(&Prism_constructor, py::default_call_policies(), (py::arg("vertices"), "height", "material")))
+        .add_property("height", &Prism::getHeight, &Prism::setHeight, "Prism height.")
+        .add_property("vertices", &Vertices2D<Prism, LateralVec<double>>::fromPolygon,
+                      &Vertices2D<Prism, LateralVec<double>>::setVertices, "List of polygon vertices.");
 
-        py::scope vertices_scope = vertices;
-
-        py::class_<PolygonVertices::Iterator>("Iterator", py::no_init)  //
-            .def("__iter__", &PolygonVertices::Iterator::__iter__, py::return_self<>())
-            .def("__next__", &PolygonVertices::Iterator::__next__);
+    {
+        py::scope prism_scope = prism;
+        Vertices2D<Prism, LateralVec<double>>::register_class();
     }
 }
 

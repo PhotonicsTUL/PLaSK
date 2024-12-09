@@ -553,6 +553,8 @@ void register_vectors() {
     register_lateral_vector_class<double>("vec");
     register_lateral_vector_class<int>("vec");
 
+    py::implicitly_convertible<Vec<2, double>, LateralVec<double>>();
+
     py::def("vec", py::raw_function(&new_vector));
     py::scope().attr("vec").attr("__doc__") = __doc__;
 }

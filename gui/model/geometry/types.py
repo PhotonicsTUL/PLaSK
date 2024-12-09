@@ -23,6 +23,7 @@ _NAMES = {
     'again': "[Repeat object]",
     'copy': "[Copy and modify object]",
     'python': "[Define object in Python]",
+    'triangular-prism': "Triangular Prism"
 }
 
 
@@ -41,7 +42,7 @@ def gname(key, menu=False):
 from .again_copy import GNAgain, GNCopy
 from .container import GNAlignContainer, GNShelf, GNStack
 from .geometry import GNCartesian, GNCylindrical
-from .leaf import GNBlock, GNCircle, GNCylinder, GNPrism, GNTriangle, GNTube, GNPolygon
+from .leaf import GNBlock, GNCircle, GNCylinder, GNTriangularPrism, GNTriangle, GNTube, GNPolygon, GNPrism
 from .python_object import GNPython
 from .transform import GNArrange, GNClip, GNExtrusion, GNFlip, GNIntersection, GNLattice, GNMirror, GNRevolution, GNTranslation
 
@@ -88,6 +89,7 @@ geometry_types_3d_core_leafs = {
     'sphere': GNCircle.from_xml_3d,
     'cylinder': GNCylinder.from_xml_3d,
     'tube': GNTube.from_xml_3d,
+    'triangular-prism': GNTriangularPrism.from_xml_3d,
     'prism': GNPrism.from_xml_3d,
 }
 geometry_types_3d_core_containers = {

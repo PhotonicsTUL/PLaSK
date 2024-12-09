@@ -436,6 +436,47 @@ class LatticeTest(unittest.TestCase):
             print(s1)
 
 
+class PrismTest(unittest.TestCase):
+
+    def testPointsAndModifications(self):
+        prism = plask.geometry.Prism([(0, 0), (1, 1), (2, 1), (1, 0), (2, 0), (4, 2), (1, 2), (0, 1)], 2., 'GaAs')
+        self.assertTrue(prism.contains(1.2, 0.1, 1.0))
+        self.assertFalse(prism.contains(1.1, 0.2, 1.0))
+        self.assertTrue(prism.contains(1.5, 1.5, 1.0))
+
+        self.assertFalse(prism.contains(1.2, 0.1, -1.0))
+        self.assertFalse(prism.contains(1.2, 0.1, 2.5))
+
+        self.assertTrue(prism.contains(0.6, 1.5, 1.0))
+        self.assertFalse(prism.contains(0.2, 1.5, 1.0))
+        prism.vertices[-1] = (0, 2)
+        self.assertTrue(prism.contains(0.5, 1.5, 1.0))
+        del prism.vertices[-1]
+        self.assertFalse(prism.contains(0.6, 1.5, 1.0))
+
+    def testXpl(self):
+        manager = plask.Manager()
+        manager.load(
+            """
+            <plask>
+                <defines>
+                    <define name="x" value="1"/>
+                </defines>
+
+                <geometry>
+                    <cartesian3d name="test" axes="xy">
+                        <prism name="prism" height="1" material="GaAs">0 0; {x} 0; {x} 1; 0 1</prism>
+                    </cartesian3d>
+                </geometry>
+            </plask>
+            """
+        )
+        prism = manager.geo['prism']
+        self.assertEqual(len(prism.vertices), 4)
+        self.assertTrue(prism.contains(0.5, 0.5, 0.5))
+        self.assertEqual(list(prism.vertices), [plask.vec(0, 0), plask.vec(1, 0), plask.vec(1, 1), plask.vec(0, 1)])
+
+
 if __name__ == '__main__':
     test = unittest.main(exit=False)
     sys.exit(not test.result.wasSuccessful())

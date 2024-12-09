@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#ifndef PLASK_GEOMETRY_POLYGONS_HPP
-#define PLASK_GEOMETRY_POLYGONS_HPP
+#ifndef PLASK_GEOMETRY_POLYGON_HPP
+#define PLASK_GEOMETRY_POLYGON_HPP
 
 /** \file
  * This file contains polygon (geometry object) class.

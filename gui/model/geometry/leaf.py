@@ -348,7 +348,7 @@ class GNTriangle(GNLeaf):
         return result
 
 
-class GNPrism(GNLeaf):
+class GNTriangularPrism(GNLeaf):
 
     def __init__(self, parent=None):
         super().__init__(parent=parent, dim=2)
@@ -372,10 +372,10 @@ class GNPrism(GNLeaf):
         attr_to_xml(self, element, 'height')
 
     def tag_name(self, full_name=True):
-        return "prism"
+        return "triangular-prism"
 
     def python_type(self):
-        return 'geometry.Prism'
+        return 'geometry.TriangularPrism'
 
     def major_properties(self):
         res = super().major_properties()
@@ -388,8 +388,8 @@ class GNPrism(GNLeaf):
         return res
 
     def get_controller(self, document, model):
-        from ...controller.geometry.leaf import GNPrismController
-        return GNPrismController(document, model, self)
+        from ...controller.geometry.leaf import GNTriangularPrismController
+        return GNTriangularPrismController(document, model, self)
 
     def create_info(self, res, names):
         super().create_info(res, names)
@@ -404,7 +404,7 @@ class GNPrism(GNLeaf):
 
     @staticmethod
     def from_xml_3d(element, conf):
-        result = GNPrism()
+        result = GNTriangularPrism()
         result.load_xml_element(element, conf)
         return result
 
@@ -447,5 +447,62 @@ class GNPolygon(GNLeaf):
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNPolygon()
+        result.load_xml_element(element, conf)
+        return result
+
+
+class GNPrism(GNLeaf):
+
+    def __init__(self, parent=None):
+        super().__init__(parent=parent, dim=2)
+        self.height = None
+        self.vertices = ""
+
+    def tag_name(self, full_name=True):
+        return "prism"
+
+    def python_type(self):
+        return 'geometry.Prism'
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.leaf import GNPrismController
+        return GNPrismController(document, model, self)
+
+    def create_info(self, res, names):
+        super().create_info(res, names)
+        vertices = self.vertices.strip()
+        if not can_be_list(vertices, required=True, item_validator=lambda v: can_be_double_float(v, required=True)):
+            axes = self.get_axes_conf()
+            self._require(res, 'vertices', f"list of lateral vertices coordinates ({axes[-2]} {axes[-1]}) separated by semicolons")
+
+    def major_properties(self):
+        res = super().major_properties()
+        if self.height is not None:
+            res.append(('height', self.height))
+        return res
+
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super()._attributes_from_xml(attribute_reader, conf)
+        self.height = attribute_reader.get('height')
+
+    def _attributes_to_xml(self, element, conf):
+        super()._attributes_to_xml(element, conf)
+        attr_to_xml(self, element, 'height')
+
+    def make_xml_element(self, conf):
+        el = super().make_xml_element(conf)
+        el.text = self.vertices
+        return el
+
+    def _children_from_xml(self, ordered_reader, conf):
+        self.vertices = ordered_reader.parent_element.text
+        if self.vertices is None:
+            self.vertices = ""
+        self.vertices = self.vertices.strip()
+        ordered_reader.require_end()
+
+    @staticmethod
+    def from_xml_3d(element, conf):
+        result = GNPrism()
         result.load_xml_element(element, conf)
         return result
