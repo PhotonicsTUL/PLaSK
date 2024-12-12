@@ -15,18 +15,21 @@
 #define PLASK__GENERATOR_RECTANGULAR_H
 
 #include "mesh.hpp"
-#include "rectangular.hpp"
 #include "plask/geometry/path.hpp"
+#include "rectangular.hpp"
 
 namespace plask {
 
 /**
- * Generate grid along edges of bounding boxes of all geometry elements
+ * Get axis with points along edges of bounding boxes of all geometry elements
  * \param geometry given geometry object
+ * \param dir direction along which the points should be added
  * \param split if not 0 split points at boundaries into two separated by \p split
- * \return generated mesh
  */
-PLASK_API shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry, double split=0.);
+template <int dim>
+PLASK_API shared_ptr<OrderedAxis> makeGeometryAxis(const shared_ptr<GeometryObjectD<dim>>& geometry,
+                                                   Primitive<3>::Direction dir,
+                                                   double split = 0.);
 
 /**
  * Generate grid along edges of bounding boxes of all geometry elements
@@ -34,7 +37,7 @@ PLASK_API shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryOb
  * \param split if not 0 split points at boundaries into two separated by \p split
  * \return generated mesh
  */
-PLASK_API shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, double split=0.);
+PLASK_API shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry, double split = 0.);
 
 /**
  * Generate grid along edges of bounding boxes of all geometry elements
@@ -42,15 +45,22 @@ PLASK_API shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<Geome
  * \param split if not 0 split points at boundaries into two separated by \p split
  * \return generated mesh
  */
-PLASK_API shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry, double split=0.);
+PLASK_API shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, double split = 0.);
+
+/**
+ * Generate grid along edges of bounding boxes of all geometry elements
+ * \param geometry given geometry object
+ * \param split if not 0 split points at boundaries into two separated by \p split
+ * \return generated mesh
+ */
+PLASK_API shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry, double split = 0.);
 
 /**
  * Generate grid along edges of bounding boxes of all geometry elements
  * \param geometry given geometry
  * \return generated mesh
  */
-inline shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryD<2>>& geometry)
-{
+inline shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryD<2>>& geometry) {
     return makeGeometryGrid1D(geometry->getChild());
 }
 
@@ -59,8 +69,7 @@ inline shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryD<2>>
  * \param geometry given geometry
  * \return generated mesh
  */
-inline shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryD<2>>& geometry)
-{
+inline shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryD<2>>& geometry) {
     return makeGeometryGrid(geometry->getChild());
 }
 
@@ -69,8 +78,7 @@ inline shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<Geometry
  * \param geometry given geometry
  * \return generated mesh
  */
-inline shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryD<3>>& geometry)
-{
+inline shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryD<3>>& geometry) {
     return makeGeometryGrid(geometry->getChild());
 }
 
@@ -84,34 +92,27 @@ PLASK_API shared_ptr<OrderedAxis> refineAxis(const shared_ptr<MeshAxis>& axis, d
 /**
  * Generator of basic 2D geometry grid
  */
-struct PLASK_API OrderedMesh1DSimpleGenerator: public MeshGeneratorD<1> {
-
+struct PLASK_API OrderedMesh1DSimpleGenerator : public MeshGeneratorD<1> {
   protected:
-
     bool split;
 
   public:
-
     /// Create generator
-    OrderedMesh1DSimpleGenerator(bool split=false): split(split) {}
+    OrderedMesh1DSimpleGenerator(bool split = false) : split(split) {}
 
     shared_ptr<MeshD<1>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
 
-
 /**
  * Generator of basic 2D geometry grid
  */
-struct PLASK_API RectangularMesh2DSimpleGenerator: public MeshGeneratorD<2> {
-
+struct PLASK_API RectangularMesh2DSimpleGenerator : public MeshGeneratorD<2> {
   protected:
-
     bool split;
 
   public:
-
     /// Create generator
-    RectangularMesh2DSimpleGenerator(bool split=false): split(split) {}
+    RectangularMesh2DSimpleGenerator(bool split = false) : split(split) {}
 
     shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
@@ -119,69 +120,58 @@ struct PLASK_API RectangularMesh2DSimpleGenerator: public MeshGeneratorD<2> {
 /**
  * Generator of basic 3D geometry grid
  */
-struct PLASK_API RectangularMesh3DSimpleGenerator: public MeshGeneratorD<3> {
-
+struct PLASK_API RectangularMesh3DSimpleGenerator : public MeshGeneratorD<3> {
   protected:
-
     bool split;
 
   public:
-
     /// Create generator
-    RectangularMesh3DSimpleGenerator(bool split=false): split(split) {}
+    RectangularMesh3DSimpleGenerator(bool split = false) : split(split) {}
 
     shared_ptr<MeshD<3>> generate(const shared_ptr<GeometryObjectD<3>>& geometry) override;
 };
 
-
-
 /**
  * Generator of basic 2D geometry grid with approximately equal spacing.
  * This generator respects existing object boundaries.
  */
-class PLASK_API OrderedMesh1DRegularGenerator: public OrderedMesh1DSimpleGenerator {
-
+class PLASK_API OrderedMesh1DRegularGenerator : public OrderedMesh1DSimpleGenerator {
     /// Requested spacing
     double spacing;
 
   public:
-
     /**
      * Create generator
      * \param spacing approximate distance between mesh lines
      */
-    OrderedMesh1DRegularGenerator(double spacing, bool split=false):
-        OrderedMesh1DSimpleGenerator(split), spacing(spacing) {}
+    OrderedMesh1DRegularGenerator(double spacing, bool split = false) : OrderedMesh1DSimpleGenerator(split), spacing(spacing) {}
 
     shared_ptr<MeshD<1>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
-
 
 /**
  * Generator of basic 2D geometry grid with approximately equal spacing.
  * This generator respects existing object boundaries.
  */
-class PLASK_API RectangularMesh2DRegularGenerator: public RectangularMesh2DSimpleGenerator {
-
+class PLASK_API RectangularMesh2DRegularGenerator : public RectangularMesh2DSimpleGenerator {
     /// Requested spacing
     double spacing0, spacing1;
 
   public:
-
     /**
      * Create generator
      * \param spacing approximate distance between mesh lines
      */
-    RectangularMesh2DRegularGenerator(double spacing, bool split=false):
-        RectangularMesh2DSimpleGenerator(split), spacing0(spacing), spacing1(spacing) {}
+    RectangularMesh2DRegularGenerator(double spacing, bool split = false)
+        : RectangularMesh2DSimpleGenerator(split), spacing0(spacing), spacing1(spacing) {}
 
     /**
      * Create generator
      * \param spacing0 approximate distance between mesh lines for horizontal axis
      * \param spacing1 approximate distance between mesh lines for vertical axis
      */
-    RectangularMesh2DRegularGenerator(double spacing0, double spacing1, bool split=false):
-        RectangularMesh2DSimpleGenerator(split), spacing0(spacing0), spacing1(spacing1) {}
+    RectangularMesh2DRegularGenerator(double spacing0, double spacing1, bool split = false)
+        : RectangularMesh2DSimpleGenerator(split), spacing0(spacing0), spacing1(spacing1) {}
 
     shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
@@ -190,19 +180,17 @@ class PLASK_API RectangularMesh2DRegularGenerator: public RectangularMesh2DSimpl
  * Generator of basic 3D geometry grid with approximately equal spacing.
  * This generator respects existing object boundaries.
  */
-struct PLASK_API RectangularMesh3DRegularGenerator: public RectangularMesh3DSimpleGenerator {
-
+struct PLASK_API RectangularMesh3DRegularGenerator : public RectangularMesh3DSimpleGenerator {
     /// Requested spacing
     double spacing0, spacing1, spacing2;
 
   public:
-
     /**
      * Create generator
      * \param spacing approximate distance between mesh lines
      */
-    RectangularMesh3DRegularGenerator(double spacing, bool split=false):
-        RectangularMesh3DSimpleGenerator(split), spacing0(spacing), spacing1(spacing), spacing2(spacing) {}
+    RectangularMesh3DRegularGenerator(double spacing, bool split = false)
+        : RectangularMesh3DSimpleGenerator(split), spacing0(spacing), spacing1(spacing), spacing2(spacing) {}
 
     /**
      * Create generator
@@ -210,44 +198,35 @@ struct PLASK_API RectangularMesh3DRegularGenerator: public RectangularMesh3DSimp
      * \param spacing1 approximate distance between mesh lines for transverse axis
      * \param spacing2 approximate distance between mesh lines for vertical axis
      */
-    RectangularMesh3DRegularGenerator(double spacing0, double spacing1, double spacing2, bool split=false):
-        RectangularMesh3DSimpleGenerator(split), spacing0(spacing0), spacing1(spacing1), spacing2(spacing2) {}
+    RectangularMesh3DRegularGenerator(double spacing0, double spacing1, double spacing2, bool split = false)
+        : RectangularMesh3DSimpleGenerator(split), spacing0(spacing0), spacing1(spacing1), spacing2(spacing2) {}
 
     shared_ptr<MeshD<3>> generate(const shared_ptr<GeometryObjectD<3>>& geometry) override;
 };
 
-
-
 /**
  * Generator of 2D geometry grid using other generator for horizontal axis
  */
-class PLASK_API RectangularMesh2DFrom1DGenerator: public MeshGeneratorD<2> {
-
+class PLASK_API RectangularMesh2DFrom1DGenerator : public MeshGeneratorD<2> {
     shared_ptr<MeshGeneratorD<1>> horizontal_generator;
 
   public:
-
     /**
      * Create generator
      */
-    RectangularMesh2DFrom1DGenerator(const shared_ptr<MeshGeneratorD<1>>& source):
-        horizontal_generator(source) {}
+    RectangularMesh2DFrom1DGenerator(const shared_ptr<MeshGeneratorD<1>>& source) : horizontal_generator(source) {}
 
     shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
 
-
-
 /**
  * Dividing generator ensuring no rapid change of element size
  */
-template <int dim>
-struct PLASK_API RectangularMeshRefinedGenerator: public MeshGeneratorD<dim> {
-
+template <int dim> struct PLASK_API RectangularMeshRefinedGenerator : public MeshGeneratorD<dim> {
     typedef typename Rectangular_t<dim>::Rectilinear GeneratedMeshType;
     using MeshGeneratorD<dim>::DIM;
 
-    typedef std::map<std::pair<weak_ptr<const GeometryObjectD<DIM>>,PathHints>, std::set<double>> Refinements;
+    typedef std::map<std::pair<weak_ptr<const GeometryObjectD<DIM>>, PathHints>, std::set<double>> Refinements;
 
     double aspect;
 
@@ -255,7 +234,9 @@ struct PLASK_API RectangularMeshRefinedGenerator: public MeshGeneratorD<dim> {
 
     shared_ptr<OrderedAxis> getAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir);
 
-    virtual shared_ptr<OrderedAxis> processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir) = 0;
+    virtual shared_ptr<OrderedAxis> processAxis(shared_ptr<OrderedAxis> axis,
+                                                const shared_ptr<GeometryObjectD<DIM>>& geometry,
+                                                size_t dir) = 0;
 
     virtual const char* name() = 0;
 
@@ -277,8 +258,7 @@ struct PLASK_API RectangularMeshRefinedGenerator: public MeshGeneratorD<dim> {
 
     /// \param value true if the adjacent mesh elements cannot differ more than twice in size along each axis
     void setAspect(double value) {
-        if (value != 0. && value < 2.)
-            throw BadInput("divideGenerator", "maximum aspect must be larger than 2");
+        if (value != 0. && value < 2.) throw BadInput("divideGenerator", "maximum aspect must be larger than 2");
         aspect = value;
         this->fireChanged();
     }
@@ -297,7 +277,10 @@ struct PLASK_API RectangularMeshRefinedGenerator: public MeshGeneratorD<dim> {
      * \param path additional path hints pointing to the refined object
      * \param position position of the additional grid line in the refined object
      */
-    void addRefinement(typename Primitive<DIM>::Direction direction, const weak_ptr<const GeometryObjectD<DIM>>& object, const PathHints& path, double position) {
+    void addRefinement(typename Primitive<DIM>::Direction direction,
+                       const weak_ptr<const GeometryObjectD<DIM>>& object,
+                       const PathHints& path,
+                       double position) {
         auto key = std::make_pair(object, path);
         assert(size_t(direction) <= dim);
         refinements[size_t(direction)][key].insert(position);
@@ -310,7 +293,9 @@ struct PLASK_API RectangularMeshRefinedGenerator: public MeshGeneratorD<dim> {
      * \param object refined object
      * \param position position of the additional grid line in the refined object
      */
-    void addRefinement(typename Primitive<DIM>::Direction direction, const weak_ptr<const GeometryObjectD<DIM>>& object, double position) {
+    void addRefinement(typename Primitive<DIM>::Direction direction,
+                       const weak_ptr<const GeometryObjectD<DIM>>& object,
+                       double position) {
         addRefinement(direction, object, PathHints(), position);
     }
 
@@ -342,13 +327,19 @@ struct PLASK_API RectangularMeshRefinedGenerator: public MeshGeneratorD<dim> {
      * \param path additional path hints pointing to the refined object
      * \param position position of the additional grid line in the refined object
      */
-    void removeRefinement(typename Primitive<DIM>::Direction direction, const weak_ptr<const GeometryObjectD<DIM>>& object, const PathHints& path, double position) {
+    void removeRefinement(typename Primitive<DIM>::Direction direction,
+                          const weak_ptr<const GeometryObjectD<DIM>>& object,
+                          const PathHints& path,
+                          double position) {
         auto key = std::make_pair(object, path);
         assert(size_t(direction) <= dim);
         auto ref = refinements[size_t(direction)].find(key);
-        if (ref == refinements[size_t(direction)].end()) throw BadInput("RectangularMeshDivideGenerator", "there are no refinements for specified geometry object.");
+        if (ref == refinements[size_t(direction)].end())
+            throw BadInput("RectangularMeshDivideGenerator", "there are no refinements for specified geometry object.");
         auto oposition = ref->second.find(position);
-        if (oposition == ref->second.end()) throw BadInput("RectangularMeshDivideGenerator", "specified geometry object does not have refinements at {0}.", *oposition);
+        if (oposition == ref->second.end())
+            throw BadInput("RectangularMeshDivideGenerator", "specified geometry object does not have refinements at {0}.",
+                           *oposition);
         ref->second.erase(oposition);
         if (ref->second.empty()) refinements[size_t(direction)].erase(ref);
         this->fireChanged();
@@ -360,7 +351,9 @@ struct PLASK_API RectangularMeshRefinedGenerator: public MeshGeneratorD<dim> {
      * \param object refined object
      * \param position position of the additional grid line in the refined object
      */
-    void removeRefinement(typename Primitive<DIM>::Direction direction, const weak_ptr<const GeometryObjectD<DIM>>& object, double position) {
+    void removeRefinement(typename Primitive<DIM>::Direction direction,
+                          const weak_ptr<const GeometryObjectD<DIM>>& object,
+                          double position) {
         removeRefinement(direction, object, PathHints(), position);
     }
 
@@ -390,7 +383,7 @@ struct PLASK_API RectangularMeshRefinedGenerator: public MeshGeneratorD<dim> {
      * \param object refined object
      * \param path additional path hints pointing to the refined object
      */
-    void removeRefinements(const weak_ptr<const GeometryObjectD<DIM>>& object, const PathHints& path=PathHints()) {
+    void removeRefinements(const weak_ptr<const GeometryObjectD<DIM>>& object, const PathHints& path = PathHints()) {
         auto key = std::make_pair(object, path);
         bool found = false;
         for (size_t i = 0; i != dim; ++i) {
@@ -400,8 +393,10 @@ struct PLASK_API RectangularMeshRefinedGenerator: public MeshGeneratorD<dim> {
                 refinements[i].erase(ref);
             }
         }
-        if (found) this->fireChanged();
-        else writelog(LOG_WARNING, "RectangularMeshDivideGenerator: There are no refinements for specified geometry object");
+        if (found)
+            this->fireChanged();
+        else
+            writelog(LOG_WARNING, "RectangularMeshDivideGenerator: There are no refinements for specified geometry object");
     }
 
     /**
@@ -429,12 +424,14 @@ struct PLASK_API RectangularMeshRefinedGenerator: public MeshGeneratorD<dim> {
         auto path = subtree.getLastPath();
         removeRefinements(dynamic_pointer_cast<const GeometryObjectD<DIM>>(path.back()), PathHints(path));
     }
-
 };
 
-template <> shared_ptr<MeshD<1>> RectangularMeshRefinedGenerator<1>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry);
-template <> shared_ptr<MeshD<2>> RectangularMeshRefinedGenerator<2>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry);
-template <> shared_ptr<MeshD<3>> RectangularMeshRefinedGenerator<3>::generate(const boost::shared_ptr<plask::GeometryObjectD<3>>& geometry);
+template <>
+shared_ptr<MeshD<1>> RectangularMeshRefinedGenerator<1>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry);
+template <>
+shared_ptr<MeshD<2>> RectangularMeshRefinedGenerator<2>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry);
+template <>
+shared_ptr<MeshD<3>> RectangularMeshRefinedGenerator<3>::generate(const boost::shared_ptr<plask::GeometryObjectD<3>>& geometry);
 
 PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshRefinedGenerator<1>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshRefinedGenerator<2>)
@@ -443,9 +440,7 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshRefinedGenerator<3>)
 /**
  * Dividing generator ensuring no rapid change of element size
  */
-template <int dim>
-struct PLASK_API RectangularMeshDivideGenerator: public RectangularMeshRefinedGenerator<dim> {
-
+template <int dim> struct PLASK_API RectangularMeshDivideGenerator : public RectangularMeshRefinedGenerator<dim> {
     typedef typename Rectangular_t<dim>::Rectilinear GeneratedMeshType;
     using MeshGeneratorD<dim>::DIM;
 
@@ -454,18 +449,18 @@ struct PLASK_API RectangularMeshDivideGenerator: public RectangularMeshRefinedGe
 
     char gradual;
 
-    shared_ptr<OrderedAxis> processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir) override;
+    shared_ptr<OrderedAxis> processAxis(shared_ptr<OrderedAxis> axis,
+                                        const shared_ptr<GeometryObjectD<DIM>>& geometry,
+                                        size_t dir) override;
 
     const char* name() override { return "DivideGenerator"; }
 
-    template <int fd>
-    friend shared_ptr<MeshGenerator> readRectangularDivideGenerator(XMLReader&, Manager&);
+    template <int fd> friend shared_ptr<MeshGenerator> readRectangularDivideGenerator(XMLReader&, Manager&);
 
     /**
      * Create new generator
      */
-    RectangularMeshDivideGenerator(): gradual(7)
-    {
+    RectangularMeshDivideGenerator() : gradual(7) {
         for (int i = 0; i != dim; ++i) {
             pre_divisions[i] = 1;
             post_divisions[i] = 1;
@@ -513,41 +508,34 @@ struct PLASK_API RectangularMeshDivideGenerator: public RectangularMeshRefinedGe
     }
 
     /// \return true if the adjacent mesh elements cannot differ more than twice in size along axis \p direction
-    inline bool getGradual(typename Primitive<DIM>::Direction direction) const {
-        return getGradual(size_t(direction));
-    }
+    inline bool getGradual(typename Primitive<DIM>::Direction direction) const { return getGradual(size_t(direction)); }
 
     /// \param value true if the adjacent mesh elements cannot differ more than twice in size along axis \p direction
-    inline void setGradual(typename Primitive<DIM>::Direction direction, bool value) {
-        setGradual(size_t(direction), value);
-    }
-
+    inline void setGradual(typename Primitive<DIM>::Direction direction, bool value) { setGradual(size_t(direction), value); }
 };
 
 PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshDivideGenerator<1>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshDivideGenerator<2>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshDivideGenerator<3>)
 
-
 /**
  * Dense-edge generator that has very dense sampling near edges and gradually gets wider towards the center.
  */
-template <int dim>
-struct PLASK_API RectangularMeshSmoothGenerator: public RectangularMeshRefinedGenerator<dim> {
-
+template <int dim> struct PLASK_API RectangularMeshSmoothGenerator : public RectangularMeshRefinedGenerator<dim> {
     typedef typename Rectangular_t<dim>::Rectilinear GeneratedMeshType;
     using MeshGeneratorD<dim>::DIM;
 
-    double finestep[dim];   ///< Small step next to the boundary
-    double maxstep[dim];    ///< Maximum step in the mesh
-    double factor[dim];     ///< Maximum element increase factor
+    double finestep[dim];  ///< Small step next to the boundary
+    double maxstep[dim];   ///< Maximum step in the mesh
+    double factor[dim];    ///< Maximum element increase factor
 
-    shared_ptr<OrderedAxis> processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir) override;
+    shared_ptr<OrderedAxis> processAxis(shared_ptr<OrderedAxis> axis,
+                                        const shared_ptr<GeometryObjectD<DIM>>& geometry,
+                                        size_t dir) override;
 
     const char* name() override { return "SmoothGenerator"; }
 
-    template <int fd>
-    friend shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLReader&, Manager&);
+    template <int fd> friend shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLReader&, Manager&);
 
     /// Create new generator
     RectangularMeshSmoothGenerator();
@@ -587,20 +575,21 @@ struct PLASK_API RectangularMeshSmoothGenerator: public RectangularMeshRefinedGe
     /// Set maximum element increase factor
     inline void setFactor(typename Primitive<DIM>::Direction direction, double value) {
         assert(size_t(direction) <= dim);
-        if (value < 1.) throw BadInput("SmoothGenerator", "increase factor for axis {:d} cannot be smaller than 1", size_t(direction));
+        if (value < 1.)
+            throw BadInput("SmoothGenerator", "increase factor for axis {:d} cannot be smaller than 1", size_t(direction));
         factor[size_t(direction)] = value;
         this->fireChanged();
     }
 };
 
-template<> RectangularMeshSmoothGenerator<1>::RectangularMeshSmoothGenerator();
-template<> RectangularMeshSmoothGenerator<2>::RectangularMeshSmoothGenerator();
-template<> RectangularMeshSmoothGenerator<3>::RectangularMeshSmoothGenerator();
+template <> RectangularMeshSmoothGenerator<1>::RectangularMeshSmoothGenerator();
+template <> RectangularMeshSmoothGenerator<2>::RectangularMeshSmoothGenerator();
+template <> RectangularMeshSmoothGenerator<3>::RectangularMeshSmoothGenerator();
 
 PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshSmoothGenerator<1>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshSmoothGenerator<2>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshSmoothGenerator<3>)
 
-} // namespace plask
+}  // namespace plask
 
-#endif // PLASK__GENERATOR_RECTANGULAR_H
+#endif  // PLASK__GENERATOR_RECTANGULAR_H

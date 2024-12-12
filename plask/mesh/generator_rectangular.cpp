@@ -19,33 +19,28 @@
 namespace plask {
 
 template <int dim>
-inline static void addPoints(shared_ptr<OrderedAxis> mesh,
-                             const shared_ptr<GeometryObjectD<dim>>& geometry,
-                             Primitive<3>::Direction dir,
-                             double split) {
-    OrderedAxis::WarningOff warning_off(mesh);
-    (void)warning_off;  // don't warn about unused variable warning_off
+PLASK_API shared_ptr<OrderedAxis> makeGeometryAxis(const shared_ptr<GeometryObjectD<dim>>& geometry,
+                                                   Primitive<3>::Direction dir,
+                                                   double split) {
     std::set<double> pts = geometry->getPointsAlong(dir);
+    std::vector<double> ptsv;
     if (split == 0) {
-        mesh->addOrderedPoints(pts.begin(), pts.end(), pts.size());
+        ptsv.reserve(pts.size());
+        for (double p : pts) ptsv.push_back(p);
     } else {
-        std::vector<double> ptsv;
         ptsv.reserve(2 * pts.size());
         for (double p : pts) {
             std::vector<double>::reverse_iterator it;
-            for (it = ptsv.rbegin(); it != ptsv.rend() && *it > p - split; ++it)
-                ;
+            for (it = ptsv.rbegin(); it != ptsv.rend() && *it > p - split; ++it);
             ptsv.insert(it.base(), p - split);
             ptsv.push_back(p + split);
         }
-        mesh->addOrderedPoints(ptsv.begin(), ptsv.end(), ptsv.size());
     }
+    return plask::make_shared<OrderedAxis>(ptsv);
 }
 
 shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry, double split) {
-    auto mesh = plask::make_shared<OrderedAxis>();
-    addPoints(mesh, geometry, Primitive<3>::DIRECTION_TRAN, split);
-    return mesh;
+    return makeGeometryAxis(geometry, Primitive<3>::DIRECTION_TRAN, split);
 }
 
 shared_ptr<MeshD<1>> OrderedMesh1DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry) {
@@ -56,9 +51,9 @@ shared_ptr<MeshD<1>> OrderedMesh1DSimpleGenerator::generate(const shared_ptr<Geo
 
 shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, double split) {
     shared_ptr<OrderedAxis> axis0(new OrderedAxis), axis1(new OrderedAxis);
-    addPoints(axis0, geometry, Primitive<3>::DIRECTION_TRAN, split);
-    addPoints(axis1, geometry, Primitive<3>::DIRECTION_VERT, split);
-    shared_ptr<RectangularMesh<2>> mesh = plask::make_shared<RectangularMesh<2>>(std::move(axis0), std::move(axis1));
+    shared_ptr<RectangularMesh<2>> mesh =
+        plask::make_shared<RectangularMesh<2>>(makeGeometryAxis(geometry, Primitive<3>::DIRECTION_TRAN, split),
+                                               makeGeometryAxis(geometry, Primitive<3>::DIRECTION_VERT, split));
     mesh->setOptimalIterationOrder();
     return mesh;
 }
@@ -76,12 +71,10 @@ shared_ptr<MeshD<2>> RectangularMesh2DFrom1DGenerator::generate(const shared_ptr
 }
 
 shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry, double split) {
-    shared_ptr<OrderedAxis> axis0(new OrderedAxis), axis1(new OrderedAxis), axis2(new OrderedAxis);
-    addPoints(axis0, geometry, Primitive<3>::DIRECTION_LONG, split);
-    addPoints(axis1, geometry, Primitive<3>::DIRECTION_TRAN, split);
-    addPoints(axis2, geometry, Primitive<3>::DIRECTION_VERT, split);
     shared_ptr<RectangularMesh<3>> mesh =
-        plask::make_shared<RectangularMesh<3>>(std::move(axis0), std::move(axis1), std::move(axis2));
+        plask::make_shared<RectangularMesh<3>>(makeGeometryAxis(geometry, Primitive<3>::DIRECTION_LONG, split),
+                                               makeGeometryAxis(geometry, Primitive<3>::DIRECTION_TRAN, split),
+                                               makeGeometryAxis(geometry, Primitive<3>::DIRECTION_VERT, split));
     mesh->setOptimalIterationOrder();
     return mesh;
 }
@@ -180,8 +173,7 @@ shared_ptr<OrderedAxis> RectangularMeshRefinedGenerator<dim>::getAxis(shared_ptr
             auto path = ref.first.second;
             auto boxes = geometry->getObjectBoundingBoxes(*object, path);
             auto origins = geometry->getObjectPositions(*object, path);
-            if (boxes.size() == 0)
-                writelog(LOG_WARNING, "DivideGenerator: Refinement defined for object absent from the geometry");
+            if (boxes.size() == 0) writelog(LOG_WARNING, "DivideGenerator: Refinement defined for object absent from the geometry");
             auto box = boxes.begin();
             auto origin = origins.begin();
             for (; box != boxes.end(); ++box, ++origin) {
@@ -190,8 +182,7 @@ shared_ptr<OrderedAxis> RectangularMeshRefinedGenerator<dim>::getAxis(shared_ptr
                     double lower = box->lower[dir] - zero;
                     double upper = box->upper[dir] - zero;
                     double x0 = x + zero;
-                    if (geometry_lower <= x0 && x0 <= geometry_upper)
-                        axis->addPoint(x0);
+                    if (geometry_lower <= x0 && x0 <= geometry_upper) axis->addPoint(x0);
                 }
             }
         }
@@ -675,5 +666,13 @@ static RegisterMeshGeneratorReader rectangular3d_smoothgenerator_reader("rectang
 template struct PLASK_API RectangularMeshSmoothGenerator<1>;
 template struct PLASK_API RectangularMeshSmoothGenerator<2>;
 template struct PLASK_API RectangularMeshSmoothGenerator<3>;
+
+template PLASK_API shared_ptr<OrderedAxis> makeGeometryAxis(const shared_ptr<GeometryObjectD<2>>& geometry,
+                                                            Primitive<3>::Direction dir,
+                                                            double split);
+
+template PLASK_API shared_ptr<OrderedAxis> makeGeometryAxis(const shared_ptr<GeometryObjectD<3>>& geometry,
+                                                            Primitive<3>::Direction dir,
+                                                            double split);
 
 }  // namespace plask

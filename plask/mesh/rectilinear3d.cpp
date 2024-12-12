@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -140,6 +140,7 @@ RectilinearMesh3D::~RectilinearMesh3D() {
 }
 
 void RectilinearMesh3D::setAxis(std::size_t axis_nr, shared_ptr<MeshAxis> new_val, bool fireResized) {
+    assert(axis_nr < 3);
     if (axis[axis_nr] == new_val) return;
     unsetChangeSignal(axis[axis_nr]);
     const_cast<shared_ptr<MeshAxis>&>(axis[axis_nr]) = new_val;
@@ -282,7 +283,3 @@ BoundaryNodeSet RectilinearMesh3D::createTopOfBoundary(const Box3D &box) const {
 }
 
 } // namespace plask
-
-
-
-

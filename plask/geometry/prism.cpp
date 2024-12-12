@@ -273,20 +273,17 @@ void Prism::addPointsAlongToSet(std::set<double>& points,
         return;
     }
 
-    // TODO: make it more clever reducing the number of points to absolute minimum
     if (vertices.size() < 3) return;
-    for (size_t i = 0; i < vertices.size(); ++i) {
-        LateralVec<double> a = vertices[i];
-        LateralVec<double> b = vertices[(i + 1) % vertices.size()];
-        LateralVec<double> ab = b - a;
-        double d = std::sqrt(dot(ab, ab));
+    std::set<double> vert;
+    for (const LateralVec<double>& v : vertices) {
+        vert.insert(v[int(direction)]);
+    }
+    for (std::set<double>::const_iterator b = vert.begin(), a = b++; b != vert.end(); ++a, ++b) {
+        double d = *b - *a;
         unsigned steps = std::max(1u, static_cast<unsigned>(d / min_step_size));
         steps = std::min(steps, max_steps);
-        for (unsigned j = 0; j <= steps; ++j) {
-            double t = static_cast<double>(j) / steps;
-            LateralVec<double> p = a * (1 - t) + b * t;
-            points.insert(p.c0);
-        }
+        double step = d / steps;
+        for (unsigned i = 0; i <= steps; ++i) points.insert(*a + i * step);
     }
 }
 

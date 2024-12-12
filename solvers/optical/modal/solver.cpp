@@ -141,21 +141,33 @@ template <> struct LateralMeshAdapter<SolverOver<Geometry3D>> {
   public:
     shared_ptr<RectangularMesh<3>> mesh;
 
-    LateralMeshAdapter(const SolverOver<Geometry3D>* solver) : mesh(makeGeometryGrid(solver->getGeometry())) {
+    LateralMeshAdapter(const SolverOver<Geometry3D>* solver) : mesh(make_shared<RectangularMesh<3>>()) {
+        std::set<double> xys[2];
+        for (const auto& bbox : solver->getGeometry()->getLeafsBoundingBoxes()) {
+            xys[0].insert(bbox.lower[0]);
+            xys[0].insert(bbox.upper[0]);
+            xys[1].insert(bbox.lower[1]);
+            xys[1].insert(bbox.upper[1]);
+        }
         // We divide each rectangle into three points to correctly consider circles and triangles
         for (int ax = 0; ax != 2; ++ax) {
-            if (mesh->axis[ax]->size() < 2) continue;
-            std::vector<double> refines;
-            refines.reserve(2 * (mesh->axis[ax]->size() - 1));
-            double x = mesh->axis[ax]->at(0);
-            for (auto it = ++(mesh->axis[ax]->begin()); it != mesh->axis[ax]->end(); ++it) {
-                refines.push_back((2. * x + *it) / 3.);
-                refines.push_back((x + 2. * *it) / 3.);
-                x = *it;
+            std::vector<double> verts;
+            if (!xys[ax].empty()) {
+                verts.reserve(3 * xys[ax].size() - 2);
+                auto it = xys[ax].begin();
+                double x = *it;
+                verts.push_back(x);
+                for (++it; it != xys[ax].end(); ++it) {
+                    verts.push_back((2. * x + *it) / 3.);
+                    verts.push_back((x + 2. * *it) / 3.);
+                    verts.push_back(*it);
+                    x = *it;
+                }
             }
-            static_pointer_cast<OrderedAxis>(mesh->axis[ax])->addOrderedPoints(refines.begin(), refines.end());
+            mesh->setAxis(ax, shared_ptr<OrderedAxis>(new OrderedAxis(verts)), false);
         }
         _size = mesh->axis[0]->size() * mesh->axis[1]->size();
+        mesh->setAxis(2, makeGeometryAxis(solver->getGeometry()->getChild(), Primitive<3>::DIRECTION_VERT), false);
     }
 
     void resetMidpoints(const shared_ptr<MeshAxis>& vbounds) {
