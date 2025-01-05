@@ -614,9 +614,9 @@ if(BUILD_PYTHON)
             execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/gui ${PLASK_PATH}/gui)
         endif()
 
-        install(TARGETS plaskgui DESTINATION bin COMPONENT gui)
-
         if(UNIX)
+            install(TARGETS plaskgui DESTINATION bin COMPONENT gui)
+
             install(FILES utils/application-x-plask.xml DESTINATION share/mime/packages COMPONENT gui)
             install(FILES utils/plaskgui.desktop DESTINATION share/applications COMPONENT gui)
             foreach(s 16 24 32 48)
@@ -643,6 +643,8 @@ if(BUILD_PYTHON)
         endif()
 
         if(WIN32)
+            install(TARGETS plaskgui RUNTIME DESTINATION bin COMPONENT gui)
+
             file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/plaskgui.rc
                 "${manifest}"
                 "2 ICON \"${CMAKE_SOURCE_DIR}/utils/plask.ico\"\n"
@@ -931,8 +933,6 @@ endif()
 
 # ----------===== Packaging =====--------------------------------------------
 
-# This is ugly! Although somehow useful for quick dirty package generation
-
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Photonic LAser Simulation Kit")
 set(CPACK_PACKAGE_VENDOR "Photonics Group, Lodz University of Technology")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/ABOUT")
@@ -945,20 +945,25 @@ set(CPACK_STRIP_FILES ON)
 #set(CPACK_COMPONENTS_ALL "core;solvers;gui;utils;doc;dev")
 set(CPACK_COMPONENTS_ALL "core;solvers;gui;doc;dev")
 set(CPACK_COMPONENT_CORE_DISPLAY_NAME "PLaSK Core")
+set(CPACK_COMPONENT_CORE_DESCRIPTION "PLaSK executable without graphical interface and solvers.")
 set(CPACK_COMPONENT_CORE_REQUIRED ON)
 set(CPACK_COMPONENT_DOC_DISPLAY_NAME "User Manual and Examples")
+set(CPACK_COMPONENT_DOC_DESCRIPTION "User manual and examples.")
 set(CPACK_COMPONENT_SOLVERS_DISPLAY_NAME "Computational Solvers")
+set(CPACK_COMPONENT_SOLVERS_DESCRIPTION "Computational solvers i.e. the heart of PLaSK.")
 set(CPACK_COMPONENT_GUI_DISPLAY_NAME "Graphical User Interface")
+set(CPACK_COMPONENT_GUI_DESCRIPTION "Graphical User Interface for PLaSK.")
 set(CPACK_COMPONENT_UTILS_DISPLAY_NAME "Command-Line Utilities (e.g. dan2xpl)")
 set(CPACK_COMPONENT_DEV_DISPLAY_NAME "Headers and Libraries")
+set(CPACK_COMPONENT_DEV_DESCRIPTION "Development headers and libraries e.g. for writing custom binary material libraries.")
 set(CPACK_COMPONENT_DEV_DISABLED ON)
 
 set(CPACK_COMPONENTS_GROUPING "ONE_PER_GROUP")
 set(CPACK_COMPONENT_GROUP_APP_DISPLAY_NAME "PLaSK")
-set(CPACK_COMPONENT_GROUP_APP_DESCRIPTION "Main PLaSK application")
+set(CPACK_COMPONENT_GROUP_APP_DESCRIPTION "Main PLaSK application.")
 set(CPACK_COMPONENT_GROUP_APP_BOLD_TITLE ON)
 set(CPACK_COMPONENT_GROUP_DEVEL_DISPLAY_NAME "Development")
-set(CPACK_COMPONENT_GROUP_DEVEL_DESCRIPTION "Development headers and libraries")
+set(CPACK_COMPONENT_GROUP_DEVEL_DESCRIPTION "Development headers and libraries.")
 
 set(CPACK_COMPONENT_CORE_GROUP app)
 set(CPACK_COMPONENT_DOC_GROUP app)
@@ -970,10 +975,31 @@ set(CPACK_COMPONENT_DEV_GROUP devel)
 # Settings for NSIS generator
 if(WIN32)
     set(CPACK_GENERATOR "NSIS")
-    if(DLLS_DIR)
-        file(GLOB dlls "${DLLS_DIR}/*")
+
+    set(NSIS_DLLS_DIR IGNORE CACHE PATH "Directory with DLLs to be copied to the installation directory")
+    set(NSIS_DEV_LIBS_DIR IGNORE CACHE PATH "Directory with external libraries and headers to be copied to the installation directory")
+    set(NSIS_DEV_DOWNLOAD_SITE IGNORE CACHE STRING "URL of the download site")
+
+    if(NSIS_DLLS_DIR)
+        file(GLOB dlls "${NSIS_DLLS_DIR}/*")
         install(FILES ${dlls} DESTINATION bin COMPONENT core)
     endif()
+
+    if(INSTALL_DEV AND NSIS_DEV_LIBS_DIR)
+        install(DIRECTORY ${NSIS_DEV_LIBS_DIR}/lib DESTINATION . COMPONENT dev_libs)
+        install(DIRECTORY ${NSIS_DEV_LIBS_DIR}/include DESTINATION . COMPONENT dev_libs)
+        set(CPACK_COMPONENT_DEV_LIBS_DISPLAY_NAME "External headers and libraries")
+        set(CPACK_COMPONENT_DEV_LIBS_DESCRIPTION "External headers and libraries necessary for development. \
+            It contains Boost and GSL headers and link libraries. You may uncheck this if you have them installed separately.")
+        set(CPACK_COMPONENT_DEV_LIBS_DISABLED ON)
+        set(CPACK_COMPONENT_DEV_LIBS_GROUP devel)
+        if (NSIS_DEV_DOWNLOAD_SITE)
+            set(CPACK_COMPONENT_DEV_LIBS_DOWNLOADED ON)
+            set(CPACK_COMPONENT_DEV_LIBS_ARCHIVE_FILE "plask-dev-libs.zip")
+        endif()
+        list(APPEND CPACK_COMPONENTS_ALL dev_libs)
+    endif()
+
     set(CPACK_PACKAGE_NAME "PLaSK")
     set(CPACK_NSIS_PACKAGE_NAME "PLaSK")
     list(APPEND CPACK_PACKAGE_EXECUTABLES "plaskgui;PLaSK GUI")
@@ -988,7 +1014,7 @@ if(WIN32)
     set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
     set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/ABOUT")
     set(CPACK_NSIS_DISPLAY_NAME "PLaSK ${CPACK_PACKAGE_VERSION}")
-    set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+    #set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
     set(CPACK_NSIS_MODIFY_PATH ON)
     set(CPACK_NSIS_MUI_FINISHPAGE_RUN "plaskgui.exe")
     # File types association:
@@ -1113,7 +1139,7 @@ if(UNIX)
     endif()
     set(CPACK_DEBIAN_APP_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/postinst;${CMAKE_BINARY_DIR}/prerm")
     set(CPACK_DEBIAN_DEVEL_PACKAGE_NAME plask-dev)
-    set(CPACK_DEBIAN_DEVEL_PACKAGE_DEPENDS "plask (= ${CPACK_PACKAGE_VERSION})")
+    set(CPACK_DEBIAN_DEVEL_PACKAGE_DEPENDS "plask (= ${CPACK_PACKAGE_VERSION}), libboost-dev")
     set(CPACK_DEBIAN_DEVEL_DESCRIPTION "${plask_about}\nThis package contains headers and libraries needed to compile custom materials\n for PLaSK.")
 
     set(CPACK_RPM_COMPONENT_INSTALL ON)
@@ -1168,6 +1194,11 @@ set(CPACK_SOURCE_IGNORE_FILES
 )
 
 include(CPack)
+
+if(WIN32 AND INSTALL_DEV AND NSIS_DEV_LIBS_DIR AND NSIS_DEV_DOWNLOAD_SITE)
+    cpack_configure_downloads(${NSIS_DEV_DOWNLOAD_SITE} NO_ADD_REMOVE)
+endif()
+
 
 # ----------===== config.hpp & version.hpp =====--------------------------------------------
 configure_file(${CMAKE_SOURCE_DIR}/config.hpp.in ${CMAKE_BINARY_DIR}/include/plask/config.hpp)

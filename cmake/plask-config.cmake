@@ -14,7 +14,6 @@
 #  PLASK_FOUND                - system has PLaSK
 #  PLASK_INCLUDE_DIR          - the PLaSK include directory (cached)
 #  PLASK_INCLUDE_DIRS         - the PLaSK include directories
-#                               (identical to PLASK_INCLUDE_DIR)
 #  PLASK_LIBRARY              - the PLaSK library (cached)
 #  PLASK_LIBRARIES            - list of all PLaSK libraries found
 
@@ -22,16 +21,12 @@ if(NOT DEFINED PLASK_ROOT AND DEFINED ENV{PLASK_ROOT})
     set(PLASK_ROOT "$ENV{PLASK_ROOT}")
 endif()
 
-if(DEFINED PLASK_ROOT)
-    find_library(PLASK_LIBRARY NAMES plask libplask HINTS "${PLASK_ROOT}/lib")
-    set(PLASK_INCLUDE_DIR "${PLASK_ROOT}/include")
-    set(PLASK_INCLUDE_DIRS "${PLASK_ROOT}/include")
-else()
-    find_library(PLASK_LIBRARY NAMES plask libplask)
-    set(PLASK_INCLUDE_DIR "")
-    set(PLASK_INCLUDE_DIRS "")
-endif()
+find_library(PLASK_LIBRARY NAMES plask libplask HINTS "${PLASK_ROOT}/lib")
+find_path(PLASK_INCLUDE_DIR plask/plask.hpp HINTS "${PLASK_ROOT}/include")
 
+find_package(Boost CONFIG REQUIRED)
+
+list(APPEND PLASK_INCLUDE_DIRS "${PLASK_INCLUDE_DIR}" "${Boost_INCLUDE_DIRS}")
 list(APPEND PLASK_LIBRARIES "${PLASK_LIBRARY}")
 
 mark_as_advanced(PLASK_LIBRARY PLASK_LIBRARIES PLASK_INCLUDE_DIR PLASK_INCLUDE_DIRS)
