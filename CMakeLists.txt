@@ -139,8 +139,7 @@ option(PLASK_OPTIONAL_STD "Use std optional (supported by C++17) instead of boos
 #TODO if disabled, plask should find and use external fmt lib.
 option(PLASK_EXPORTS_FMT "Export fmt symbols in libplask (affects only windows)" ON)
 
-option(INSTALL_DEV "Install headers to system locations" OFF)
-option(INSTALL_MATERIALS_DEV "Install headers for compuling materials" OFF)
+option(INSTALL_DEV "Install headers and libraries to system locations" OFF)
 
 option(XML_STATIC "If enabled, XML_STATIC symbol will be defined, which is required to use static expat build in Windows." OFF)
 if (XML_STATIC)
@@ -177,10 +176,10 @@ endif()
 
 # ---------- External libraries --------------------------------------------
 if(WIN32)
-    get_filename_component(compliler_prefix_path ${CMAKE_CXX_COMPILER} PATH)
-    get_filename_component(compliler_prefix_path ${compliler_prefix_path} PATH) # get rid of bin
+    get_filename_component(compiler_prefix_path ${CMAKE_CXX_COMPILER} PATH)
+    get_filename_component(compiler_prefix_path ${compiler_prefix_path} PATH) # get rid of bin
     #TODO test how it should look like if we use MSVC
-    list(APPEND CMAKE_SYSTEM_PREFIX_PATH ${compliler_prefix_path})
+    list(APPEND CMAKE_SYSTEM_PREFIX_PATH ${compiler_prefix_path})
 endif()
 
 if(BUILD_PYTHON)
@@ -374,9 +373,14 @@ endif()
 if(INSTALL_DEV)
     install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
     install(DIRECTORY solvers/providers DESTINATION include/plask COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
-    install(FILES extlib/fmt/format.h extlib/fmt/core.h extlib/fmt/ostream.h DESTINATION include/fmt COMPONENT dev)
     install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.hpp DESTINATION include/plask COMPONENT dev)
+    install(FILES cmake/plask-config.cmake DESTINATION share/plask/cmake COMPONENT dev)
 endif()
+
+if(INSTALL_DEV)
+    install(FILES extlib/fmt/format.h extlib/fmt/core.h extlib/fmt/ostream.h DESTINATION include/fmt COMPONENT dev)
+endif()
+
 
 set(PLaSK_LIBRARIES libplask)
 set(PLaSK_Python3_LIBRARIES libplask_python)
@@ -925,26 +929,13 @@ else()
 endif()
 
 
-# ----------===== Public headers for writing material databases =====--------
-
-if(NOT INSTALL_DEV AND INSTALL_MATERIALS_DEV)
-    install(FILES plask/material.hpp plask/math.hpp plask/memory.hpp plask/exceptions.hpp plask/parallel.hpp
-            DESTINATION include/plask COMPONENT dev)
-    install(FILES plask/material/material.hpp plask/material/db.hpp DESTINATION include/plask/material COMPONENT dev)
-    install(FILES plask/utils/format.hpp plask/utils/string.hpp plask/utils/system.hpp DESTINATION include/plask/utils COMPONENT dev)
-    install(FILES plask/vector/tensor2.hpp plask/vector/tensor3.hpp DESTINATION include/plask/vector COMPONENT dev)
-    install(FILES plask/phys/constants.hpp plask/phys/functions.hpp DESTINATION include/plask/phys COMPONENT dev)
-    install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.hpp  ${CMAKE_BINARY_DIR}/include/plask/version.hpp
-            DESTINATION include/plask COMPONENT dev)
-endif()
-
 # ----------===== Packaging =====--------------------------------------------
 
 # This is ugly! Although somehow useful for quick dirty package generation
 
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Photonic LAser Simulation Kit")
 set(CPACK_PACKAGE_VENDOR "Photonics Group, Lodz University of Technology")
-set(CPACK_PACKAGE_DESCRIPTION_FILE  "${CMAKE_SOURCE_DIR}/ABOUT")
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/ABOUT")
 file(READ ${CMAKE_SOURCE_DIR}/ABOUT CPACK_PACKAGE_DESCRIPTION)
 
 string(REGEX REPLACE "\\.[^.]*$" "" CPACK_PACKAGE_VERSION ${PLASK_VERSION})
@@ -953,13 +944,28 @@ set(CPACK_STRIP_FILES ON)
 
 #set(CPACK_COMPONENTS_ALL "core;solvers;gui;utils;doc;dev")
 set(CPACK_COMPONENTS_ALL "core;solvers;gui;doc;dev")
-set(CPACK_COMPONENT_CORE_DISPLAY_NAME "PLaSK core")
+set(CPACK_COMPONENT_CORE_DISPLAY_NAME "PLaSK Core")
 set(CPACK_COMPONENT_CORE_REQUIRED ON)
 set(CPACK_COMPONENT_DOC_DISPLAY_NAME "User Manual and Examples")
 set(CPACK_COMPONENT_SOLVERS_DISPLAY_NAME "Computational Solvers")
 set(CPACK_COMPONENT_GUI_DISPLAY_NAME "Graphical User Interface")
 set(CPACK_COMPONENT_UTILS_DISPLAY_NAME "Command-Line Utilities (e.g. dan2xpl)")
-set(CPACK_COMPONENT_DEV_DISPLAY_NAME "Custom Materials Headers")
+set(CPACK_COMPONENT_DEV_DISPLAY_NAME "Headers and Libraries")
+set(CPACK_COMPONENT_DEV_DISABLED ON)
+
+set(CPACK_COMPONENTS_GROUPING "ONE_PER_GROUP")
+set(CPACK_COMPONENT_GROUP_APP_DISPLAY_NAME "PLaSK")
+set(CPACK_COMPONENT_GROUP_APP_DESCRIPTION "Main PLaSK application")
+set(CPACK_COMPONENT_GROUP_APP_BOLD_TITLE ON)
+set(CPACK_COMPONENT_GROUP_DEVEL_DISPLAY_NAME "Development")
+set(CPACK_COMPONENT_GROUP_DEVEL_DESCRIPTION "Development headers and libraries")
+
+set(CPACK_COMPONENT_CORE_GROUP app)
+set(CPACK_COMPONENT_DOC_GROUP app)
+set(CPACK_COMPONENT_SOLVERS_GROUP app)
+set(CPACK_COMPONENT_GUI_GROUP app)
+set(CPACK_COMPONENT_UTILS_GROUP app)
+set(CPACK_COMPONENT_DEV_GROUP devel)
 
 # Settings for NSIS generator
 if(WIN32)
@@ -1075,45 +1081,56 @@ if(UNIX)
     # execute_process(COMMAND ${Python3_EXECUTABLE} -c "import sys; v=${Boost_VERSION}; sys.stdout.write('.'.join(str(s) for s in (v//100000,v//100%1000,v%100)))" OUTPUT_VARIABLE boostver)
     set(boostver "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 
+    set(CPACK_DEB_COMPONENT_INSTALL ON)
+    set(CPACK_DEBIAN_APP_PACKAGE_NAME plask)
+    set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Maciej Dems <maciej.dems@p.lodz.pl>")
     set(CPACK_DEBIAN_PACKAGE_SECTION "Science")
-    file(READ ${CMAKE_SOURCE_DIR}/ABOUT CPACK_DEBIAN_PACKAGE_DESCRIPTION)
-    set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Photonic LAser Simulation Kit\n${CPACK_DEBIAN_PACKAGE_DESCRIPTION}")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libexpat1, libboost-python${boostver}, libboost-filesystem${boostver}, binfmt-support")
+    file(READ ${CMAKE_SOURCE_DIR}/ABOUT plask_about)
+    set(CPACK_DEBIAN_APP_DESCRIPTION "${plask_about}\nTo compile your own materials, install the 'plask-dev' package.")
+    set(CPACK_DEBIAN_APP_PACKAGE_DEPENDS "libc6, libexpat1, libboost-python${boostver}, libboost-filesystem${boostver}, binfmt-support")
     if("${OpenMP_CXX_FLAGS}" MATCHES ".*libiomp5*")
-        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libomp5")
+        set(CPACK_DEBIAN_APP_PACKAGE_DEPENDS "${CPACK_DEBIAN_APP_PACKAGE_DEPENDS}, libomp5")
     endif()
     if("${BLAS_LIBRARIES}" MATCHES ".*libopenblas.so.*")
-        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libopenblas-base | libopenblas0-pthread | libopenblas0-openmp | libopenblas0-serial")
+        set(CPACK_DEBIAN_APP_PACKAGE_DEPENDS "${CPACK_DEBIAN_APP_PACKAGE_DEPENDS}, libopenblas-base | libopenblas0-pthread | libopenblas0-openmp | libopenblas0-serial")
     elseif("${BLAS_LIBRARIES}" MATCHES ".*libmkl.*")
         foreach(libmkl rt core sequential intel_lp64 gf_lp64 gnu_thread intel_thread)
             if("${BLAS_LIBRARIES};${LAPACK_LIBRARIES}" MATCHES ".*libmkl_${libmkl}.so.*")
                 string(REPLACE "_" "-" mklpkg "${libmkl}")
-                set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libmkl-${mklpkg}")
+                set(CPACK_DEBIAN_APP_PACKAGE_DEPENDS "${CPACK_DEBIAN_APP_PACKAGE_DEPENDS}, libmkl-${mklpkg}")
             endif()
         endforeach()
-        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libmkl-def, libmkl-avx2")
+        set(CPACK_DEBIAN_APP_PACKAGE_DEPENDS "${CPACK_DEBIAN_APP_PACKAGE_DEPENDS}, libmkl-def, libmkl-avx2")
     else()
-        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, libblas.so.3, liblapack.so.3")
+        set(CPACK_DEBIAN_APP_PACKAGE_DEPENDS "${CPACK_DEBIAN_APP_PACKAGE_DEPENDS}, libblas.so.3, liblapack.so.3")
     endif()
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, python3 (>= 3.${Python3_VERSION_MINOR}.0), python3-numpy, python3-matplotlib, python3-h5py, python3-scipy")
-    set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "ipython3 (>= 0.13)")
+    set(CPACK_DEBIAN_APP_PACKAGE_DEPENDS "${CPACK_DEBIAN_APP_PACKAGE_DEPENDS}, python3 (>= 3.${Python3_VERSION_MINOR}.0), python3-numpy, python3-matplotlib, python3-h5py, python3-scipy")
+    set(CPACK_DEBIAN_APP_PACKAGE_RECOMMENDS "ipython3 (>= 0.13)")
     if(BUILD_GUI)
-        set(CPACK_DEBIAN_PACKAGE_DEPENDS "${CPACK_DEBIAN_PACKAGE_DEPENDS}, python3-pyqt5 | python3-pyside2.qthelp, python3-lxml, python3-yaml")
-        set(CPACK_DEBIAN_PACKAGE_RECOMMENDS "${CPACK_DEBIAN_PACKAGE_RECOMMENDS}, python3-jedi, python3-paramiko")
+        set(CPACK_DEBIAN_APP_PACKAGE_DEPENDS "${CPACK_DEBIAN_APP_PACKAGE_DEPENDS}, python3-pyqt5 | python3-pyside2.qthelp, python3-lxml, python3-yaml")
+        set(CPACK_DEBIAN_APP_PACKAGE_RECOMMENDS "${CPACK_DEBIAN_APP_PACKAGE_RECOMMENDS}, python3-jedi, python3-paramiko")
     endif()
-    set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/postinst;${CMAKE_BINARY_DIR}/prerm")
-    # set(CPACK_DEB_COMPONENT_INSTALL ON) # no postinst/prerm scripts are added if this is turned on
+    set(CPACK_DEBIAN_APP_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/postinst;${CMAKE_BINARY_DIR}/prerm")
+    set(CPACK_DEBIAN_DEVEL_PACKAGE_NAME plask-dev)
+    set(CPACK_DEBIAN_DEVEL_PACKAGE_DEPENDS "plask (= ${CPACK_PACKAGE_VERSION})")
+    set(CPACK_DEBIAN_DEVEL_DESCRIPTION "${plask_about}\nThis package contains headers and libraries needed to compile custom materials\n for PLaSK.")
+
+    set(CPACK_RPM_COMPONENT_INSTALL ON)
+    set(CPACK_RPM_FILE_NAME "RPM-DEFAULT")
+    set(CPACK_RPM_APP_PACKAGE_NAME plask)
     set(CPACK_RPM_PACKAGE_GROUP Applications/Engineering)
-    set(CPACK_RPM_PACKAGE_REQUIRES "expat boost-filesystem openblas boost-python3 python3-numpy python3-pip")
-    # set(CPACK_RPM_PACKAGE_REQUIRES "scipy python-matplotlib h5py")
+    set(CPACK_RPM_APP_PACKAGE_REQUIRES "expat boost-filesystem openblas boost-python3 python3-numpy python3-pip")
+    set(CPACK_RPM_APP_PACKAGE_SUGGESTS "scipy python-matplotlib h5py")
     if(BUILD_GUI)
-        set(CPACK_RPM_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE_REQUIRES} python3-pyqt5-sip python3-pyyaml")
+        set(CPACK_RPM_APP_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE_REQUIRES} python3-pyqt5-sip python3-pyyaml")
     endif()
     set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST "/usr;/usr/bin;/usr/include;/usr/lib;/usr/share;/usr/share/applications;/usr/share/doc;/usr/share/icons;/usr/share/icons/hicolor;/usr/share/icons/hicolor/16x16;/usr/share/icons/hicolor/16x16/apps;/usr/share/icons/hicolor/16x16/mimetypes;/usr/share/icons/hicolor/24x24;/usr/share/icons/hicolor/24x24/apps;/usr/share/icons/hicolor/24x24/mimetypes;/usr/share/icons/hicolor/32x32;/usr/share/icons/hicolor/32x32/apps;/usr/share/icons/hicolor/32x32/mimetypes;/usr/share/icons/hicolor/48x48;/usr/share/icons/hicolor/48x48/apps;/usr/share/icons/hicolor/48x48/mimetypes;/usr/share/icons/hicolor/scalable;/usr/share/icons/hicolor/scalable/apps;/usr/share/icons/hicolor/scalable/mimetypes;/usr/share/icons;/usr/share/icons/breeze;/usr/share/icons/breeze/16x16;/usr/share/icons/breeze/16x16/apps;/usr/share/icons/breeze/16x16/mimetypes;/usr/share/icons/breeze/24x24;/usr/share/icons/breeze/24x24/apps;/usr/share/icons/breeze/24x24/mimetypes;/usr/share/icons/breeze/32x32;/usr/share/icons/breeze/32x32/apps;/usr/share/icons/breeze/32x32/mimetypes;/usr/share/icons/breeze/48x48;/usr/share/icons/breeze/48x48/apps;/usr/share/icons/breeze/48x48/mimetypes;/usr/share/icons/breeze/scalable;/usr/share/icons/breeze/scalable/apps;/usr/share/icons/breeze/scalable/mimetypes;/usr/share/mime;/usr/share/mime/packages;/usr/share/mime/packages")
-    set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/rpmpostin")
-    set(CPACK_RPM_PRE_UNINSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/rpmpreun")
-    set(CPACK_RPM_POST_UNINSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/rpmpostun")
+    set(CPACK_RPM_APP_POST_INSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/rpmpostin")
+    set(CPACK_RPM_APP_PRE_UNINSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/rpmpreun")
+    set(CPACK_RPM_APP_POST_UNINSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/rpmpostun")
+    set(CPACK_RPM_DEVEL_PACKAGE_NAME plask-devel)
+    set(CPACK_RPM_DEVEL_PACKAGE_REQUIRES "plask = ${CPACK_PACKAGE_VERSION}")
 
     install(FILES "${CMAKE_SOURCE_DIR}/LICENSE" DESTINATION "share/doc/${CPACK_PACKAGE_NAME}" RENAME copyright
             PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ)
