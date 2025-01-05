@@ -440,4 +440,8 @@ inline LazyData<T> SafeData(const LazyData<T>& src, const T safe_value=Zero<T>()
 
 }   // namespace plask
 
+#if FMT_VERSION >= 90000
+template <typename T> struct fmt::formatter<plask::LazyData<T>> : ostream_formatter {};
+#endif
+
 #endif // PLASK__LAZYDATA_H

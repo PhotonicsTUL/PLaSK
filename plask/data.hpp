@@ -846,5 +846,8 @@ namespace std {
     }
 }   // namespace std
 
+#if FMT_VERSION >= 90000
+template <typename T> struct fmt::formatter<plask::DataVector<T>> : ostream_formatter {};
+#endif
 
 #endif // PLASK__DATA_H

@@ -254,7 +254,7 @@ template <typename T> struct Tensor2 {
      * @return out stream
      */
     friend inline std::ostream& operator<<(std::ostream& out, const Tensor2<T>& to_print) {
-        return out << '(' << str(to_print.c00) << ", " << str(to_print.c11) << ')';
+        return out << "[[" << str(to_print.c00) << ", " << str(to_print.c11) << "]]";
     }
 };
 
@@ -305,5 +305,9 @@ template <typename T, typename OtherT> plask::Tensor2<T> pow(plask::Tensor2<T> t
 template <typename T> inline bool isnan(plask::Tensor2<T> tens) { return isnan(tens.c00) || isnan(tens.c11); }
 
 }  // namespace std
+
+#if FMT_VERSION >= 90000
+template <typename T> struct fmt::formatter<plask::Tensor2<T>> : ostream_formatter {};
+#endif
 
 #endif  // PLASK__TESNOR2_H

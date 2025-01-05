@@ -42,7 +42,7 @@ add_library(fftpacx SHARED
 )
 
 if(WIN32)
-    if(INSTALL_EXTERAL_DEV)
+    if(INSTALL_EXTERNAL_DEV)
         install(TARGETS fftpacx RUNTIME DESTINATION bin COMPONENT solvers
                                 ARCHIVE DESTINATION lib COMPONENT dev)
     else()
@@ -52,6 +52,6 @@ else()
     install(TARGETS fftpacx LIBRARY DESTINATION lib COMPONENT solvers)
 endif()
 
-if(INSTALL_EXTERAL_DEV)
+if(INSTALL_EXTERNAL_DEV)
     install(FILES fftpacx.h DESTINATION include COMPONENT dev)
 endif()

@@ -15,7 +15,7 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)  # all functions will be exported fro
 if(WIN32)
     add_library(nspcg SHARED nspcg.c)
     target_link_libraries(nspcg vcf2c)
-    if(INSTALL_EXTERAL_DEV)
+    if(INSTALL_EXTERNAL_DEV)
         install(TARGETS nspcg RUNTIME DESTINATION bin COMPONENT solvers
                               ARCHIVE DESTINATION lib COMPONENT dev)
     else()
@@ -29,6 +29,6 @@ else()
     install(TARGETS nspcg LIBRARY DESTINATION lib COMPONENT solvers)
 endif()
 
-if(INSTALL_EXTERAL_DEV)
+if(INSTALL_EXTERNAL_DEV)
     install(FILES nspcg.hpp DESTINATION include COMPONENT dev)
 endif()

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -411,7 +411,7 @@ public:
         for (auto& el: container) {
             auto place = el.place(mesh, geometry);
             if (place.empty())
-                writelog(LOG_WARNING, "Boundary condition with value {} contains no points for given mesh", el.value);
+                writelog(LOG_WARNING, "Boundary condition with value {} contains no points for given mesh", str(el.value));
             impl.container.push_back(
                 BoundaryConditionWithMesh<Boundary,ValueType>(place, el.value)
             );

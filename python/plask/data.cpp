@@ -247,7 +247,7 @@ template <typename MeshT> struct PythonDataVector_SliceBase {
 
     static size_t index(const shared_ptr<MeshD<dim>>& data_mesh, const py::object& indices) {
         auto src_mesh = dynamic_pointer_cast<MeshT>(data_mesh);
-        if (!src_mesh) throw TypeError("{0}D slice can only be extracted for data with RectangularMesh{0}D", dim);
+        if (!src_mesh) throw TypeError("{0}D slice can only be extracted for data with RectangularMesh{0}D", int(dim));
         Vec<dim, int> vec = Vec<dim, int>::fromIterator(py::stl_input_iterator<int>(indices));
         for (int i = 0; i != dim; ++i) {
             size_t size = src_mesh->getAxis(i)->size();
@@ -259,7 +259,7 @@ template <typename MeshT> struct PythonDataVector_SliceBase {
 
     PythonDataVector_SliceBase(const shared_ptr<MeshD<dim>>& data_mesh, const py::object& slice) {
         auto src_mesh = dynamic_pointer_cast<MeshT>(data_mesh);
-        if (!src_mesh) throw TypeError("{0}D slice can only be extracted for data with RectangularMesh{0}D", dim);
+        if (!src_mesh) throw TypeError("{0}D slice can only be extracted for data with RectangularMesh{0}D", int(dim));
 
         const char* iteration_order = src_mesh->getIterationOrderAsArray();
 

@@ -357,6 +357,7 @@ double ConstMaterial::CB(double T, double e, char point) const {
         if (base) return base->CB(T, e, point);
         else throwNotImplemented("CB(double T, double e, char point)");
     }
+    return NAN;
 }
 
 double ConstMaterial::chi(double T, double e, char point) const {
@@ -531,6 +532,7 @@ dcomplex ConstMaterial::Nr(double lam, double T, double n) const {
         if (base) return base->Nr(lam, T, n);
         else throwNotImplemented("Nr(double lam, double T, double n)");
     }
+    return NAN;
 }
 
 Tensor3<dcomplex> ConstMaterial::Eps(double lam, double T, double n) const {

@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -165,6 +165,8 @@ Vec<3,double> Box3D::moveInside(Vec<3,double> p) const {
     if (p.c2 < lower.c2) p.c2 = lower.c2; else ensureLo(p.c2, upper.c2);
     return p;
 }
+
+PLASK_API const char* const DIRECTION_NAMES[] = { "longitudinal", "transverse", "vertical" };
 
 const Primitive<1>::DVec Primitive<1>::ZERO_VEC = 0.0;
 const Primitive<2>::DVec Primitive<2>::ZERO_VEC = Vec<2>(0.0, 0.0);

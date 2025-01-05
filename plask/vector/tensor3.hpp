@@ -439,9 +439,9 @@ template <typename T> struct Tensor3 {
      * @return out stream
      */
     friend inline std::ostream& operator<<(std::ostream& out, const Tensor3<T>& to_print) {
-        return out << '[' << str(to_print.c00) << ", " << str(to_print.c01) << ", " << str(to_print.c02) << "; "
+        return out << "[[" << str(to_print.c00) << ", " << str(to_print.c01) << ", " << str(to_print.c02) << "; "
                    << str(to_print.c10) << ", " << str(to_print.c11) << ", " << str(to_print.c12) << "; " << str(to_print.c20)
-                   << ", " << str(to_print.c21) << ", " << str(to_print.c22) << "]";
+                   << ", " << str(to_print.c21) << ", " << str(to_print.c22) << "]]";
     }
 };
 
@@ -487,8 +487,7 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(Tensor3<double>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Tensor3< std::complex<double> >)
 */
 
-template <typename T>
-inline bool isnan(plask::Tensor3<T> tens) {
+template <typename T> inline bool isnan(plask::Tensor3<T> tens) {
     return isnan(tens.c00) || isnan(tens.c01) || isnan(tens.c02) || isnan(tens.c10) || isnan(tens.c11) || isnan(tens.c12) ||
            isnan(tens.c20) || isnan(tens.c21) || isnan(tens.c22);
 }
@@ -500,5 +499,9 @@ namespace std {
 template <typename T> plask::Tensor3<T> pow(plask::Tensor3<T> tens, int n) { return tens.pow(n); }
 
 }  // namespace std
+
+#if FMT_VERSION >= 90000
+template <typename T> struct fmt::formatter<plask::Tensor3<T>> : ostream_formatter {};
+#endif
 
 #endif  // PLASK__TENSOR3_H

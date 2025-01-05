@@ -383,7 +383,7 @@ struct RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY, VariadicTemplateTypesHold
             if (assignProvider(self, py::object(data))) return;
         }
         throw TypeError(u8"you can only attach {0} provider, {2} data over {1}D mesh, or a {2} constant",
-                        type_name<typename ReceiverT::PropertyTag>(), ReceiverT::SpaceType::DIM,
+                        type_name<typename ReceiverT::PropertyTag>(), int(ReceiverT::SpaceType::DIM),
                         std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
     }
 
@@ -445,7 +445,7 @@ struct RegisterReceiverImpl<ReceiverT, MULTI_FIELD_PROPERTY, VariadicTemplateTyp
             u8"You can only attach {0} provider, {2} data over {1}D mesh, sequence of such data, a {2} constant, or a tuple of "
             u8"constant "
             u8"{2}s",
-            type_name<typename ReceiverT::PropertyTag>(), ReceiverT::SpaceType::DIM,
+            type_name<typename ReceiverT::PropertyTag>(), int(ReceiverT::SpaceType::DIM),
             std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
     }
 
@@ -638,7 +638,7 @@ struct PythonProviderFor<ProviderT, FIELD_PROPERTY, VariadicTemplateTypesHolder<
             throw TypeError(
                 u8"'data' in custom Python provider must be a callable or "
                 u8"a proper Data object over {}-dimensional mesh",
-                ProviderT::SpaceType::DIM);
+                int(ProviderT::SpaceType::DIM));
     }
 };
 
@@ -690,14 +690,14 @@ struct PythonProviderFor<ProviderT, MULTI_FIELD_PROPERTY, VariadicTemplateTypesH
             throw TypeError(
                 u8"'data' in custom Python provider must be a callable or a sequence of proper Data objects"
                 u8" over {}-dimensional mesh",
-                ProviderT::SpaceType::DIM);
+                int(ProviderT::SpaceType::DIM));
         }
         size_t len = py::len(function);
         if (!len)
             throw TypeError(
                 u8"'data' in custom Python provider must be a callable or a sequence of proper Data objects"
                 u8" over {}-dimensional mesh",
-                ProviderT::SpaceType::DIM);
+                int(ProviderT::SpaceType::DIM));
         ReturnedType data0(py::extract<ReturnedType>(this->function[0]));
         for (size_t n = 0; n != len; ++n) {
             py::extract<ReturnedType> data(this->function[n]);
@@ -705,7 +705,7 @@ struct PythonProviderFor<ProviderT, MULTI_FIELD_PROPERTY, VariadicTemplateTypesH
                 throw TypeError(
                     u8"'data' in custom Python provider must be a callable or a sequence of proper Data objects"
                     u8" over {}-dimensional mesh",
-                    ProviderT::SpaceType::DIM);
+                    int(ProviderT::SpaceType::DIM));
             if (data().mesh != data0.mesh) throw ValueError(u8"mesh in each element of 'data' sequence must be the same");
         }
     }
@@ -970,7 +970,7 @@ struct RegisterProviderImpl<ProviderT, MULTI_FIELD_PROPERTY, VariadicTemplateTyp
         if (!mesh) throw TypeError(u8"you must provide proper mesh to {0} provider", self.name());
         int n = int(num);
         if (n < 0) num = EnumType(self.size() + n);
-        if (n < 0 || std::size_t(n) >= self.size()) throw NoValue(format("{0} [{1}]", self.name(), num).c_str());
+        if (n < 0 || std::size_t(n) >= self.size()) throw NoValue(format("{0} [{1}]", self.name(), n).c_str());
         return PythonDataVector<const ValueT, DIMS>(self(num, mesh, params..., method), mesh);
     }
     static PythonDataVector<const ValueT, DIMS> __call__0(ProviderT& self,

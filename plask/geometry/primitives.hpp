@@ -25,6 +25,8 @@ namespace plask {
 
 constexpr double POINT_TOLLERANCE = 1e-12;
 
+extern PLASK_API const char* const DIRECTION_NAMES[];
+
 /**
  * Rectangle class.
  *
@@ -890,5 +892,10 @@ template <> struct DirectionWithout<3, Primitive<3>::DIRECTION_VERT> {
 };
 
 }  // namespace plask
+
+#if FMT_VERSION >= 90000
+template <> struct fmt::formatter<plask::Box2D> : ostream_formatter {};
+template <> struct fmt::formatter<plask::Box3D> : ostream_formatter {};
+#endif
 
 #endif

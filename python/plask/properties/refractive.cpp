@@ -88,7 +88,7 @@ template <typename GeometryT> struct ProviderAdditionalDefs<ProviderFor<Refracti
         if (!mesh) throw TypeError(u8"you must provide proper mesh to {0} provider", self.name());
         int n = int(num);
         if (n < 0) num = EnumType(self.size() + n);
-        if (n < 0 || std::size_t(n) >= self.size()) throw NoValue(format("{0} [{1}]", self.name(), num).c_str());
+        if (n < 0 || std::size_t(n) >= self.size()) throw NoValue(format("{0} [{1}]", self.name(), n).c_str());
         return PythonDataVector<const ValueT, DIMS>(self(num, mesh, dcomplex(NAN, NAN), method), mesh);
     }
     static PythonDataVector<const ValueT, DIMS> __call__0(ProviderT& self,

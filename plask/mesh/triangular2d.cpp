@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -558,7 +558,7 @@ DstT NearestNeighborTriangularMesh2DLazyDataImpl<DstT, SrcT>::at(std::size_t ind
     auto wrapped_point = this->flags.wrap(point);
     for (auto v: nodesIndex | boost::geometry::index::adaptors::queried(boost::geometry::index::nearest(wrapped_point, 1)))
         return this->flags.postprocess(point, this->src_vec[v]);
-    assert(false);
+    return DstT();
 }
 
 template struct PLASK_API NearestNeighborTriangularMesh2DLazyDataImpl<double, double>;

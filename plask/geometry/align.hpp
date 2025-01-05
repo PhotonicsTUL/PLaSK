@@ -805,9 +805,9 @@ inline Aligner<direction> fromXML(const XMLReader& reader, const AxisNames& axis
 template <Direction direction1, Direction direction2>
 inline Aligner<direction1, direction2> fromDictionary(Dictionary dic, const AxisNames& axes) {
     Aligner<direction1> a1 = fromDictionary<direction1>(dic, axes);
-    if (a1.isNull()) throw Exception("no aligner for axis{0} defined.", direction1);
+    if (a1.isNull()) throw Exception("no aligner for axis{0} defined.", int(direction1));
     Aligner<direction2> a2 = fromDictionary<direction2>(dic, axes);
-    if (a2.isNull()) throw Exception("no aligner for axis{0} defined.", direction2);
+    if (a2.isNull()) throw Exception("no aligner for axis{0} defined.", int(direction2));
     return Aligner<direction1, direction2>(a1, a2);
 }
 

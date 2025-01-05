@@ -136,10 +136,10 @@ option(PRINT_STACKTRACE_ON_EXCEPTION "Print stack-trace on stderr when plask::Ex
 
 option(PLASK_OPTIONAL_STD "Use std optional (supported by C++17) instead of boost one." OFF)
 
-#TODO if disabled, plask should find and use external fmt lib.
-option(PLASK_EXPORTS_FMT "Export fmt symbols in libplask (affects only windows)" ON)
+option(USE_SYSTEM_FMT "Use system fmt in libplask" OFF)
 
 option(INSTALL_DEV "Install headers and libraries to system locations" OFF)
+option(INSTALL_EXTERNAL_DEV "Install external bundled libraries and their headers to system locations" OFF)
 
 option(XML_STATIC "If enabled, XML_STATIC symbol will be defined, which is required to use static expat build in Windows." OFF)
 if (XML_STATIC)
@@ -334,18 +334,25 @@ add_subdirectory(extlib/camos)
 # FFTPACX
 add_subdirectory(extlib/fftpacx)
 
+# fmt
+if (USE_SYSTEM_FMT)
+    find_package(fmt)
+else()
+    include_directories(extlib/fmt/include)
+    list(APPEND plask_src extlib/fmt/src/format.cc extlib/fmt/src/os.cc)
+endif()
+
 # Triangle
 add_subdirectory(extlib/triangle)
 
-# fmt
-if(PLASK_EXPORTS_FMT)
-    list(APPEND plask_src extlib/fmt/format.cc extlib/fmt/posix.cc)
-endif()
 
 # ---------- PLaSK library --------------------------------------------
 
 add_library(libplask SHARED ${plask_src} ${plask_headers})
 target_link_libraries(libplask Boost::filesystem ${EXPAT_LIBRARIES} ${PRINT_STACKTRACE_LIBRARY} triangle) # ${Boost_THREAD_LIBRARY}
+if (USE_SYSTEM_FMT)
+    target_link_libraries(libplask fmt::fmt)
+endif()
 if(WIN32)
     target_link_libraries(libplask kernel32 iphlpapi)
     if(INSTALL_DEV)
@@ -362,7 +369,7 @@ else()
     install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
 endif()
 set_target_properties(libplask PROPERTIES OUTPUT_NAME plask COMPILE_FLAGS "-DPLASK_EXPORTS")
-if(PLASK_EXPORTS_FMT)
+if(NOT USE_SYSTEM_FMT)
     target_compile_definitions(libplask PRIVATE FMT_EXPORT INTERFACE FMT_SHARED)
 endif()
 
@@ -377,8 +384,11 @@ if(INSTALL_DEV)
     install(FILES cmake/plask-config.cmake DESTINATION share/plask/cmake COMPONENT dev)
 endif()
 
-if(INSTALL_DEV)
-    install(FILES extlib/fmt/format.h extlib/fmt/core.h extlib/fmt/ostream.h DESTINATION include/fmt COMPONENT dev)
+if(INSTALL_DEV AND NOT USE_SYSTEM_FMT)
+    install(FILES extlib/fmt/include/fmt/format.h
+                  extlib/fmt/include/fmt/core.h
+                  extlib/fmt/include/fmt/ostream.h
+                  DESTINATION include/plask/utils/fmt COMPONENT dev)
 endif()
 
 
@@ -436,6 +446,9 @@ if(BUILD_PYTHON)
 
     add_library(libplask_python SHARED ${python_plask_src})
     target_link_libraries(libplask_python ${Python3_LIBRARIES} ${Boost_Python3} libplask)
+    if (USE_SYSTEM_FMT)
+        target_link_libraries(libplask fmt::fmt)
+    endif()
     set_target_properties(libplask_python PROPERTIES OUTPUT_NAME plask_python)
     if(DEFINED no_strict_aliasing_flag)
         set_target_properties(libplask_python PROPERTIES COMPILE_FLAGS "${no_strict_aliasing_flag} -DPLASK_PYTHON_EXPORTS")
@@ -499,6 +512,9 @@ if(BUILD_PYTHON)
         set(plask_binary plask)
     endif()
     target_link_libraries(plask ${Boost_Python3} ${Python3_LIBRARIES} libplask_python libplask)
+    if(USE_SYSTEM_FMT AND NOT WIN32)
+        target_link_libraries(plask fmt::fmt)
+    endif()
     add_dependencies(plask python-scripts)
 
     if(DEFINED no_strict_aliasing_flag OR DEFINED EXE_FLAGS)
@@ -1115,6 +1131,17 @@ if(UNIX)
     file(READ ${CMAKE_SOURCE_DIR}/ABOUT plask_about)
     set(CPACK_DEBIAN_APP_DESCRIPTION "${plask_about}\nTo compile your own materials, install the 'plask-dev' package.")
     set(CPACK_DEBIAN_APP_PACKAGE_DEPENDS "libc6, libexpat1, libboost-python${boostver}, libboost-filesystem${boostver}, binfmt-support")
+    if (USE_SYSTEM_FMT)
+        get_property(fmt_type TARGET fmt::fmt PROPERTY TYPE)
+        if(fmt_type STREQUAL "SHARED_LIBRARY")
+            get_property(fmt_loc TARGET fmt::fmt PROPERTY LOCATION)
+            execute_process(COMMAND dpkg -S ${fmt_loc} RESULT_VARIABLE fmt_query_result OUTPUT_VARIABLE fmt_deb_string ERROR_QUIET)
+            if(fmt_query_result EQUAL 0)
+                string(REGEX MATCH "^[^:]+" fmt_deb ${fmt_deb_string})
+                set(CPACK_DEBIAN_APP_PACKAGE_DEPENDS "${CPACK_DEBIAN_APP_PACKAGE_DEPENDS}, ${fmt_deb}")
+            endif()
+        endif()
+    endif()
     if("${OpenMP_CXX_FLAGS}" MATCHES ".*libiomp5*")
         set(CPACK_DEBIAN_APP_PACKAGE_DEPENDS "${CPACK_DEBIAN_APP_PACKAGE_DEPENDS}, libomp5")
     endif()
@@ -1140,6 +1167,9 @@ if(UNIX)
     set(CPACK_DEBIAN_APP_PACKAGE_CONTROL_EXTRA "${CMAKE_BINARY_DIR}/postinst;${CMAKE_BINARY_DIR}/prerm")
     set(CPACK_DEBIAN_DEVEL_PACKAGE_NAME plask-dev)
     set(CPACK_DEBIAN_DEVEL_PACKAGE_DEPENDS "plask (= ${CPACK_PACKAGE_VERSION}), libboost-dev")
+    if(USE_SYSTEM_FMT)
+        set(CPACK_DEBIAN_DEVEL_PACKAGE_DEPENDS "${CPACK_DEBIAN_DEVEL_PACKAGE_DEPENDS}, libfmt-dev")
+    endif()
     set(CPACK_DEBIAN_DEVEL_DESCRIPTION "${plask_about}\nThis package contains headers and libraries needed to compile custom materials\n for PLaSK.")
 
     set(CPACK_RPM_COMPONENT_INSTALL ON)

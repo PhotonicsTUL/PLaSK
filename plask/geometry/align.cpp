@@ -24,7 +24,7 @@ namespace details {
 template <Primitive<3>::Direction dir, Aligner<dir> AlignerType(double coordinate)>
 inline void tryGetAligner(Aligner<dir>& ans, plask::optional<double> param) {
     if (!param) return;
-    if (!ans.isNull()) throw Exception("multiple specifications of aligner in direction {0}", dir);
+    if (!ans.isNull()) throw Exception("multiple specifications of aligner in {0} direction", DIRECTION_NAMES[dir]);
     ans = AlignerType(*param);
 }
 

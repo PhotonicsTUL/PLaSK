@@ -25,6 +25,6 @@ else()
     install(TARGETS camos LIBRARY DESTINATION lib COMPONENT solvers)
 endif()
 
-if(INSTALL_DEV)
+if(INSTALL_EXTERNAL_DEV)
     install(FILES camos.h DESTINATION include COMPONENT dev)
 endif()
