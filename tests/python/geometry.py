@@ -431,7 +431,7 @@ class LatticeTest(unittest.TestCase):
         s1 = self.lattice.segments[1]
         s2 = self.lattice.segments[2]
         del self.lattice.segments[1]
-        self.assertEqual(str(s2), "[[2, 2], [3, 2], [3, 3], [2, 3]]")
+        self.assertEqual(str(s2), "[[2, 2], [2, 3], [3, 3], [3, 2]]")
         with self.assertRaises(IndexError):
             print(s1)
 

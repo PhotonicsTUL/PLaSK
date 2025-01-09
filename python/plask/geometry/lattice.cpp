@@ -181,8 +181,7 @@ class LatticeSegments {
              ++vertices_it) {
             if (py::len(*vertices_it) != 2)
                 throw TypeError("each vertex in lattice segment must have exactly two integer coordinates");
-            py::stl_input_iterator<int> coord_it(*vertices_it);
-            result.emplace_back(*(coord_it++), *(coord_it++));
+            result.emplace_back(py::extract<int>((*vertices_it)[0]), py::extract<int>((*vertices_it)[1]));
         }
         return result;
     }
@@ -287,8 +286,7 @@ static void lattice_set_segments(Lattice& self, const py::object& value) {
              ++vertices_it) {
             if (py::len(*vertices_it) != 2)
                 throw TypeError("each vertex in lattice segment must have exactly two integer coordinates");
-            py::stl_input_iterator<int> coord_it(*vertices_it);
-            segment.emplace_back(*(coord_it++), *(coord_it++));
+            segment.emplace_back(py::extract<int>((*vertices_it)[0]), py::extract<int>((*vertices_it)[1]));
         }
         segments.push_back(std::move(segment));
     }
