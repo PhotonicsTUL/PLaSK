@@ -16,6 +16,9 @@
 #  PLASK_INCLUDE_DIRS         - the PLaSK include directories
 #  PLASK_LIBRARY              - the PLaSK library (cached)
 #  PLASK_LIBRARIES            - list of all PLaSK libraries found
+#
+# Functions defined by this module:
+#  add_plask_material_library(name sources...) - add a PLaSK material library
 
 if(NOT DEFINED PLASK_ROOT AND DEFINED ENV{PLASK_ROOT})
     set(PLASK_ROOT "$ENV{PLASK_ROOT}")
@@ -33,3 +36,10 @@ mark_as_advanced(PLASK_LIBRARY PLASK_LIBRARIES PLASK_INCLUDE_DIR PLASK_INCLUDE_D
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(PLaSK DEFAULT_MSG PLASK_LIBRARY)
+
+function(add_plask_material_library libname)
+    add_library(${libname} MODULE ${ARGN})
+    target_link_libraries(${libname} ${PLASK_LIBRARIES})
+    target_include_directories(${libname} PRIVATE ${PLASK_INCLUDE_DIRS})
+    set_target_properties(${libname} PROPERTIES PREFIX "")
+endfunction()
