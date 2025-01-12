@@ -309,7 +309,11 @@ template <typename T> struct Vec<2, T> {
      * Square root of each component of tensor
      * \return squared tensor
      */
-    Vec<2, T> sqrt() const { return Vec<2, T>(std::sqrt(c0), std::sqrt(c1)); }
+    Vec<2, T> sqrt() const {
+PLASK_NO_CONVERSION_WARNING_BEGIN
+        return Vec<2, T>(std::sqrt(c0), std::sqrt(c1));
+PLASK_NO_WARNING_END
+    }
 
     /**
      * Square root of each component of tensor in place

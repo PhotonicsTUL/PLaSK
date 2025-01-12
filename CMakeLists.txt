@@ -35,6 +35,7 @@ if(MSVC)    # flags needed by Visual Studio:
     set(CMAKE_CXX_FLAGS "/bigobj ${CMAKE_CXX_FLAGS}")   # increase a number of sections in obj. file, required by plask
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251")   # disable many warning (all stl & boost templates) about wrong dll import/export, TODO subject for future investigation
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4018")   # disable warning about signed/unsigned generated mainly by workaround for OpenMP 2 (which can use only signed types)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267")   # disable warning about conversion from size_t to int
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")     # follow C++ standard for exception handling
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /DHAVE_SNPRINTF")   # snprintf is not defined in MSVC
     add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS) # hide many warnings which are caused by boost and fmt under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true

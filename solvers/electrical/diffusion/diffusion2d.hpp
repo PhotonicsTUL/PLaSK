@@ -99,7 +99,7 @@ struct ActiveRegion2D {
             mesh->tran()->size(), [this, data, n](size_t i) -> typename ReceiverType::ValueType {
                 typename ReceiverType::ValueType val(Zero<typename ReceiverType::ValueType>());
                 for (size_t j = n * i, end = n * (i + 1); j < end; ++j) val += data[j];
-                return val / n;
+                return val / double(n);
             });
     }
 };

@@ -194,6 +194,11 @@
 /*                                                                           */
 /*****************************************************************************/
 
+/* Suppress MSVC warnings */
+#ifdef _MSC_VER
+#pragma warning(disable: 4302 4311 4312)
+#endif
+
 /* For single precision (which will save some memory and reduce paging),     */
 /*   define the symbol SINGLE by using the -DSINGLE compiler switch or by    */
 /*   writing "#define SINGLE" below.                                         */
@@ -6445,7 +6450,7 @@ REAL dheight;
   adxbdy = adx * bdy;
   bdxady = bdx * ady;
 
-  det = adheight * (bdxcdy - cdxbdy) 
+  det = adheight * (bdxcdy - cdxbdy)
       + bdheight * (cdxady - adxcdy)
       + cdheight * (adxbdy - bdxady);
 
@@ -11486,7 +11491,7 @@ FILE *polyfile;
       for (j = 0; j < 2; j++) {
         if ((end[j] < b->firstnumber) ||
             (end[j] >= b->firstnumber + m->invertices)) {
-          printf("Error:  Segment %ld has an invalid vertex index.\n", 
+          printf("Error:  Segment %ld has an invalid vertex index.\n",
                  segmentnumber);
           triexit(1);
         }
@@ -13121,7 +13126,7 @@ int regions;
         } else {
           printf("Spreading regional attributes.\n");
         }
-      } else { 
+      } else {
         printf("Spreading regional area constraints.\n");
       }
     }

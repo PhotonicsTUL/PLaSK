@@ -79,7 +79,9 @@ void Triangle::addPointsAlongToSet(std::set<double>& points,
 
     for (int i = 0; i < 2; ++i) {
         double dx = x[i + 1] - x[i];
+PLASK_NO_CONVERSION_WARNING_BEGIN
         unsigned maxsteps = max_steps * (dx / dx02);
+PLASK_NO_WARNING_END
         unsigned steps = min(unsigned(dx / min_step_size), maxsteps);
         double step = dx / steps;
         for (unsigned j = 1; j < steps; ++j) points.insert(x[i] + j * step);
@@ -126,7 +128,9 @@ void Triangle::addLineSegmentsToSet(std::set<typename GeometryObjectD<2>::LineSe
         for (int i = 0; i < 2; ++i) {
             double dx = x[i + 1] - x[i];
             double a1 = (y[i + 1] - y[i]) / dx, b1 = (x[i + 1] * y[i] - x[i] * y[i + 1]) / dx;
+PLASK_NO_CONVERSION_WARNING_BEGIN
             unsigned maxsteps = max_steps * (dx / dx02);
+PLASK_NO_WARNING_END
             unsigned steps = min(unsigned(dx / min_step_size), maxsteps);
             if (steps < 2) continue;
             double step = dx / steps;

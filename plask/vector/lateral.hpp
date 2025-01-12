@@ -56,9 +56,10 @@ struct LateralVec {
      * Copy constructor from 2D vectors.
      * \param p vector to copy from
      */
+PLASK_NO_CONVERSION_WARNING_BEGIN
     template <int other_dim, typename OtherT>
     constexpr LateralVec(const Vec<other_dim,OtherT>& p): c0(p.c0), c1(p.c1) {}
-
+PLASK_NO_WARNING_END
 
     /**
      * Construct vector with given components.

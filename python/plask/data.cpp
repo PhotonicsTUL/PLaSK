@@ -312,9 +312,9 @@ template <typename T> struct PythonDataVector_Slice<T, 2> : public PythonDataVec
         DataVector<typename std::remove_const<T>::type> data(size_t(length[0] * length[1]));
         auto* dst = data.data();
 
-        for (int i0 = start[0]; i0 < stop[0]; i0 += step[0]) {
-            int offset0 = i0 * stride[0];
-            for (int i1 = start[1]; i1 < stop[1]; i1 += step[1], ++dst) *dst = self[offset0 + i1];
+        for (Py_ssize_t i0 = start[0]; i0 < stop[0]; i0 += step[0]) {
+            Py_ssize_t offset0 = i0 * stride[0];
+            for (Py_ssize_t i1 = start[1]; i1 < stop[1]; i1 += step[1], ++dst) *dst = self[offset0 + i1];
         }
 
         auto result = plask::make_shared<PythonDataVector<T, dim>>(data, mesh);
@@ -332,11 +332,11 @@ template <typename T> struct PythonDataVector_Slice<T, 3> : public PythonDataVec
         DataVector<typename std::remove_const<T>::type> data(size_t(length[0] * length[1] * length[2]));
         auto* dst = data.data();
 
-        for (int i0 = start[0]; i0 < stop[0]; i0 += step[0]) {
-            int offset0 = i0 * stride[0];
-            for (int i1 = start[1]; i1 < stop[1]; i1 += step[1]) {
-                int offset1 = offset0 + i1 * stride[1];
-                for (int i2 = start[2]; i2 < stop[2]; i2 += step[2], ++dst) *dst = self[offset1 + i2];
+        for (Py_ssize_t i0 = start[0]; i0 < stop[0]; i0 += step[0]) {
+            Py_ssize_t offset0 = i0 * stride[0];
+            for (Py_ssize_t i1 = start[1]; i1 < stop[1]; i1 += step[1]) {
+                Py_ssize_t offset1 = offset0 + i1 * stride[1];
+                for (Py_ssize_t i2 = start[2]; i2 < stop[2]; i2 += step[2], ++dst) *dst = self[offset1 + i2];
             }
         }
 
@@ -674,6 +674,7 @@ static PythonDataVector<T, dim> PythonDataVector__div__(const PythonDataVector<T
 
 template <typename T> struct _Pow { typedef double type; };
 template <typename T> struct _Pow<Tensor3<T>> { typedef int type; };
+template <typename T> struct _Pow<const Tensor3<T>> { typedef int type; };
 
 
 template <typename T, int dim>

@@ -107,7 +107,9 @@ void Revolution::addPointsAlongToSet(std::set<double>& points,
         for (size_t i = 1; i < pts.size(); ++i) {
             double r = pts[i - 1];
             double dr = pts[i] - r;
+PLASK_NO_CONVERSION_WARNING_BEGIN
             unsigned maxsteps = rev_max_steps * (dr / rr);
+PLASK_NO_WARNING_END
             unsigned steps = min(unsigned(dr / rev_min_step_size), maxsteps);
             double step = dr / steps;
             for (unsigned j = 0; j < steps; ++j) {

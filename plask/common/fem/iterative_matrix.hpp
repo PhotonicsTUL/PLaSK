@@ -454,6 +454,7 @@ struct SparseBandMatrix : SparseMatrix {
             case IterativeMatrixParams::PRECOND_MBICX: return nspcg_mbicx2;
         };
         assert(NULL);
+        return nullptr;
     }
 
   public:

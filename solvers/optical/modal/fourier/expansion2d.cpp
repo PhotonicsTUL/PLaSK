@@ -714,7 +714,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialEps(size_t l, const shared
         FFT::Backward1D fft(9, int(nN), symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE);
         if (symmetry == E_LONG) {
             for (size_t i = 0; i != nN; ++i) params[i].c00 = coeffs[l].zz[i];
-            fft.execute(reinterpret_cast<dcomplex*>(params.data(), 1));
+            fft.execute(reinterpret_cast<dcomplex*>(params.data()), 1);
             for (Tensor3<dcomplex>& eps: params) {
                 eps.c22 = eps.c11 = eps.c00;
             }

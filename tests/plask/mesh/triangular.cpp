@@ -38,7 +38,9 @@ BOOST_AUTO_TEST_CASE(triangular2d_boundaries) {
      */
     for (std::size_t x_i = 0; x_i < 6; ++x_i)
         for (std::size_t y_i = 0; y_i < 6; ++y_i) {
+PLASK_NO_CONVERSION_WARNING_BEGIN
             mesh.nodes.emplace_back(x_i, y_i);
+PLASK_NO_WARNING_END
             if (x_i > 0 && y_i > 0 &&
               !(x_i == 3 && y_i == 3))  // rectangualar hole in a middle
             {

@@ -118,7 +118,7 @@ static py::object OrderedAxis__getitem__(const OrderedAxis& self, const py::obje
 #       endif
         std::vector<double> points;
         points.reserve(length);
-        for (int i = start; i < stop; i += stride) points.push_back(self[i]);
+        for (Py_ssize_t i = start; i < stop; i += stride) points.push_back(self[i]);
         return py::object(plask::make_shared<OrderedAxis>(std::move(points)));
     }
 }

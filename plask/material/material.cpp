@@ -310,7 +310,7 @@ const char* getAmountEnd(const char* begin, const char* end) {
 double toDouble(const std::string& s, const char* fullname) {
     try {
         return boost::lexical_cast<double>(s);
-    } catch (std::exception& e) {
+    } catch (std::exception&) {
         throw MaterialParseException("cannot parse '{}' as number in '{}'", s, fullname);
     }
 }

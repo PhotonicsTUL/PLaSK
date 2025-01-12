@@ -80,5 +80,18 @@
     "cmake.preferredGenerators": [
         "Ninja"
     ],
-    "editor.detectIndentation": false
+    "editor.detectIndentation": false,
+    "files.associations": {
+        "*.xpl": "plask",
+        "*.wsgi": "python",
+        "limits": "cpp",
+        "filesystem": "cpp",
+        "regex": "cpp",
+        "xstring": "cpp",
+        "cmath": "cpp",
+        "complex": "cpp",
+        "utility": "cpp",
+        "*.ipp": "cpp",
+        "vector": "cpp"
+    }
 }

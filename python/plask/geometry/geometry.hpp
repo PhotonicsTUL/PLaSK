@@ -74,7 +74,7 @@ py::object Container_move(py::tuple args, py::dict kwargs) {
     parseKwargs("move_item", args, kwargs, "self", "path");
     ContainerT* self = py::extract<ContainerT*>(args[0]);
     py::extract<int> ei(args[1]);
-    int i;
+    std::ptrdiff_t i;
     if (ei.check()) {
         i = ei();
         if (i < 0) i += int(self->getChildrenCount());
