@@ -511,6 +511,17 @@ public:
     shared_ptr<Material> get(const std::string& full_name) const;
 
     /**
+     * Create material object.
+     * @param dbKey key in database
+     * @param composition objects composition, empty composition for simple materials
+     * @param doping amount of dopant
+     * @return constructed material
+     * @throw NoSuchMaterial if there is no material with key @p dbKey in database
+     * @see @ref Material::completeComposition
+     */
+    shared_ptr<Material> get(const std::string& dbKey, const Material::Composition& composition, double doping = 0.0) const;
+
+    /**
      * Construct mixed material factory.
      * @param material1_fullname, material2_fullname materials name, with encoded parameters in format composition[_label][:dopant],
      *      both must refer to the same material with the same dopant and in case of doping materials, amounts of dopants must be given in the same format
@@ -607,7 +618,6 @@ public:
 
 private:
 
-    //      * @param dopant_name name of dopant (if any), use for error messages
     /**
      * Get material constructor object.
      * @param dbKey key in database (format: name[_label] or normalized_composition[_label])
@@ -615,18 +625,6 @@ private:
      * @param allow_alloy_without_composition if true alloy material can be obtained if composition is empty (if false exception will be thrown in such situation when dbKey is not simple material)
      */
     shared_ptr<const MaterialConstructor> getConstructor(const std::string& dbKey, const Material::Composition& composition, bool allow_alloy_without_composition = false) const;
-
-    //      * @param dopant_name name of dopant (if any)
-    /**
-     * Create material object.
-     * @param dbKey key in database
-     * @param composition objects composition, empty composition for simple materials
-     * @param doping amount of dopant
-     * @return constructed material
-     * @throw NoSuchMaterial if there is no material with key @p dbKey in database
-     * @see @ref Material::completeComposition
-     */
-    shared_ptr<Material> get(const std::string& dbKey, const Material::Composition& composition, double doping = 0.0) const;
 
 };
 
