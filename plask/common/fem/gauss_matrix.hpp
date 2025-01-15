@@ -119,7 +119,7 @@ struct DgbMatrix : BandMatrix {
      * \param vector vector to multiply
      * \param result multiplication result
      */
-    void mult(const DataVector<const double>& vector, DataVector<double>& result) {
+    void mult(const DataVector<const double>& vector, DataVector<double>& result) override {
         mirror();
         dgbmv('N', int(rank), int(rank), int(kd), int(kd), 1.0, data, int(ld) + 1, vector.data(), 1, 0.0, result.data(), 1);
     }
@@ -129,7 +129,7 @@ struct DgbMatrix : BandMatrix {
      * \param vector vector to multiply
      * \param result multiplication result
      */
-    void addmult(const DataVector<const double>& vector, DataVector<double>& result) {
+    void addmult(const DataVector<const double>& vector, DataVector<double>& result) override {
         mirror();
         dgbmv('N', int(rank), int(rank), int(kd), int(kd), 1.0, data, int(ld) + 1, vector.data(), 1, 1.0, result.data(), 1);
     }

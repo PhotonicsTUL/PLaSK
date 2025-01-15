@@ -250,6 +250,7 @@ struct SparseMatrix : FemMatrix {
             case IterativeMatrixParams::ACCEL_GMRES: accel_func = nspcg_gmres; break;
             case IterativeMatrixParams::ACCEL_USYMLQ: accel_func = nspcg_usymlq; break;
             case IterativeMatrixParams::ACCEL_USYMQR: accel_func = nspcg_usymqr; break;
+            case IterativeMatrixParams::ACCEL_LANDIR: accel_func = nspcg_landir; break;
             case IterativeMatrixParams::ACCEL_LANMIN: accel_func = nspcg_lanmin; break;
             case IterativeMatrixParams::ACCEL_LANRES: accel_func = nspcg_lanres; break;
             case IterativeMatrixParams::ACCEL_CGCR: accel_func = nspcg_cgcr; break;

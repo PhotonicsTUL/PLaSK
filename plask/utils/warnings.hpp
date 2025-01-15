@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -38,17 +38,15 @@ This file contains portable utils to manage (mainly disable for a given fragment
 #ifdef _MSC_VER // ----------- Visual C++ -----------
 
 #define PLASK_NO_CONVERSION_WARNING_BEGIN \
-    PLASK_PRAGMA(warning(push))   \
+    PLASK_PRAGMA(warning(push)) \
     PLASK_PRAGMA(warning(disable: 4244))
 
 #define PLASK_NO_UNUSED_VARIABLE_WARNING_BEGIN \
-    PLASK_PRAGMA(warning(push))
-    // TODO może C4101 ?
+    PLASK_PRAGMA(warning(push)) \
+    PLASK_PRAGMA(warning(disable: 4101))
 
 #define PLASK_NO_WARNING_END \
     PLASK_PRAGMA(warning(pop))
-
-
 
 #elif defined(__GNUC__) // ----------- GNU C++ -----------
 
@@ -63,7 +61,18 @@ This file contains portable utils to manage (mainly disable for a given fragment
 #define PLASK_NO_WARNING_END \
     PLASK_PRAGMA(GCC diagnostic pop)
 
+#elif defined(__clang__) // ----------- Clang -----------
 
+#define PLASK_NO_CONVERSION_WARNING_BEGIN \
+    PLASK_PRAGMA(clang diagnostic push) \
+    PLASK_PRAGMA(clang diagnostic ignored "-Wconversion")
+
+#define PLASK_NO_UNUSED_VARIABLE_WARNING_BEGIN \
+    PLASK_PRAGMA(clang diagnostic push) \
+    PLASK_PRAGMA(clang diagnostic ignored "-Wunused-variable")
+
+#define PLASK_NO_WARNING_END \
+    PLASK_PRAGMA(clang diagnostic pop)
 
 #else   // ----------- unknown compiler -----------
 

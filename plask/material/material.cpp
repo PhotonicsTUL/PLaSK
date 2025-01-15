@@ -446,6 +446,8 @@ double Metal::eps(double /*T*/) const { return 1.; }
 
 // -------------- Material with base ---------------------
 
+Material::Kind MaterialWithBase::kind() const { return base->kind(); }
+
 double MaterialWithBase::lattC(double T, char x) const { return base->lattC(T, x); }
 double MaterialWithBase::Eg(double T, double e, char point) const { return base->Eg(T, e, point); }
 double MaterialWithBase::CB(double T, double e, char point) const { return base->CB(T, e, point); }

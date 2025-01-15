@@ -962,6 +962,8 @@ struct PLASK_API MaterialWithBase: public Material {
     MaterialWithBase(const shared_ptr<Material>& base): base(base) {}
     MaterialWithBase(Material* base): base(base) {}
 
+    Kind kind() const override;
+
     double lattC(double T, char x) const override;
     double Eg(double T, double e, char point) const override;
     double CB(double T, double e, char point) const override;

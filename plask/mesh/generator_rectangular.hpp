@@ -447,7 +447,7 @@ template <int dim> struct PLASK_API RectangularMeshDivideGenerator : public Rect
     size_t pre_divisions[dim];
     size_t post_divisions[dim];
 
-    char gradual;
+    unsigned char gradual;
 
     shared_ptr<OrderedAxis> processAxis(shared_ptr<OrderedAxis> axis,
                                         const shared_ptr<GeometryObjectD<DIM>>& geometry,

@@ -62,7 +62,9 @@ shared_ptr<MeshD<2>> TriangleGenerator::generate(const shared_ptr<GeometryObject
         for (int i = 0; i < 2; ++i) {
             bool ok;
             PointMap::iterator it;
+PLASK_NO_CONVERSION_WARNING_BEGIN
             std::tie(it, ok) = pointmap.insert(std::make_pair(segment[i], n));
+PLASK_NO_WARNING_END
             if (ok) ++n;
             iseg[i] = it->second;
         }

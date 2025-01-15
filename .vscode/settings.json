@@ -92,6 +92,7 @@
         "complex": "cpp",
         "utility": "cpp",
         "*.ipp": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "type_traits": "cpp"
     }
 }

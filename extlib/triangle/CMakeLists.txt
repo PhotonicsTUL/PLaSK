@@ -20,7 +20,13 @@ else()
     add_library(triangle STATIC triangle.cc triangle.h)
 endif ()
 
-target_compile_options(triangle PRIVATE -DTRILIBRARY -DNO_TIMER -fPIC)
+target_compile_options(triangle PRIVATE -DTRILIBRARY -DNO_TIMER)
+if (NOT WIN32)
+    target_compile_options(triangle PRIVATE -fPIC)
+elseif (MSVC)
+    target_compile_options(triangle PRIVATE /wd4244 /wd4267 /wd4305 /wd4996)
+endif()
+
 target_include_directories(triangle INTERFACE .)
 
 if (USE_SYSTEM_FMT)

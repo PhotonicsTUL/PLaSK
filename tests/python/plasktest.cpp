@@ -80,7 +80,7 @@ bool isEmpy(plask::shared_ptr<plask::GeometryObject> p) {
 }
 
 std::string materialTypeId(plask::shared_ptr<plask::Material> material) {
-    return typeid(*material).name();
+    return typeid(*material.get()).name();
 }
 
 plask::Tensor3<plask::dcomplex> EpsTensor(plask::shared_ptr<plask::Material> material) {

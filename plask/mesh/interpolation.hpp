@@ -298,7 +298,7 @@ struct InterpolationAlgorithm
     static LazyData<DstT> interpolate(const shared_ptr<const SrcMeshT>& src_mesh, const DataVector<const SrcT>&,
                                       const shared_ptr<const MeshD<SrcMeshT::DIM>>&, const InterpolationFlags&) {
         std::string msg = "interpolate (source mesh type: ";
-        msg += typeid(*src_mesh).name();
+        msg += typeid(*src_mesh.get()).name();
         msg += ", interpolation method: ";
         msg += interpolationMethodNames[method];
         msg += ")";

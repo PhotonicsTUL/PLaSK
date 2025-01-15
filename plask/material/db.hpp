@@ -454,23 +454,39 @@ public:
     /**
      * Create material object.
      * @param composition complete objects composition
-     * @param dopant_name name of dopant (if any)
+     * @param label optional material label
+     * @param dopant_name name of dopant
      * @param doping amount of dopant
      * @return constructed material
      * @throw NoSuchMaterial if database doesn't know material with name @p parsed_name_with_donor
      * @see @ref Material::completeComposition
      */
-    shared_ptr<Material> get(const Material::Composition& composition, const std::string& label, const std::string& dopant_name = "", double doping = 0.0) const;
+    shared_ptr<Material> get(const Material::Composition& composition, const std::string& label, const std::string& dopant_name, double doping) const;
 
     /**
      * Create material object.
-     * @param parsed_name_with_dopant material name with dopant name in format material_name[:dopant_name], for example: "AlGaN" or "AlGaN:Mg"
-     * @param composition amounts of objects, with NaN for each object for which composition was not given
+     * @param composition complete objects composition
+     * @param dopant_name name of dopant
      * @param doping amount of dopant
      * @return constructed material
      * @throw NoSuchMaterial if database doesn't know material with name @p parsed_name_with_donor
+     * @see @ref Material::completeComposition
      */
-    //shared_ptr<Material> get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition, double doping = 0.) const;
+    shared_ptr<Material> get(const Material::Composition& composition, const std::string& dopant_name, double doping) const {
+        return get(composition, "", dopant_name, doping);
+    }
+
+    /**
+     * Create material object.
+     * @param composition complete objects composition
+     * @param label optional material label
+     * @return constructed material
+     * @throw NoSuchMaterial if database doesn't know material with name @p parsed_name_with_donor
+     * @see @ref Material::completeComposition
+     */
+    shared_ptr<Material> get(const Material::Composition& composition, const std::string& label = "") const {
+        return get(composition, label, "", 0.);
+    }
 
     /**
      * Create material object.
@@ -509,17 +525,6 @@ public:
      * @throw MaterialParseException if can't parse @p full_name
      */
     shared_ptr<Material> get(const std::string& full_name) const;
-
-    /**
-     * Create material object.
-     * @param dbKey key in database
-     * @param composition objects composition, empty composition for simple materials
-     * @param doping amount of dopant
-     * @return constructed material
-     * @throw NoSuchMaterial if there is no material with key @p dbKey in database
-     * @see @ref Material::completeComposition
-     */
-    shared_ptr<Material> get(const std::string& dbKey, const Material::Composition& composition, double doping = 0.0) const;
 
     /**
      * Construct mixed material factory.
@@ -625,6 +630,17 @@ private:
      * @param allow_alloy_without_composition if true alloy material can be obtained if composition is empty (if false exception will be thrown in such situation when dbKey is not simple material)
      */
     shared_ptr<const MaterialConstructor> getConstructor(const std::string& dbKey, const Material::Composition& composition, bool allow_alloy_without_composition = false) const;
+
+    /**
+     * Create material object.
+     * @param dbKey key in database
+     * @param composition objects composition, empty composition for simple materials
+     * @param doping amount of dopant
+     * @return constructed material
+     * @throw NoSuchMaterial if there is no material with key @p dbKey in database
+     * @see @ref Material::completeComposition
+     */
+    shared_ptr<Material> get(const std::string& dbKey, const Material::Composition& composition, double doping = 0.0) const;
 
 };
 

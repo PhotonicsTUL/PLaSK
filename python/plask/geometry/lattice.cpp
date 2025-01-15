@@ -263,7 +263,7 @@ class LatticeSegments {
         const LatticeSegments* segments;
         size_t i;
 
-        Iterator(const LatticeSegments* ls) : segments(segments), i(0) {}
+        Iterator(const LatticeSegments* ls) : segments(ls), i(0) {}
 
         LatticeVertices __next__() {
             if (i >= segments->__len__()) throw StopIteration();

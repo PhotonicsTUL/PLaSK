@@ -235,9 +235,28 @@ template <typename T> struct LateralVecAttr {
     }
 };
 
-template <typename V> static V vector__div__float(const V& self, double f) { return self / f; }
+template <int dim, typename T> static Vec<dim, T> vector__floordiv__(const Vec<dim, T>& self, T f) {
+    return self / f;
+}
+template <> Vec<2, double> vector__floordiv__(const Vec<2, double>& self, double f) {
+    return Vec<2, double>(int(self.c0 / f), int(self.c1 / f));
+}
+template <> Vec<3, double> vector__floordiv__(const Vec<3, double>& self, double f) {
+    return Vec<3, double>(int(self.c0 / f), int(self.c1 / f), int(self.c2 / f));
+}
+template <> Vec<2, dcomplex> vector__floordiv__(const Vec<2, dcomplex>& self, dcomplex f) {
+    throw TypeError(u8"unsupported operand type(s) for //");
+}
+template <> Vec<3, dcomplex> vector__floordiv__(const Vec<3, dcomplex>& self, dcomplex f) {
+    throw TypeError(u8"unsupported operand type(s) for //");
+}
 
-template <int dim, typename T> static Vec<dim, dcomplex> vector__div__complex(const Vec<dim, T>& self, dcomplex f) {
+template <int dim, typename T>
+static Vec<dim, typename std::common_type<T, double>::type> vector__truediv__float(const Vec<dim, T>& self, double f) {
+    return self / f;
+}
+
+template <int dim, typename T> static Vec<dim, dcomplex> vector__truediv__complex(const Vec<dim, T>& self, dcomplex f) {
     return self * (1. / f);
 }
 
@@ -281,10 +300,9 @@ template <int dim, typename T> inline static py::class_<Vec<dim, T>> register_ve
         // .def(py::self += py::other<V>())
         // .def(py::self -= py::other<V>())
         // .def(py::self *= T())
-        .def("__div__", &vector__div__float<V>)
-        .def("__truediv__", &vector__div__float<V>)
-        .def("__div__", &vector__div__complex<dim, T>)
-        .def("__truediv__", &vector__div__complex<dim, T>)
+        .def("__floordiv__", &vector__floordiv__<dim, T>)
+        .def("__truediv__", &vector__truediv__complex<dim, T>)
+        .def("__truediv__", &vector__truediv__float<dim, T>)
         .def("__mul__", dc)
         .def("__mul__", dr)
         .def("dot", dc, py::arg("other"))
@@ -342,8 +360,8 @@ template <typename T> inline static py::class_<LateralVec<T>> register_lateral_v
         .def(-py::self)
         .def(py::self * T())
         .def(T() * py::self)
-        .def("__div__", &vector__div__float<V>)
-        .def("__truediv__", &vector__div__float<V>)
+        .def("__floordiv__", &vector__floordiv__<2, T>)
+        .def("__truediv__", &vector__truediv__float<2, T>)
         .def("__mul__", dot)
         .def("dot", dot, py::arg("other"), u8"Dot product with another vector. It is equal to `self` * `other`.\n")
         .add_static_property("dtype", &vec_dtype<T>, u8"Type od the vector components.\n")
