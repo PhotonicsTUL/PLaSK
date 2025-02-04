@@ -510,6 +510,23 @@ for PROCID in 'PLASK_PROCID', 'OMPI_COMM_WORLD_RANK', 'PMI_RANK', 'SLURM_PROCID'
 else:
     PROCID = None
 
+## ##  ## ##
+
+def open_ex(*args, **kwargs):
+    """
+    Open file and return a stream in exclusive mode.
+
+    All arguments are passed to the built-in `open`_ function. On Posix systems
+    this function uses fcntl to lock the file. On Windows it simply returns the file.
+
+    .. _open: https://docs.python.org/3/library/functions.html#open
+    """
+    file = open(*args, **kwargs)
+    if os.name != 'nt':
+        import fcntl
+        fcntl.flock(file.fileno(), fcntl.LOCK_EX)
+    return file
+
 
 ## ##  ## ##
 __xpl_globals = globals()
