@@ -458,6 +458,13 @@ def draw_Circle(env, geometry_object, transform, clipbox, plask_real_path):
 _geometry_drawers[plask.geometry.Circle] = draw_Circle
 _geometry_drawers[plask.geometry.Sphere] = draw_Circle
 
+def draw_Ellipse(env, geometry_object, transform, clipbox, plask_real_path):
+    env.append(matplotlib.patches.Ellipse((0.0, 0.0), 2*geometry_object.radius0, 2*geometry_object.radius1, transform=transform),
+               clipbox, geometry_object, plask_real_path
+    )
+
+_geometry_drawers[plask.geometry.Ellipse] = draw_Ellipse
+
 
 def draw_Cylinder(env, geometry_object, transform, clipbox, plask_real_path):
     if env.axes == (0, 1) or env.axes == (1, 0):

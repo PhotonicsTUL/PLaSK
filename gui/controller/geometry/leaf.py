@@ -201,6 +201,28 @@ class GNCircleController(GNLeafController):
         self.radius.setText(none_to_empty(self.node.radius))
 
 
+class GNEllipseController(GNLeafController):
+
+    def construct_form(self):
+        self.construct_group("Ellipse Size:")
+        self.radius0 = self.construct_line_edit('Radius0:', unit='µm', node_property_name='radius0')
+        self.radius0.setToolTip(
+            '&lt;{} <b>radius</b>="" ...&gt;<br/>'
+            'Transverse Radius. (float (µm), required)'.format(self.node.tag_name(False))
+        )
+        self.radius1 = self.construct_line_edit('Radius1:', unit='µm', node_property_name='radius1')
+        self.radius1.setToolTip(
+            '&lt;{} radius0="" <b>radius1</b>="" ...&gt;<br/>'
+            'Vertical Radius. (float (µm), required)'.format(self.node.tag_name(False))
+        )
+        super().construct_form()
+
+    def fill_form(self):
+        super().fill_form()
+        self.radius0.setText(none_to_empty(self.node.radius0))
+        self.radius1.setText(none_to_empty(self.node.radius1))
+
+
 class GNCylinderController(GNLeafController):
 
     def construct_form(self):

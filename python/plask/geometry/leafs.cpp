@@ -16,6 +16,7 @@
 #include "plask/geometry/circle.hpp"
 #include "plask/geometry/cuboid.hpp"
 #include "plask/geometry/cylinder.hpp"
+#include "plask/geometry/ellipse.hpp"
 #include "plask/geometry/leaf.hpp"
 #include "plask/geometry/polygon.hpp"
 #include "plask/geometry/prism.hpp"
@@ -210,6 +211,34 @@ template <int dim> static shared_ptr<Circle<dim>> Circle_constructor(double radi
     auto result = plask::make_shared<Circle<dim>>(radius);
     setLeafMaterialFast<dim>(result, material);
     return result;
+}
+
+// Ellipse wraps
+static shared_ptr<Ellipse> Ellipse_constructor(double radius0, double radius1, const py::object& material) {
+    auto result = plask::make_shared<Ellipse>(radius0, radius1);
+    setLeafMaterialFast<2>(result, material);
+    return result;
+}
+
+static shared_ptr<Ellipse> Ellipse_constructor_1(py::object radii, const py::object& material) {
+    if (py::len(radii) != 2) throw TypeError("radii must be a tuple of two floats");
+    double rx = py::extract<double>(radii[0]);
+    double ry = py::extract<double>(radii[1]);
+    auto result = plask::make_shared<Ellipse>(rx, ry);
+    setLeafMaterialFast<2>(result, material);
+    return result;
+}
+
+static py::object Ellipse_getRadii(const Ellipse* self) {
+    auto radii = self->getRadii();
+    return py::make_tuple(radii.first, radii.second);
+}
+
+static void Ellipse_setRadii(Ellipse* self, py::object radii) {
+    if (py::len(radii) != 2) throw TypeError("radii must be a tuple of two floats");
+    double rx = py::extract<double>(radii[0]);
+    double ry = py::extract<double>(radii[1]);
+    self->setRadii(rx, ry);
 }
 
 // Prism constructor wraps
@@ -551,6 +580,24 @@ void register_geometry_leafs() {
         py::no_init)
         .def("__init__", py::make_constructor(&Circle_constructor<3>, py::default_call_policies(), (py::arg("radius"), "material")))
         .add_property("radius", py::make_getter(&Circle<3>::radius), &Circle<3>::setRadius, u8"Radius of the circle.");
+
+    py::class_<Ellipse, shared_ptr<Ellipse>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable>(
+        "Ellipse",
+        u8"Ellipse(radius0, radius1, material)\n\n"
+        u8"Ellipse (2D geometry object).\n\n"
+        u8"Args:\n"
+        u8"    radius0 (float): Ellipse radius along transverse direction.\n"
+        u8"    radius1 (float): Ellipse radius along vertical direction.\n"
+        u8"    radii (tuple): Ellipse radii.\n"
+        u8"    material (Material): Ellipse material.\n",
+        py::no_init)
+        .def("__init__",
+             py::make_constructor(&Ellipse_constructor, py::default_call_policies(), (py::arg("radius0"), "radius1", "material")))
+        .def("__init__",
+             py::make_constructor(&Ellipse_constructor_1, py::default_call_policies(), (py::arg("radii"), "material")))
+        .add_property("radius0", py::make_getter(&Ellipse::radius0), &Ellipse::setRadius0, u8"Transverse radius of the circle.")
+        .add_property("radius1", py::make_getter(&Ellipse::radius1), &Ellipse::setRadius1, u8"Vertical radius of the circle.")
+        .add_property("radii", &Ellipse_getRadii, &Ellipse_setRadii, u8"Radii of the ellipse.");
 
     py::class_<Cylinder, shared_ptr<Cylinder>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable>(
         "Cylinder",

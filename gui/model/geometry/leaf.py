@@ -293,6 +293,52 @@ class GNCircle(GNLeaf):
         return result
 
 
+class GNEllipse(GNLeaf):
+
+    def __init__(self, parent=None):
+        super().__init__(parent=parent, dim=2)
+        self.radius0 = None
+        self.radius1 = None
+
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super()._attributes_from_xml(attribute_reader, conf)
+        self.radius0 = attribute_reader.get('radius0')
+        self.radius1 = attribute_reader.get('radius1')
+
+    def _attributes_to_xml(self, element, conf):
+        super()._attributes_to_xml(element, conf)
+        attr_to_xml(self, element, 'radius0')
+        attr_to_xml(self, element, 'radius1')
+
+    def tag_name(self, full_name=True):
+        return "ellipse"
+
+    def python_type(self):
+        return 'geometry.Ellipse'
+
+    def major_properties(self):
+        res = super().major_properties()
+        res.append(('radius0', self.radius0))
+        res.append(('radius1', self.radius1))
+        return res
+
+    def create_info(self, res, names):
+        super().create_info(res, names)
+        if not can_be_float(self.radius0, required=True): self._require(res, 'radius0', type='float')
+        if not can_be_float(self.radius1, required=True): self._require(res, 'radius1', type='float')
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.leaf import GNEllipseController
+        return GNEllipseController(document, model, self)
+
+    @staticmethod
+    def from_xml_2d(element, conf):
+        result = GNEllipse()
+        result.load_xml_element(element, conf)
+        return result
+
+
+
 class GNTriangle(GNLeaf):
 
     def __init__(self, parent=None):

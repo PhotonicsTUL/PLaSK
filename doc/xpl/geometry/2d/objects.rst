@@ -43,6 +43,23 @@ Physical objects are the leafs of the geometry tree. They represent actual objec
    :attr steps-num: Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform.
    :attr steps-dist: Minimum step size if the object is non-uniform.
 
+.. xml:tag:: <ellipse/>
+
+   Corresponding Python class: :py:class:`plask.geometry.Ellipse`.
+
+   Ellipse with centre at point (0, 0).
+
+   :attr name: Object name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
+   :attr axes: Specification of the axes. Most popular values are ``xy``, ``yz``, ``rz`` (letters are names of the horizontal and vertical axis, respectively).
+   :attr role: Object role. Important for some solvers.
+   :attr material-bottom: Definition of the material of the bottom of the ellipse (for ellipses with material changing from bottom to top). You should also set ``material-top`` and both materials can differs only in composition or amount of dopant.
+   :attr material-top: Definition of the material of top of the ellipse (see also ``material-bottom``).
+   :attr material-shape: Exponent for graded materials. Setting this value to anything different than one allows non-linear change the ellipse material.
+   :attr required radius0: Radius of the ellipse in transverse direction. (float, µm)
+   :attr required radius1: Radius of the ellipse in vertical direction. (float, µm)
+   :attr steps-num: Maximum number of the mesh steps in each direction the object is divided into if it is non-uniform.
+   :attr steps-dist: Minimum step size if the object is non-uniform.
+
 .. xml:tag:: <polygon/>
 
    Corresponding Python class: :py:class:`plask.geometry.Polygon`.
