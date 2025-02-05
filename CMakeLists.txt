@@ -154,6 +154,10 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     option(USE_GLIBCXX_PARALLEL "use the libstdc++ parallel mode (experimental in libstdc++v3)" OFF)
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
+if(NOT WIN32)
+    option(INSTALL_COMPLETIONS "Install bash and zsh completions" ON)
+endif()
+
 #option (PACK_EXE "Self-pack and strip executables." OFF)  # compress exe
 
 set(PYTHON_VERSION "" CACHE STRING "Python version to use")
@@ -938,7 +942,7 @@ if(WIN32)
         install(TARGETS ${script} DESTINATION bin COMPONENT utils)
     endfunction()
 
-else()
+elseif(INSTALL_COMPLETIONS)
 
     find_package(bash-completion)
     if(NOT BASH_COMPLETION_FOUND)
