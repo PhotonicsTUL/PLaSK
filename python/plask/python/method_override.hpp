@@ -72,7 +72,16 @@ template <typename T> struct Overriden {
                     if (f_code == method_code && f_code->co_argcount > 0) {
                         PyObject* f_locals = PyFrame_GetLocals(frame);
                         PyObject* co_varnames = PyCode_GetVarnames(f_code);
-                        if (PyDict_GetItem(f_locals, PyTuple_GetItem(co_varnames, 0)) == self) result = false;
+                        PyObject* self_name = PyTuple_GetItem(co_varnames, 0);
+#    if PY_VERSION_HEX >= 0x030d0000
+                        PyObject* getitem = PyObject_GetAttrString(f_locals, "__getitem__");
+                        PyObject* arg0 = PyObject_CallFunctionObjArgs(getitem, self_name, NULL);
+                        Py_XDECREF(getitem);
+                        if (arg0 == self) result = false;
+                        Py_XDECREF(arg0);
+#    else
+                        if (PyDict_GetItem(f_locals, self_name) == self) result = false;
+#    endif
                         Py_XDECREF(co_varnames);
                         Py_XDECREF(f_locals);
                     }
