@@ -14,14 +14,14 @@
 #define PY_ARRAY_UNIQUE_SYMBOL PLASK_ARRAY_API
 #define NO_IMPORT_ARRAY
 
-#include "plask/geometry/container.hpp"
-#include "plask/geometry/leaf.hpp"
-#include "plask/geometry/path.hpp"
-#include "plask/geometry/transform.hpp"
-#include "plask/mesh/mesh.hpp"
-#include "plask/utils/openmp.hpp"
-#include "../python_numpy.hpp"
-#include "../python_util/py_set.hpp"
+#include <plask/geometry/container.hpp>
+#include <plask/geometry/leaf.hpp>
+#include <plask/geometry/path.hpp>
+#include <plask/geometry/transform.hpp>
+#include <plask/mesh/mesh.hpp>
+#include <plask/utils/openmp.hpp>
+#include "../python/numpy.hpp"
+#include "../python/util/py_set.hpp"
 #include "geometry.hpp"
 
 namespace plask { namespace python {

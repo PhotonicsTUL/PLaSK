@@ -16,13 +16,13 @@
 
 #include <type_traits>  // std::is_same
 
-#include "python_globals.hpp"
+#include "globals.hpp"
 
 #include <boost/python/args.hpp>
 
-#include "plask/mesh/rectangular.hpp"
-#include "plask/provider/providerfor.hpp"
-#include "plask/utils/stl.hpp"
+#include <plask/mesh/rectangular.hpp>
+#include <plask/provider/providerfor.hpp>
+#include <plask/utils/stl.hpp>
 
 namespace plask { namespace python {
 
@@ -54,7 +54,7 @@ template <typename PropertyTag> static constexpr const char* docstring_provider(
 
 }}  // namespace plask::python
 
-#include "python_property_desc.hpp"
+#include "property_desc.hpp"
 
 namespace plask { namespace python {
 

@@ -16,7 +16,7 @@
 
 #include <cmath>
 #include <plask/python.hpp>
-#include "plask/python_util/ufunc.hpp"
+#include <plask/python/util/ufunc.hpp>
 using namespace plask::python;
 
 #include "../expansion.hpp"

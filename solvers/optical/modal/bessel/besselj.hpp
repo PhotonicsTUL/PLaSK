@@ -15,7 +15,7 @@
 #define PLASK__SOLVER__SLAB_BESSELJ_H
 
 
-#include "plask/optical/modal/config.hpp"
+#include <plask/optical/modal/config.hpp>
 
 
 #ifdef USE_GSL

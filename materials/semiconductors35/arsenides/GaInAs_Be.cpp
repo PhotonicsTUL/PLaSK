@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -14,8 +14,8 @@
 #include "GaInAs_Be.hpp"
 
 #include <cmath>
-#include "plask/material/db.hpp"  //MaterialsDB::Register
-#include "plask/material/info.hpp"    //MaterialInfo::DB::Register
+#include <plask/material/db.hpp>  //MaterialsDB::Register
+#include <plask/material/info.hpp>    //MaterialInfo::DB::Register
 
 namespace plask { namespace materials {
 

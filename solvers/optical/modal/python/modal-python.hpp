@@ -17,8 +17,8 @@
 #include <cmath>
 #include <cstring>
 #include <plask/python.hpp>
-#include "plask/python_numpy.hpp"
-#include "plask/python_util/ufunc.hpp"
+#include <plask/python/numpy.hpp>
+#include <plask/python/util/ufunc.hpp>
 #include <boost/python/raw_function.hpp>
 using namespace plask;
 using namespace plask::python;

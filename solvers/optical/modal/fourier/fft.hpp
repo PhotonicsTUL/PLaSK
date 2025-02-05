@@ -16,7 +16,7 @@
 
 #include <plask/plask.hpp>
 
-#include "plask/optical/modal/config.hpp"
+#include <plask/optical/modal/config.hpp>
 
 #ifdef USE_FFTW
 #   include <fftw3.h>

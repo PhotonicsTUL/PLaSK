@@ -14,7 +14,7 @@
 #ifndef PLASK__PYTHON_MANAGER_H
 #define PLASK__PYTHON_MANAGER_H
 
-#include "plask/manager.hpp"
+#include <plask/manager.hpp>
 
 namespace plask { namespace  python {
 

@@ -11,16 +11,16 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#include "python_globals.hpp"
+#include "python/globals.hpp"
 #include <algorithm>
 #include <boost/python/stl_iterator.hpp>
 
-#include "plask/mesh/mesh.hpp"
-#include "plask/mesh/interpolation.hpp"
-#include "plask/mesh/ordered1d.hpp"
+#include <plask/mesh/mesh.hpp>
+#include <plask/mesh/interpolation.hpp>
+#include <plask/mesh/ordered1d.hpp>
 
-#include "python_mesh.hpp"
-#include "python_util/raw_constructor.hpp"
+#include "python/mesh.hpp"
+#include "python/util/raw_constructor.hpp"
 
 namespace plask { namespace python {
 

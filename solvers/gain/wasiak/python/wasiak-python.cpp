@@ -14,7 +14,7 @@
 /** \file
  * Sample Python wrapper for your solver.
  */
-#include "plask/python_util/ufunc.hpp"
+#include <plask/python/util/ufunc.hpp>
 #include <boost/python/raw_function.hpp>
 #include <cmath>
 #include <plask/python.hpp>

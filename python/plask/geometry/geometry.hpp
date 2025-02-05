@@ -14,9 +14,9 @@
 #ifndef PLASK__PYTHON_GEOMETRY_H
 #define PLASK__PYTHON_GEOMETRY_H
 
-#include "../python_globals.hpp"
-#include "plask/geometry/path.hpp"
-#include "plask/geometry/align.hpp"
+#include "../python/globals.hpp"
+#include <plask/geometry/path.hpp>
+#include <plask/geometry/align.hpp>
 
 
 #define DECLARE_GEOMETRY_ELEMENT_23D(cls, pyname, pydoc1, pydoc2) \

@@ -14,8 +14,8 @@
 #ifndef PLASK__TEMPERATURE_H
 #define PLASK__TEMPERATURE_H
 
-#include "plask/provider/providerfor.hpp"
-#include "plask/provider/combined_provider.hpp"
+#include <plask/provider/providerfor.hpp>
+#include <plask/provider/combined_provider.hpp>
 
 namespace plask {
 

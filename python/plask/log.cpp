@@ -11,7 +11,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#include "python_globals.hpp"
+#include "python/globals.hpp"
 
 #include <cstdlib>
 
@@ -22,9 +22,9 @@
 #include <boost/python/enum.hpp>
 #include <boost/python/raw_function.hpp>
 
-#include "plask/log/log.hpp"
-#include "plask/log/data.hpp"
-#include "plask/parallel.hpp"
+#include <plask/log/log.hpp>
+#include <plask/log/data.hpp>
+#include <plask/parallel.hpp>
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   include <plask/utils/minimal_windows.h>

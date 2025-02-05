@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include "plask/utils/numbers_set.hpp"
+#include <plask/utils/numbers_set.hpp>
 
 typedef plask::CompressedSetOfNumbers<std::size_t> Set;
 

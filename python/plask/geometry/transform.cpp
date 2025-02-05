@@ -13,10 +13,10 @@
  */
 #include "geometry.hpp"
 
-#include "plask/geometry/transform.hpp"
-#include "plask/geometry/mirror.hpp"
-#include "plask/geometry/clip.hpp"
-#include "plask/geometry/intersection.hpp"
+#include <plask/geometry/transform.hpp>
+#include <plask/geometry/mirror.hpp>
+#include <plask/geometry/clip.hpp>
+#include <plask/geometry/intersection.hpp>
 
 namespace plask { namespace python {
 

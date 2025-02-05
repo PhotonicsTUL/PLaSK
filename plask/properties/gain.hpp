@@ -14,8 +14,8 @@
 #ifndef PLASK__GAIN_H
 #define PLASK__GAIN_H
 
-#include "plask/math.hpp"
-#include "plask/provider/providerfor.hpp"
+#include <plask/math.hpp>
+#include <plask/provider/providerfor.hpp>
 
 namespace plask {
 

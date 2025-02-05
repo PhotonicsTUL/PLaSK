@@ -1,10 +1,10 @@
 #include <type_traits> // for remove_reference
 #include <boost/test/unit_test.hpp>
 
-#include "plask/provider/provider.hpp"
-#include "plask/geometry/space.hpp"
-#include "plask/mesh/rectangular.hpp"
-#include "plask/properties/thermal.hpp"
+#include <plask/provider/provider.hpp>
+#include <plask/geometry/space.hpp>
+#include <plask/mesh/rectangular.hpp>
+#include <plask/properties/thermal.hpp>
 
 BOOST_AUTO_TEST_SUITE(providers) // MUST be the same as the file name
 

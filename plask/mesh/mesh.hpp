@@ -103,7 +103,7 @@ You should also implement interpolation algorithms for your mesh, see @ref inter
 #include <map>
 
 #include <plask/config.hpp>
-#include "plask/memory.hpp"
+#include <plask/memory.hpp>
 
 #include "../vec.hpp"
 #include "../geometry/object.hpp"

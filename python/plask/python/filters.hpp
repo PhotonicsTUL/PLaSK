@@ -14,10 +14,10 @@
 #ifndef PLASK__PYTHON_FILTERS_H
 #define PLASK__PYTHON_FILTERS_H
 
-#include "plask/filters/filter.hpp"
+#include <plask/filters/filter.hpp>
 
-#include "python_globals.hpp"
-#include "python_provider.hpp"
+#include "globals.hpp"
+#include "provider.hpp"
 
 
 namespace plask { namespace python {

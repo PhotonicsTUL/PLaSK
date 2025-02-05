@@ -11,17 +11,17 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#include "../python_globals.hpp"
-#include "../python_mesh.hpp"
-#include "../python_numpy.hpp"
+#include "../python/globals.hpp"
+#include "../python/mesh.hpp"
+#include "../python/numpy.hpp"
 
 //#include <boost/python/stl_iterator.hpp>
 #include <boost/python/iterator.hpp>
 
-#include "plask/mesh/generator_triangular.hpp"
-#include "plask/mesh/interpolation.hpp"
-#include "plask/mesh/mesh.hpp"
-#include "plask/mesh/triangular2d.hpp"
+#include <plask/mesh/generator_triangular.hpp>
+#include <plask/mesh/interpolation.hpp>
+#include <plask/mesh/mesh.hpp>
+#include <plask/mesh/triangular2d.hpp>
 
 namespace plask { namespace python {
 

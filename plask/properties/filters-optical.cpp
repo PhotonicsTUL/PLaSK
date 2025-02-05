@@ -13,7 +13,7 @@
  */
 #include "optical.hpp"
 
-#include "plask/filters/factory.hpp"
+#include <plask/filters/factory.hpp>
 
 namespace plask {
 

@@ -1,10 +1,10 @@
 #include <boost/test/unit_test.hpp>
 
-#include "plask/mesh/interpolation.hpp"
-#include "plask/mesh/mesh.hpp"
-#include "plask/mesh/rectangular.hpp"
-#include "plask/mesh/ordered1d.hpp"
-#include "plask/mesh/rectangular_spline.hpp"
+#include <plask/mesh/interpolation.hpp>
+#include <plask/mesh/mesh.hpp>
+#include <plask/mesh/rectangular.hpp>
+#include <plask/mesh/ordered1d.hpp>
+#include <plask/mesh/rectangular_spline.hpp>
 
 #include<fstream>
 

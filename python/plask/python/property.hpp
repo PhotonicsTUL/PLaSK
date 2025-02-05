@@ -14,9 +14,9 @@
 #ifndef PLASK__PYTHON_PROPERTYTAGS_H
 #define PLASK__PYTHON_PROPERTYTAGS_H
 
-#include "python_globals.hpp"
-#include "python_provider.hpp"
-#include "python_filters.hpp"
+#include "globals.hpp"
+#include "provider.hpp"
+#include "filters.hpp"
 
 namespace plask { namespace python {
 

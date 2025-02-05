@@ -22,7 +22,7 @@
 #include "fortran.hpp"
 #include "meshadapter.hpp"
 
-#include "plask/utils/openmp.hpp"
+#include <plask/utils/openmp.hpp>
 
 namespace plask { namespace optical { namespace modal {
 

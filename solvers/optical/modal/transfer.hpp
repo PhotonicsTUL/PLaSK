@@ -14,7 +14,7 @@
 #ifndef PLASK__SLAB_TRANSFER_H
 #define PLASK__SLAB_TRANSFER_H
 
-#include "plask/solver.hpp"
+#include <plask/solver.hpp>
 
 #include "matrices.hpp"
 

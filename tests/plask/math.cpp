@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include "plask/math.hpp"
+#include <plask/math.hpp>
 
 BOOST_AUTO_TEST_SUITE(math) // MUST be the same as the file name
 

@@ -16,9 +16,9 @@
 
 #include <boost/python.hpp>
 
-#include "plask/properties/gain.hpp"
-#include "plask/properties/electrical.hpp"
-#include "plask/properties/optical.hpp"
+#include <plask/properties/gain.hpp>
+#include <plask/properties/electrical.hpp>
+#include <plask/properties/optical.hpp>
 
 namespace plask { namespace python {
 

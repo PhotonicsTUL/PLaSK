@@ -17,10 +17,11 @@
 #include <cmath>
 
 // Important contains
-#include "python_globals.hpp"
-#include "python_boundaries.hpp"
-#include "plask/mesh/mesh.hpp"
-#include "plask/mesh/boundary.hpp"
+#include "globals.hpp"
+#include "boundaries.hpp"
+#include "method_override.hpp"
+#include <plask/mesh/mesh.hpp>
+#include <plask/mesh/boundary.hpp>
 
 namespace plask { namespace python {
 

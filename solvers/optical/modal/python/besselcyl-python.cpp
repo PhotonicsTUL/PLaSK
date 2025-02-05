@@ -14,7 +14,7 @@
 #define PY_ARRAY_UNIQUE_SYMBOL PLASK_OPTICAL_SLAB_ARRAY_API
 #define NO_IMPORT_ARRAY
 
-#include "plask/python_numpy.hpp"
+#include <plask/python/numpy.hpp>
 
 #include "besselcyl-python.hpp"
 #include "modal-python.hpp"

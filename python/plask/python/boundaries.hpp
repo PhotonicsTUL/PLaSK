@@ -14,10 +14,10 @@
 #ifndef PLASK__PYTHON_BOUNDARIES_H
 #define PLASK__PYTHON_BOUNDARIES_H
 
-#include "python_globals.hpp"
-#include "plask/utils/format.hpp"
-#include "plask/mesh/boundary_conditions.hpp"
-#include "plask/manager.hpp"
+#include "globals.hpp"
+#include <plask/utils/format.hpp>
+#include <plask/mesh/boundary_conditions.hpp>
+#include <plask/manager.hpp>
 
 namespace plask {
 

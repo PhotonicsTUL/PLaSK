@@ -16,7 +16,7 @@
 
 #include <vector>
 
-#include "plask/provider/providerfor.hpp"
+#include <plask/provider/providerfor.hpp>
 
 namespace plask {
 

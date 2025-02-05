@@ -17,8 +17,8 @@
 
 #include <plask/common/fem.hpp>
 
-#include <plask/python_enum.hpp>
-#include <plask/python_globals.hpp>
+#include <plask/python/enum.hpp>
+#include <plask/python/globals.hpp>
 
 namespace plask { namespace python {
 

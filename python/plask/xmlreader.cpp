@@ -14,9 +14,9 @@
 #include <boost/algorithm/string.hpp>
 #include <limits>
 
-#include "plask/utils/xml/reader.hpp"
+#include <plask/utils/xml/reader.hpp>
 
-#include "python_globals.hpp"
+#include "python/globals.hpp"
 
 namespace plask { namespace python {
 

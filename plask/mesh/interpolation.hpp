@@ -89,7 +89,7 @@ Typically, the code of the function should iterate over all the points of the @a
 #include "../memory.hpp"
 #include "../lazydata.hpp"
 #include "../log/log.hpp"
-#include "plask/geometry/space.hpp"
+#include <plask/geometry/space.hpp>
 
 namespace plask {
 

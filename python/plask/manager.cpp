@@ -17,14 +17,14 @@
 
 #include <boost/tokenizer.hpp>
 
-#include "plask/filters/filter.hpp"
-#include "plask/geometry/reader.hpp"
-#include "plask/manager.hpp"
+#include <plask/filters/filter.hpp>
+#include <plask/geometry/reader.hpp>
+#include <plask/manager.hpp>
 
 #include "geometry/geometry.hpp"
-#include "python_globals.hpp"
-#include "python_manager.hpp"
-#include "python_provider.hpp"
+#include "python/globals.hpp"
+#include "python/manager.hpp"
+#include "python/provider.hpp"
 
 namespace plask { namespace python {
 

@@ -11,14 +11,14 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#include "python_globals.hpp"
+#include "python/globals.hpp"
 
-#include "plask/material/db.hpp"
-#include "plask/utils/string.hpp"
-#include "plask/utils/xml/reader.hpp"
+#include <plask/material/db.hpp>
+#include <plask/utils/string.hpp>
+#include <plask/utils/xml/reader.hpp>
 
-#include "python_manager.hpp"
-#include "python_ptr.hpp"
+#include "python/manager.hpp"
+#include "python/ptr.hpp"
 
 namespace plask { namespace python {
 

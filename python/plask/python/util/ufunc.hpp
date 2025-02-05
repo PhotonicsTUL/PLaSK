@@ -14,7 +14,7 @@
 #ifndef PLASK__PYTHON__UFUNC_H
 #define PLASK__PYTHON__UFUNC_H
 
-#include "../python_numpy.hpp"
+#include "../numpy.hpp"
 
 namespace plask { namespace python {
 

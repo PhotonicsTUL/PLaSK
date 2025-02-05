@@ -1,7 +1,7 @@
 #include <boost/test/unit_test.hpp>
-#include "plask/filters/filter.hpp"
-#include "plask/mesh/basic.hpp"
-#include "plask/geometry/geometry.hpp"
+#include <plask/filters/filter.hpp>
+#include <plask/mesh/basic.hpp>
+#include <plask/geometry/geometry.hpp>
 #include "common/dumb_material.hpp"
 
 struct TestEnvGeom2D {
@@ -125,4 +125,3 @@ BOOST_AUTO_TEST_SUITE(filters) // MUST be the same as the file name
     }
 
 BOOST_AUTO_TEST_SUITE_END()
-

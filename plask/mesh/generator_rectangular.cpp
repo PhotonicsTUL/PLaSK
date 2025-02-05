@@ -11,8 +11,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#include "plask/log/log.hpp"
-#include "plask/manager.hpp"
+#include <plask/log/log.hpp>
+#include <plask/manager.hpp>
 
 #include "generator_rectangular.hpp"
 

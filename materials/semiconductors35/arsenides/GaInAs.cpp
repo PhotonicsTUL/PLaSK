@@ -14,8 +14,8 @@
 #include "GaInAs.hpp"
 
 #include <cmath>
-#include "plask/material/db.hpp"  //MaterialsDB::Register
-#include "plask/material/info.hpp"    //MaterialInfo::DB::Register
+#include <plask/material/db.hpp>  //MaterialsDB::Register
+#include <plask/material/info.hpp>    //MaterialInfo::DB::Register
 
 namespace plask { namespace materials {
 

@@ -14,7 +14,7 @@
 #include "exe_common.hpp"  // includes windows.h
 
 #include <plask/config.hpp>
-#include "plask/utils/system.hpp"
+#include <plask/utils/system.hpp>
 
 #if defined(MS_WINDOWS) || defined(__CYGWIN__)
 #    include <fcntl.h>

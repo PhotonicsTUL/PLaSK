@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include "plask/mesh/mesh.hpp"
+#include <plask/mesh/mesh.hpp>
 
 BOOST_AUTO_TEST_SUITE(mesh) // MUST be the same as the file name
 

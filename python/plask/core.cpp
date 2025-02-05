@@ -17,20 +17,21 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL PLASK_ARRAY_API
 
-#include "python_globals.hpp"
-#include "python_manager.hpp"
-#include "python_numpy.hpp"
-#include "python_util/raw_constructor.hpp"
+#include "python/globals.hpp"
+#include "python/manager.hpp"
+#include "python/numpy.hpp"
+#include "python/util/raw_constructor.hpp"
 #include <frameobject.h> // for Python traceback
-#include "plask/utils/warnings.hpp"
+#include <plask/utils/warnings.hpp>
+#include "python/method_override.hpp"
 
 #include "common/fem/python.hpp"
 
 #include <plask/version.hpp>
-#include "plask/exceptions.hpp"
-#include "plask/mesh/interpolation.hpp"
-#include "plask/memory.hpp"
-#include "plask/solver.hpp"
+#include <plask/exceptions.hpp>
+#include <plask/mesh/interpolation.hpp>
+#include <plask/memory.hpp>
+#include <plask/solver.hpp>
 
 using namespace plask::python;
 

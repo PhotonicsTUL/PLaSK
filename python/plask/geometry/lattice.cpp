@@ -13,7 +13,7 @@
  */
 #include "geometry.hpp"
 
-#include "plask/geometry/lattice.hpp"
+#include <plask/geometry/lattice.hpp>
 
 namespace plask { namespace python {
 

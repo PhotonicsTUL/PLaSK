@@ -16,10 +16,10 @@
 
 #include <type_traits>
 
-#include "plask/solver.hpp"
-#include "python_globals.hpp"
-#include "python_provider.hpp"
-#include "python_boundaries.hpp"
+#include <plask/solver.hpp>
+#include "globals.hpp"
+#include "provider.hpp"
+#include "boundaries.hpp"
 
 namespace plask { namespace python {
 
@@ -226,7 +226,7 @@ static constexpr const char* docstring_attr_provider() {
 
 }} // namespace plask::python
 
-#include "python_property_desc.hpp"
+#include "property_desc.hpp"
 
 namespace plask { namespace python {
 

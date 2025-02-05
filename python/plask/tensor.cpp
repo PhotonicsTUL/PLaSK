@@ -17,13 +17,13 @@
 #define NO_IMPORT_ARRAY
 
 #include <plask/config.hpp>
-#include "plask/exceptions.hpp"
-#include "plask/vector/tensor2.hpp"
-#include "plask/vector/tensor3.hpp"
+#include <plask/exceptions.hpp>
+#include <plask/vector/tensor2.hpp>
+#include <plask/vector/tensor3.hpp>
 
-#include "python_globals.hpp"
-#include "python_numpy.hpp"
-#include "python_util/raw_constructor.hpp"
+#include "python/globals.hpp"
+#include "python/numpy.hpp"
+#include "python/util/raw_constructor.hpp"
 
 #include <boost/concept_check.hpp>
 #include <boost/python/stl_iterator.hpp>

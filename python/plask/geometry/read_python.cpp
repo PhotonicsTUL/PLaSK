@@ -12,8 +12,8 @@
  * GNU General Public License for more details.
  */
 #include <plask/plask.hpp>
-#include "../python_globals.hpp"
-#include "../python_manager.hpp"
+#include "../python/globals.hpp"
+#include "../python/manager.hpp"
 
 #define PLASK_GEOMETRY_PYTHON_TAG "python"
 

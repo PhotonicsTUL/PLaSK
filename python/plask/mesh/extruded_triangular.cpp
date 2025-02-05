@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -11,11 +11,11 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#include "../python_globals.hpp"
-#include "../python_numpy.hpp"
-#include "../python_mesh.hpp"
+#include "../python/globals.hpp"
+#include "../python/numpy.hpp"
+#include "../python/mesh.hpp"
 
-#include "plask/mesh/extruded_triangular3d.hpp"
+#include <plask/mesh/extruded_triangular3d.hpp>
 
 namespace plask { namespace python {
 

@@ -11,18 +11,18 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#include "../python_util/raw_constructor.hpp"
+#include "../python/util/raw_constructor.hpp"
 #include "geometry.hpp"
 
-#include "plask/geometry/circle.hpp"
-#include "plask/geometry/cuboid.hpp"
-#include "plask/geometry/cylinder.hpp"
-#include "plask/geometry/ellipse.hpp"
-#include "plask/geometry/elliptic_cylinder.hpp"
-#include "plask/geometry/leaf.hpp"
-#include "plask/geometry/polygon.hpp"
-#include "plask/geometry/prism.hpp"
-#include "plask/geometry/triangle.hpp"
+#include <plask/geometry/circle.hpp>
+#include <plask/geometry/cuboid.hpp>
+#include <plask/geometry/cylinder.hpp>
+#include <plask/geometry/ellipse.hpp>
+#include <plask/geometry/elliptic_cylinder.hpp>
+#include <plask/geometry/leaf.hpp>
+#include <plask/geometry/polygon.hpp>
+#include <plask/geometry/prism.hpp>
+#include <plask/geometry/triangle.hpp>
 
 namespace plask { namespace python {
 

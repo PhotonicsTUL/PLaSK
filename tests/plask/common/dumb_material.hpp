@@ -1,6 +1,6 @@
 //dump material to use in tests
 
-#include "plask/material/db.hpp"
+#include <plask/material/db.hpp>
 
 struct DumbMaterial: public plask::Material {
     std::string name() const override { return "Dumb"; }

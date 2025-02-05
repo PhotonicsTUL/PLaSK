@@ -14,7 +14,7 @@
 #ifndef PLASK__ELECTRICAL_H
 #define PLASK__ELECTRICAL_H
 
-#include "plask/provider/providerfor.hpp"
+#include <plask/provider/providerfor.hpp>
 
 namespace plask {
 

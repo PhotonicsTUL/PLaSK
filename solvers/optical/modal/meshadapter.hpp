@@ -16,7 +16,7 @@
 
 #include <boost/iterator/filter_iterator.hpp>
 
-#include "plask/mesh/mesh.hpp"
+#include <plask/mesh/mesh.hpp>
 
 #include "matrices.hpp"
 

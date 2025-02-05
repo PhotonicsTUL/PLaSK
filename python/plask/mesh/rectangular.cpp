@@ -15,15 +15,15 @@
 #define NO_IMPORT_ARRAY
 
 // clang-format off
-#include "../python_globals.hpp"
-#include "../python_numpy.hpp"
-#include "../python_mesh.hpp"
+#include "../python/globals.hpp"
+#include "../python/numpy.hpp"
+#include "../python/mesh.hpp"
 #include <algorithm>
 #include <boost/python/stl_iterator.hpp>
 
-#include "plask/mesh/mesh.hpp"
-#include "plask/mesh/interpolation.hpp"
-#include "plask/mesh/generator_rectangular.hpp"
+#include <plask/mesh/mesh.hpp>
+#include <plask/mesh/interpolation.hpp>
+#include <plask/mesh/generator_rectangular.hpp>
 // clang-format on
 
 #define DIM RectangularMeshRefinedGenerator<dim>::DIM

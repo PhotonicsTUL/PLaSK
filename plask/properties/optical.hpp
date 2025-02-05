@@ -14,10 +14,10 @@
 #ifndef PLASK__OPTICAL_H
 #define PLASK__OPTICAL_H
 
-#include "plask/math.hpp"
-#include "plask/provider/providerfor.hpp"
-#include "plask/provider/scaled_provider.hpp"
-#include "plask/provider/combined_provider.hpp"
+#include <plask/math.hpp>
+#include <plask/provider/providerfor.hpp>
+#include <plask/provider/scaled_provider.hpp>
+#include <plask/provider/combined_provider.hpp>
 
 namespace plask {
 

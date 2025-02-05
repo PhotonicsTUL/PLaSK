@@ -27,12 +27,12 @@
 #include <stack>
 
 #include <plask/version.hpp>
-#include "plask/exceptions.hpp"
-#include "plask/utils/system.hpp"
-#include "plask/log/log.hpp"
-#include "plask/python_globals.hpp"
-#include "plask/python_manager.hpp"
-#include "plask/utils/string.hpp"
+#include <plask/exceptions.hpp>
+#include <plask/utils/system.hpp>
+#include <plask/log/log.hpp>
+#include <plask/python/globals.hpp>
+#include <plask/python/manager.hpp>
+#include <plask/utils/string.hpp>
 
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>

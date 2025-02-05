@@ -18,7 +18,7 @@
 #include <boost/python/detail/api_placeholder.hpp>
 #include <boost/python/raw_function.hpp>
 
-#include "../python_globals.hpp"
+#include "../globals.hpp"
 
 namespace plask { namespace python {
 

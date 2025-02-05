@@ -542,8 +542,8 @@ if(BUILD_PYTHON)
 
     install(TARGETS plask RUNTIME DESTINATION bin COMPONENT core)
     if (INSTALL_DEV)
-        install(DIRECTORY python/plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "python*.h" PATTERN "python*.hpp" PATTERN ".*" EXCLUDE)
-        install(DIRECTORY python/plask/python_util DESTINATION include/plask COMPONENT dev)
+        install(DIRECTORY python/plask/python DESTINATION include/plask COMPONENT dev FILES_MATCHING PATTERN "python*.h" PATTERN "python*.hpp" PATTERN ".*" EXCLUDE)
+        install(DIRECTORY python/plask/python/util DESTINATION include/plask/python COMPONENT dev)
     endif()
 
     if(WIN32)

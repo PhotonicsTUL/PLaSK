@@ -16,7 +16,7 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "plask/geometry/container.hpp"
+#include <plask/geometry/container.hpp>
 
 
 namespace plask { namespace python {

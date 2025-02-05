@@ -18,8 +18,8 @@
 This file contains some common base for all metals
 */
 
-#include "plask/material/material.hpp"
-#include "plask/math.hpp"
+#include <plask/material/material.hpp>
+#include <plask/math.hpp>
 
 namespace plask { namespace materials {
 

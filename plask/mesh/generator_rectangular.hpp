@@ -15,7 +15,7 @@
 #define PLASK__GENERATOR_RECTANGULAR_H
 
 #include "mesh.hpp"
-#include "plask/geometry/path.hpp"
+#include <plask/geometry/path.hpp>
 #include "rectangular.hpp"
 
 namespace plask {

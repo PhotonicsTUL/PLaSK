@@ -11,10 +11,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#include "../python_globals.hpp"
-#include "../python_property.hpp"
+#include "../python/globals.hpp"
+#include "../python/property.hpp"
 
-#include "plask/properties/electrical.hpp"
+#include <plask/properties/electrical.hpp>
 
 namespace plask { namespace python {
 

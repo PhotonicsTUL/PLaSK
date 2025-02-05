@@ -11,19 +11,20 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
-#include "python_globals.hpp"
+#include "python/globals.hpp"
 #include <boost/python/raw_function.hpp>
 #include <boost/python/stl_iterator.hpp>
 #include <algorithm>
 
 #include <plask/config.hpp>
-#include "plask/utils/string.hpp"
-#include "plask/exceptions.hpp"
-#include "plask/material/mixed.hpp"
-#include "plask/material/db.hpp"
-#include "plask/material/info.hpp"
+#include <plask/utils/string.hpp>
+#include <plask/exceptions.hpp>
+#include <plask/material/mixed.hpp>
+#include <plask/material/db.hpp>
+#include <plask/material/info.hpp>
 
-#include "python_util/raw_constructor.hpp"
+#include "python/method_override.hpp"
+#include "python/util/raw_constructor.hpp"
 
 namespace plask { namespace python {
 

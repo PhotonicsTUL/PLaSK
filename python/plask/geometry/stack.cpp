@@ -13,9 +13,9 @@
  */
 #include "geometry.hpp"
 #include <boost/python/raw_function.hpp>
-#include "../python_util/raw_constructor.hpp"
+#include "../python/util/raw_constructor.hpp"
 
-#include "plask/geometry/stack.hpp"
+#include <plask/geometry/stack.hpp>
 
 namespace plask { namespace python {
 

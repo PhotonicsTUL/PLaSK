@@ -21,7 +21,7 @@ This file contains implementation of vector in 2D space.
 #include <iostream>
 
 #include "../math.hpp"
-#include "plask/exceptions.hpp"
+#include <plask/exceptions.hpp>
 
 #include <cassert>
 #include "common.hpp"

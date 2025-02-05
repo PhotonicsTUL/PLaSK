@@ -14,12 +14,12 @@
 #ifndef PLASK__PYTHON_NUMPY_H
 #define PLASK__PYTHON_NUMPY_H
 
-#include "python_globals.hpp"
+#include "globals.hpp"
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
-#include "python_ptr.hpp"
+#include "ptr.hpp"
 
 #if NPY_API_VERSION < 0x00000007
 inline static void PyArray_SetBaseObject(PyArrayObject* arr, PyObject* obj) {

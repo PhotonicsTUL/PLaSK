@@ -13,7 +13,7 @@
  */
 #include "geometry.hpp"
 
-#include "plask/geometry/primitives.hpp"
+#include <plask/geometry/primitives.hpp>
 
 namespace plask { namespace python {
 
