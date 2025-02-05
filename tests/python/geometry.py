@@ -494,6 +494,27 @@ class PrismTest(unittest.TestCase):
         self.assertIsInstance(prism, plask.geometry.TriangularPrism)
 
 
+class EllipticCyllinderTest(unittest.TestCase):
+
+    def testStraight(self):
+        cylinder = plask.geometry.EllipticCylinder(1.0, 0.2, 1.0, 'GaAs')
+        self.assertTrue(cylinder.contains(0.5, 0.0, 0.5))
+        self.assertFalse(cylinder.contains(0.0, 0.0, 2.5))
+        self.assertFalse(cylinder.contains(0.0, 0.5, 0.5))
+
+    def testRotated(self):
+        cylinder = plask.geometry.EllipticCylinder(1.0, 0.2, 1.0, 'GaAs', angle=45)
+        self.assertEqual(cylinder.radii, (1.0, 0.2))
+        self.assertTrue(cylinder.contains(0.5, 0.5, 0.5))
+        self.assertFalse(cylinder.contains(0.5, -0.5, 0.5))
+
+    def testConstructors(self):
+        plask.geometry.EllipticCylinder((1.0, 0.2), 1.0, 'GaAs', angle=45)
+        cylinder =plask.geometry.EllipticCylinder(radii=(1.0, 0.2), height=1.0, material='GaAs')
+        self.assertEqual(cylinder.angle, 0.)
+        with self.assertRaises(TypeError):
+            plask.geometry.EllipticCylinder(radii=(1.0, 0.2), radius0=1.0, radius1=0.2, height=1.0, material='GaAs')
+
 if __name__ == '__main__':
     test = unittest.main(exit=False)
     sys.exit(not test.result.wasSuccessful())

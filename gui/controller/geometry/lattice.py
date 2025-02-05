@@ -81,9 +81,9 @@ class GNLatticeController(GNObjectController):
         self.construct_group('Lattice Vectors')
         weakself = weakref.proxy(self)
         self.vectors = (self.construct_point_controllers(row_name='First',
-                                                         change_cb=lambda vec: weakself._on_point_set(0, vec)),
+                                                         change_cb=lambda vec, _: weakself._on_point_set(0, vec)),
                         self.construct_point_controllers(row_name='Second',
-                                                         change_cb=lambda vec: weakself._on_point_set(1, vec)))
+                                                         change_cb=lambda vec, _: weakself._on_point_set(1, vec)))
         self.construct_group('Lattice Boundaries')
         self.segments = self.construct_lattice_edit(node_property_name='segments',
                                                     change_cb=self._segments_changed, edit_cb=self.edit_segments)

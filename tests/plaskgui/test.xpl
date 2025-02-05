@@ -332,6 +332,7 @@
   </cartesian3d>
   <cartesian3d name="tubic" axes="x,y,z">
     <stack x="0" y="0">
+      <elliptic-cylinder material="AlAs" radius0="0.6" radius1="0.2" angle="30" height="1"/>
       <tube material="GaAs" inner-radius="1" outer-radius="2" height="3"/>
     </stack>
   </cartesian3d>

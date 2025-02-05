@@ -247,6 +247,56 @@ class GNTube(GNLeaf):
         return result
 
 
+class GNEllipticCylinder(GNLeaf):
+
+    def __init__(self, parent=None):
+        super().__init__(parent=parent, dim=3)
+        self.radius0 = None
+        self.radius1 = None
+        self.angle = None
+        self.height = None
+
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super()._attributes_from_xml(attribute_reader, conf)
+        xml_to_attr(attribute_reader, self, 'radius0', 'radius1', 'angle', 'height')
+
+    def _attributes_to_xml(self, element, conf):
+        super()._attributes_to_xml(element, conf)
+        attr_to_xml(self, element, 'radius0', 'radius1', 'angle', 'height')
+
+    def tag_name(self, full_name=True):
+        return "elliptic-cylinder"
+
+    def python_type(self):
+        return 'geometry.EllipticCylinder'
+
+    def major_properties(self):
+        res = super().major_properties()
+        res.append(('radius0', self.radius0))
+        res.append(('radius1', self.radius1))
+        if self.angle is not None:
+            res.append(('angle', self.angle))
+        res.append(('height', self.height))
+        return res
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.leaf import GNEllipticCylinderController
+        return GNEllipticCylinderController(document, model, self)
+
+    def create_info(self, res, names):
+        super().create_info(res, names)
+        if not can_be_float(self.radius0, required=True): self._require(res, 'radius0', type='float')
+        if not can_be_float(self.radius1, required=True): self._require(res, 'radius1', type='float')
+        if not can_be_float(self.angle): self._wrong_type(res, 'float', 'angle', 'rotation angle')
+        if not can_be_float(self.height, required=True): self._require(res, 'height', type='float')
+
+    @staticmethod
+    def from_xml_3d(element, conf):
+        result = GNEllipticCylinder()
+        result.load_xml_element(element, conf)
+        return result
+
+
 class GNCircle(GNLeaf):
 
     def __init__(self, parent=None, dim=None):

@@ -11,12 +11,14 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  */
+#include "../python_util/raw_constructor.hpp"
 #include "geometry.hpp"
 
 #include "plask/geometry/circle.hpp"
 #include "plask/geometry/cuboid.hpp"
 #include "plask/geometry/cylinder.hpp"
 #include "plask/geometry/ellipse.hpp"
+#include "plask/geometry/elliptic_cylinder.hpp"
 #include "plask/geometry/leaf.hpp"
 #include "plask/geometry/polygon.hpp"
 #include "plask/geometry/prism.hpp"
@@ -229,17 +231,58 @@ static shared_ptr<Ellipse> Ellipse_constructor_1(py::object radii, const py::obj
     return result;
 }
 
-static py::object Ellipse_getRadii(const Ellipse* self) {
+template <typename T> static py::object Ellipse_getRadii(const T* self) {
     auto radii = self->getRadii();
     return py::make_tuple(radii.first, radii.second);
 }
 
-static void Ellipse_setRadii(Ellipse* self, py::object radii) {
+template <typename T> static void Ellipse_setRadii(T* self, py::object radii) {
     if (py::len(radii) != 2) throw TypeError("radii must be a tuple of two floats");
     double rx = py::extract<double>(radii[0]);
     double ry = py::extract<double>(radii[1]);
     self->setRadii(rx, ry);
 }
+
+static shared_ptr<EllipticCylinder> EllipticCylinder_constructor(const py::tuple& args, const py::dict& kwargs) {
+    double r0, r1, h, angle = 0.;
+
+    PyObject* self;
+    PyObject* pymaterial;
+
+    if ((py::len(args) >= 2 && PySequence_Check(py::object(args[1]).ptr())) || kwargs.contains("radii")) {
+        PyObject* radii;
+        static const char* kwlist[] = {"self", "radii", "height", "material", "angle", NULL};
+        if (!PyArg_ParseTupleAndKeywords(args.ptr(), kwargs.ptr(), "OOdO|$d:EllipticCylinder.__init__", (char**)kwlist,  //
+                                         &self, &radii, &h, &pymaterial, &angle))
+            throw py::error_already_set();
+        if (PySequence_Length(radii) != 2) throw TypeError("radii must be a tuple of two floats");
+        r0 = py::extract<double>(PySequence_GetItem(radii, 0));
+        r1 = py::extract<double>(PySequence_GetItem(radii, 1));
+    } else {
+        static const char* kwlist[] = {"self",
+                                       "radius0",
+                                       "radius1",
+                                       "height",
+                                       "material",
+                                       "angle",
+                                       NULL};
+        if (!PyArg_ParseTupleAndKeywords(args.ptr(), kwargs.ptr(), "OdddO|$d:EllipticCylinder.__init__", (char**)kwlist,  //
+                                         &self, &r0, &r1, &h, &pymaterial, &angle))
+            throw py::error_already_set();
+    }
+
+    py::object material = py::object(py::borrowed(pymaterial));
+
+    angle *= M_PI / 180.;
+
+    auto result = plask::make_shared<EllipticCylinder>(r0, r1, angle, h);
+    setLeafMaterialFast<3>(result, material);
+    return result;
+}
+
+static double EllipticCylinder_getAngle(const EllipticCylinder* self) { return self->getAngle() * 180. / M_PI; }
+
+static void EllipticCylinder_setAngle(EllipticCylinder* self, double angle) { self->setAngle(angle * M_PI / 180.); }
 
 // Prism constructor wraps
 static shared_ptr<TriangularPrism> TriangularPrism_constructor_vec(const LateralVec<double>& p0,
@@ -593,11 +636,10 @@ void register_geometry_leafs() {
         py::no_init)
         .def("__init__",
              py::make_constructor(&Ellipse_constructor, py::default_call_policies(), (py::arg("radius0"), "radius1", "material")))
-        .def("__init__",
-             py::make_constructor(&Ellipse_constructor_1, py::default_call_policies(), (py::arg("radii"), "material")))
-        .add_property("radius0", py::make_getter(&Ellipse::radius0), &Ellipse::setRadius0, u8"Transverse radius of the circle.")
-        .add_property("radius1", py::make_getter(&Ellipse::radius1), &Ellipse::setRadius1, u8"Vertical radius of the circle.")
-        .add_property("radii", &Ellipse_getRadii, &Ellipse_setRadii, u8"Radii of the ellipse.");
+        .def("__init__", py::make_constructor(&Ellipse_constructor_1, py::default_call_policies(), (py::arg("radii"), "material")))
+        .add_property("radius0", py::make_getter(&Ellipse::radius0), &Ellipse::setRadius0, u8"Transverse radius of the ellipse.")
+        .add_property("radius1", py::make_getter(&Ellipse::radius1), &Ellipse::setRadius1, u8"Vertical radius of the ellipse.")
+        .add_property("radii", &Ellipse_getRadii<Ellipse>, &Ellipse_setRadii<Ellipse>, u8"Radii of the ellipse.");
 
     py::class_<Cylinder, shared_ptr<Cylinder>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable>(
         "Cylinder",
@@ -634,6 +676,33 @@ void register_geometry_leafs() {
         .add_property("outer_radius", py::make_getter(&HollowCylinder::outer_radius), &HollowCylinder::setOuterRadius,
                       u8"Outer tube radius.")
         .add_property("height", py::make_getter(&HollowCylinder::height), &HollowCylinder::setHeight, u8"Height of the Tube.");
+
+    py::class_<EllipticCylinder, shared_ptr<EllipticCylinder>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable>(
+        "EllipticCylinder",
+        u8"EllipticCylinder(radius0, radius1, height, material, *, angle=0.)\n"
+        u8"EllipticCylinder(radii, height, material, *, angle=0.)\n\n"
+        u8"Vertical elliptic cylinder (3D geometry object).\n\n"
+        u8"The cylinder base always lies in the horizontal (longitudinal-transverse)\n"
+        u8"plane and it height spans in the vertical direction.\n\n"
+        u8"Args:\n"
+        u8"    radius0 (float): Ellipse radius along the first direction (longitudinal).\n"
+        u8"    radius1 (float): Ellipse radius along the second direction (transverse).\n"
+        u8"    angle (float): Rotation angle in the horizontal plane [deg].\n"
+        u8"    height (float): Cylinder height.\n"
+        u8"    material (Material): Cylinder material.\n",
+        py::no_init)
+        .def("__init__", raw_constructor(&EllipticCylinder_constructor))
+        .add_property("radius0", py::make_getter(&EllipticCylinder::radius0), &EllipticCylinder::setRadius0,
+                      u8"Longitudinal radius of the base ellipse.")
+        .add_property("radius1", py::make_getter(&EllipticCylinder::radius1), &EllipticCylinder::setRadius1,
+                      u8"Transverse radius of the base circle.")
+        .add_property("radii", &Ellipse_getRadii<EllipticCylinder>, &Ellipse_setRadii<EllipticCylinder>, u8"Radii of the ellipse.")
+        .add_property("height", py::make_getter(&EllipticCylinder::height), &EllipticCylinder::setHeight,
+                      u8"Height of the cylinder.")
+        .add_property("angle", &EllipticCylinder_getAngle, &EllipticCylinder_setAngle,
+                      u8"Rotation angle in the horizontal plane.\n\n"
+                      u8"This rotates the ellipse horizontally, so the longitudinal and transverse\n"
+                      u8"dimensions are no longer along the axes, but correspond to the object sides.\n");
 
     py::class_<TriangularPrism, shared_ptr<TriangularPrism>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> triangular_prism(
         "TriangularPrism",
@@ -720,5 +789,4 @@ void register_geometry_leafs() {
         Vertices2D<Prism, LateralVec<double>>::register_class();
     }
 }
-
 }}  // namespace plask::python

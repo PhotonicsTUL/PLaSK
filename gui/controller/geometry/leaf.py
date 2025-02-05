@@ -143,7 +143,7 @@ class GNBlockController(GNLeafController):
         self.size = self.construct_point_controllers(
             row_name='Size',
             field_names=field_names,
-            change_cb=lambda point: weakself.
+            change_cb=lambda point, _: weakself.
             _set_node_by_setter_undoable(setter, list(point), weakself.node.size, 'change block size'),
         )
         if self.node.dim == 3:
@@ -173,8 +173,8 @@ class GNTriangleController(GNLeafController):
         self.construct_group('Vertex Coordinates (other than: {}):'.format(', '.join('0' for _ in range(0, self.node.dim))))
         weakself = weakref.proxy(self)
         self.points = (
-            self.construct_point_controllers(row_name='First', change_cb=lambda point: weakself._on_point_set(0, point)),
-            self.construct_point_controllers(row_name='Second', change_cb=lambda point: weakself._on_point_set(1, point))
+            self.construct_point_controllers(row_name='First', change_cb=lambda point, _: weakself._on_point_set(0, point)),
+            self.construct_point_controllers(row_name='Second', change_cb=lambda point, _: weakself._on_point_set(1, point))
         )
         super().construct_form()
 
@@ -283,12 +283,63 @@ class GNTubeController(GNLeafController):
         self.height.setText(none_to_empty(self.node.height))
 
 
+class GNEllipticCylinderController(GNLeafController):
+
+    def _on_radii_set(self, value, index):
+
+        def setter(n, v):
+            setattr(n, f"radius{index}", v[index])
+
+        self._set_node_by_setter_undoable(
+            setter, value, getattr(self.node, f"radius{index}"),
+            'change {} elliptic cylinder radius'.format('first' if index == 0 else 'second')
+        )
+
+    def construct_form(self):
+        weakself = weakref.proxy(self)
+        self.construct_group('Cylinder Size')
+        self.radii = self.construct_point_controllers(
+            row_name='Radii', dim=2, field_names=('radius0', 'radius1'), change_cb=weakself._on_radii_set
+        )
+        self.radii[0].setToolTip(
+            '&lt;cylinder <b>radius0</b>="" radius1="" height="" ...&gt;<br/>'
+            'Radii of the cylinder base. (float (µm), required)'
+        )
+        self.radii[1].setToolTip(
+            '&lt;cylinder radius0="" <b>radius1</b>="" height="" ...&gt;<br/>'
+            'Radii of the cylinder base. (float (µm), required)'
+        )
+        self.angle = self.construct_line_edit(
+            'Rotation Angle:', unit='deg', node_property_name='angle', display_property_name='angle of the cylinder base'
+        )
+        self.angle.setPlaceholderText('0')
+        self.angle.setToolTip(
+            '&lt;cylinder radius0="" radius1="" <b>angle</b>="" ...&gt;<br/>'
+            'Angle of the cylinder base. (float (deg))'
+        )
+        self.height = self.construct_line_edit(
+            'Height:', unit='µm', node_property_name='height', display_property_name='height of the cylinder'
+        )
+        self.height.setToolTip(
+            '&lt;elliptic-cylinder radius0="" radius1="" <b>height</b>="" ...&gt;<br/>'
+            'Height of the cylinder. (float (µm), required)'
+        )
+        super().construct_form()
+
+    def fill_form(self):
+        super().fill_form()
+        self.radii[0].setText(none_to_empty(self.node.radius0))
+        self.radii[1].setText(none_to_empty(self.node.radius1))
+        self.angle.setText(none_to_empty(self.node.angle))
+        self.height.setText(none_to_empty(self.node.height))
+
+
 class GNTriangularPrismController(GNLeafController):
 
     def _on_point_set(self, index, value):
 
         def setter(n, v):
-            n.points = n.points[0:index] + (v, ) + n.points[index+1:]
+            n.points = n.points[0:index] + (v, ) + n.points[index + 1:]
 
         self._set_node_by_setter_undoable(
             setter, value, self.node.points[index], 'change {} triangle point'.format('first' if index == 0 else 'second')
@@ -301,12 +352,12 @@ class GNTriangularPrismController(GNLeafController):
             self.construct_point_controllers(
                 row_name='First',
                 field_names=('longitudinal', 'transverse'),
-                change_cb=lambda point: weakself._on_point_set(0, point)
+                change_cb=lambda point, _: weakself._on_point_set(0, point)
             ),
             self.construct_point_controllers(
                 row_name='Second',
                 field_names=('longitudinal', 'transverse'),
-                change_cb=lambda point: weakself._on_point_set(1, point)
+                change_cb=lambda point, _: weakself._on_point_set(1, point)
             )
         )
         self.construct_group('Prism Settings')
@@ -339,7 +390,9 @@ class GNPolygonController(GNLeafController):
     def construct_form(self):
         self.construct_group('Polygon Settings')
         self.vertices = self.construct_line_edit(
-            'Vertices:', unit='µm', node_property_name='vertices',
+            'Vertices:',
+            unit='µm',
+            node_property_name='vertices',
             display_property_name="list of vertices in a the form 'x1 y1; x2 y2; ...'",
         )
         self.vertices.setToolTip(
@@ -360,10 +413,14 @@ class GNPrismController(GNLeafController):
         self.height = self.construct_line_edit(
             'Prism Height:', unit='µm', node_property_name='height', display_property_name='height of the prism'
         )
-        self.height.setToolTip(f'&lt;{self.node.tag_name(False)} <b>height</b>="" ...&gt;<br/>'
-                               f'Height of the prism. (float (µm), required)')
+        self.height.setToolTip(
+            f'&lt;{self.node.tag_name(False)} <b>height</b>="" ...&gt;<br/>'
+            f'Height of the prism. (float (µm), required)'
+        )
         self.vertices = self.construct_line_edit(
-            'Vertices:', unit='µm', node_property_name='vertices',
+            'Vertices:',
+            unit='µm',
+            node_property_name='vertices',
             display_property_name="list of vertices in a the form 'x1 y1; x2 y2; ...'",
         )
         self.vertices.setToolTip(

@@ -1,6 +1,6 @@
 # This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
 # Copyright (c) 2022 Lodz University of Technology
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, version 3.
@@ -305,7 +305,7 @@ class GNodeController(Controller):
             hbox.addWidget(res[i])
             hbox.addWidget(QLabel(u'µm' + ('' if i == dim-1 else u'  × ')))
             if change_cb is not None:
-                res[i].editingFinished.connect(lambda: change_cb(tuple(empty_to_none(p.text()) for p in res)))
+                res[i].editingFinished.connect(lambda _i=i: change_cb(tuple(empty_to_none(p.text()) for p in res), _i))
         return res if row_name else (res, group)
 
     def __init__(self, document, model, node):
