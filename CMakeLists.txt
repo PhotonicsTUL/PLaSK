@@ -115,6 +115,8 @@ include(CMakeDependentOption)
 
 option(BUILD_DEVEL_DOC "Build doxygen documentation." OFF)
 
+option(BUILD_HTML_DOC "Build HTML documentation." OFF)
+
 option(BUILD_PYTHON "Build and install Python interface to PLaSK (recommended)." ON)
 cmake_dependent_option(BUILD_PYTHON_MODULE "Build Python interface as external module." OFF "BUILD_PYTHON" OFF)
 cmake_dependent_option(INSTALL_PYTHON_PTH "Install 'plask.pth' into Python directory" OFF "BUILD_PYTHON_MODULE" OFF)
@@ -854,7 +856,7 @@ if(BUILD_TESTING)
 
 endif(BUILD_TESTING)
 
-# ----------===== Documentation (api) =====--------------------------------------------
+# ----------===== Documentation  =====--------------------------------------------
 if(WIN32)
     set(doc_dest doc)
 else()
@@ -874,7 +876,7 @@ if(BUILD_DEVEL_DOC)
     if(DOXYGEN_FOUND)
         add_custom_target(dox ALL ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile ${plask_headers} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
         if(INSTALL_DEV)
-            install(DIRECTORY ${CMAKE_BINARY_DIR}/doc DESTINATION ${doc_dest}/devel COMPONENT dev-doc
+            install(DIRECTORY ${CMAKE_BINARY_DIR}/dox/html/ DESTINATION ${doc_dest}/devel COMPONENT devdoc
                     PATTERN "html/*.md5" EXCLUDE PATTERN "html/*.map" EXCLUDE)
         endif()
     else()
@@ -892,7 +894,10 @@ install(FILES ${examples} DESTINATION ${doc_dest}/examples COMPONENT doc)
 
 add_subdirectory(doc)
 
-
+if(BUILD_HTML_DOC)
+    add_custom_target(html-doc ALL DEPENDS doc-html)
+    install(DIRECTORY ${CMAKE_BINARY_DIR}/doc/html DESTINATION ${doc_dest} COMPONENT doc)
+endif()
 
 
 # ----------===== Optional tools =====--------------------------------------------
@@ -940,10 +945,10 @@ else()
         set(BASH_COMPLETION_COMPLETIONSDIR "/etc/bash_completion.d")
         message(STATUS "Using fallback bash completion dir ${BASH_COMPLETION_COMPLETIONSDIR}")
     endif()
-    install(FILES utils/bash/plask DESTINATION ${BASH_COMPLETION_COMPLETIONSDIR} COMPONENT completions)
+    install(FILES utils/bash/plask DESTINATION ${BASH_COMPLETION_COMPLETIONSDIR} COMPONENT core)
 
     set(ZSH_COMPLETIONS_PATH /usr/share/zsh/vendor-completions CACHE PATH "Location of ZSH completions file")
-    install(FILES utils/zsh/_plask DESTINATION ${ZSH_COMPLETIONS_PATH} COMPONENT completions)
+    install(FILES utils/zsh/_plask DESTINATION ${ZSH_COMPLETIONS_PATH} COMPONENT core)
 
 endif()
 
@@ -1105,6 +1110,15 @@ if(UNIX)
     set(CPACK_GENERATOR "DEB;RPM;TBZ2")
     set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0)
 
+    set(CPACK_COMPONENT_DOC_GROUP doc)
+
+    if (BUILD_DEVEL_DOC AND INSTALL_DEV)
+        list(APPEND CPACK_COMPONENTS_ALL devdoc)
+        set(CPACK_COMPONENT_DEVDOC_DISPLAY_NAME "Developer Documentation")
+        set(CPACK_COMPONENT_DEVDOC_DESCRIPTION "Development documentation made with Doxygen.")
+        set(CPACK_COMPONENT_DEVDOC_GROUP devel_doc)
+    endif()
+
     set(CPACK_SET_DESTDIR "ON")
 
     if(NOT DEFINED CPACK_PACKAGE_NAME)
@@ -1119,7 +1133,7 @@ if(UNIX)
 
     # execute_process(COMMAND chmod 0755 ${CMAKE_BINARY_DIR}/postinst ${CMAKE_BINARY_DIR}/prerm)
 
-    install(FILES "${CMAKE_SOURCE_DIR}/utils/binfmts/plask" DESTINATION "share/binfmts")
+    install(FILES "${CMAKE_SOURCE_DIR}/utils/binfmts/plask" DESTINATION "share/binfmts" COMPONENT core)
 
     # execute_process(COMMAND ${Python3_EXECUTABLE} -c "import sys; v=${Boost_VERSION}; sys.stdout.write('.'.join(str(s) for s in (v//100000,v//100%1000,v%100)))" OUTPUT_VARIABLE boostver)
     set(boostver "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
@@ -1161,6 +1175,7 @@ if(UNIX)
     endif()
     set(CPACK_DEBIAN_APP_PACKAGE_DEPENDS "${CPACK_DEBIAN_APP_PACKAGE_DEPENDS}, python3 (>= 3.${Python3_VERSION_MINOR}.0), python3-numpy, python3-matplotlib, python3-h5py, python3-scipy")
     set(CPACK_DEBIAN_APP_PACKAGE_RECOMMENDS "ipython3 (>= 0.13)")
+    set(CPACK_DEBIAN_APP_PACKAGE_SUGGESTS "plask-doc (= ${CPACK_PACKAGE_VERSION})")
     if(BUILD_GUI)
         set(CPACK_DEBIAN_APP_PACKAGE_DEPENDS "${CPACK_DEBIAN_APP_PACKAGE_DEPENDS}, python3-pyqt5 | python3-pyside2.qthelp, python3-lxml, python3-yaml")
         set(CPACK_DEBIAN_APP_PACKAGE_RECOMMENDS "${CPACK_DEBIAN_APP_PACKAGE_RECOMMENDS}, python3-jedi, python3-paramiko")
@@ -1171,14 +1186,22 @@ if(UNIX)
     if(USE_SYSTEM_FMT)
         set(CPACK_DEBIAN_DEVEL_PACKAGE_DEPENDS "${CPACK_DEBIAN_DEVEL_PACKAGE_DEPENDS}, libfmt-dev")
     endif()
+    set(CPACK_DEBIAN_APP_PACKAGE_SUGGESTS "plask-dev-doc (= ${CPACK_PACKAGE_VERSION})")
     set(CPACK_DEBIAN_DEVEL_DESCRIPTION "${plask_about}\nThis package contains headers and libraries needed to compile custom materials\n for PLaSK.")
+    set(CPACK_DEBIAN_DEVEL_PACKAGE_ARCHITECTURE all)
+    set(CPACK_DEBIAN_DOC_PACKAGE_NAME plask-doc)
+    set(CPACK_DEBIAN_DOC_DESCRIPTION "${plask_about}\nThis package contains PLaSK documentation.")
+    set(CPACK_DEBIAN_DOC_PACKAGE_ARCHITECTURE all)
+    set(CPACK_DEBIAN_DEVEL_DOC_PACKAGE_NAME plask-dev-doc)
+    set(CPACK_DEBIAN_DEVEL_DOC_DESCRIPTION "${plask_about}\nThis package contains PLaSK developer documentation made with Doxygen.")
+    set(CPACK_DEBIAN_DEVEL_DOC_PACKAGE_ARCHITECTURE all)
 
     set(CPACK_RPM_COMPONENT_INSTALL ON)
     set(CPACK_RPM_FILE_NAME "RPM-DEFAULT")
     set(CPACK_RPM_APP_PACKAGE_NAME plask)
     set(CPACK_RPM_PACKAGE_GROUP Applications/Engineering)
     set(CPACK_RPM_APP_PACKAGE_REQUIRES "expat boost-filesystem openblas boost-python3 python3-numpy python3-pip")
-    set(CPACK_RPM_APP_PACKAGE_SUGGESTS "scipy python-matplotlib h5py")
+    set(CPACK_RPM_APP_PACKAGE_SUGGESTS "scipy python-matplotlib h5py plask-doc = ${CPACK_PACKAGE_VERSION}")
     if(BUILD_GUI)
         set(CPACK_RPM_APP_PACKAGE_REQUIRES "${CPACK_RPM_PACKAGE_REQUIRES} python3-pyqt5-sip python3-pyyaml")
     endif()
@@ -1188,9 +1211,15 @@ if(UNIX)
     set(CPACK_RPM_APP_POST_UNINSTALL_SCRIPT_FILE "${CMAKE_BINARY_DIR}/rpmpostun")
     set(CPACK_RPM_DEVEL_PACKAGE_NAME plask-devel)
     set(CPACK_RPM_DEVEL_PACKAGE_REQUIRES "plask = ${CPACK_PACKAGE_VERSION}")
+    set(CPACK_RPM_DEVEL_PACKAGE_SUGGESTS "plask-devel-doc = ${CPACK_PACKAGE_VERSION}")
+    set(CPACK_RPM_DEVEL_PACKAGE_ARCHITECTURE noarch)
+    set(CPACK_RPM_DOC_PACKAGE_NAME plask-doc)
+    set(CPACK_RPM_DOC_PACKAGE_ARCHITECTURE noarch)
+    set(CPACK_RPM_DEVEL_DOC_PACKAGE_NAME plask-devel-doc)
+    set(CPACK_RPM_DEVEL_DOC_PACKAGE_ARCHITECTURE noarch)
 
     install(FILES "${CMAKE_SOURCE_DIR}/LICENSE" DESTINATION "share/doc/${CPACK_PACKAGE_NAME}" RENAME copyright
-            PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ)
+            PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ COMPONENT core)
 
     find_program(LSB_RELEASE_EXECUTABLE lsb_release)
     if(LSB_RELEASE_EXECUTABLE)
@@ -1208,7 +1237,7 @@ if(UNIX)
     configure_file(${CMAKE_SOURCE_DIR}/changelog.Debian.in ${CMAKE_BINARY_DIR}/changelog.Debian)
     execute_process(COMMAND gzip -c -9 ${CMAKE_BINARY_DIR}/changelog.Debian WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
                     OUTPUT_FILE "${CMAKE_BINARY_DIR}/changelog.Debian.gz")
-    install(FILES "${CMAKE_BINARY_DIR}/changelog.Debian.gz" DESTINATION "share/doc/${CPACK_PACKAGE_NAME}")
+    install(FILES "${CMAKE_BINARY_DIR}/changelog.Debian.gz" DESTINATION "share/doc/${CPACK_PACKAGE_NAME}" COMPONENT core)
 endif()
 
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "plask-${VERSION}" CACHE INTERNAL "tarball basename")
@@ -1234,3 +1263,4 @@ endif()
 # ----------===== config.hpp & version.hpp =====--------------------------------------------
 configure_file(${CMAKE_SOURCE_DIR}/config.hpp.in ${CMAKE_BINARY_DIR}/include/plask/config.hpp)
 configure_file(${CMAKE_SOURCE_DIR}/version.hpp.in ${CMAKE_BINARY_DIR}/include/plask/version.hpp)
+set(CPACK_RPM_DEVEL_DOC_PACKAGE_ARCHITECTURE noarch)
