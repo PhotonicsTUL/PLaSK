@@ -601,12 +601,13 @@ class GNPrism(GNLeaf):
     @staticmethod
     def from_xml_3d(element, conf):
 
-        for a in element.attrib:
-            # DEPRECATED
-            if GNPrism.OLD_ATTR_RE.match(a):
-                result = GNTriangularPrism()
-                result.load_xml_element(element, conf)
-                return result
+        if element is not None:
+            for a in element.attrib:
+                # DEPRECATED
+                if GNPrism.OLD_ATTR_RE.match(a):
+                    result = GNTriangularPrism()
+                    result.load_xml_element(element, conf)
+                    return result
 
         result = GNPrism()
         result.load_xml_element(element, conf)
