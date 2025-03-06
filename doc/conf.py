@@ -9,7 +9,7 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os, re   #re for processing signatures
+import sys, os, re  #re for processing signatures
 
 sys.path.insert(0, os.path.abspath('./_lib'))
 
@@ -27,11 +27,14 @@ import plask
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo',
-              'sphinx.ext.autosummary', 'sphinx_domain_xml', 'sphinx_autodoc_cpp',
-#             'rst2pdf.pdfbuilder'
-             ]
-
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.todo',
+    'sphinx.ext.autosummary',
+    'sphinx_domain_xml',
+    'sphinx_autodoc_cpp',
+    #             'rst2pdf.pdfbuilder'
+]
 
 # Use Napoleon if available for pretty docstrings formatting
 
@@ -109,7 +112,6 @@ pygments_style = 'sphinx'
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
-
 # -- Autodoc options -------------------------------------------------------
 
 autoclass_content = 'class'
@@ -124,25 +126,23 @@ autosummary_generate = True
 
 import sphinx.ext.autosummary
 
+
 def process_generate_options(app):
     genfiles = app.config.autosummary_generate
     if genfiles and not hasattr(genfiles, '__len__'):
         env = app.builder.env
-        genfiles = [str(env.doc2path(x,None)) for x in env.found_docs
-                    if os.path.isfile(env.doc2path(x))]
+        genfiles = [str(env.doc2path(x, None)) for x in env.found_docs if os.path.isfile(env.doc2path(x))]
     if not genfiles:
         return
     try:
         from autosummary.generate import generate_autosummary_docs
     except ImportError:
         from autosummary_generate import generate_autosummary_docs
-    generate_autosummary_docs(app, genfiles, builder=app.builder,
-                              base_path=app.srcdir)
+    generate_autosummary_docs(app, genfiles, builder=app.builder, base_path=app.srcdir)
+
 
 process_generate_options__orig = sphinx.ext.autosummary.process_generate_options
 sphinx.ext.autosummary.process_generate_options = process_generate_options
-
-
 
 # -- Options for HTML output ---------------------------------------------------
 
@@ -231,7 +231,6 @@ html_show_sourcelink = False
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'plask'
 
-
 # -- Options for QtHelp output -------------------------------------------------
 
 # The theme to use for QtHelp.  See the documentation for
@@ -241,24 +240,23 @@ qthelp_theme = 'qthelp'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-qthelp_theme_options = {
-}
+qthelp_theme_options = {}
 
 # Output file base name for QtHelp help builder.
 qthelp_basename = 'plask'
 
-
 # -- Options for LaTeX output --------------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    #'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    #'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
-'preamble': r"""
+    # Additional stuff for the LaTeX preamble.
+    'preamble':
+    r"""
 \usepackage{enumitem}
 \setlistdepth{99}
 \setlist[itemize]{labelsep=0.5em}
@@ -270,7 +268,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'PLaSK.tex', u'PLaSK Documentation', u'M. Dems, P. Beling', 'manual'),
+    ('index', 'PLaSK.tex', u'PLaSK Documentation', u'M. Dems, P. Beling', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -293,19 +291,14 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_domain_indices = True
 
-
 # -- Options for manual page output --------------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    ('index', 'plask', u'PLaSK Documentation',
-     [u'M. Dems, P. Beling'], 1)
-]
+man_pages = [('index', 'plask', u'PLaSK Documentation', [u'M. Dems, P. Beling'], 1)]
 
 # If true, show URL addresses after external links.
 #man_show_urls = False
-
 
 # -- Options for Texinfo output ------------------------------------------------
 
@@ -313,9 +306,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'PLaSK', u'PLaSK Documentation',
-   u'M. Dems, P. Beling', 'PLaSK', 'One line description of project.',
-   'Miscellaneous'),
+    ('index', 'PLaSK', u'PLaSK Documentation', u'M. Dems, P. Beling', 'PLaSK', 'One line description of project.', 'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -333,11 +324,9 @@ epub_author = 'M. Dems, P. Beling'
 
 epub_publisher = 'Lodz University of Technology'
 
-
 # -- Options for inheritance diagram -------------------------------------------
 
 #inheritance_graph_attrs = dict(rankdir="TB", size='""')
-
 
 # -- Exec directive that allows to execute artbitray Python code--------------------
 # http://stackoverflow.com/questions/7250659/python-code-to-generate-part-of-sphinx-documentation-is-it-possible
@@ -356,6 +345,7 @@ except ImportError:
     from docutils.parsers.rst import Directive
 from docutils import nodes, statemachine
 
+
 class ExecDirective(Directive):
     """Execute the specified python code and insert the output into the document"""
     has_content = True
@@ -373,41 +363,47 @@ class ExecDirective(Directive):
             self.state_machine.insert_input(lines, source)
             return []
         except Exception:
-            return [nodes.error(None, nodes.paragraph(text = "Unable to execute python code at %s:%d:" % (basename(source), self.lineno)), nodes.paragraph(text = str(sys.exc_info()[1])))]
+            return [
+                nodes.error(
+                    None, nodes.paragraph(text="Unable to execute python code at %s:%d:" % (basename(source), self.lineno)),
+                    nodes.paragraph(text=str(sys.exc_info()[1]))
+                )
+            ]
         finally:
             sys.stdout = oldStdout
+
 
 # -- Hook for better LaTeX autosummary output --------------------------------------
 
 #import sphinx.writers.latex
 
 #def latex_visit_table(self, node):
-    #if self.table:
-        #raise sphinx.writers.latex.UnsupportedError(
-            #'%s:%s: nested tables are not yet implemented.' %
-            #(self.curfilestack[-1], node.line or ''))
-    #self.table = sphinx.writers.latex.Table()
-    ##self.table.longtable = 'longtable' in node['classes']
-    #self.table.longtable = False
-    #self.tablebody = []
-    #self.tableheaders = []
-    ## Redirect body output until table is finished.
-    #self._body = self.body
-    #self.body = self.tablebody
+#if self.table:
+#raise sphinx.writers.latex.UnsupportedError(
+#'%s:%s: nested tables are not yet implemented.' %
+#(self.curfilestack[-1], node.line or ''))
+#self.table = sphinx.writers.latex.Table()
+##self.table.longtable = 'longtable' in node['classes']
+#self.table.longtable = False
+#self.tablebody = []
+#self.tableheaders = []
+## Redirect body output until table is finished.
+#self._body = self.body
+#self.body = self.tablebody
 
 #def latex_visit_thead(self, node):
-    #self.table.had_head = True
-    #if self.next_table_colspec:
-        #if not self.table.longtable and self.next_table_colspec == 'll':
-            #self.table.colspec = '{LL}\n'
-        #else:
-            #self.table.colspec = '{%s}\n' % self.next_table_colspec
-    #self.next_table_colspec = None
-    ## Redirect head output until header is finished. see visit_tbody.
-    #self.body = self.tableheaders
-
+#self.table.had_head = True
+#if self.next_table_colspec:
+#if not self.table.longtable and self.next_table_colspec == 'll':
+#self.table.colspec = '{LL}\n'
+#else:
+#self.table.colspec = '{%s}\n' % self.next_table_colspec
+#self.next_table_colspec = None
+## Redirect head output until header is finished. see visit_tbody.
+#self.body = self.tableheaders
 
 # -- Register custom elements ------------------------------------------------------
+
 
 def setup(app):
     app.add_directive('exec', ExecDirective)
@@ -513,7 +509,6 @@ pdf_use_numbered_links = False
 # Background images fitting mode
 pdf_fit_background_mode = 'scale'
 
-
 # -- Some tricks with plask for better documentation -------------------------------
 
 vec = plask.vec(0., 0.)
@@ -528,3 +523,10 @@ plask.Data.__name__ = 'Data'
 del doc
 
 plask.config = type(plask.config)
+
+# -- Workaround for strange bugs ---------------------------------------------------
+
+# This is a workaround for a bug in sphinx.ext.autosummary that causes it to
+# fail with 'no module named meta.shockley.ThermoElectric2D'
+import electrical.shockley  # type: ignore
+import meta.shockley  # type: ignore

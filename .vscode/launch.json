@@ -115,14 +115,15 @@
             "name": "Sphinx",
             "type": "debugpy",
             "request": "launch",
+            "python": "${command:cmake.launchTargetPath}",
             "program": "/usr/bin/sphinx-build",
             "args": [
                 "-b",
                 "html",
                 "-d",
-                "/home/maciek/Dokumenty/PLaSK/plask/build/release/doc/doctrees",
-                "/home/maciek/Dokumenty/PLaSK/plask/doc",
-                "/home/maciek/Dokumenty/PLaSK/plask/build/release/doc/html"
+                "${command:cmake.buildDirectory}/doc/doctrees",
+                "${workspaceFolder}/doc",
+                "${command:cmake.buildDirectory}/doc/html"
             ],
             "console": "integratedTerminal",
             "justMyCode": false

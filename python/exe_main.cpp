@@ -465,6 +465,11 @@ int
             filetype = FILE_PY;
             --argc;
             ++argv;
+        } else if (arg.substr(0, 2) == CSTR(-X)) {
+            int drop = 1;
+            if (arg.length() == 2 && argc > 2) ++drop;
+            argc -= drop;
+            argv += drop;
         } else if (arg.substr(0, 2) == CSTR(-D)) {
             const system_char* def;
             int drop = 1;
