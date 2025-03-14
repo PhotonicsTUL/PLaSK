@@ -112,7 +112,7 @@ void Polygon::addPointsAlongToSet(std::set<double>& points,
     if (vertices.size() < 3) return;
     std::set<double> vert;
     for (const Vec<2>& v : vertices) {
-        vert.insert(v[int(direction)]);
+        vert.insert(v[int(direction) - 1]);
     }
     for (std::set<double>::const_iterator b = vert.begin(), a = b++; b != vert.end(); ++a, ++b) {
         double d = *b - *a;
