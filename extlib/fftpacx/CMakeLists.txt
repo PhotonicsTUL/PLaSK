@@ -15,9 +15,10 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)  #all functions will be exported from
 if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHs /wd4554")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4554")
-else(MSVC)
+else()
     add_definitions("-Wno-shift-op-parentheses")
-endif(MSVC)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+endif()
 
 file(GLOB_RECURSE fftpacx_headers FOLLOW_SYMLINKS *.h)
 
