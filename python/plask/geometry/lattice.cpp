@@ -329,7 +329,7 @@ void register_geometry_container_lattice() {
         .def("__delitem__", &LatticeSegments::__delitem__)
         .def("__str__", &LatticeSegments::__str__)
         .def("__repr__", &LatticeSegments::__repr__)
-        .def("__iter__", &LatticeSegments::__iter__);
+        .def("__iter__", &LatticeSegments::__iter__, py::with_custodian_and_ward_postcall<0, 1>());
     {
         py::scope segments_scope = segments;
         py::class_<LatticeSegments::Iterator>("Iterator", py::no_init)  //
@@ -347,7 +347,7 @@ void register_geometry_container_lattice() {
         .def("__delitem__", &LatticeVertices::__delitem__)
         .def("__str__", &LatticeVertices::__str__)
         .def("__repr__", &LatticeVertices::__repr__)
-        .def("__iter__", &LatticeVertices::__iter__);
+        .def("__iter__", &LatticeVertices::__iter__, py::with_custodian_and_ward_postcall<0, 1>());
     {
         py::scope vertices_scope = vertices;
         py::class_<LatticeVertices::Iterator>("Iterator", py::no_init)  //

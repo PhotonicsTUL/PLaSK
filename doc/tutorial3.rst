@@ -135,11 +135,12 @@ It's now time to define the solvers. PLaSK offers so called meta-solvers, which 
 
    <meta name="SOLVER" solver="ThresholdSearchCyl" lib="shockley">
      <geometry electrical="GeoE" thermal="GeoT" optical="GeoO"/>
-     <mesh electrical="default" thermal="default" diffusion="diffusion" optical="optical"/>
+     <mesh electrical="default" thermal="default" optical="optical"/>
      <optical lam0="980." vat="0"/>
      <root bcond="0" vmin="1.4" vmax="1.6"/>
      <voltage>
-       <condition value="1.5" object="p-contact"/>
+       <condition value="1.5" object="p-contact">
+         <place side="bottom" object="p-contact"/>
        </condition>
        <condition value="0.0">
          <place side="top" object="n-contact"/>
