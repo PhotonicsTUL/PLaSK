@@ -13,7 +13,7 @@
 import sys
 import weakref
 
-from lxml.etree import tostring
+from lxml import etree
 
 from ...qt.QtCore import *
 from ...qt.QtGui import *
@@ -473,7 +473,7 @@ class BoundaryConditionsDialog(QDialog):
 
         text = self.document.get_contents(sections=('defines'))
         xml = self.schema.to_xml(self.model.entries)
-        xml = tostring(xml, encoding='utf8').decode('utf8') if xml is not None else ''
+        xml = etree.tostring(xml, encoding='unicode') if xml is not None else ''
         if _DEBUG:
             print(xml, file=sys.stderr)
         text = text[:-9] + """\
