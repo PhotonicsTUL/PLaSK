@@ -38,6 +38,7 @@ SYNTAX = {
         'builtin': '{syntax_builtin}',
         'comment': '{syntax_comment}',
         'keyword': '{syntax_keyword}',
+        'match_case': '{syntax_keyword}',
         'number': '{syntax_number}',
         'decorator': '{syntax_decorator}',
         'string raw single': '{syntax_string}',
@@ -122,6 +123,7 @@ SYNTAX = {
                 'with',
                 'yield'
             ], '(^|[\x08\\W])', '(?:[\x08\\W]|$)'),
+            ('match_case', r'^\s*(match|case)\b(?!\s*=)'),
             ('builtin', [
                 'ArithmeticError',
                 'AssertionError',
