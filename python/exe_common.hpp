@@ -58,10 +58,21 @@ inline std::string system_to_utf8(const std::wstring& str) {
 typedef wchar_t system_char;
 typedef std::wstring system_string;
 constexpr auto system_fopen = &_wfopen;
-#if PY_VERSION_HEX >= 0x030B0000
-	extern "C" FILE* _Py_wfopen(const wchar_t *path, const wchar_t *mode);
+#if PY_VERSION_HEX >= 0x030D0000
+    inline FILE* system_Py_fopen(const wchar_t* path, const wchar_t* wmode) {
+        char mode[4];
+        wcstombs(mode, wmode, 3);
+        PyObject* py_path = PyUnicode_FromWideChar(path, -1);
+        FILE* result = py_path? _Py_fopen_obj(py_path, mode) : nullptr;
+        Py_XDECREF(py_path);
+        return result;
+    }
+#else
+#   if PY_VERSION_HEX >= 0x030B0000
+	    extern "C" FILE* _Py_wfopen(const wchar_t* path, const wchar_t* mode);
+#   endif
+    constexpr auto system_Py_fopen = &_Py_wfopen;
 #endif
-constexpr auto system_Py_fopen = &_Py_wfopen;
 
 
 static PyObject* system_Py_CompileString(const char *str, const system_char *filename, int start) {
