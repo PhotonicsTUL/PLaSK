@@ -632,6 +632,7 @@ template <> double ElectricalFem2DSolver<Geometry2DCartesian>::getTotalHeat() {
         double height = e.getUpper1() - e.getLower1();
         W += width * height * heats[e.getIndex()];
     }
+    if (this->getGeometry()->isSymmetric(Geometry::DIRECTION_TRAN)) W *= 2.;
     return geometry->getExtrusion()->getLength() * 1e-15 * W;  // 1e-15 µm³ -> m³, W -> mW
 }
 

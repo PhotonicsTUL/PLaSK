@@ -618,6 +618,8 @@ double ElectricalFem3DSolver::getTotalHeat() {
         double d2 = el.getUpper2() - el.getLower2();
         W += 1e-15 * d0 * d1 * d2 * heat[el.getIndex()];  // 1e-15 µm³ -> m³, W -> mW
     }
+    if (geometry->isSymmetric(Geometry::DIRECTION_LONG)) W *= 2.;
+    if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) W *= 2.;
     return W;
 }
 
