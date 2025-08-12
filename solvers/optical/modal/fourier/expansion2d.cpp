@@ -567,10 +567,10 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         for (size_t i = 0; i != nN; ++i) {
             int k = int(i); if (!symmetric() && k > int(nN/2)) k -= int(nN);
             double s = exp(-SOLVER->smooth * bb4 * k * k);
-            coeffs[layer].yy[i] *= s;
             if (polarization == E_LONG) {
                 if (!epsilon_isotropic) coeffs[layer].zz[i] *= s;
             } else {
+                coeffs[layer].yy[i] *= s;
                 coeffs[layer].rxx[i] *= s;
                 if (!epsilon_isotropic) {
                     coeffs[layer].zz[i] *= s;
