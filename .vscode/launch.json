@@ -81,6 +81,19 @@
             ]
         },
         {
+            "name": "WDBG",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "args": [
+                "${input:script}"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/out/build",
+            "environment": [],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python GUI",
             "type": "debugpy",
             "request": "launch",

@@ -39,13 +39,10 @@ _i = sys.path.index(_plask_python_path) if _plask_python_path in sys.path else 0
 
 if os.name == 'nt':
     os.add_dll_directory(os.path.join(PREFIX_PATH, 'bin'))
+    os.environ['PATH'] = os.path.join(PREFIX_PATH, 'bin') + ';' + os.environ['PATH']
 
-try:
-    from . import _plask
-    from ._plask import *
-except ImportError:  # this seems necessary for Python 3.4
-    import _plask
-    from _plask import *
+from . import _plask
+from ._plask import *
 
 try: from ._plask import _print_stack # for debug only
 except ImportError: pass

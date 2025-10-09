@@ -35,7 +35,7 @@ namespace plask {
 std::string exePathAndName() {
 #ifdef PLASK_SYSTEM_WINDOWS
     char result[MAX_PATH];
-    return std::string(result, GetModuleFileName( NULL, result, MAX_PATH ));
+    return std::string(result, GetModuleFileName(NULL, result, MAX_PATH));
 #elif defined(PLASK_SYSTEM_MACOS)
     char result[PATH_MAX];
     uint32_t size = sizeof(result);

@@ -555,6 +555,7 @@ if(BUILD_PYTHON)
     if(WIN32)
         add_executable(plask_exe python/win_main.cpp)
         set_target_properties(plask_exe PROPERTIES OUTPUT_NAME "plask")
+        add_dependencies(plask_exe plask)
         install(TARGETS plask_exe RUNTIME DESTINATION bin COMPONENT core)
     endif()
 
@@ -681,6 +682,7 @@ if(BUILD_PYTHON)
                            ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash868.bmp
                            ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash1116.bmp)
             set_target_properties(plaskgui_exe PROPERTIES OUTPUT_NAME "plaskgui")
+            add_dependencies(plaskgui_exe plaskgui)
             install(TARGETS plaskgui_exe RUNTIME DESTINATION bin COMPONENT gui)
         endif()
 
