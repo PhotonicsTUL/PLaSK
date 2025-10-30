@@ -26,13 +26,13 @@ void Geometry::setEdges(const std::function<plask::optional<std::string>(const s
     plask::optional<std::string> v, v_lo, v_hi;
     try {
         v = borderValuesGetter("edges");
-        if (v) setAllEdges(*edge::Strategy::fromStrUnique(*v, materialsDB));
+        if (v) setAllEdges(*geometry_edges::Strategy::fromStrUnique(*v, materialsDB));
     } catch (...) {
         if (!draft) throw;
     }
     try {
         v = borderValuesGetter("planar");
-        if (v) setPlanarEdges(*edge::Strategy::fromStrUnique(*v, materialsDB));
+        if (v) setPlanarEdges(*geometry_edges::Strategy::fromStrUnique(*v, materialsDB));
     } catch (...) {
         if (!draft) throw;
     }
@@ -40,7 +40,7 @@ void Geometry::setEdges(const std::function<plask::optional<std::string>(const s
         std::string axis_name = axesNames[dir_nr];
         try {
             v = borderValuesGetter(axis_name);
-            if (v) setEdges(Direction(dir_nr), *edge::Strategy::fromStrUnique(*v, materialsDB));
+            if (v) setEdges(Direction(dir_nr), *geometry_edges::Strategy::fromStrUnique(*v, materialsDB));
         } catch (...) {
             if (!draft) throw;
         }
@@ -67,7 +67,7 @@ void Geometry::setEdges(const std::function<plask::optional<std::string>(const s
         try {
             if (v_lo && v_hi) {
                 try {
-                    setEdges(Direction(dir_nr), *edge::Strategy::fromStrUnique(*v_lo, materialsDB), *edge::Strategy::fromStrUnique(*v_hi, materialsDB));
+                    setEdges(Direction(dir_nr), *geometry_edges::Strategy::fromStrUnique(*v_lo, materialsDB), *geometry_edges::Strategy::fromStrUnique(*v_hi, materialsDB));
                     v_lo.reset();
                     v_hi.reset();
                 } catch (...) {
@@ -76,14 +76,14 @@ void Geometry::setEdges(const std::function<plask::optional<std::string>(const s
             }
             if (v_lo) {
                 try {
-                    setEdge(Direction(dir_nr), false, *edge::Strategy::fromStrUnique(*v_lo, materialsDB));
+                    setEdge(Direction(dir_nr), false, *geometry_edges::Strategy::fromStrUnique(*v_lo, materialsDB));
                 } catch (...) {
                     if (!draft) throw;
                 }
             }
             if (v_hi) {
                 try {
-                    setEdge(Direction(dir_nr), true, *edge::Strategy::fromStrUnique(*v_hi, materialsDB));
+                    setEdge(Direction(dir_nr), true, *geometry_edges::Strategy::fromStrUnique(*v_hi, materialsDB));
                 } catch (...) {
                     if (!draft) throw;
                 }
@@ -97,8 +97,8 @@ void Geometry::setEdges(const std::function<plask::optional<std::string>(const s
 }
 
 void Geometry::storeEdgeInXML(XMLWriter::Element &dest_xml_object, Geometry::Direction direction, bool higher) const {
-    const edge::Strategy& b = this->getEdge(direction, higher);
-    if (b.type() != edge::Strategy::DEFAULT)
+    const geometry_edges::Strategy& b = this->getEdge(direction, higher);
+    if (b.type() != geometry_edges::Strategy::DEFAULT)
         dest_xml_object.attr(this->alternativeDirectionName(direction, higher), b.str());
 }
 
@@ -231,7 +231,7 @@ void Geometry2DCartesian::setExtrusion(shared_ptr<Extrusion> extrusion) {
 //     //     return new Geometry2DCartesian(new_child, getExtrusion()->length);
 // }
 
-void Geometry2DCartesian::setEdges(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) {
+void Geometry2DCartesian::setEdges(Direction direction, const geometry_edges::Strategy& border_lo, const geometry_edges::Strategy& border_hi) {
     Primitive<3>::ensureIsValid2DDirection(direction);
     if (direction == DIRECTION_TRAN)
         leftright.setStrategies(border_lo, border_hi);
@@ -240,7 +240,7 @@ void Geometry2DCartesian::setEdges(Direction direction, const edge::Strategy& bo
     fireChanged(Event::EVENT_EDGES);
 }
 
-void Geometry2DCartesian::setEdge(Direction direction, bool higher, const edge::Strategy& border_to_set) {
+void Geometry2DCartesian::setEdge(Direction direction, bool higher, const geometry_edges::Strategy& border_to_set) {
     Primitive<3>::ensureIsValid2DDirection(direction);
     if (direction == DIRECTION_TRAN)
         leftright.set(higher, border_to_set);
@@ -249,7 +249,7 @@ void Geometry2DCartesian::setEdge(Direction direction, bool higher, const edge::
     fireChanged(Event::EVENT_EDGES);
 }
 
-const edge::Strategy& Geometry2DCartesian::getEdge(Direction direction, bool higher) const {
+const geometry_edges::Strategy& Geometry2DCartesian::getEdge(Direction direction, bool higher) const {
     Primitive<3>::ensureIsValid2DDirection(direction);
     return (direction == DIRECTION_TRAN) ? leftright.get(higher) : bottomup.get(higher);
 }
@@ -343,11 +343,11 @@ void Geometry2DCylindrical::setRevolution(shared_ptr<Revolution> revolution) {
 // Geometry2DCylindrical* Geometry2DCylindrical::getSubspace(const shared_ptr< GeometryObjectD<2> >& object, const PathHints* path, bool copyEdges) const {
 // }
 
-void Geometry2DCylindrical::setEdges(Direction direction, const edge::Strategy& border_to_set) {
+void Geometry2DCylindrical::setEdges(Direction direction, const geometry_edges::Strategy& border_to_set) {
     Primitive<3>::ensureIsValid2DDirection(direction);
     if (direction == DIRECTION_TRAN) {
         try {
-            innerouter.setBoth(dynamic_cast<const edge::UniversalStrategy&>(border_to_set));
+            innerouter.setBoth(dynamic_cast<const geometry_edges::UniversalStrategy&>(border_to_set));
         } catch (std::bad_cast&) {
             throw BadInput("setEdges", "wrong edge type for inner or outer edge");
         }
@@ -356,13 +356,13 @@ void Geometry2DCylindrical::setEdges(Direction direction, const edge::Strategy& 
     fireChanged(Event::EVENT_EDGES);
 }
 
-void Geometry2DCylindrical::setEdges(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) {
+void Geometry2DCylindrical::setEdges(Direction direction, const geometry_edges::Strategy& border_lo, const geometry_edges::Strategy& border_hi) {
     ensureBoundDirIsProper(direction/*, false*/);
     //ensureBoundDirIsProper(direction, true);
     if (direction == DIRECTION_TRAN) {
         try {
-            innerouter.setStrategies(dynamic_cast<const edge::UniversalStrategy&>(border_lo),
-                                     dynamic_cast<const edge::UniversalStrategy&>(border_hi));
+            innerouter.setStrategies(dynamic_cast<const geometry_edges::UniversalStrategy&>(border_lo),
+                                     dynamic_cast<const geometry_edges::UniversalStrategy&>(border_hi));
         } catch (std::bad_cast&) {
             throw BadInput("setEdges", "wrong edge type for inner or outer edge");
         }
@@ -371,11 +371,11 @@ void Geometry2DCylindrical::setEdges(Direction direction, const edge::Strategy& 
     fireChanged(Event::EVENT_EDGES);
 }
 
-void Geometry2DCylindrical::setEdge(Direction direction, bool higher, const edge::Strategy& border_to_set) {
+void Geometry2DCylindrical::setEdge(Direction direction, bool higher, const geometry_edges::Strategy& border_to_set) {
     ensureBoundDirIsProper(direction/*, higher*/);
     if (direction == DIRECTION_TRAN) {
         try {
-            innerouter.set(higher, dynamic_cast<const edge::UniversalStrategy&>(border_to_set));
+            innerouter.set(higher, dynamic_cast<const geometry_edges::UniversalStrategy&>(border_to_set));
         } catch (std::bad_cast&) {
             throw BadInput("setEdge", "wrong edge type for inner or outer edge");
         }
@@ -384,7 +384,7 @@ void Geometry2DCylindrical::setEdge(Direction direction, bool higher, const edge
     fireChanged(Event::EVENT_EDGES);
 }
 
-const edge::Strategy& Geometry2DCylindrical::getEdge(Direction direction, bool higher) const {
+const geometry_edges::Strategy& Geometry2DCylindrical::getEdge(Direction direction, bool higher) const {
     ensureBoundDirIsProper(direction/*, higher*/);
     return (direction == DIRECTION_TRAN) ? innerouter.get(higher) : bottomup.get(higher);
 }
@@ -413,7 +413,7 @@ void Geometry2DCylindrical::writeXML(XMLWriter::Element& parent_xml_object, Writ
     if (auto c = getRevolution()) c->writeXML(tag, write_cb, axes);
 }
 
-void Geometry3D::setEdges(Direction direction, const edge::Strategy &border_lo, const edge::Strategy &border_hi) {
+void Geometry3D::setEdges(Direction direction, const geometry_edges::Strategy &border_lo, const geometry_edges::Strategy &border_hi) {
     switch (direction) {
         case DIRECTION_LONG: backfront.setStrategies(border_lo, border_hi); break;
         case DIRECTION_TRAN: leftright.setStrategies(border_lo, border_hi); break;
@@ -422,7 +422,7 @@ void Geometry3D::setEdges(Direction direction, const edge::Strategy &border_lo, 
     fireChanged(Event::EVENT_EDGES);
 }
 
-void Geometry3D::setEdges(Direction direction, const edge::Strategy &border_to_set) {
+void Geometry3D::setEdges(Direction direction, const geometry_edges::Strategy &border_to_set) {
     switch (direction) {
         case DIRECTION_LONG: backfront.setBoth(border_to_set); break;
         case DIRECTION_TRAN: leftright.setBoth(border_to_set); break;
@@ -431,7 +431,7 @@ void Geometry3D::setEdges(Direction direction, const edge::Strategy &border_to_s
     fireChanged(Event::EVENT_EDGES);
 }
 
-void Geometry3D::setEdge(Direction direction, bool higher, const edge::Strategy &border_to_set) {
+void Geometry3D::setEdge(Direction direction, bool higher, const geometry_edges::Strategy &border_to_set) {
     switch (direction) {
         case DIRECTION_LONG: backfront.set(higher, border_to_set); break;
         case DIRECTION_TRAN: leftright.set(higher, border_to_set); break;
@@ -440,7 +440,7 @@ void Geometry3D::setEdge(Direction direction, bool higher, const edge::Strategy 
     fireChanged(Event::EVENT_EDGES);
 }
 
-const edge::Strategy &Geometry3D::getEdge(Direction direction, bool higher) const {
+const geometry_edges::Strategy &Geometry3D::getEdge(Direction direction, bool higher) const {
     switch (direction) {
         case DIRECTION_LONG: return backfront.get(higher);
         case DIRECTION_TRAN: return leftright.get(higher);

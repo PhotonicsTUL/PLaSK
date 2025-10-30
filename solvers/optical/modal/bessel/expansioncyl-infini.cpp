@@ -34,9 +34,9 @@ void ExpansionBesselInfini::init2()
 {
     SOLVER->writelog(LOG_DETAIL, "Preparing Bessel functions for m = {}", m);
 
-    if (SOLVER->geometry->getEdge(Geometry::DIRECTION_TRAN, true).type() != edge::Strategy::DEFAULT &&
-        SOLVER->geometry->getEdge(Geometry::DIRECTION_TRAN, true).type() != edge::Strategy::SIMPLE &&
-        SOLVER->geometry->getEdge(Geometry::DIRECTION_TRAN, true).type() != edge::Strategy::EXTEND)
+    if (SOLVER->geometry->getEdge(Geometry::DIRECTION_TRAN, true).type() != geometry_edges::Strategy::DEFAULT &&
+        SOLVER->geometry->getEdge(Geometry::DIRECTION_TRAN, true).type() != geometry_edges::Strategy::SIMPLE &&
+        SOLVER->geometry->getEdge(Geometry::DIRECTION_TRAN, true).type() != geometry_edges::Strategy::EXTEND)
         throw BadInput(solver->getId(), "outer geometry edge must be 'extend' or a simple material");
 
     double k0 = isnan(lam0)? this->k0.real() : 2e3*M_PI / lam0;

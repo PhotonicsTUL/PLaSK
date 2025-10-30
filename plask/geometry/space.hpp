@@ -78,7 +78,7 @@ struct PLASK_API Geometry : public GeometryObject {
      * @param border_lo new edge strategy for lower edge in given @p direction
      * @param border_hi new edge strategy for higher edge in given @p direction
      */
-    virtual void setEdges(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) = 0;
+    virtual void setEdges(Direction direction, const geometry_edges::Strategy& border_lo, const geometry_edges::Strategy& border_hi) = 0;
 
     /**
      * Set all edges in given direction or throw exception if this edges can't be set for this calculation space or
@@ -86,7 +86,7 @@ struct PLASK_API Geometry : public GeometryObject {
      * @param direction see Direction
      * @param border_to_set new edge strategy for given edges
      */
-    virtual void setEdges(Direction direction, const edge::Strategy& border_to_set) {
+    virtual void setEdges(Direction direction, const geometry_edges::Strategy& border_to_set) {
         setEdges(direction, border_to_set, border_to_set);
     }
 
@@ -96,13 +96,13 @@ struct PLASK_API Geometry : public GeometryObject {
      * Planar edges are all edges but up-bottom.
      * @param border_to_set new edge strategy for all planar edges
      */
-    virtual void setPlanarEdges(const edge::Strategy& border_to_set) = 0;
+    virtual void setPlanarEdges(const geometry_edges::Strategy& border_to_set) = 0;
 
     /**
      * Set all edges (planar and up-bottom).
      * @param border_to_set new edge strategy for all edges
      */
-    void setAllEdges(const edge::Strategy& border_to_set) {
+    void setAllEdges(const geometry_edges::Strategy& border_to_set) {
         setPlanarEdges(border_to_set);
         setEdges(DIRECTION_VERT, border_to_set);
     }
@@ -113,9 +113,9 @@ struct PLASK_API Geometry : public GeometryObject {
      * @param higher @c true for higher bound, @c false for lower
      * @param border_to_set new edge strategy for given edge
      */
-    virtual void setEdge(Direction direction, bool higher, const edge::Strategy& border_to_set) = 0;
+    virtual void setEdge(Direction direction, bool higher, const geometry_edges::Strategy& border_to_set) = 0;
 
-    // void setEdges(const std::function< std::unique_ptr<edge::Strategy> >(const std::string& s)>& borderValuesGetter,
+    // void setEdges(const std::function< std::unique_ptr<geometry_edges::Strategy> >(const std::string& s)>& borderValuesGetter,
     // const AxisNames& axesNames);
 
     /**
@@ -137,7 +137,7 @@ struct PLASK_API Geometry : public GeometryObject {
      * @param higher @c true for higher bound, @c false for lower
      * @return edge strategy for given edge
      */
-    virtual const edge::Strategy& getEdge(Direction direction, bool higher) const = 0;
+    virtual const geometry_edges::Strategy& getEdge(Direction direction, bool higher) const = 0;
 
     /**
      * Check if structure in given direction is symmetric, i.e. one of edge in this direction is mirror.
@@ -145,8 +145,8 @@ struct PLASK_API Geometry : public GeometryObject {
      * @return @c true only if structure is symmetric in given @p direction
      */
     virtual bool isSymmetric(Direction direction) const {
-        return getEdge(direction, false).type() == edge::Strategy::MIRROR ||
-               getEdge(direction, true).type() == edge::Strategy::MIRROR;
+        return getEdge(direction, false).type() == geometry_edges::Strategy::MIRROR ||
+               getEdge(direction, true).type() == geometry_edges::Strategy::MIRROR;
     }
 
     /**
@@ -155,8 +155,8 @@ struct PLASK_API Geometry : public GeometryObject {
      * @return @c true only if structure is periodic in given @p direction
      */
     bool isPeriodic(Direction direction) const {
-        return getEdge(direction, false).type() == edge::Strategy::PERIODIC ||
-               getEdge(direction, true).type() == edge::Strategy::PERIODIC;
+        return getEdge(direction, false).type() == geometry_edges::Strategy::PERIODIC ||
+               getEdge(direction, true).type() == geometry_edges::Strategy::PERIODIC;
     }
 
     /**
@@ -165,7 +165,7 @@ struct PLASK_API Geometry : public GeometryObject {
      * \param higher \c true for higher bound, \c false for lower
      * \return \c true only if structure is periodic in given \p direction
      */
-    bool isExtended(Direction direction, bool higher) const { return getEdge(direction, higher).type() == edge::Strategy::EXTEND; }
+    bool isExtended(Direction direction, bool higher) const { return getEdge(direction, higher).type() == geometry_edges::Strategy::EXTEND; }
 
     Type getType() const override { return TYPE_GEOMETRY; }
 
@@ -180,7 +180,7 @@ struct PLASK_API Geometry : public GeometryObject {
      * Dynamic cast edge to given type and throw exception in case of bad cast.
      * @param strategy edge strategy to cast
      */
-    template <typename EdgeType> static const EdgeType& castEdge(const edge::Strategy& strategy) {
+    template <typename EdgeType> static const EdgeType& castEdge(const geometry_edges::Strategy& strategy) {
         return dynamic_cast<const EdgeType&>(strategy);
     }
 
@@ -629,7 +629,7 @@ template <int dim> class PLASK_API GeometryD : public Geometry {
      */
     std::set<std::string> getRolesAt(const CoordsType& point, const plask::PathHints& path) const;
 
-    void setPlanarEdges(const edge::Strategy& border_to_set) override;
+    void setPlanarEdges(const geometry_edges::Strategy& border_to_set) override;
 
     // /*
     //  * Get the sub/super-space of this one (automatically detected)
@@ -670,11 +670,11 @@ template <int dim> class PLASK_API GeometryD : public Geometry {
     void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
 };
 
-template <> inline void GeometryD<2>::setPlanarEdges(const edge::Strategy& border_to_set) {
+template <> inline void GeometryD<2>::setPlanarEdges(const geometry_edges::Strategy& border_to_set) {
     setEdges(DIRECTION_TRAN, border_to_set);
 }
 
-template <> inline void GeometryD<3>::setPlanarEdges(const edge::Strategy& border_to_set) {
+template <> inline void GeometryD<3>::setPlanarEdges(const geometry_edges::Strategy& border_to_set) {
     setEdges(DIRECTION_LONG, border_to_set);
     setEdges(DIRECTION_TRAN, border_to_set);
 }
@@ -692,8 +692,8 @@ PLASK_API_EXTERN_TEMPLATE_CLASS(GeometryD<3>)
 class PLASK_API Geometry2DCartesian : public GeometryD<2> {
     shared_ptr<Extrusion> extrusion;
 
-    edge::StrategyPairHolder<Primitive<2>::DIRECTION_TRAN> leftright;
-    edge::StrategyPairHolder<Primitive<2>::DIRECTION_VERT> bottomup;
+    geometry_edges::StrategyPairHolder<Primitive<2>::DIRECTION_TRAN> leftright;
+    geometry_edges::StrategyPairHolder<Primitive<2>::DIRECTION_VERT> bottomup;
 
     shared_ptr<Material> frontMaterial;
     shared_ptr<Material> backMaterial;
@@ -707,7 +707,7 @@ class PLASK_API Geometry2DCartesian : public GeometryD<2> {
      * Set strategy for the left edge.
      * @param newValue new strategy for the left edge
      */
-    void setLeftEdge(const edge::Strategy& newValue) {
+    void setLeftEdge(const geometry_edges::Strategy& newValue) {
         leftright.setLo(newValue);
         fireChanged(Event::EVENT_EDGES);
     }
@@ -716,13 +716,13 @@ class PLASK_API Geometry2DCartesian : public GeometryD<2> {
      * Get left edge strategy.
      * @return left edge strategy
      */
-    const edge::Strategy& getLeftEdge() { return leftright.getLo(); }
+    const geometry_edges::Strategy& getLeftEdge() { return leftright.getLo(); }
 
     /**
      * Set strategy for the right edge.
      * @param newValue new strategy for the right edge
      */
-    void setRightEdge(const edge::Strategy& newValue) {
+    void setRightEdge(const geometry_edges::Strategy& newValue) {
         leftright.setHi(newValue);
         fireChanged(Event::EVENT_EDGES);
     }
@@ -731,13 +731,13 @@ class PLASK_API Geometry2DCartesian : public GeometryD<2> {
      * Get right edge strategy.
      * @return right edge strategy
      */
-    const edge::Strategy& getRightEdge() { return leftright.getHi(); }
+    const geometry_edges::Strategy& getRightEdge() { return leftright.getHi(); }
 
     /**
      * Set strategy for the bottom edge.
      * @param newValue new strategy for the bottom edge
      */
-    void setBottomEdge(const edge::Strategy& newValue) {
+    void setBottomEdge(const geometry_edges::Strategy& newValue) {
         bottomup.setLo(newValue);
         fireChanged(Event::EVENT_EDGES);
     }
@@ -746,13 +746,13 @@ class PLASK_API Geometry2DCartesian : public GeometryD<2> {
      * Get bottom edge strategy.
      * @return bottom edge strategy
      */
-    const edge::Strategy& getBottomEdge() { return bottomup.getLo(); }
+    const geometry_edges::Strategy& getBottomEdge() { return bottomup.getLo(); }
 
     /**
      * Set strategy for the top edge.
      * @param newValue new strategy for the top edge
      */
-    void setTopEdge(const edge::Strategy& newValue) {
+    void setTopEdge(const geometry_edges::Strategy& newValue) {
         bottomup.setHi(newValue);
         fireChanged(Event::EVENT_EDGES);
     }
@@ -761,7 +761,7 @@ class PLASK_API Geometry2DCartesian : public GeometryD<2> {
      * Get top edge strategy.
      * @return top edge strategy
      */
-    const edge::Strategy& getTopEdge() { return bottomup.getHi(); }
+    const geometry_edges::Strategy& getTopEdge() { return bottomup.getHi(); }
 
     /**
      * Set strategies for both edges in specified direction
@@ -769,7 +769,7 @@ class PLASK_API Geometry2DCartesian : public GeometryD<2> {
      * \param border_lo new strategy for the edge with lower coordinate
      * \param border_hi new strategy for the edge with higher coordinate
      */
-    void setEdges(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) override;
+    void setEdges(Direction direction, const geometry_edges::Strategy& border_lo, const geometry_edges::Strategy& border_hi) override;
 
     /**
      * Set strategies for a edge in specified direction
@@ -777,9 +777,9 @@ class PLASK_API Geometry2DCartesian : public GeometryD<2> {
      * \param higher indicates whether higher- or lower-coordinate edge is to be set
      * \param border_to_set new strategy for the edge with higher coordinate
      */
-    void setEdge(Direction direction, bool higher, const edge::Strategy& border_to_set) override;
+    void setEdge(Direction direction, bool higher, const geometry_edges::Strategy& border_to_set) override;
 
-    const edge::Strategy& getEdge(Direction direction, bool higher) const override;
+    const geometry_edges::Strategy& getEdge(Direction direction, bool higher) const override;
 
     /**
      * Set material on the positive side of the axis along the extrusion.
@@ -933,8 +933,8 @@ class PLASK_API Geometry2DCartesian : public GeometryD<2> {
 class PLASK_API Geometry2DCylindrical : public GeometryD<2> {
     shared_ptr<Revolution> revolution;
 
-    edge::StrategyPairHolder<Primitive<2>::DIRECTION_TRAN, edge::UniversalStrategy> innerouter;
-    edge::StrategyPairHolder<Primitive<2>::DIRECTION_VERT> bottomup;
+    geometry_edges::StrategyPairHolder<Primitive<2>::DIRECTION_TRAN, geometry_edges::UniversalStrategy> innerouter;
+    geometry_edges::StrategyPairHolder<Primitive<2>::DIRECTION_VERT> bottomup;
 
     static void ensureBoundDirIsProper(Direction direction /*, bool hi*/) { Primitive<3>::ensureIsValid2DDirection(direction); }
 
@@ -947,7 +947,7 @@ class PLASK_API Geometry2DCylindrical : public GeometryD<2> {
      * Set strategy for inner edge.
      * @param newValue new strategy for inner edge
      */
-    void setInnerEdge(const edge::UniversalStrategy& newValue) {
+    void setInnerEdge(const geometry_edges::UniversalStrategy& newValue) {
         innerouter.setLo(newValue);
         fireChanged(Event::EVENT_EDGES);
     }
@@ -956,13 +956,13 @@ class PLASK_API Geometry2DCylindrical : public GeometryD<2> {
      * Get inner edge strategy.
      * @return inner edge strategy
      */
-    const edge::UniversalStrategy& getInnerEdge() { return innerouter.getLo(); }
+    const geometry_edges::UniversalStrategy& getInnerEdge() { return innerouter.getLo(); }
 
     /**
      * Set strategy for outer edge.
      * @param newValue new strategy for outer edge
      */
-    void setOuterEdge(const edge::UniversalStrategy& newValue) {
+    void setOuterEdge(const geometry_edges::UniversalStrategy& newValue) {
         innerouter.setHi(newValue);
         fireChanged(Event::EVENT_EDGES);
     }
@@ -971,13 +971,13 @@ class PLASK_API Geometry2DCylindrical : public GeometryD<2> {
      * Get outer edge strategy.
      * @return outer edge strategy
      */
-    const edge::UniversalStrategy& getOuterEdge() { return innerouter.getHi(); }
+    const geometry_edges::UniversalStrategy& getOuterEdge() { return innerouter.getHi(); }
 
     /**
      * Set strategy for bottom edge.
      * @param newValue new strategy for bottom edge
      */
-    void setBottomEdge(const edge::Strategy& newValue) {
+    void setBottomEdge(const geometry_edges::Strategy& newValue) {
         bottomup.setLo(newValue);
         fireChanged(Event::EVENT_EDGES);
     }
@@ -986,13 +986,13 @@ class PLASK_API Geometry2DCylindrical : public GeometryD<2> {
      * Get bottom edge strategy.
      * @return bottom edge strategy
      */
-    const edge::Strategy& getBottomEdge() { return bottomup.getLo(); }
+    const geometry_edges::Strategy& getBottomEdge() { return bottomup.getLo(); }
 
     /**
      * Set strategy for up edge.
      * @param newValue new strategy for up edge
      */
-    void setUpEdge(const edge::Strategy& newValue) {
+    void setUpEdge(const geometry_edges::Strategy& newValue) {
         bottomup.setHi(newValue);
         fireChanged(Event::EVENT_EDGES);
     }
@@ -1001,7 +1001,7 @@ class PLASK_API Geometry2DCylindrical : public GeometryD<2> {
      * Get up edge strategy.
      * @return up edge strategy
      */
-    const edge::Strategy& getUpEdge() { return bottomup.getHi(); }
+    const geometry_edges::Strategy& getUpEdge() { return bottomup.getHi(); }
 
     /**
      * Construct geometry over given @p revolution object.
@@ -1057,18 +1057,18 @@ class PLASK_API Geometry2DCylindrical : public GeometryD<2> {
     //         return (Geometry2DCylindrical*)GeometryD<2>::getSubspace(object, path, edges, axesNames);
     //     }
 
-    void setEdges(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) override;
+    void setEdges(Direction direction, const geometry_edges::Strategy& border_lo, const geometry_edges::Strategy& border_hi) override;
 
-    void setEdges(Direction direction, const edge::Strategy& border_to_set) override;
+    void setEdges(Direction direction, const geometry_edges::Strategy& border_to_set) override;
 
-    void setEdge(Direction direction, bool higher, const edge::Strategy& border_to_set) override;
+    void setEdge(Direction direction, bool higher, const geometry_edges::Strategy& border_to_set) override;
 
-    const edge::Strategy& getEdge(Direction direction, bool higher) const override;
+    const geometry_edges::Strategy& getEdge(Direction direction, bool higher) const override;
 
     bool isSymmetric(Direction direction) const override {
         if (direction == DIRECTION_TRAN) return true;
-        return getEdge(direction, false).type() == edge::Strategy::MIRROR ||
-               getEdge(direction, true).type() == edge::Strategy::MIRROR;
+        return getEdge(direction, false).type() == geometry_edges::Strategy::MIRROR ||
+               getEdge(direction, true).type() == geometry_edges::Strategy::MIRROR;
     }
 
     CoordsType wrapEdges(CoordsType p) const override;
@@ -1150,9 +1150,9 @@ class PLASK_API Geometry2DCylindrical : public GeometryD<2> {
 class PLASK_API Geometry3D : public GeometryD<3> {
     shared_ptr<GeometryObjectD<3>> child;
 
-    edge::StrategyPairHolder<Primitive<3>::DIRECTION_LONG> backfront;
-    edge::StrategyPairHolder<Primitive<3>::DIRECTION_TRAN> leftright;
-    edge::StrategyPairHolder<Primitive<3>::DIRECTION_VERT> bottomup;
+    geometry_edges::StrategyPairHolder<Primitive<3>::DIRECTION_LONG> backfront;
+    geometry_edges::StrategyPairHolder<Primitive<3>::DIRECTION_TRAN> leftright;
+    geometry_edges::StrategyPairHolder<Primitive<3>::DIRECTION_VERT> bottomup;
 
   public:
     static constexpr const char* NAME = "cartesian" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D;
@@ -1163,7 +1163,7 @@ class PLASK_API Geometry3D : public GeometryD<3> {
      * Set strategy for the left edge.
      * @param newValue new strategy for the left edge
      */
-    void setLeftEdge(const edge::Strategy& newValue) {
+    void setLeftEdge(const geometry_edges::Strategy& newValue) {
         leftright.setLo(newValue);
         fireChanged(Event::EVENT_EDGES);
     }
@@ -1172,13 +1172,13 @@ class PLASK_API Geometry3D : public GeometryD<3> {
      * Get left edge strategy.
      * @return left edge strategy
      */
-    const edge::Strategy& getLeftEdge() { return leftright.getLo(); }
+    const geometry_edges::Strategy& getLeftEdge() { return leftright.getLo(); }
 
     /**
      * Set strategy for the right edge.
      * @param newValue new strategy for the right edge
      */
-    void setRightEdge(const edge::Strategy& newValue) {
+    void setRightEdge(const geometry_edges::Strategy& newValue) {
         leftright.setHi(newValue);
         fireChanged(Event::EVENT_EDGES);
     }
@@ -1187,13 +1187,13 @@ class PLASK_API Geometry3D : public GeometryD<3> {
      * Get right edge strategy.
      * @return right edge strategy
      */
-    const edge::Strategy& getRightEdge() { return leftright.getHi(); }
+    const geometry_edges::Strategy& getRightEdge() { return leftright.getHi(); }
 
     /**
      * Set strategy for the bottom edge.
      * @param newValue new strategy for the bottom edge
      */
-    void setBottomEdge(const edge::Strategy& newValue) {
+    void setBottomEdge(const geometry_edges::Strategy& newValue) {
         bottomup.setLo(newValue);
         fireChanged(Event::EVENT_EDGES);
     }
@@ -1202,13 +1202,13 @@ class PLASK_API Geometry3D : public GeometryD<3> {
      * Get bottom edge strategy.
      * @return bottom edge strategy
      */
-    const edge::Strategy& getBottomEdge() { return bottomup.getLo(); }
+    const geometry_edges::Strategy& getBottomEdge() { return bottomup.getLo(); }
 
     /**
      * Set strategy for the top edge.
      * @param newValue new strategy for the top edge
      */
-    void setTopEdge(const edge::Strategy& newValue) {
+    void setTopEdge(const geometry_edges::Strategy& newValue) {
         bottomup.setHi(newValue);
         fireChanged(Event::EVENT_EDGES);
     }
@@ -1217,7 +1217,7 @@ class PLASK_API Geometry3D : public GeometryD<3> {
      * Get top edge strategy.
      * @return top edge strategy
      */
-    const edge::Strategy& getTopEdge() { return bottomup.getHi(); }
+    const geometry_edges::Strategy& getTopEdge() { return bottomup.getHi(); }
 
     /**
      * Set strategies for both edges in specified direction
@@ -1225,9 +1225,9 @@ class PLASK_API Geometry3D : public GeometryD<3> {
      * \param border_lo new strategy for the edge with lower coordinate
      * \param border_hi new strategy for the edge with higher coordinate
      */
-    void setEdges(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) override;
+    void setEdges(Direction direction, const geometry_edges::Strategy& border_lo, const geometry_edges::Strategy& border_hi) override;
 
-    void setEdges(Direction direction, const edge::Strategy& border_to_set) override;
+    void setEdges(Direction direction, const geometry_edges::Strategy& border_to_set) override;
 
     /**
      * Set strategies for a edge in specified direction
@@ -1235,9 +1235,9 @@ class PLASK_API Geometry3D : public GeometryD<3> {
      * \param higher indicates whether higher- or lower-coordinate edge is to be set
      * \param border_to_set new strategy for the edge with higher coordinate
      */
-    void setEdge(Direction direction, bool higher, const edge::Strategy& border_to_set) override;
+    void setEdge(Direction direction, bool higher, const geometry_edges::Strategy& border_to_set) override;
 
-    const edge::Strategy& getEdge(Direction direction, bool higher) const override;
+    const geometry_edges::Strategy& getEdge(Direction direction, bool higher) const override;
 
     /**
      * Construct geometry over given 3D @p child object.

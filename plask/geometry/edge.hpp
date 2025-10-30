@@ -21,7 +21,7 @@
 
 namespace plask {
 
-namespace edge {
+namespace geometry_edges {
 
 /**
  * Base, abstract for all classes which describe what do with points outside geometry in calculation space.
