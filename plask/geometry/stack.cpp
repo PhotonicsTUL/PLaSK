@@ -378,7 +378,7 @@ shared_ptr<GeometryObject> StackContainer<dim>::changedVersionForChildren(
     Vec<3, double>* /*recomended_translation*/) const {
     shared_ptr<StackContainer<dim>> result = plask::make_shared<StackContainer<dim>>(this->getBaseHeight());
     result->default_aligner = default_aligner;
-    for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
+    for (std::size_t child_no = 0; child_no < children_after_change.size(); ++child_no)
         if (children_after_change[child_no].first)
             result->addUnsafe(children_after_change[child_no].first, this->aligners[child_no]);
     return result;
@@ -473,7 +473,7 @@ shared_ptr<GeometryObject> ShelfContainer2D::changedVersionForChildren(
     Vec<3, double>* /*recomended_translation*/) const {
     shared_ptr<ShelfContainer2D> result = plask::make_shared<ShelfContainer2D>(this->getBaseHeight());
     result->resizableGap = resizableGap;
-    for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
+    for (std::size_t child_no = 0; child_no < children_after_change.size(); ++child_no)
         if (children_after_change[child_no].first) result->addUnsafe(children_after_change[child_no].first);
     return result;
 }

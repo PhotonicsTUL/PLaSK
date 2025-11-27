@@ -1,7 +1,7 @@
-/* 
+/*
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
@@ -112,7 +112,7 @@ template <int dim>
 shared_ptr<GeometryObject> TranslationContainer<dim>::changedVersionForChildren(
         std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* /*recomended_translation*/) const {
     shared_ptr<TranslationContainer<dim>> result = plask::make_shared<TranslationContainer<dim>>();
-    for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
+    for (std::size_t child_no = 0; child_no < children_after_change.size(); ++child_no)
         if (children_after_change[child_no].first)
             result->addUnsafe(children_after_change[child_no].first, children[child_no]->translation + vec<dim, double>(children_after_change[child_no].second));
     return result;

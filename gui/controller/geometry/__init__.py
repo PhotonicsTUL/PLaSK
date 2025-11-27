@@ -691,7 +691,7 @@ class GeometryController(Controller):
             else:
                 info.action()
 
-        if hasattr(info, 'line'):
+        if hasattr(info, 'line') and info.line is not None:
             self.document.window.goto_line(info.line)
 
         new_nodes = info.nodes if hasattr(info, 'nodes') else None

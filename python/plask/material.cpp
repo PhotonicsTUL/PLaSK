@@ -1329,20 +1329,20 @@ void initMaterials() {
              u8"    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
 
         .def("Na", &Material::Na,
-                 u8"Get acceptor concentration Na (1/m³).\n\n"
+                 u8"Get acceptor concentration Na (1/cm³).\n\n"
                  u8"Args:-\n")
 
         .def("Nd", &Material::Nd,
-             u8"Get donor concentration Nd (1/m³).\n\n"
+             u8"Get donor concentration Nd (1/cm³).\n\n"
              u8"Args:-\n")
 
         .def("Ni", &Material::Ni, (py::arg("T")=300.),
-             u8"Get intrinsic carrier concentration Ni (1/m³).\n\n"
+             u8"Get intrinsic carrier concentration Ni (1/cm³).\n\n"
              u8"Args:\n"
              u8"    T (float): Temperature (K).\n")
 
         .def("Nf", &Material::Nf, (py::arg("T")=300.),
-             u8"Get free carrier concentration N (1/m³).\n\n"
+             u8"Get free carrier concentration N (1/cm³).\n\n"
              u8"Args:\n"
              u8"    T (float): Temperature (K).\n")
 
