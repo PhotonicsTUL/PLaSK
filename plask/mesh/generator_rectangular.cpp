@@ -400,6 +400,28 @@ shared_ptr<OrderedAxis> RectangularMeshSmoothGenerator<dim>::processAxis(shared_
     return axis;
 }
 
+template <int dim>
+inline double getObjectSize(const weak_ptr<GeometryObject>& object, unsigned direction) {
+    auto obj = object.lock();
+    if (!obj) return 0.;
+    shared_ptr<GeometryObjectD<2>> obj2 = dynamic_pointer_cast<GeometryObjectD<2>>(obj);
+    if (obj2) return obj2->getBoundingBox().size()[unsigned(direction)];
+    throw std::runtime_error("Expected 2D geometry object");
+}
+
+template <>
+inline double getObjectSize<3>(const weak_ptr<GeometryObject>& object, unsigned direction) {
+    auto obj = object.lock();
+    if (!obj) return 0.;
+    shared_ptr<GeometryObjectD<3>> obj3 = dynamic_pointer_cast<GeometryObjectD<3>>(obj);
+    if (obj3) return obj3->getBoundingBox().size()[unsigned(direction)];
+    shared_ptr<GeometryObjectD<2>> obj2 = dynamic_pointer_cast<GeometryObjectD<2>>(obj);
+    if (!obj2) throw std::runtime_error("Expected 2D or 3D geometry object");
+    if (direction == 0)
+        throw std::runtime_error("Cannot get size along longitudinal direction of 2D geometry object");
+    return obj2->getBoundingBox().size()[unsigned(direction) - 1];
+}
+
 template <int dim> void RectangularMeshRefinedGenerator<dim>::fromXML(XMLReader& reader, Manager& manager) {
     if (reader.getNodeName() == "refinements") {
         while (reader.requireTagOrEnd()) {
@@ -415,9 +437,7 @@ template <int dim> void RectangularMeshRefinedGenerator<dim>::fromXML(XMLReader&
                 : (reader.getNodeName() == "axis1") ? typename Primitive<RectangularMeshRefinedGenerator<dim>::DIM>::Direction(1)
                                                     : typename Primitive<RectangularMeshRefinedGenerator<dim>::DIM>::Direction(2);
             PLASK_NO_WARNING_END
-            weak_ptr<GeometryObjectD<RectangularMeshRefinedGenerator<dim>::DIM>> object =
-                manager.requireGeometryObject<GeometryObjectD<RectangularMeshRefinedGenerator<dim>::DIM>>(
-                    reader.requireAttribute("object"));
+            weak_ptr<GeometryObject> object = manager.requireGeometryObject<GeometryObject>(reader.requireAttribute("object"));
             if (!object.lock()) {
                 if (manager.draft) {
                     writelog(LOG_WARNING, "XML line {:d}: geometry object '{}' does not exist", reader.getLineNr(),
@@ -431,13 +451,13 @@ template <int dim> void RectangularMeshRefinedGenerator<dim>::fromXML(XMLReader&
             PathHints path;
             if (auto pathattr = reader.getAttribute("path")) path = manager.requirePathHints(*pathattr);
             if (auto by = reader.getAttribute<unsigned>("by")) {
-                double objsize = object.lock()->getBoundingBox().size()[unsigned(direction)];
+                double objsize = getObjectSize<dim>(object, unsigned(direction));
                 for (unsigned i = 1; i < *by; ++i) {
                     double pos = objsize * i / *by;
                     addRefinement(direction, object, path, pos);
                 }
             } else if (auto every = reader.getAttribute<double>("every")) {
-                double objsize = object.lock()->getBoundingBox().size()[unsigned(direction)];
+                double objsize = getObjectSize<dim>(object, unsigned(direction));
                 size_t n = int(max(round(objsize / *every), 1.));
                 double step = objsize / n;
                 for (

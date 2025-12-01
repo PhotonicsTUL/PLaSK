@@ -18,6 +18,8 @@ from numpy import *
 import plask
 import plask.mesh
 import plask.geometry
+from plask import geometry, mesh
+from plask import Data
 
 import plasktest
 
@@ -265,6 +267,18 @@ class DivideGenerator(unittest.TestCase):
         shelf.append(geometry.Rectangle(8., 1., None))
         self.assertEqual(list(generator1d(shelf)), [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 9.0])
 
+    def testDivideGeneratorRefinements(self):
+        rect = geometry.Rectangle(5, 1, None)
+        extr = geometry.Extrusion(rect, 3)
+        geom = geometry.Cartesian3D(extr)
+        meshgen = mesh.Rectangular3D.DivideGenerator()
+        meshgen.add_refinement('t', rect, 1)
+        self.assertEqual(list(meshgen(geom).axis1), [0., 1., 3., 5.])
+
+        meshgen.remove_refinement('t', rect, 1)
+        self.assertEqual(list(meshgen(geom).axis1), [0., 5.])
+
+
     def testDivideGeneratorXML(self):
         manager = plask.Manager()
         manager.load('''
@@ -273,6 +287,11 @@ class DivideGenerator(unittest.TestCase):
             <cartesian2d name="main" axes="xy">
               <rectangle name="rect" dx="50" dy="5" material="GaAs"/>
             </cartesian2d>
+            <cartesian3d name="extruded" axes="zxy">
+              <extrusion length="10">
+                <rectangle name="erect" dx="10" dy="5" material="GaAs"/>
+              </extrusion>
+            </cartesian3d>
           </geometry>
           <grids>
             <generator type="rectangular2d" method="divide" name="refined">
@@ -286,6 +305,11 @@ class DivideGenerator(unittest.TestCase):
                 <axis0 object="rect" by="2"/>
               </refinements>
             </generator>
+            <generator type="rectangular3d" method="divide" name="extruded">
+              <refinements>
+                <axis1 object="erect" every="2."/>
+              </refinements>
+            </generator>
           </grids>
         </plask>
         ''')
@@ -293,6 +317,9 @@ class DivideGenerator(unittest.TestCase):
         self.assertEqual(list(msh.axis0), [0., 10., 20., 30., 40., 50.])
         self.assertEqual(list(msh.axis1), [0., 1., 2., 3., 4., 5.])
         self.assertEqual(list(manager.msh['one'](manager.geo['rect'])), [0., 25., 50.])
+
+        emsh = manager.msh['extruded'](manager.geo['extruded'])
+        self.assertEqual(list(emsh.axis1), [0., 2., 4., 6., 8., 10.])
 
     def testGradual(self):
         manager = plask.Manager()

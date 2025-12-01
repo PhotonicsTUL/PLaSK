@@ -226,7 +226,7 @@ template <int dim> struct PLASK_API RectangularMeshRefinedGenerator : public Mes
     typedef typename Rectangular_t<dim>::Rectilinear GeneratedMeshType;
     using MeshGeneratorD<dim>::DIM;
 
-    typedef std::map<std::pair<weak_ptr<const GeometryObjectD<DIM>>, PathHints>, std::set<double>> Refinements;
+    typedef std::map<std::pair<weak_ptr<const GeometryObject>, PathHints>, std::set<double>> Refinements;
 
     double aspect;
 
@@ -278,7 +278,7 @@ template <int dim> struct PLASK_API RectangularMeshRefinedGenerator : public Mes
      * \param position position of the additional grid line in the refined object
      */
     void addRefinement(typename Primitive<DIM>::Direction direction,
-                       const weak_ptr<const GeometryObjectD<DIM>>& object,
+                       const weak_ptr<const GeometryObject>& object,
                        const PathHints& path,
                        double position) {
         auto key = std::make_pair(object, path);
@@ -294,7 +294,7 @@ template <int dim> struct PLASK_API RectangularMeshRefinedGenerator : public Mes
      * \param position position of the additional grid line in the refined object
      */
     void addRefinement(typename Primitive<DIM>::Direction direction,
-                       const weak_ptr<const GeometryObjectD<DIM>>& object,
+                       const weak_ptr<const GeometryObject>& object,
                        double position) {
         addRefinement(direction, object, PathHints(), position);
     }
@@ -306,7 +306,7 @@ template <int dim> struct PLASK_API RectangularMeshRefinedGenerator : public Mes
      * \param position position of the additional grid line in the refined object
      */
     void addRefinement(typename Primitive<DIM>::Direction direction, const Path& path, double position) {
-        addRefinement(direction, dynamic_pointer_cast<const GeometryObjectD<DIM>>(path.back()), PathHints(path), position);
+        addRefinement(direction, path.back(), PathHints(path), position);
     }
 
     /**
@@ -317,7 +317,7 @@ template <int dim> struct PLASK_API RectangularMeshRefinedGenerator : public Mes
      */
     void addRefinement(typename Primitive<DIM>::Direction direction, const GeometryObject::Subtree& subtree, double position) {
         auto path = subtree.getLastPath();
-        addRefinement(direction, dynamic_pointer_cast<const GeometryObjectD<DIM>>(path.back()), PathHints(path), position);
+        addRefinement(direction, path.back(), PathHints(path), position);
     }
 
     /**
@@ -328,7 +328,7 @@ template <int dim> struct PLASK_API RectangularMeshRefinedGenerator : public Mes
      * \param position position of the additional grid line in the refined object
      */
     void removeRefinement(typename Primitive<DIM>::Direction direction,
-                          const weak_ptr<const GeometryObjectD<DIM>>& object,
+                          const weak_ptr<const GeometryObject>& object,
                           const PathHints& path,
                           double position) {
         auto key = std::make_pair(object, path);
@@ -352,7 +352,7 @@ template <int dim> struct PLASK_API RectangularMeshRefinedGenerator : public Mes
      * \param position position of the additional grid line in the refined object
      */
     void removeRefinement(typename Primitive<DIM>::Direction direction,
-                          const weak_ptr<const GeometryObjectD<DIM>>& object,
+                          const weak_ptr<const GeometryObject>& object,
                           double position) {
         removeRefinement(direction, object, PathHints(), position);
     }
@@ -364,7 +364,7 @@ template <int dim> struct PLASK_API RectangularMeshRefinedGenerator : public Mes
      * \param position position of the additional grid line in the refined object
      */
     void removeRefinement(typename Primitive<DIM>::Direction direction, const Path& path, double position) {
-        removeRefinement(direction, dynamic_pointer_cast<const GeometryObjectD<DIM>>(path.back()), PathHints(path), position);
+        removeRefinement(direction, path.back(), PathHints(path), position);
     }
 
     /**
@@ -375,7 +375,7 @@ template <int dim> struct PLASK_API RectangularMeshRefinedGenerator : public Mes
      */
     void removeRefinement(typename Primitive<DIM>::Direction direction, const GeometryObject::Subtree& subtree, double position) {
         auto path = subtree.getLastPath();
-        removeRefinement(direction, dynamic_pointer_cast<const GeometryObjectD<DIM>>(path.back()), PathHints(path), position);
+        removeRefinement(direction, path.back(), PathHints(path), position);
     }
 
     /**
@@ -383,7 +383,7 @@ template <int dim> struct PLASK_API RectangularMeshRefinedGenerator : public Mes
      * \param object refined object
      * \param path additional path hints pointing to the refined object
      */
-    void removeRefinements(const weak_ptr<const GeometryObjectD<DIM>>& object, const PathHints& path = PathHints()) {
+    void removeRefinements(const weak_ptr<const GeometryObject>& object, const PathHints& path = PathHints()) {
         auto key = std::make_pair(object, path);
         bool found = false;
         for (size_t i = 0; i != dim; ++i) {
@@ -403,8 +403,8 @@ template <int dim> struct PLASK_API RectangularMeshRefinedGenerator : public Mes
      * Remove all refinements from all objects
      */
     void clearRefinements() {
-        refinements[0].clear();
-        refinements[1].clear();
+        for (size_t i = 0; i != dim; ++i)
+            refinements[i].clear();
         this->fireChanged();
     }
 
@@ -413,7 +413,7 @@ template <int dim> struct PLASK_API RectangularMeshRefinedGenerator : public Mes
      * \param path path to the refined object
      */
     void removeRefinements(const Path& path) {
-        removeRefinements(dynamic_pointer_cast<const GeometryObjectD<DIM>>(path.back()), PathHints(path));
+        removeRefinements(path.back(), PathHints(path));
     }
 
     /**
@@ -422,7 +422,7 @@ template <int dim> struct PLASK_API RectangularMeshRefinedGenerator : public Mes
      */
     void removeRefinements(const GeometryObject::Subtree& subtree) {
         auto path = subtree.getLastPath();
-        removeRefinements(dynamic_pointer_cast<const GeometryObjectD<DIM>>(path.back()), PathHints(path));
+        removeRefinements(path.back(), PathHints(path));
     }
 };
 
