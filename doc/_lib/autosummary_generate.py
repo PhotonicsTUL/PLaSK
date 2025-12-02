@@ -46,6 +46,13 @@ from sphinx.jinja2glue import BuiltinTemplateLoader
 from sphinx.util.osutil import ensuredir
 from sphinx.util.inspect import safe_getattr
 
+try:
+    from sphinx.ext.autosummary.generate import ImportExceptionGroup
+except ImportError:
+    class ImportExceptionGroup(Exception): pass
+else:
+    from sphinx.ext.autosummary.generate import import_ivar_by_name
+
 # Sphinx bug workaround
 try:
     from plask import Solver
@@ -157,6 +164,8 @@ def generate_autosummary_docs(app, sources, output_dir=None, suffix='.rst',
         try:
             try:
                 name, obj, parent, mod_name = import_by_name(name)
+            except ImportExceptionGroup:
+                 name, obj, parent, mod_name = import_ivar_by_name(name)
             except ValueError:
                 name, obj, parent = import_by_name(name)
         except ImportError as e:
@@ -289,6 +298,8 @@ def find_autosummary_in_docstring(name, module=None, filename=None):
     try:
         try:
             real_name, obj, parent, mod_name = import_by_name(name)
+        except ImportExceptionGroup:
+            real_name, obj, parent, mod_name = import_ivar_by_name(name)
         except ValueError:
             real_name, obj, parent = import_by_name(name)
         lines = pydoc.getdoc(obj).splitlines()
