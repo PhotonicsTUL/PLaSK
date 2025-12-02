@@ -130,6 +130,8 @@ class GridsController(Controller):
         self.plot_auto_refresh = False
         self.geometry_axes_names = {}
 
+        self.need_reset_plot = True
+
         self.document.window.config_changed.connect(self.reconfig)
 
     def update_geometries(self):
