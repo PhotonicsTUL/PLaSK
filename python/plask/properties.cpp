@@ -29,6 +29,8 @@ void register_standard_properties_heatflux(const py::object& flow_module);
 void register_standard_properties_electrical(const py::object& flow_module);
 void register_standard_properties_voltage(const py::object& flow_module);
 void register_standard_properties_current(const py::object& flow_module);
+void register_standard_properties_capacitance_voltage(const py::object& flow_module);
+void register_standard_properties_capacitance_current(const py::object& flow_module);
 
 void register_standard_properties_concentration_carriers(const py::object& flow_module);
 void register_standard_properties_band_edges(const py::object& flow_module);
@@ -382,6 +384,8 @@ void register_standard_properties()
     register_standard_properties_voltage(flow_module);
     register_standard_properties_current(flow_module);
     register_standard_properties_concentration_carriers(flow_module);
+    register_standard_properties_capacitance_voltage(flow_module);
+    register_standard_properties_capacitance_current(flow_module);
 
     register_standard_properties_builtin_potential(flow_module);
     register_standard_properties_quasi_Fermi_levels(flow_module);
