@@ -124,7 +124,7 @@ void DynamicThermalFem3DSolver::onInvalidate() {
 }
 
 
-void DynamicThermalFem3DSolver::setMatrix(FemMatrix& A, FemMatrix& B, DataVector<double>& F,
+void DynamicThermalFem3DSolver::setMatrix(FemMatrix<>& A, FemMatrix<>& B, DataVector<double>& F,
         const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system ({})", A.describe());
@@ -258,10 +258,10 @@ double DynamicThermalFem3DSolver::compute(double time)
 
     size_t size = this->maskedMesh->size();
 
-    std::unique_ptr<FemMatrix> pA(this->getMatrix());
-    FemMatrix& A = *pA.get();
-    std::unique_ptr<FemMatrix> pB(this->getMatrix());
-    FemMatrix& B = *pB.get();
+    std::unique_ptr<FemMatrix<>> pA(this->getMatrix());
+    FemMatrix<>& A = *pA.get();
+    std::unique_ptr<FemMatrix<>> pB(this->getMatrix());
+    FemMatrix<>& B = *pB.get();
 
     this->writelog(LOG_INFO, "Running thermal calculations");
     maxT = *std::max_element(temperatures.begin(), temperatures.end());

@@ -157,7 +157,7 @@ struct PLASK_SOLVER_API Diffusion3DSolver : public FemSolverWithMesh<Geometry3D,
     std::map<size_t, ActiveRegion3D> active;  ///< Active regions information
 
     /// Make local stiffness matrix and load vector
-    inline void setLocalMatrix(FemMatrix& K,
+    inline void setLocalMatrix(FemMatrix<>& K,
                                DataVector<double>& F,
                                const ElementParams3D e,
                                const double A,
@@ -168,7 +168,7 @@ struct PLASK_SOLVER_API Diffusion3DSolver : public FemSolverWithMesh<Geometry3D,
                                const double* J);
 
     /// Add local stiffness matrix and load vector for SHB
-    inline void addLocalBurningMatrix(FemMatrix& K,
+    inline void addLocalBurningMatrix(FemMatrix<>& K,
                                       DataVector<double>& F,
                                       const ElementParams3D e,
                                       const Tensor2<double> G,

@@ -93,7 +93,7 @@ struct IterativeMatrixParams {
     double err = 0;         ///< Residual error of the solution
 };
 
-struct SparseMatrix : FemMatrix {
+struct SparseMatrix : FemMatrix<> {
     typedef void (*NspcgFunc)(...);
 
   protected:
@@ -116,7 +116,7 @@ struct SparseMatrix : FemMatrix {
   public:
     template <typename SolverT>
     SparseMatrix(SolverT* solver, size_t rank, size_t size, size_t isiz)
-        : FemMatrix(solver, rank, size),
+        : FemMatrix<>(solver, rank, size),
           icords(aligned_malloc<int>(isiz)),
           params(&solver->iter_params),
           nstore(2),
@@ -125,7 +125,7 @@ struct SparseMatrix : FemMatrix {
 
     template <typename SolverT>
     SparseMatrix(SolverT* solver, size_t rank, size_t size)
-        : FemMatrix(solver, rank, size),
+        : FemMatrix<>(solver, rank, size),
           icords(aligned_malloc<int>(2 * size)),
           params(&solver->iter_params),
           nstore(4),

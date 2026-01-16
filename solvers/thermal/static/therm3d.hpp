@@ -47,7 +47,7 @@ struct PLASK_SOLVER_API ThermalFem3DSolver: public FemSolverWithMaskedMesh<Geome
      * \param bconvection boundary conditions: convention
      * \param bradiation boundary conditions: radiation
      **/
-    void setMatrix(FemMatrix& A, DataVector<double>& B,
+    void setMatrix(FemMatrix<>& A, DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& bheatflux,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,Convection>& bconvection,

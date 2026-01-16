@@ -262,7 +262,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver : public FemSolverWithMesh<G
 
     /// Set stiffness matrix + load vector
     template <CalcType calctype>
-    void setMatrix(FemMatrix& A,
+    void setMatrix(FemMatrix<>& A,
                    DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary, double>& bvoltage);
 

@@ -11,7 +11,7 @@
 # GNU General Public License for more details.
 
 # Set the project name in the style: plask/solvergroup/solverlib
-project(plask/electrical/fem)
+project(plask/electrical/shockley)
 
 
 # Do not change thew following two lines

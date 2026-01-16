@@ -236,7 +236,7 @@ void ElectricalFem3DSolver::saveConductivity() {
     }
 }
 
-void ElectricalFem3DSolver::setMatrix(FemMatrix& A,
+void ElectricalFem3DSolver::setMatrix(FemMatrix<>& A,
                                       DataVector<double>& B,
                                       const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary, double>& bvoltage,
                                       const LazyData<double>& temperature) {
@@ -365,8 +365,8 @@ double ElectricalFem3DSolver::compute(unsigned loops) {
     double err = 0.;
     toterr = 0.;
 
-    std::unique_ptr<FemMatrix> pA(this->getMatrix());
-    FemMatrix& A = *pA.get();
+    std::unique_ptr<FemMatrix<>> pA(this->getMatrix());
+    FemMatrix<>& A = *pA.get();
 
 #ifndef NDEBUG
     if (!potential.unique()) this->writelog(LOG_DEBUG, "Potentials data held by something else...");

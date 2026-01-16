@@ -192,12 +192,12 @@ void Diffusion3DSolver::onInitialize() {
 void Diffusion3DSolver::onInvalidate() { active.clear(); }
 
 // clang-format off
-inline void Diffusion3DSolver::setLocalMatrix(FemMatrix& K, DataVector<double>& F, const ElementParams3D e,
+inline void Diffusion3DSolver::setLocalMatrix(FemMatrix<>& K, DataVector<double>& F, const ElementParams3D e,
     const double A, const double B, const double C, const double D, const double* U, const double* J) {
 #   include "diffusion3d-eval.ipp"
 }
 
-inline void Diffusion3DSolver::addLocalBurningMatrix(FemMatrix& K, DataVector<double>& F, const ElementParams3D e,
+inline void Diffusion3DSolver::addLocalBurningMatrix(FemMatrix<>& K, DataVector<double>& F, const ElementParams3D e,
     const Tensor2<double> G, const Tensor2<double> dG, const double Ug, const Tensor2<double>* P) {
 #   include "diffusion3d-eval-shb.ipp"
 }
@@ -279,7 +279,7 @@ double Diffusion3DSolver::compute(unsigned loops, bool shb, size_t act) {
 
     unsigned loop = 0;
 
-    std::unique_ptr<FemMatrix> K;
+    std::unique_ptr<FemMatrix<>> K;
 
     toterr = 0.;
 

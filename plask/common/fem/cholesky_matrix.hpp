@@ -55,14 +55,14 @@ namespace plask {
  * Symmetric band matrix structure.
  * Data is stored in LAPACK format.
  */
-struct DpbMatrix : BandMatrix {
+struct DpbMatrix : BandMatrix<> {
     /**
      * Create matrix
      * \param rank rank of the matrix
      * \param band maximum band size
      */
     DpbMatrix(const Solver* solver, size_t rank, size_t band)
-        : BandMatrix(solver, rank, band, ((band + 1 + (15 / sizeof(double))) & ~size_t(15 / sizeof(double))) - 1) {}
+        : BandMatrix<>(solver, rank, band, ((band + 1 + (15 / sizeof(double))) & ~size_t(15 / sizeof(double))) - 1) {}
 
     size_t index(size_t r, size_t c) {
         assert(r < rank && c < rank);
