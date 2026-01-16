@@ -116,6 +116,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 
 #include "properties/thermal.hpp"
 #include "properties/electrical.hpp"
+#include "properties/capacitance.hpp"
 #include "properties/optical.hpp"
 #include "properties/gain.hpp"
 #include "properties/energylevels.hpp"
