@@ -23,6 +23,7 @@ namespace plask {
 TEMPLATE_CLASS_FOR_LAZY_DATA(Tensor3<complex<double>>)
 TEMPLATE_CLASS_FOR_LAZY_DATA(Tensor2<double>)
 TEMPLATE_CLASS_FOR_LAZY_DATA(Vec<3,complex<double>>)
+TEMPLATE_CLASS_FOR_LAZY_DATA(Vec<2,complex<double>>)
 TEMPLATE_CLASS_FOR_LAZY_DATA(Vec<3,double>)
 TEMPLATE_CLASS_FOR_LAZY_DATA(Vec<2,double>)
 TEMPLATE_CLASS_FOR_LAZY_DATA(double)
