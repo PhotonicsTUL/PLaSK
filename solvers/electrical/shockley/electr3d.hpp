@@ -101,7 +101,7 @@ struct PLASK_SOLVER_API ElectricalFem3DSolver : public FemSolverWithMaskedMesh<G
      * \param[out] B load vector
      * \param bvoltage boundary conditions: constant voltage
      **/
-    void setMatrix(FemMatrix& A,
+    void setMatrix(FemMatrix<>& A,
                    DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary, double>& bvoltage,
                    const LazyData<double>& temperature);

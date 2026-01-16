@@ -174,7 +174,7 @@ static void setBoundaries(const BoundaryConditionsWithMesh<RectangularMesh<2>::B
 
 
 template<>
-void ThermalFem2DSolver<Geometry2DCartesian>::setMatrix(FemMatrix& A, DataVector<double>& B,
+void ThermalFem2DSolver<Geometry2DCartesian>::setMatrix(FemMatrix<>& A, DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bheatflux,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,Convection>& bconvection,
@@ -299,7 +299,7 @@ void ThermalFem2DSolver<Geometry2DCartesian>::setMatrix(FemMatrix& A, DataVector
 
 
 template<>
-void ThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(FemMatrix& A, DataVector<double>& B,
+void ThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(FemMatrix<>& A, DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bheatflux,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,Convection>& bconvection,
@@ -457,8 +457,8 @@ double ThermalFem2DSolver<Geometry2DType>::compute(int loops){
     int loop = 0;
     size_t size = this->maskedMesh->size();
 
-    std::unique_ptr<FemMatrix> pA(this->getMatrix());
-    FemMatrix& A = *pA.get();
+    std::unique_ptr<FemMatrix<>> pA(this->getMatrix());
+    FemMatrix<>& A = *pA.get();
 
     double err;
     toterr = 0.;

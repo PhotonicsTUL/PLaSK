@@ -120,7 +120,7 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public FemSolverWithMaskedMesh<G
     // }
 
     /// Set stiffness matrix + load vector
-    void setMatrix(FemMatrix& A,
+    void setMatrix(FemMatrix<>& A,
                    DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary, double>& bvoltage,
                    const LazyData<double>& temperature);

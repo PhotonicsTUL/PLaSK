@@ -127,7 +127,7 @@ template<typename Geometry2DType> void DynamicThermalFem2DSolver<Geometry2DType>
 
 template<>
 void DynamicThermalFem2DSolver<Geometry2DCartesian>::setMatrix(
-        FemMatrix& A, FemMatrix& B, DataVector<double>& F,
+        FemMatrix<>& A, FemMatrix<>& B, DataVector<double>& F,
         const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system ({})", A.describe());
@@ -257,7 +257,7 @@ void DynamicThermalFem2DSolver<Geometry2DCartesian>::setMatrix(
 
 template<>
 void DynamicThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(
-        FemMatrix& A, FemMatrix& B, DataVector<double>& F,
+        FemMatrix<>& A, FemMatrix<>& B, DataVector<double>& F,
         const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system ({})", A.describe());
@@ -396,10 +396,10 @@ double DynamicThermalFem2DSolver<Geometry2DType>::compute(double time)
 
     size_t size = this->maskedMesh->size();
 
-    std::unique_ptr<FemMatrix> pA(this->getMatrix());
-    FemMatrix& A = *pA.get();
-    std::unique_ptr<FemMatrix> pB(this->getMatrix());
-    FemMatrix& B = *pB.get();
+    std::unique_ptr<FemMatrix<>> pA(this->getMatrix());
+    FemMatrix<>& A = *pA.get();
+    std::unique_ptr<FemMatrix<>> pB(this->getMatrix());
+    FemMatrix<>& B = *pB.get();
 
     this->writelog(LOG_INFO, "Running thermal calculations");
     maxT = *std::max_element(temperatures.begin(), temperatures.end());
