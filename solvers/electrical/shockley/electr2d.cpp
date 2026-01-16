@@ -233,7 +233,7 @@ inline void ElectricalFem2DSolver<Geometry2DCylindrical>::setLocalMatrix(double&
 /// Set stiffness matrix + load vector
 template <typename Geometry2DType>
 void ElectricalFem2DSolver<Geometry2DType>::setMatrix(
-    FemMatrix& A,
+    FemMatrix<>& A,
     DataVector<double>& B,
     const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary, double>& bvoltage,
     const LazyData<double>& temperature) {
@@ -372,8 +372,8 @@ template <typename Geometry2DType> double ElectricalFem2DSolver<Geometry2DType>:
 
     unsigned loop = 0;
 
-    std::unique_ptr<FemMatrix> pA(this->getMatrix());
-    FemMatrix& A = *pA.get();
+    std::unique_ptr<FemMatrix<>> pA(this->getMatrix());
+    FemMatrix<>& A = *pA.get();
 
     double err = 0.;
     toterr = 0.;

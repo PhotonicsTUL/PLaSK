@@ -381,7 +381,7 @@ template <typename Geometry2DType> double Diffusion2DSolver<Geometry2DType>::com
 
     unsigned loop = 0;
 
-    std::unique_ptr<FemMatrix> K;
+    std::unique_ptr<FemMatrix<>> K;
 
     toterr = 0.;
 

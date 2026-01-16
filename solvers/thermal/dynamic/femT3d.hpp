@@ -35,7 +35,7 @@ struct PLASK_SOLVER_API DynamicThermalFem3DSolver: public FemSolverWithMaskedMes
     DataVector<Vec<3,double>> fluxes;      ///< Computed (only when needed) heat fluxes on our own mesh
 
     /// Set stiffness matrix + load vector
-    void setMatrix(FemMatrix& A, FemMatrix& B, DataVector<double>& F,
+    void setMatrix(FemMatrix<>& A, FemMatrix<>& B, DataVector<double>& F,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature
                   );
 

@@ -18,32 +18,30 @@
 
 namespace plask {
 
-struct FemMatrix {
+template <typename T = double> struct FemMatrix {
     const size_t rank;     ///< Order of the matrix, i.e. number of columns or rows
     const size_t size;     ///< Number of stored elements in the matrix
-    double* data;          ///< Pointer to data
+    T* data;               ///< Pointer to data
     const Solver* solver;  ///< Solver owning the matrix
 
     FemMatrix(const Solver* solver, size_t rank, size_t size)
-        : rank(rank), size(size), data(aligned_malloc<double>(size)), solver(solver) {
+        : rank(rank), size(size), data(aligned_malloc<T>(size)), solver(solver) {
         clear();
     }
 
     FemMatrix(const FemMatrix&) = delete;
 
-    virtual ~FemMatrix() { aligned_free<double>(data); }
+    virtual ~FemMatrix() { aligned_free<T>(data); }
 
     /**
      * Return reference to array element
      * \param r index of the element row
      * \param c index of the element column
      **/
-    virtual double& operator()(size_t r, size_t c) = 0;
+    virtual T& operator()(size_t r, size_t c) = 0;
 
     /// Clear the matrix
-    virtual void clear() {
-        std::fill_n(data, size, 0.);
-    }
+    virtual void clear() { std::fill_n(data, size, 0.); }
 
     /**
      * Factorize the matrix in advance to speed up the solution
@@ -58,7 +56,7 @@ struct FemMatrix {
      * \param[inout] X initial estimate of the solution, on output contains the solution (may be interchanged with B)
      * \return number of iterations
      */
-    virtual void solverhs(DataVector<double>& B, DataVector<double>& X) = 0;
+    virtual void solverhs(DataVector<T>& B, DataVector<T>& X) = 0;
 
     /**
      * Solve the set of linear equations
@@ -66,7 +64,7 @@ struct FemMatrix {
      * \param[inout] B right hand side of the equation, on output may be interchanged with X
      * \param[inout] X initial estimate of the solution, on output contains the solution (may be interchanged with B)
      */
-    void solve(DataVector<double>& B, DataVector<double>& X) {
+    void solve(DataVector<T>& B, DataVector<T>& X) {
         factorize();
         solverhs(B, X);
     }
@@ -77,38 +75,36 @@ struct FemMatrix {
      * \param[inout] B right hand side of the equation, on output contains the solution
      * \return number of iterations
      */
-    void solve(DataVector<double>& B) {
-        solve(B, B);
-    }
+    void solve(DataVector<T>& B) { solve(B, B); }
 
     /**
      * Multiply matrix by vector
      * \param vector vector to multiply
      * \param result multiplication result
      */
-    virtual void mult(const DataVector<const double>& vector, DataVector<double>& result) = 0;
+    virtual void mult(const DataVector<const T>& vector, DataVector<T>& result) = 0;
 
     /**
      * Multiply matrix by vector adding the result
      * \param vector vector to multiply
      * \param result multiplication result
      */
-    virtual void addmult(const DataVector<const double>& vector, DataVector<double>& result) = 0;
+    virtual void addmult(const DataVector<const T>& vector, DataVector<T>& result) = 0;
 
     /**
      * Set Dirichlet boundary condition
      * \param B right hand side of the equation
      * \param r index of the row
      * \param val value of the boundary condition
-    */
-    virtual void setBC(DataVector<double>& B, size_t r, double val) = 0;
+     */
+    virtual void setBC(DataVector<T>& B, size_t r, T val) = 0;
 
     /**
      * Apply Dirichlet boundary conditions
      * \param bconds boundary conditions
      * \param B right hand side of the equation
-    */
-    template <typename BoundaryConditonsT> void applyBC(const BoundaryConditonsT& bconds, DataVector<double>& B) {
+     */
+    template <typename BoundaryConditonsT> void applyBC(const BoundaryConditonsT& bconds, DataVector<T>& B) {
         // boundary conditions of the first kind
         for (auto cond : bconds) {
             for (auto r : cond.place) {
@@ -117,23 +113,21 @@ struct FemMatrix {
         }
     }
 
-    virtual std::string describe() const {
-        return format("rank={}, size={}", rank, size);
-    }
+    virtual std::string describe() const { return format("rank={}, size={}", rank, size); }
 };
 
-struct BandMatrix : FemMatrix {
-    const size_t ld;       ///< leading dimension of the matrix
-    const size_t kd;       ///< Size of the band reduced by one
+template <typename T = double> struct BandMatrix : FemMatrix<T> {
+    const size_t ld;  ///< leading dimension of the matrix
+    const size_t kd;  ///< Size of the band reduced by one
 
     BandMatrix(const Solver* solver, size_t rank, size_t kd, size_t ld)
-        : FemMatrix(solver, rank, rank * (ld + 1)), ld(ld), kd(kd) {}
+        : FemMatrix<T>(solver, rank, rank * (ld + 1)), ld(ld), kd(kd) {}
 
-    void setBC(DataVector<double>& B, size_t r, double val) override {
+    void setBC(DataVector<T>& B, size_t r, T val) override {
         B[r] = val;
         (*this)(r, r) = 1.;
         size_t start = (r > kd) ? r - kd : 0;
-        size_t end = (r + kd < rank) ? r + kd + 1 : rank;
+        size_t end = (r + kd < this->rank) ? r + kd + 1 : this->rank;
         for (size_t c = start; c < r; ++c) {
             B[c] -= (*this)(r, c) * val;
             (*this)(r, c) = 0.;
@@ -144,11 +138,8 @@ struct BandMatrix : FemMatrix {
         }
     }
 
-    std::string describe() const override {
-        return format("rank={}, bands={}, size={}", rank, kd+1, size);
-    }
+    std::string describe() const override { return format("rank={}, bands={}, size={}", this->rank, kd + 1, this->size); }
 };
-
 
 }  // namespace plask
 

@@ -57,7 +57,7 @@ namespace plask {
  * Symmetric band matrix structure.
  * Data is stored in LAPACK format.
  */
-struct DgbMatrix : BandMatrix {
+struct DgbMatrix : BandMatrix<> {
     const size_t shift;  ///< Shift of the diagonal
 
     aligned_unique_ptr<int> ipiv;
@@ -68,7 +68,7 @@ struct DgbMatrix : BandMatrix {
      * \param band band size
      */
     DgbMatrix(const Solver* solver, size_t rank, size_t band)
-        : BandMatrix(solver, rank, band, ((3 * band + 1 + (15 / sizeof(double))) & ~size_t(15 / sizeof(double))) - 1),
+        : BandMatrix<>(solver, rank, band, ((3 * band + 1 + (15 / sizeof(double))) & ~size_t(15 / sizeof(double))) - 1),
           shift(2 * band) {}
 
     DgbMatrix(const DgbMatrix&) = delete;

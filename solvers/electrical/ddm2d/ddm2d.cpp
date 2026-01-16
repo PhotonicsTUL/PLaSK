@@ -285,7 +285,7 @@ inline void DriftDiffusionModel2DSolver<Geometry2DCylindrical>::addCurvature(dou
 
 template <typename Geometry2DType>
 template <CalcType calctype>
-void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(FemMatrix& A, DataVector<double>& B,
+void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(FemMatrix<>& A, DataVector<double>& B,
                                                             const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double> &bvoltage)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system ({})", A.describe());
@@ -1163,8 +1163,8 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::compute(unsigned loops)
 
     this->writelog(LOG_INFO, "Running drift-diffusion calculations for a single voltage");
 
-    std::unique_ptr<FemMatrix> pA(this->getMatrix());
-    FemMatrix& A = *pA.get();
+    std::unique_ptr<FemMatrix<>> pA(this->getMatrix());
+    FemMatrix<>& A = *pA.get();
 
     DataVector<double> B(size);
 

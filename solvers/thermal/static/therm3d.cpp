@@ -167,7 +167,7 @@ static void setBoundaries(const BoundaryConditionsWithMesh<RectangularMesh<3>::B
     }
 }
 
-void ThermalFem3DSolver::setMatrix(FemMatrix& A, DataVector<double>& B,
+void ThermalFem3DSolver::setMatrix(FemMatrix<>& A, DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& bheatflux,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,Convection>& bconvection,
@@ -295,8 +295,8 @@ double ThermalFem3DSolver::compute(int loops)
     int loop = 0;
     size_t size = maskedMesh->size();
 
-    std::unique_ptr<FemMatrix> pA(getMatrix());
-    FemMatrix& A = *pA.get();
+    std::unique_ptr<FemMatrix<>> pA(getMatrix());
+    FemMatrix<>& A = *pA.get();
 
     double err = 0.;
     toterr = 0.;

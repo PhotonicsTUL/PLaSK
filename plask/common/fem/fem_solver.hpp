@@ -110,10 +110,10 @@ template <typename SpaceT, typename MeshT> struct FemSolverWithMesh : public Sol
         return false;
     }
 
-    inline FemMatrix* getMatrix();
+    inline FemMatrix<>* getMatrix();
 };
 
-template <typename SpaceT, typename MeshT> inline FemMatrix* FemSolverWithMesh<SpaceT, MeshT>::getMatrix() {
+template <typename SpaceT, typename MeshT> inline FemMatrix<>* FemSolverWithMesh<SpaceT, MeshT>::getMatrix() {
     switch (algorithm) {
         case ALGORITHM_CHOLESKY: return new DpbMatrix(this, this->mesh->size(), this->mesh->minorAxis()->size() + 1);
         case ALGORITHM_GAUSS: return new DgbMatrix(this, this->mesh->size(), this->mesh->minorAxis()->size() + 1);
@@ -122,7 +122,7 @@ template <typename SpaceT, typename MeshT> inline FemMatrix* FemSolverWithMesh<S
     return nullptr;
 }
 
-template <> inline FemMatrix* FemSolverWithMesh<Geometry3D, RectangularMesh<3>>::getMatrix() {
+template <> inline FemMatrix<>* FemSolverWithMesh<Geometry3D, RectangularMesh<3>>::getMatrix() {
     size_t band = this->mesh->minorAxis()->size() * (this->mesh->mediumAxis()->size() + 1) + 1;
     switch (algorithm) {
         case ALGORITHM_CHOLESKY: return new DpbMatrix(this, this->mesh->size(), band);
@@ -190,10 +190,10 @@ template <typename SpaceT, typename MeshT> struct FemSolverWithMaskedMesh : publ
 
     void onInitialize() { setupMaskedMesh(); }
 
-    inline FemMatrix* getMatrix();
+    inline FemMatrix<>* getMatrix();
 };
 
-template <typename SpaceT, typename MeshT> inline FemMatrix* FemSolverWithMaskedMesh<SpaceT, MeshT>::getMatrix() {
+template <typename SpaceT, typename MeshT> inline FemMatrix<>* FemSolverWithMaskedMesh<SpaceT, MeshT>::getMatrix() {
     size_t band;
     if (empty_elements == EMPTY_ELEMENTS_INCLUDED || this->algorithm == ALGORITHM_ITERATIVE) {
         band = this->mesh->minorAxis()->size() + 1;
@@ -216,7 +216,7 @@ template <typename SpaceT, typename MeshT> inline FemMatrix* FemSolverWithMasked
     return nullptr;
 }
 
-template <> inline FemMatrix* FemSolverWithMaskedMesh<Geometry3D, RectangularMesh<3>>::getMatrix() {
+template <> inline FemMatrix<>* FemSolverWithMaskedMesh<Geometry3D, RectangularMesh<3>>::getMatrix() {
     size_t band;
     if (empty_elements || algorithm == ALGORITHM_ITERATIVE) {
         band = this->mesh->minorAxis()->size() * (this->mesh->mediumAxis()->size() + 1) + 1;
