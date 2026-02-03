@@ -12,8 +12,8 @@
  * GNU General Public License for more details.
  */
 #include <cmath>
-#include <plask/python.hpp>
 #include <plask/common/fem/python.hpp>
+#include <plask/python.hpp>
 using namespace plask;
 using namespace plask::python;
 
@@ -107,6 +107,24 @@ template <typename GeometryT> struct Shockley : BetaSolver<GeometryT> {
                                                                           : BetaSolver<GeometryT>::getJs(n);
         jy = abs(jy);
         return Tensor2<double>(0., 10. * jy * beta * this->active[n].height / log(1e7 * jy / js + 1.));
+    }
+
+    LazyData<Tensor2<double>> getDifferentialConductivityImpl(shared_ptr<const MeshD<GeometryT::DIM>> dest_mesh,
+                                                              InterpolationMethod method) override {
+        LazyData<Tensor2<double>> cond = this->outConductivity(dest_mesh, method);
+        LazyData<Vec<GeometryT::DIM>> curr = this->outCurrentDensity(dest_mesh, method);
+        return LazyData<Tensor2<double>>(
+            dest_mesh->size(), [this, dest_mesh, cond, curr](std::size_t i) -> Tensor2<double> {
+                if (size_t actn = this->isActive(dest_mesh->at(i))) {
+                    size_t n = actn - 1;
+                    double beta = (n < beta_function.size() && !beta_function[n].is_none())
+                                      ? py::extract<double>(beta_function[n](T))
+                                      : BetaSolver<GeometryT>::getBeta(n);
+                    return Tensor2<double>(0., 10. * this->active[n].height * beta * abs(curr[i].vert()));
+                } else {
+                    return cond[i];
+                }
+            });
     }
 };
 
@@ -208,6 +226,7 @@ inline static ExportSolver<__Class__> register_electrical_solver(const char* nam
     PROVIDER(outCurrentDensity, u8"");
     PROVIDER(outHeat, u8"");
     PROVIDER(outConductivity, u8"");
+    PROVIDER(outDifferentialConductivity, u8"This provider gives the differential conductivity of the active regions.");
     BOUNDARY_CONDITIONS(voltage_boundary, u8"Boundary conditions of the first kind (constant potential)");
     RW_FIELD(maxerr, u8"Limit for the potential updates");
     RW_FIELD(convergence, u8"Convergence method.\n\nIf stable, n is slowed down to ensure stability.");
