@@ -113,12 +113,13 @@ template <typename GeometryT> struct Shockley : BetaSolver<GeometryT> {
                                                               InterpolationMethod method) override {
         LazyData<Tensor2<double>> cond = this->outConductivity(dest_mesh, method);
         LazyData<Vec<GeometryT::DIM>> curr = this->outCurrentDensity(dest_mesh, method);
+        LazyData<double> temp = this->inTemperature(dest_mesh, method);
         return LazyData<Tensor2<double>>(
-            dest_mesh->size(), [this, dest_mesh, cond, curr](std::size_t i) -> Tensor2<double> {
+            dest_mesh->size(), [this, dest_mesh, cond, curr, temp](std::size_t i) -> Tensor2<double> {
                 if (size_t actn = this->isActive(dest_mesh->at(i))) {
                     size_t n = actn - 1;
                     double beta = (n < beta_function.size() && !beta_function[n].is_none())
-                                      ? py::extract<double>(beta_function[n](T))
+                                      ? py::extract<double>(beta_function[n](temp[i]))
                                       : BetaSolver<GeometryT>::getBeta(n);
                     return Tensor2<double>(0., 10. * this->active[n].height * beta * abs(curr[i].vert()));
                 } else {
@@ -226,7 +227,6 @@ inline static ExportSolver<__Class__> register_electrical_solver(const char* nam
     PROVIDER(outCurrentDensity, u8"");
     PROVIDER(outHeat, u8"");
     PROVIDER(outConductivity, u8"");
-    PROVIDER(outDifferentialConductivity, u8"This provider gives the differential conductivity of the active regions.");
     BOUNDARY_CONDITIONS(voltage_boundary, u8"Boundary conditions of the first kind (constant potential)");
     RW_FIELD(maxerr, u8"Limit for the potential updates");
     RW_FIELD(convergence, u8"Convergence method.\n\nIf stable, n is slowed down to ensure stability.");
@@ -278,6 +278,7 @@ template <typename GeoT> inline static void register_shockley_solver(const char*
                         u8"``js`` is an alias for ``js0``.\n");
     solver.def("__getattr__", &__Class__::__getattr__);
     solver.def("__setattr__", &__Class__::__setattr__);
+    PROVIDER(outDifferentialConductivity, u8"This provider gives the differential conductivity of the active regions.");
 }
 
 template <typename GeoT> inline static void register_cond_solver(const char* name, const char* geoname) {
