@@ -31,7 +31,7 @@ struct PLASK_SOLVER_API BetaSolver : public std::conditional<std::is_same<Geomet
                                       ElectricalFem2DSolver<GeometryT>>::type BaseClass;
 
   protected:
-    std::vector<double> js;    ///< p-n junction parameter (A/m^2)
+    std::vector<double> js;    ///< p-n junction parameter (A/m²)
     std::vector<double> beta;  ///< p-n junction parameter (1/V)
 
     /** Compute voltage drop of the active region
@@ -45,7 +45,17 @@ struct PLASK_SOLVER_API BetaSolver : public std::conditional<std::is_same<Geomet
         return Tensor2<double>(0., 10. * jy * this->active[n].height * getBeta(n) / log(1e7 * jy / getJs(n) + 1.));
     }
 
+    virtual LazyData<Tensor2<double>> getDifferentialConductivityImpl(shared_ptr<const MeshD<GeometryT::DIM>> dest_mesh,
+                                                                      InterpolationMethod method);
+
+    LazyData<Tensor2<double>> getDifferentialConductivity(shared_ptr<const MeshD<GeometryT::DIM>> dest_mesh,
+                                                          InterpolationMethod method) {
+        return getDifferentialConductivityImpl(dest_mesh, method);
+    }
+
   public:
+    typename ProviderFor<Conductivity, GeometryT>::Delegate outDifferentialConductivity;
+
     /// Return beta.
     double getBeta(size_t n) const {
         if (beta.size() <= n) throw Exception("{0}: no beta given for junction {1}", this->getId(), n);
