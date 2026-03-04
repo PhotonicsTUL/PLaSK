@@ -14,8 +14,6 @@
 Generate PLaSK stubs
 """
 
-from __future__ import print_function
-
 import sys
 import os
 import errno
@@ -257,11 +255,9 @@ if __name__ == "__main__":
                 path = ''
             c = StubCreator(arg)
             c.create_stub_from_module(arg)
-            try:
-                file = open(os.path.join(path, path_comp[-1] + '.pyi'), 'w+', encoding='utf-8')
-            except TypeError:
-                file = open(os.path.join(path, path_comp[-1] + '.pyi'), 'w+')
-            print(c, file=file)
+            pyi = os.path.join(path, path_comp[-1] + '.pyi')
+            with open(pyi, 'w+', encoding='utf-8') as file:
+                print(c, file=file)
         except:
             print("Error while generating stubs for module:", arg, file=sys.stderr)
             import traceback
