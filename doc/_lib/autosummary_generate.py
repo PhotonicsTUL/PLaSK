@@ -41,10 +41,18 @@ from jinja2.sandbox import SandboxedEnvironment
 
 from sphinx.ext import autodoc
 from sphinx import package_dir
-from sphinx.ext.autosummary import import_by_name, get_documenter
+from sphinx.ext.autosummary import import_by_name
 from sphinx.jinja2glue import BuiltinTemplateLoader
 from sphinx.util.osutil import ensuredir
 from sphinx.util.inspect import safe_getattr
+
+try:
+    from sphinx.ext.autosummary import get_documenter
+except ImportError:
+    try:
+        from sphinx.ext.autosummary import _get_documenter as get_documenter
+    except ImportError:
+        from sphinx.ext.autosummary.generate import get_documenter
 
 try:
     from sphinx.ext.autosummary.generate import ImportExceptionGroup
@@ -188,12 +196,17 @@ def generate_autosummary_docs(app, sources, output_dir=None, suffix='.rst',
             except TypeError:
                 doc = get_documenter(obj, parent)
 
+            try:
+                doc = doc.objtype
+            except AttributeError:
+                pass  # doc = doc
+
             if template_name is not None:
                 template = template_env.get_template(template_name)
             else:
                 try:
                     template = template_env.get_template('autosummary/%s.rst'
-                                                         % doc.objtype)
+                                                         % doc)
                 except TemplateNotFound:
                     template = template_env.get_template('autosummary/base.rst')
 
@@ -206,12 +219,16 @@ def generate_autosummary_docs(app, sources, output_dir=None, suffix='.rst',
                     try:
                         member = safe_getattr(obj, name)
                         try:
-                            documenter = get_documenter(app, member, obj)
+                            doc = get_documenter(app, member, obj)
                         except TypeError:
-                            documenter = get_documenter(member, obj)
+                            doc = get_documenter(member, obj)
+                        try:
+                            doc = doc.objtype
+                        except AttributeError:
+                            pass  # doc = doc
                     except AttributeError:
                         continue
-                    if documenter.objtype in types:
+                    if doc in types:
                         items.append(name)
                         try:
                             docstring = member.__doc__.strip()
@@ -223,12 +240,12 @@ def generate_autosummary_docs(app, sources, output_dir=None, suffix='.rst',
 
             ns = {}
 
-            if doc.objtype == 'module':
+            if doc == 'module':
                 ns['members'] = dir(obj)
                 ns['functions'], ns['all_functions'] = get_members(obj, 'function')
                 ns['classes'], ns['all_classes'] = get_members(obj, 'class')
                 ns['exceptions'], ns['all_exceptions'] = get_members(obj, 'exception')
-            elif doc.objtype == 'class':
+            elif doc == 'class':
                 ns['members'] = dir(obj)
                 ns['methods'], ns['all_methods'] = get_members(obj, 'method', ['__call__'])
                 ns['attributes'], ns['all_attributes'] = get_members(obj, ('attribute', 'property'))
@@ -244,7 +261,7 @@ def generate_autosummary_docs(app, sources, output_dir=None, suffix='.rst',
                     #ns['docstrings']['dtype'] = s[:s.find('.')] + s[s.find('.')]
 
             parts = name.split('.')
-            if doc.objtype in ('method', 'attribute', 'property'):
+            if doc in ('method', 'attribute', 'property'):
                 mod_name = '.'.join(parts[:-2])
                 cls_name = parts[-2]
                 obj_name = '.'.join(parts[-2:])
@@ -260,7 +277,7 @@ def generate_autosummary_docs(app, sources, output_dir=None, suffix='.rst',
             ns['objname'] = obj_name
             ns['name'] = parts[-1]
 
-            ns['objtype'] = doc.objtype
+            ns['objtype'] = doc
             ns['underline'] = len(name) * '='
 
             rendered = template.render(**ns)

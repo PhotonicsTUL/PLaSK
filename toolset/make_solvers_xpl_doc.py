@@ -17,7 +17,7 @@ from __future__ import print_function
 import sys
 import os
 
-from codecs import open
+# from codecs import open
 
 import yaml
 

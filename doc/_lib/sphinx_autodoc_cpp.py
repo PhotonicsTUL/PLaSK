@@ -33,7 +33,6 @@ try:
 except ImportError:
     from sphinx.util.inspect import object_description as safe_repr
 
-
 #: extended signature RE: with explicit module name separated by ::
 py_ext_sig_re = re.compile(
     r'''^\s*([\w.]+::)?          # explicit module name
@@ -42,7 +41,8 @@ py_ext_sig_re = re.compile(
           (?: \((.*)\)           # optional: arguments
            (?:\s* -> \s* (.*))?  #           return annotation
           )? $                   # and nothing more
-          ''', re.VERBOSE)
+          ''', re.VERBOSE
+)
 
 # boost_signature_re = re.compile(r"^\s*(?:[\w.]+::)?(\w*)\((.*)\) -> (\w*) :$")
 boost_signature_re = re.compile(r"^\s*(\w+ )?(?:[\w.]+::)?(\w*)\(tuple args, dict kwds\)(?: :)?$")
@@ -65,8 +65,7 @@ class PlaskDocMixin:
             _match_groups = \
                  autodoc.py_ext_sig_re.match(self.name).groups()
         except AttributeError:
-            self.directive.warn('invalid signature for auto%s (%r)' %
-                                (self.objtype, self.name))
+            self.directive.warn('invalid signature for auto%s (%r)' % (self.objtype, self.name))
             return False
 
         if len(_match_groups) == 5:
@@ -157,21 +156,18 @@ class PlaskDocMixin:
 
         setattr(self, '__new_doclines', doclines)
 
-        return list(set(sigs)) # this way we sort it and remove duplicates
+        return list(set(sigs))  # this way we sort it and remove duplicates
 
     def add_directive_header(self, sig):
         domain = getattr(self, 'domain', 'py')
         directive = getattr(self, 'directivetype', self.objtype)
         name = self.format_name()
         if self.sigs:
-            self.add_line(u'.. %s:%s:: %s%s' %
-                         (domain, directive, name, self.sigs[0]), '<autodoc>')
+            self.add_line(u'.. %s:%s:: %s%s' % (domain, directive, name, self.sigs[0]), '<autodoc>')
             for s in self.sigs[1:]:
-                self.add_line(u'   %s%s' % (name, s),
-                              '<autodoc>')
+                self.add_line(u'   %s%s' % (name, s), '<autodoc>')
         else:
-            self.add_line(u'.. %s:%s:: %s%s' % (domain, directive, name, sig),
-                          '<autodoc>')
+            self.add_line(u'.. %s:%s:: %s%s' % (domain, directive, name, sig), '<autodoc>')
         if self.options.noindex:
             self.add_line(u'   :noindex:', '<autodoc>')
         if self.objpath:
@@ -184,12 +180,11 @@ class PlaskDocMixin:
             if not self.doc_as_attr and self.options.show_inheritance:
                 self.add_line(u'', '<autodoc>')
                 if len(self.object.__bases__):
-                    bases = [b.__module__ == '__builtin__' and
-                            u':class:`%s`' % b.__name__ or
-                            u':class:`%s.%s`' % (b.__module__, b.__name__)
-                            for b in self.object.__bases__]
-                    self.add_line(autodoc._(u'   Bases: %s') % ', '.join(bases),
-                                '<autodoc>')
+                    bases = [
+                        b.__module__ == '__builtin__' and u':class:`%s`' % b.__name__
+                        or u':class:`%s.%s`' % (b.__module__, b.__name__) for b in self.object.__bases__
+                    ]
+                    self.add_line(autodoc._(u'   Bases: %s') % ', '.join(bases), '<autodoc>')
 
         elif isinstance(self, autodoc.AttributeDocumenter):
             if not (hasattr(self, '_datadescriptor') and self._datadescriptor):
@@ -199,7 +194,6 @@ class PlaskDocMixin:
                     pass
                 else:
                     self.add_line(u'   :annotation: = ' + objrepr, '<autodoc>')
-
 
     def format_signature(self):
         sig = None
@@ -235,7 +229,13 @@ class CppClassDocumenter(PlaskDocMixin, autodoc.ClassDocumenter):
 
 class CppAttributeDocumenter(PlaskDocMixin, autodoc.AttributeDocumenter):
     objtype = "attribute"
-    option_spec = {'noindex': autodoc.bool_option, 'show-signature': autodoc.bool_option}
+
+    try:
+        option_spec = dict(autodoc.AttributeDocumenter.option_spec)
+        option_spec['noindex'] = autodoc.bool_option
+        option_spec['show-signature'] = autodoc.bool_option
+    except AttributeError:
+        option_spec = {'noindex': autodoc.bool_option, 'show-signature': autodoc.bool_option}
 
     def format_signature(self):
         if 'show-signature' in self.options:
@@ -297,11 +297,16 @@ def process_docstr(app, what, name, obj, options, lines):
 
 # Register everything
 
-def setup(app):
+
+def _register_documenters(app, config=None):
     app.add_autodocumenter(CppMethodDocumenter)
     app.add_autodocumenter(CppFunctionDocumenter)
     app.add_autodocumenter(CppClassDocumenter)
     app.add_autodocumenter(CppAttributeDocumenter)
+
+
+def setup(app):
+    app.connect('config-inited', _register_documenters)
 
     app.connect('autodoc-process-docstring', process_docstr)
     app.connect('autodoc-process-signature', process_signature)

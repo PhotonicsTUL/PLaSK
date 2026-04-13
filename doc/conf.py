@@ -118,6 +118,8 @@ autoclass_content = 'class'
 
 autodoc_docstring_signature = False
 
+autodoc_use_legacy_class_based = True
+
 # -- Autosummary options -------------------------------------------------------
 
 autosummary_generate = True
