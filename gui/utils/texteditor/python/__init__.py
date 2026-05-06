@@ -349,6 +349,7 @@ class PythonEditorWidget(QMainWindow):
         self.setWindowFlags(Qt.WindowType.Widget)
 
         widget = EditorWidget(parent, PythonEditor, document, *args, **kwargs)
+        self._editor_widget = widget
         self.editor = widget.editor
 
         widget.toolbar.addSeparator()
@@ -408,6 +409,10 @@ class PythonEditorWidget(QMainWindow):
             widget.toolbar.addAction(doc_action)
 
         self.setCentralWidget(widget)
+
+    @property
+    def debugger(self):
+        return self._editor_widget.debugger
 
     def cursor_position_changed(self):
         self.centralWidget().cursor_position_changed()

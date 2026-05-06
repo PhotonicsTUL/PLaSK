@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   sodipodi:docname="step_out.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="px"
+     inkscape:zoom="1.21875"
+     inkscape:cx="212.10256"
+     inkscape:cy="346.25641"
+     inkscape:window-width="850"
+     inkscape:window-height="1047"
+     inkscape:window-x="1062"
+     inkscape:window-y="25"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <inkscape:path-effect
+       effect="offset"
+       id="path-effect2"
+       is_visible="true"
+       lpeversion="1.3"
+       linejoin_type="extrp_arc2"
+       unit="mm"
+       offset="0"
+       miter_limit="4"
+       attempt_force_join="false"
+       update_on_knot_move="true" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="g2"
+       transform="matrix(1.1476467,0,0,1.1476467,-37.797555,-36.623485)"
+       style="fill:#4d4d4d;fill-opacity:1">
+      <g
+         id="path1"
+         style="opacity:1;fill:#4d4d4d;fill-opacity:1">
+        <path
+           style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#4d4d4d;stroke-linecap:round;stroke-linejoin:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1;fill-opacity:1"
+           d="M 316.71795,396.5116 A 60.717949,60.717949 0 0 1 256,457.22955 60.717949,60.717949 0 0 1 195.28205,396.5116 60.717949,60.717949 0 0 1 256,335.79365 60.717949,60.717949 0 0 1 316.71795,396.5116 Z"
+           id="path3" />
+        <path
+           style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#4d4d4d;stroke-linecap:round;stroke-linejoin:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1;fill-opacity:1"
+           d="m 256,315.79297 c -44.3424,0 -80.71875,36.37635 -80.71875,80.71875 0,44.3424 36.37635,80.71875 80.71875,80.71875 44.3424,0 80.71875,-36.37635 80.71875,-80.71875 0,-44.3424 -36.37635,-80.71875 -80.71875,-80.71875 z m 0,40 c 22.72479,0 40.71875,17.99395 40.71875,40.71875 0,22.72479 -17.99396,40.71875 -40.71875,40.71875 -22.72479,0 -40.71875,-17.99396 -40.71875,-40.71875 0,-22.7248 17.99396,-40.71875 40.71875,-40.71875 z"
+           id="path4" />
+      </g>
+      <g
+         id="path2"
+         style="opacity:1;fill:#4d4d4d;fill-opacity:1">
+        <path
+           style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#4d4d4d;stroke-linecap:round;stroke-linejoin:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1;fill-opacity:1"
+           d="M 256,117.94995 V 268.79941"
+           id="path6" />
+        <path
+           style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#4d4d4d;stroke-linecap:round;stroke-linejoin:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1;fill-opacity:1"
+           d="m 256,97.949219 a 20,20 0 0 0 -20,20.000001 v 150.84961 a 20,20 0 0 0 20,20 20,20 0 0 0 20,-20 V 117.94922 A 20,20 0 0 0 256,97.949219 Z"
+           id="path7" />
+        <g
+           id="g5"
+           style="fill:#4d4d4d;fill-opacity:1">
+          <path
+             d="m 204.26978,120.61038 40.46044,-80.920865 a 12.6,12.6 0 0 1 22.53956,0 l 40.46044,80.920865 A 15.574457,15.574457 0 0 1 293.8,143.14995 h -75.6 a 15.574457,15.574457 0 0 1 -13.93022,-22.53957 z"
+             style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#4d4d4d;fill-rule:evenodd;enable-background:accumulate;stop-color:#000000;stop-opacity:1;fill-opacity:1"
+             id="path5" />
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

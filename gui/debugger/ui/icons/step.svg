@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 512 512"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   sodipodi:docname="step.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="px"
+     inkscape:zoom="1.21875"
+     inkscape:cx="242.46154"
+     inkscape:cy="269.53846"
+     inkscape:window-width="850"
+     inkscape:window-height="516"
+     inkscape:window-x="1062"
+     inkscape:window-y="25"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="path1"
+       style="opacity:1;fill:#4d4d4d;fill-opacity:1">
+      <path
+         style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#4d4d4d;stroke-linecap:round;stroke-linejoin:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1;fill-opacity:1"
+         d="M 39.511804,256 H 370.44562"
+         id="path3" />
+      <path
+         style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#4d4d4d;stroke-linecap:round;stroke-linejoin:round;enable-background:accumulate;stop-color:#000000;stop-opacity:1;fill-opacity:1"
+         d="M 39.511719,216 A 40,40 0 0 0 -0.48828125,256 40,40 0 0 0 39.511719,296 H 370.44531 a 40,40 0 0 0 40,-40 40,40 0 0 0 -40,-40 z"
+         id="path4" />
+      <g
+         id="g2"
+         style="fill:#4d4d4d;fill-opacity:1">
+        <path
+           d="m 366.01156,169.78297 134.86812,67.43406 a 21,21 0 0 1 0,37.56594 L 366.01156,342.21703 A 25.957428,25.957428 0 0 1 328.44562,319 V 193 a 25.957428,25.957428 0 0 1 37.56594,-23.21703 z"
+           style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:#4d4d4d;fill-rule:evenodd;enable-background:accumulate;stop-color:#000000;stop-opacity:1;fill-opacity:1"
+           id="path2" />
+      </g>
+    </g>
+  </g>
+</svg>

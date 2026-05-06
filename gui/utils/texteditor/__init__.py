@@ -12,36 +12,51 @@
 
 import math
 
-from ...qt.QtCore import *
-from ...qt.QtWidgets import *
-from ...qt.QtGui import *
 from ...qt import QtSignal, qt_exec
+from ...qt.QtCore import *
+from ...qt.QtGui import *
+from ...qt.QtWidgets import *
 from ..config import CONFIG, dark_style
 from ..widgets import EDITOR_FONT, set_icon_size
 
+from ...debugger.ui import DebuggerPanel
+
 
 def update_textedit():
-    global CURRENT_LINE_COLOR, SELECTION_COLOR, LINENUMBER_BACKGROUND_COLOR, LINENUMBER_FOREGROUND_COLOR
-    CURRENT_LINE_COLOR = QColor(CONFIG['editor/current_line_color'])
-    SELECTION_COLOR = QColor(CONFIG['editor/selection_color'])
-    LINENUMBER_BACKGROUND_COLOR = QColor(CONFIG['editor/linenumber_background_color'])
-    LINENUMBER_FOREGROUND_COLOR = QColor(CONFIG['editor/linenumber_foreground_color'])
+    global \
+        CURRENT_LINE_COLOR, \
+        SELECTION_COLOR, \
+        LINENUMBER_BACKGROUND_COLOR, \
+        LINENUMBER_FOREGROUND_COLOR
+    CURRENT_LINE_COLOR = QColor(CONFIG["editor/current_line_color"])
+    SELECTION_COLOR = QColor(CONFIG["editor/selection_color"])
+    LINENUMBER_BACKGROUND_COLOR = QColor(CONFIG["editor/linenumber_background_color"])
+    LINENUMBER_FOREGROUND_COLOR = QColor(CONFIG["editor/linenumber_foreground_color"])
     global MATCH_COLOR, REPLACE_COLOR
-    MATCH_COLOR = QColor(CONFIG['editor/match_color'])
-    REPLACE_COLOR = QColor(CONFIG['editor/replace_color'])
+    MATCH_COLOR = QColor(CONFIG["editor/match_color"])
+    REPLACE_COLOR = QColor(CONFIG["editor/replace_color"])
     global SELECT_AFTER_PASTE
-    SELECT_AFTER_PASTE = CONFIG['editor/select_after_paste']
+    SELECT_AFTER_PASTE = CONFIG["editor/select_after_paste"]
+
+
 update_textedit()
 
 
 class TextEditor(QPlainTextEdit):
     """Improved editor with line numbers and some other neat stuff"""
 
+    breakpoints_ready = Signal(set)
+
     def __init__(self, parent=None, line_numbers=True):
         super().__init__(parent)
+        self.debug_lines = set()
         palette = self.palette()
-        palette.setColor(QPalette.ColorRole.Base, QColor(CONFIG['editor/background_color']))
-        palette.setColor(QPalette.ColorRole.Text, QColor(CONFIG['editor/foreground_color']))
+        palette.setColor(
+            QPalette.ColorRole.Base, QColor(CONFIG["editor/background_color"])
+        )
+        palette.setColor(
+            QPalette.ColorRole.Text, QColor(CONFIG["editor/foreground_color"])
+        )
         self.setFont(EDITOR_FONT)
         self.setPalette(palette)
         self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
@@ -63,8 +78,13 @@ class TextEditor(QPlainTextEdit):
         super().resizeEvent(e)
         if self.line_numbers is not None:
             cr = self.contentsRect()
-            self.line_numbers.setGeometry(QRect(cr.left(), cr.top(),
-                                                       self.line_numbers.get_width(), cr.height()))
+            self.line_numbers.setGeometry(
+                QRect(cr.left(), cr.top(), self.line_numbers.get_width(), cr.height())
+            )
+
+    def update_current_debug_line(self, line):
+        self.debug_lines = set([line])
+        self.update_selections()
 
     def insertFromMimeData(self, source):
         if source.hasText() and SELECT_AFTER_PASTE:
@@ -81,29 +101,67 @@ class TextEditor(QPlainTextEdit):
     def on_text_change(self):
         self._changed_pos = self.textCursor().position()
 
+    def get_debugger_selections(self):
+        if not self.debug_lines:
+            return []
+
+        doc = self.document()
+        fm = self.fontMetrics()
+        selections = []
+
+        for line_no in self.debug_lines:
+            block = doc.findBlockByNumber(line_no - 1)
+            if not block.isValid():
+                continue
+            cursor = QTextCursor(block)
+
+            sel = QTextEdit.ExtraSelection()
+            sel.cursor = cursor
+            sel.cursor.clearSelection()
+
+            sel.format.setBackground(QColor("#4444aa80"))
+            sel.format.setProperty(QTextFormat.FullWidthSelection, True)
+
+            selections.append(sel)
+
+        return selections
+
+    def send_breakpoints(self):
+         self.breakpoints_ready.emit(self.line_numbers.get_breakpoints())
+
     def keyPressEvent(self, event):
         key = event.key()
         modifiers = event.modifiers()
         char = event.text()
-        if key == Qt.Key.Key_Backspace and modifiers == (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier):
+        if key == Qt.Key.Key_Backspace and modifiers == (
+            Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier
+        ):
             cursor = self.textCursor()
             cursor.setPosition(self._changed_pos)
             self.setTextCursor(cursor)
             event.ignore()
             return
-        elif key == Qt.Key.Key_Up and modifiers == (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier):
+        elif key == Qt.Key.Key_Up and modifiers == (
+            Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier
+        ):
             self.move_line_up()
             event.ignore()
             return
-        elif key == Qt.Key.Key_Down and modifiers == (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier):
+        elif key == Qt.Key.Key_Down and modifiers == (
+            Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier
+        ):
             self.move_line_down()
             event.ignore()
             return
-        elif char and char in '([{"\'':
+        elif char and char in "([{\"'":
             cursor = self.textCursor()
             if cursor.hasSelection():
                 pos, anchor = cursor.position() + 1, cursor.anchor() + 1
-                text = char + cursor.selectedText() + {'(': ')', '[': ']', '{': '}', '"': '"', "'": "'"}[char]
+                text = (
+                    char
+                    + cursor.selectedText()
+                    + {"(": ")", "[": "]", "{": "}", '"': '"', "'": "'"}[char]
+                )
                 cursor.insertText(text)
                 cursor.setPosition(anchor)
                 cursor.setPosition(pos, QTextCursor.MoveMode.KeepAnchor)
@@ -125,7 +183,12 @@ class TextEditor(QPlainTextEdit):
         """Add our own custom selections"""
         if selections is not None:
             self.selections = selections
-        self.setExtraSelections(self.highlight_current_line() + self.get_same_as_selected() + self.selections)
+        self.setExtraSelections(
+            self.highlight_current_line()
+            + self.get_same_as_selected()
+            + self.get_debugger_selections()
+            + self.selections
+        )
 
     def move_line_up(self):
         cursor = self.textCursor()
@@ -141,18 +204,22 @@ class TextEditor(QPlainTextEdit):
             cursor.endEditBlock()
             return
         src = cursor.position()
-        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+        cursor.movePosition(
+            QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor
+        )
         line = cursor.selectedText()
         cursor.setPosition(dst)
         cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
-        cursor.insertText('\n'+line)
+        cursor.insertText("\n" + line)
         cursor.setPosition(src)
-        cursor.movePosition(QTextCursor.MoveOperation.NextBlock, QTextCursor.MoveMode.KeepAnchor)
+        cursor.movePosition(
+            QTextCursor.MoveOperation.NextBlock, QTextCursor.MoveMode.KeepAnchor
+        )
         cursor.removeSelectedText()
         cursor.endEditBlock()
-        cursor.setPosition(start-len(line)-1)
+        cursor.setPosition(start - len(line) - 1)
         if start != end:
-            cursor.setPosition(end-len(line)-1, QTextCursor.MoveMode.KeepAnchor)
+            cursor.setPosition(end - len(line) - 1, QTextCursor.MoveMode.KeepAnchor)
         self.setTextCursor(cursor)
 
     def move_line_down(self):
@@ -166,17 +233,19 @@ class TextEditor(QPlainTextEdit):
         if not cursor.movePosition(QTextCursor.MoveOperation.NextBlock):
             cursor.endEditBlock()
             return
-        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+        cursor.movePosition(
+            QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor
+        )
         line = cursor.selectedText()
         cursor.removeSelectedText()
         cursor.deletePreviousChar()  # remove previous newline
         cursor.setPosition(start)
         cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-        cursor.insertText(line+'\n')
+        cursor.insertText(line + "\n")
         cursor.endEditBlock()
-        cursor.setPosition(start+len(line)+1)
+        cursor.setPosition(start + len(line) + 1)
         if start != end:
-            cursor.setPosition(end+len(line)+1, QTextCursor.MoveMode.KeepAnchor)
+            cursor.setPosition(end + len(line) + 1, QTextCursor.MoveMode.KeepAnchor)
         self.setTextCursor(cursor)
 
     def highlight_current_line(self):
@@ -190,15 +259,21 @@ class TextEditor(QPlainTextEdit):
 
     def get_same_as_selected(self):
         cursor = self.textCursor()
-        if not cursor.hasSelection(): return []
+        if not cursor.hasSelection():
+            return []
         document = self.document()
         text = cursor.selectedText()
-        if not text.strip(): return []
+        if not text.strip():
+            return []
         cursor.movePosition(QTextCursor.MoveOperation.Start)
         selections = []
         while True:
-            cursor = document.find(text, cursor,
-                                   QTextDocument.FindFlag.FindCaseSensitively | QTextDocument.FindFlag.FindWholeWords)
+            cursor = document.find(
+                text,
+                cursor,
+                QTextDocument.FindFlag.FindCaseSensitively
+                | QTextDocument.FindFlag.FindWholeWords,
+            )
             if not cursor.isNull():
                 selection = QTextEdit.ExtraSelection()
                 selection.cursor = cursor
@@ -210,9 +285,12 @@ class TextEditor(QPlainTextEdit):
 
     def reconfig(self):
         self.setFont(EDITOR_FONT)
-        self.setStyleSheet("QPlainTextEdit {{ color: {fg}; background-color: {bg} }}".format(
-            fg=CONFIG['editor/foreground_color'], bg=CONFIG['editor/background_color']
-        ))
+        self.setStyleSheet(
+            "QPlainTextEdit {{ color: {fg}; background-color: {bg} }}".format(
+                fg=CONFIG["editor/foreground_color"],
+                bg=CONFIG["editor/background_color"],
+            )
+        )
         self.line_numbers.setFont(EDITOR_FONT)
 
 
@@ -222,6 +300,7 @@ class TextEditorWithCB(TextEditor):
     focus_out_cb - when it lost focus
     key_cb - when a key is pressed
     """
+
     def __init__(self, focus_out_cb=None, key_cb=None, **kwargs):
         super().__init__(**kwargs)
         self.focus_out_cb = focus_out_cb
@@ -229,16 +308,18 @@ class TextEditorWithCB(TextEditor):
 
     def focusOutEvent(self, event):
         super().focusOutEvent(event)
-        if self.focus_out_cb is not None: self.focus_out_cb()
+        if self.focus_out_cb is not None:
+            self.focus_out_cb()
 
     def keyPressEvent(self, event):
         super().keyPressEvent(event)
-        if self.key_cb is not None: self.key_cb(event)
+        if self.key_cb is not None:
+            self.key_cb(event)
 
 
 class LineNumberArea(QWidget):
     """Line numbers widget
-       http://qt4-project.org/doc/qt4-4.8/widgets-codeeditor.html
+    http://qt4-project.org/doc/qt4-4.8/widgets-codeeditor.html
     """
 
     def __init__(self, editor):
@@ -246,12 +327,13 @@ class LineNumberArea(QWidget):
         self.editor = editor
         self._offset = 0
         self._count_cache = -1, -1
+        self.breakpoints = set()
 
     def get_width(self):
         """Return required width"""
         count = max(1, self.editor.blockCount() + self._offset)
         digits = int(math.log10(count)) + 1
-        width = self.editor.fontMetrics().horizontalAdvance('9')
+        width = self.editor.fontMetrics().horizontalAdvance("9")
         return 8 + width * digits
 
     def sizeHint(self):
@@ -263,29 +345,90 @@ class LineNumberArea(QWidget):
     def on_update_request(self, rect, dy):
         if dy:
             self.scroll(0, dy)
-        elif self._count_cache[0] != self.editor.blockCount() or\
-             self._count_cache[1] != self.editor.textCursor().block().lineCount():
+        elif (
+            self._count_cache[0] != self.editor.blockCount()
+            or self._count_cache[1] != self.editor.textCursor().block().lineCount()
+        ):
             self.update(0, rect.y(), self.width(), rect.height())
-            self._count_cache = self.editor.blockCount(), self.editor.textCursor().block().lineCount()
+            self._count_cache = (
+                self.editor.blockCount(),
+                self.editor.textCursor().block().lineCount(),
+            )
         if rect.contains(self.editor.viewport().rect()):
             self.update_width()
+
+    def mousePressEvent(self, event):
+        y = event.pos().y()
+        block = self.editor.firstVisibleBlock()
+        top = (
+            self.editor.blockBoundingGeometry(block)
+            .translated(self.editor.contentOffset())
+            .top()
+        )
+        bottom = top + self.editor.blockBoundingRect(block).height()
+
+        while block.isValid() and top <= y:
+            if block.isVisible() and bottom >= y:
+                line_number = block.blockNumber() + 1 + self._offset
+                if line_number in self.breakpoints:
+                    self.breakpoints.remove(line_number)
+                else:
+                    self.breakpoints.add(line_number)
+                self.update()
+                break
+            block = block.next()
+            top = bottom
+            bottom = top + self.editor.blockBoundingRect(block).height()
+
+    def get_breakpoints(self):
+        return sorted(self.breakpoints)
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.fillRect(event.rect(), LINENUMBER_BACKGROUND_COLOR)
         block = self.editor.firstVisibleBlock()
         block_number = block.blockNumber() + 1 + self._offset
-        top = self.editor.blockBoundingGeometry(block).translated(self.editor.contentOffset()).top()
+        top = (
+            self.editor.blockBoundingGeometry(block)
+            .translated(self.editor.contentOffset())
+            .top()
+        )
         bottom = top + self.editor.blockBoundingRect(block).height()
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 painter.setPen(LINENUMBER_FOREGROUND_COLOR)
-                painter.drawText(0, int(top), self.width()-3, self.editor.fontMetrics().height(),
-                                 Qt.AlignmentFlag.AlignRight, str(block_number))
+                painter.drawText(
+                    0,
+                    int(top),
+                    self.width() - 3,
+                    self.editor.fontMetrics().height(),
+                    Qt.AlignmentFlag.AlignRight,
+                    str(block_number),
+                )
             block = block.next()
             top = bottom
             bottom = top + self.editor.blockBoundingRect(block).height()
             block_number += 1
+
+            if block.isVisible() and bottom >= event.rect().top():
+                painter.setPen(LINENUMBER_FOREGROUND_COLOR)
+                painter.drawText(
+                    0,
+                    int(top),
+                    self.width() - 3,
+                    self.editor.fontMetrics().height(),
+                    Qt.AlignmentFlag.AlignRight,
+                    str(block_number),
+                )
+
+                # Draw breakpoint marker
+                if block_number in self.breakpoints:
+                    radius = 5
+                    center_x = 4
+                    center_y = int(top + self.editor.fontMetrics().height() / 2)
+                    painter.setBrush(QColor("red"))
+                    painter.setPen(Qt.PenStyle.NoPen)
+                    painter.drawEllipse(QPoint(center_x, center_y), radius, radius)
 
     @property
     def offset(self):
@@ -299,7 +442,6 @@ class LineNumberArea(QWidget):
 
 
 class LineEditWithHistory(QLineEdit):
-
     historyChanged = QtSignal()
 
     def __init__(self, parent=None, flags=None):
@@ -326,7 +468,7 @@ class LineEditWithHistory(QLineEdit):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Up and self._position > 1:
             self._position -= 1
-            self.setText(self._history[self._position-1])
+            self.setText(self._history[self._position - 1])
             self.historyChanged.emit()
         elif event.key() == Qt.Key.Key_Down and self._position < len(self._history):
             self.setText(self._history[self._position])
@@ -336,25 +478,34 @@ class LineEditWithHistory(QLineEdit):
 
 
 class EditorWidget(QWidget):
-
     def __init__(self, parent=None, editor_class=TextEditor, *args, **kwargs):
         super().__init__(parent)
 
         self.editor = editor_class(self, *args, **kwargs)
 
+        self.debugger = DebuggerPanel(self.window())
+        
+        self.debugger.ask_breakpoints.connect(self.editor.send_breakpoints)
+        self.editor.breakpoints_ready.connect(self.debugger.recieve_breakpoints)
+        self.debugger.current_line_signal.connect(self.editor.update_current_debug_line)
+
         self.toolbar = QToolBar(self)
         self.toolbar.setStyleSheet("QToolBar { border: 0px }")
         set_icon_size(self.toolbar)
 
-        self.add_action('&Undo', 'edit-undo', None, self.editor.undo)
-        self.add_action('R&edo', 'edit-redo', None, self.editor.redo)
+        self.add_action("&Undo", "edit-undo", None, self.editor.undo)
+        self.add_action("R&edo", "edit-redo", None, self.editor.redo)
         self.toolbar.addSeparator()
-        self.add_action('&Copy', 'edit-copy', None, self.editor.copy)
-        self.add_action('C&ut', 'edit-cut', None, self.editor.cut)
-        self.add_action('&Paste', 'edit-paste', None, self.editor.paste)
+        self.add_action("&Copy", "edit-copy", None, self.editor.copy)
+        self.add_action("C&ut", "edit-cut", None, self.editor.cut)
+        self.add_action("&Paste", "edit-paste", None, self.editor.paste)
         self.toolbar.addSeparator()
-        self.add_action('&Find...', 'edit-find', 'editor_find', self.show_find)
-        self.add_action('&Replace...', 'edit-find-replace', 'editor_replace', self.show_replace)
+        self.add_action("&Find...", "edit-find", "editor_find", self.show_find)
+        self.add_action(
+            "&Replace...", "edit-find-replace", "editor_replace", self.show_replace
+        )
+        self.toolbar.addSeparator()
+        self.add_action("&Open debugger", "debugger-open", None, self.debugger.toggle_visibility)
 
         self.statusbar = QStatusBar(self)
         self.statusbar.setSizeGripEnabled(False)
@@ -383,11 +534,17 @@ class EditorWidget(QWidget):
         self.replace_toolbar.setStyleSheet("QToolBar { border: 0px }")
         find_label = QLabel()
         find_label.setText("Search: ")
-        find_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        find_label.setAlignment(
+            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
         replace_label = QLabel()
         replace_label.setText("Replace: ")
-        replace_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        label_width = replace_label.fontMetrics().horizontalAdvance(replace_label.text())
+        replace_label.setAlignment(
+            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
+        label_width = replace_label.fontMetrics().horizontalAdvance(
+            replace_label.text()
+        )
         find_label.setFixedWidth(label_width)
         replace_label.setFixedWidth(label_width)
         self.find_edit = LineEditWithHistory()
@@ -398,19 +555,29 @@ class EditorWidget(QWidget):
         self.replace_toolbar.addWidget(replace_label)
         self.replace_toolbar.addWidget(self.replace_edit)
 
-        self.find_matchcase = QAction('&Match Case', self.find_edit)
+        self.find_matchcase = QAction("&Match Case", self.find_edit)
         self.find_matchcase.setCheckable(True)
-        self.find_matchcase.setChecked(CONFIG['editor/find_case_sensitive'])
-        self.find_matchcase.triggered.connect(lambda: self.trigger_setting('editor/find_case_sensitive', self.find_matchcase))
-        self.find_wholewords = QAction('&Whole Words', self.find_edit)
+        self.find_matchcase.setChecked(CONFIG["editor/find_case_sensitive"])
+        self.find_matchcase.triggered.connect(
+            lambda: self.trigger_setting(
+                "editor/find_case_sensitive", self.find_matchcase
+            )
+        )
+        self.find_wholewords = QAction("&Whole Words", self.find_edit)
         self.find_wholewords.setCheckable(True)
-        self.find_wholewords.setChecked(CONFIG['editor/find_whole_words'])
-        self.find_wholewords.triggered.connect(lambda: self.trigger_setting('editor/find_whole_words', self.find_wholewords))
-        self.find_regex = QAction('&Regular Expression', self.find_edit)
+        self.find_wholewords.setChecked(CONFIG["editor/find_whole_words"])
+        self.find_wholewords.triggered.connect(
+            lambda: self.trigger_setting(
+                "editor/find_whole_words", self.find_wholewords
+            )
+        )
+        self.find_regex = QAction("&Regular Expression", self.find_edit)
         self.find_regex.setCheckable(True)
-        self.find_regex.setChecked(CONFIG['editor/find_regex'])
-        self.find_regex.triggered.connect(lambda: self.trigger_setting('editor/find_regex', self.find_regex))
-        self.find_selection = QAction('&Selection Only', self.find_edit)
+        self.find_regex.setChecked(CONFIG["editor/find_regex"])
+        self.find_regex.triggered.connect(
+            lambda: self.trigger_setting("editor/find_regex", self.find_regex)
+        )
+        self.find_selection = QAction("&Selection Only", self.find_edit)
         self.find_selection.setCheckable(True)
         self.find_edit.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.find_edit.customContextMenuRequested.connect(self._find_context_menu)
@@ -442,7 +609,9 @@ class EditorWidget(QWidget):
         replace_all_button = QPushButton(self)
         replace_all_button.setText("Replace &all")
         replace_all_button.pressed.connect(self.replace_all)
-        width = int(replace_button.fontMetrics().horizontalAdvance(replace_button.text()) * 1.2)
+        width = int(
+            replace_button.fontMetrics().horizontalAdvance(replace_button.text()) * 1.2
+        )
         next_button.setFixedWidth(width)
         prev_button.setFixedWidth(width)
         replace_button.setFixedWidth(width)
@@ -456,8 +625,8 @@ class EditorWidget(QWidget):
         hide_action.triggered.connect(self.hide_toolbars)
         self.find_edit.addAction(hide_action)
         # self.replace_edit.addAction(hide_action)
-        self._add_shortcut('editor_find_next', self.find_next)
-        self._add_shortcut('editor_find_prev', self.find_prev)
+        self._add_shortcut("editor_find_next", self.find_next)
+        self._add_shortcut("editor_find_prev", self.find_prev)
         self.find_edit.textEdited.connect(self.find_type)
         self.find_edit.returnPressed.connect(self.find_next)
         self.replace_edit.returnPressed.connect(self.replace_next)
@@ -469,7 +638,11 @@ class EditorWidget(QWidget):
         except AttributeError:
             line_in_file = 0
         cursor = self.editor.textCursor()
-        self.position_label.setText('{}:{}  '.format(cursor.blockNumber() + line_in_file + 1, cursor.columnNumber() + 1))
+        self.position_label.setText(
+            "{}:{}  ".format(
+                cursor.blockNumber() + line_in_file + 1, cursor.columnNumber() + 1
+            )
+        )
 
     def _find_context_menu(self, pos):
         menu = self.find_edit.createStandardContextMenu()
@@ -482,8 +655,10 @@ class EditorWidget(QWidget):
 
     def _find_flags(self):
         flags = QTextDocument.FindFlag(0)
-        if self.find_matchcase.isChecked(): flags |= QTextDocument.FindFlag.FindCaseSensitively
-        if self.find_wholewords.isChecked(): flags |= QTextDocument.FindFlag.FindWholeWords
+        if self.find_matchcase.isChecked():
+            flags |= QTextDocument.FindFlag.FindCaseSensitively
+        if self.find_wholewords.isChecked():
+            flags |= QTextDocument.FindFlag.FindWholeWords
         return flags
 
     def add_action(self, name, icon, shortcut, slot):
@@ -505,11 +680,15 @@ class EditorWidget(QWidget):
         cursor = self.editor.textCursor()
         if cursor.hasSelection():
             text = cursor.selectedText()
-            if u'\u2029' in text:
+            if "\u2029" in text:
                 self.find_selection.setChecked(True)
             else:
                 self.find_selection.setChecked(False)
-                self.find_edit.setText(QRegularExpression.escape(text) if self.find_regex.isChecked() else text)
+                self.find_edit.setText(
+                    QRegularExpression.escape(text)
+                    if self.find_regex.isChecked()
+                    else text
+                )
         else:
             self.find_selection.setChecked(False)
         self.find_edit.selectAll()
@@ -533,7 +712,8 @@ class EditorWidget(QWidget):
 
     def _highlight_matches(self):
         cursor = self.editor.textCursor()
-        if not cursor.hasSelection(): return []
+        if not cursor.hasSelection():
+            return []
         document = self.editor.document()
         cursor.movePosition(QTextCursor.MoveOperation.Start)
         selections = []
@@ -572,22 +752,35 @@ class EditorWidget(QWidget):
         if self._findtext:
             document = self.editor.document()
             findflags = self._find_flags()
-            if backward: findflags |= QTextDocument.FindFlag.FindBackward
+            if backward:
+                findflags |= QTextDocument.FindFlag.FindBackward
             found = document.find(self._findtext, cursor, findflags)
             if found.isNull() and rewind:
-                cursor.movePosition(QTextCursor.MoveOperation.End if backward else QTextCursor.MoveOperation.Start)
+                cursor.movePosition(
+                    QTextCursor.MoveOperation.End
+                    if backward
+                    else QTextCursor.MoveOperation.Start
+                )
                 found = document.find(self._findtext, cursor, findflags)
             if found.isNull():
-                pal.setColor(QPalette.ColorRole.Base, QColor("#381111" if dark_style() else "#fdd"))
+                pal.setColor(
+                    QPalette.ColorRole.Base,
+                    QColor("#381111" if dark_style() else "#fdd"),
+                )
                 self.find_edit.setPalette(pal)
                 return False
             elif theend is not None and found.selectionEnd() > theend:
-                pal.setColor(QPalette.ColorRole.Base, QColor("#381111" if dark_style() else "#fdd"))
+                pal.setColor(
+                    QPalette.ColorRole.Base,
+                    QColor("#381111" if dark_style() else "#fdd"),
+                )
                 self.find_edit.setPalette(pal)
                 return False
             else:
                 self.editor.setTextCursor(found)
-                pal.setColor(QPalette.ColorRole.Base, QColor("#232" if dark_style() else "#dfd"))
+                pal.setColor(
+                    QPalette.ColorRole.Base, QColor("#232" if dark_style() else "#dfd")
+                )
                 self.find_edit.setPalette(pal)
                 self._highlight_matches()
                 return True
@@ -599,12 +792,12 @@ class EditorWidget(QWidget):
     def find_next(self):
         self.find_edit.commit_history()
         self._find()
-        #self.editor.setFocus()
+        # self.editor.setFocus()
 
     def find_prev(self):
         self.find_edit.commit_history()
         self._find(backward=True)
-        #self.editor.setFocus()
+        # self.editor.setFocus()
 
     def find_type(self):
         if not self.find_selection.isChecked():
@@ -618,7 +811,9 @@ class EditorWidget(QWidget):
 
     def _replace_regexp(self, cursor):
         block = cursor.block()
-        match = self._findtext.match(block.text(), cursor.selectionStart()-block.position())  # guaranteed to succeed
+        match = self._findtext.match(
+            block.text(), cursor.selectionStart() - block.position()
+        )  # guaranteed to succeed
         text = self.replace_edit.text()
         result = ""
         part = 0
@@ -631,13 +826,13 @@ class EditorWidget(QWidget):
                 dollar = False
                 continue
             dollar = False
-            if c == '\\':
+            if c == "\\":
                 result += text[part:i]
                 part = i + 1
                 escape = not escape
                 if not escape:
-                    result += '\\'
-            elif c == '$' and not escape:
+                    result += "\\"
+            elif c == "$" and not escape:
                 result += text[part:i]
                 part = i + 1
                 dollar = True
@@ -646,9 +841,13 @@ class EditorWidget(QWidget):
                     result += text[part:i]
                     part = i + 1
                     try:
-                        result += ("\\"+c).encode('raw_unicode_escape').decode('unicode_escape')
+                        result += (
+                            ("\\" + c)
+                            .encode("raw_unicode_escape")
+                            .decode("unicode_escape")
+                        )
                     except (UnicodeEncodeError, UnicodeDecodeError):
-                        result += "\\"+c
+                        result += "\\" + c
                 escape = False
         result += text[part:]
         return result
@@ -722,12 +921,18 @@ class EditorWidget(QWidget):
                     doclen = newlen
             if start is not None:
                 cursor.setPosition(start)
-                cursor.setPosition(end + self.editor.document().characterCount() - doclen, QTextCursor.MoveMode.KeepAnchor)
+                cursor.setPosition(
+                    end + self.editor.document().characterCount() - doclen,
+                    QTextCursor.MoveMode.KeepAnchor,
+                )
                 self.editor.setTextCursor(cursor)
         finally:
             cursor.endEditBlock()
             # QToolTip.showText(self.replace_edit.mapToGlobal(QPoint(0, -32)),
             #                         "{} replacement{} made".format(self._replace_count,
             #                                                        's' if self._replace_count != 1 else ''))
-            self.statusbar.showMessage("{} replacement{} made".format(self._replace_count,
-                                                                     's' if self._replace_count != 1 else ''))
+            self.statusbar.showMessage(
+                "{} replacement{} made".format(
+                    self._replace_count, "s" if self._replace_count != 1 else ""
+                )
+            )
