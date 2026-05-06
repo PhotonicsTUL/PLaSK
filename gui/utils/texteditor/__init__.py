@@ -45,7 +45,7 @@ update_textedit()
 class TextEditor(QPlainTextEdit):
     """Improved editor with line numbers and some other neat stuff"""
 
-    breakpoints_ready = Signal(set)
+    breakpoints_ready = QtSignal(set)
 
     def __init__(self, parent=None, line_numbers=True):
         super().__init__(parent)
@@ -484,7 +484,7 @@ class EditorWidget(QWidget):
         self.editor = editor_class(self, *args, **kwargs)
 
         self.debugger = DebuggerPanel(self.window())
-        
+
         self.debugger.ask_breakpoints.connect(self.editor.send_breakpoints)
         self.editor.breakpoints_ready.connect(self.debugger.recieve_breakpoints)
         self.debugger.current_line_signal.connect(self.editor.update_current_debug_line)

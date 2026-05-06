@@ -39,7 +39,7 @@ class DebugControls(QWidget):
         self.step_out_button.setToolTip("Step out of the current function.")
 
         self.stop_button = QPushButton()
-        self.stop_button.setIcon(style.standardIcon(QStyle.SP_MediaStop))
+        self.stop_button.setIcon(style.standardIcon(QStyle.StandardPixmap.SP_MediaStop))
         self.stop_button.clicked.connect(self.stop_clicked)
         self.stop_button.setEnabled(False)
         self.stop_button.setToolTip("Stop the debugger and disconnect from the program.")

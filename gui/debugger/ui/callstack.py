@@ -12,9 +12,9 @@ class CallStackPanel(QWidget):
         self.call_stack_widget.setColumnWidth(2, 20)
         self.call_stack_widget.setAlternatingRowColors(True)
         self.call_stack_widget.setRootIsDecorated(True)
-        self.call_stack_widget.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.call_stack_widget.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.call_stack_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.call_stack_widget.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.call_stack_widget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.call_stack_widget.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.call_stack_widget.setToolTip("Shows the current call stack and frame-local variables.")
 
         layout = QVBoxLayout(self)
@@ -49,7 +49,7 @@ class CallStackPanel(QWidget):
         display_value = value
         if isinstance(value, str) and len(value) > max_str_len:
             display_value = value[:max_str_len] + "... (truncated)"
-        
+
         # Create the current tree item
         if isinstance(value, dict):
             item = QTreeWidgetItem([str(name), f"dict ({len(value)})"])

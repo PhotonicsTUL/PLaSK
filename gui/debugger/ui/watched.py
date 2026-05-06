@@ -15,9 +15,9 @@ class WatchedPanel(QWidget):
         self.watch_tree.setColumnWidth(0, 250)
         self.watch_tree.setAlternatingRowColors(True)
         self.watch_tree.setRootIsDecorated(False)
-        self.watch_tree.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.watch_tree.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.watch_tree.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.watch_tree.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.watch_tree.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.watch_tree.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.watch_tree.setToolTip("Auto-evaluated watch expressions.")
 
         self.watch_input = QLineEdit()
@@ -37,7 +37,7 @@ class WatchedPanel(QWidget):
 
         layout.addLayout(watch_input_layout)
 
-        self.watch_tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.watch_tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.watch_tree.customContextMenuRequested.connect(self.open_context_menu)
 
     def add_expression(self):
@@ -80,7 +80,7 @@ class WatchedPanel(QWidget):
         for i in range(self.watch_tree.topLevelItemCount()):
                 item = self.watch_tree.topLevelItem(i)
                 expr = item.text(0)  # Column 0 = expression string
-                
+
                 if expr in values:
                     val = values[expr]
                     item.setText(1, str(val))  # Column 1 = value

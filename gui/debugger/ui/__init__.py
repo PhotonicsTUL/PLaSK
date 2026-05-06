@@ -14,13 +14,13 @@ from .variables import VariablesPanel
 from .callstack import CallStackPanel
 from .watched import WatchedPanel
 
-# PROTOCOL 
+# PROTOCOL
 #
 # ui → debugger
 # {
 #   type: command
 #   name: <contiue | step_line | step_into | step_out | quit | update_watchlist>
-#   payload: {} 
+#   payload: {}
 # }
 #
 # debugger → ui
@@ -161,7 +161,7 @@ class DebuggerPanel(QDockWidget):
 
     def __init__(self, window_parent):
         super().__init__("Debugger", window_parent)
-        self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        self.setAllowedAreas(Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea)
 
         container = QWidget()
         layout = QVBoxLayout(container)
@@ -182,8 +182,8 @@ class DebuggerPanel(QDockWidget):
 
         self.reconnect_button = QPushButton("Reconnect")
         self.reconnect_button.setToolTip("Reconnect to debugger backend.")
-        self.reconnect_button.setEnabled(False) 
-        self.reconnect_button.setVisible(False) 
+        self.reconnect_button.setEnabled(False)
+        self.reconnect_button.setVisible(False)
         self.reconnect_button.clicked.connect(self.connect_debugger)
 
         vars_section = self.CollapsibleSection("Variables", self.variables_widget)
@@ -192,7 +192,7 @@ class DebuggerPanel(QDockWidget):
 
         self.sections = [vars_section, stack_section, watch_section]
 
-        self.splitter = QSplitter(Qt.Vertical)
+        self.splitter = QSplitter(Qt.Orientation.Vertical)
         self.splitter.setChildrenCollapsible(False)
         self.splitter.setHandleWidth(6)
 
@@ -219,7 +219,7 @@ class DebuggerPanel(QDockWidget):
         self.setVisible(False)
 
         if window_parent and hasattr(window_parent, "addDockWidget"):
-            window_parent.addDockWidget(Qt.RightDockWidgetArea, self)
+            window_parent.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self)
 
         self._connect_signals()
 
@@ -331,7 +331,7 @@ class DebuggerPanel(QDockWidget):
     def add_panel_message(self, panel, text, msg_type="info"):
         timestamp = datetime.now().strftime("%H:%M:%S")
         item = QTreeWidgetItem([timestamp, text])
-        
+
         color_map = {
             "error": QColor("red"),
             "warn": QColor("orange"),
@@ -340,7 +340,7 @@ class DebuggerPanel(QDockWidget):
         }
         color = color_map.get(msg_type, QColor("black"))
         item.setForeground(1, color)
-        
+
         panel.addTopLevelItem(item)
         panel.scrollToItem(item)
 
@@ -380,7 +380,7 @@ class DebuggerPanel(QDockWidget):
                 'payload': {}
             }
         self.send_cmd((json.dumps(cmd)+"\n").encode('utf-8'))
-    
+
     def send_step_line(self):
         cmd = {
                 'type': 'command',
@@ -483,4 +483,3 @@ class DebuggerPanel(QDockWidget):
             self.socket_thread.wait()
             self.socket_thread.deleteLater()
             self.socket_thread = None
-
