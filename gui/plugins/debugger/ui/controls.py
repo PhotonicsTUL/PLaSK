@@ -1,6 +1,6 @@
-from ...qt.QtWidgets import *
-from ...qt import QtSignal
-from ...qt.QtGui import QIcon
+from gui.qt.QtWidgets import *
+from gui.qt import QtSignal
+from gui.qt.QtGui import QIcon
 
 class DebugControls(QWidget):
     continue_clicked = QtSignal()

@@ -1,14 +1,15 @@
-from gui.debugger.ui.watched import WatchedPanel
-from ...qt.QtWidgets import *
-from ...qt.QtCore import Qt, QThread
-from ...qt import QtSignal
-from ...qt.QtGui import QColor
-from ...utils.config import CONFIG
 import socket
 import json
 import time
 from datetime import datetime
 
+from gui.qt.QtWidgets import *
+from gui.qt.QtCore import Qt, QThread
+from gui.qt import QtSignal
+from gui.qt.QtGui import QColor
+from gui.utils.config import CONFIG
+
+from .watched import WatchedPanel
 from .controls import DebugControls
 from .variables import VariablesPanel
 from .callstack import CallStackPanel
@@ -157,7 +158,7 @@ class DebuggerPanel(QDockWidget):
     current_line_signal = QtSignal(int)
 
     ask_breakpoints = QtSignal()
-    received_breakpoints = QtSignal(set)
+    received_breakpoints = QtSignal(list)
 
     def __init__(self, window_parent):
         super().__init__("Debugger", window_parent)

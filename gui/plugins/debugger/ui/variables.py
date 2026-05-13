@@ -1,48 +1,16 @@
-from ...qt.QtWidgets import *
-from ...qt.QtGui import QColor
+from gui.qt.QtWidgets import *
+from gui.qt.QtGui import QColor
 
-class CallStackPanel(QWidget):
+class VariablesPanel(QWidget):
     def __init__(self):
         super().__init__()
-        self.call_stack_widget = QTreeWidget()
-        self.call_stack_widget.setHeaderLabels(["Function", "File", "Line"])
-        self.call_stack_widget.setColumnCount(3)
-        self.call_stack_widget.setColumnWidth(0, 60)
-        self.call_stack_widget.setColumnWidth(1, 120)
-        self.call_stack_widget.setColumnWidth(2, 20)
-        self.call_stack_widget.setAlternatingRowColors(True)
-        self.call_stack_widget.setRootIsDecorated(True)
-        self.call_stack_widget.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        self.call_stack_widget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
-        self.call_stack_widget.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
-        self.call_stack_widget.setToolTip("Shows the current call stack and frame-local variables.")
+        self.variables_panel = QTreeWidget()
+        self.variables_panel.setHeaderLabels(["Variable", "Value"])
+        self.variables_panel.setColumnWidth(0, 200)
+        self.variables_panel.setToolTip("Shows all current local variables and their values.")
 
         layout = QVBoxLayout(self)
-        layout.addWidget(self.call_stack_widget)
-
-    def update_call_stack(self, stack_data):
-        self.call_stack_widget.clear()
-
-        for frame in stack_data:
-            func = frame.get("function", "?")
-            file = frame.get("file", "?")
-            line = frame.get("line", "?")
-            locals_dict = frame.get("locals", {})
-
-            parts = file.replace("\\", "/").split("/")
-            short_file = "/".join(parts[-3:]) if len(parts) > 3 else file
-
-            top = QTreeWidgetItem([
-                func,
-                short_file,
-                str(line)
-            ])
-            self.call_stack_widget.addTopLevelItem(top)
-
-            for key, value in locals_dict.items():
-                self.add_variable_item(top, key, value)
-
-            top.setExpanded(False)
+        layout.addWidget(self.variables_panel)
 
     def add_variable_item(self, parent, name, value, max_str_len=100, max_items=50):
         # Truncate long strings for display
@@ -127,3 +95,8 @@ class CallStackPanel(QWidget):
                 return "\n".join(lines)
             else:
                 return f"{spacer}{name}: {repr(value)}"
+
+    def update_vars(self, locals_dict):
+        self.variables_panel.clear()
+        for key, value in locals_dict.items():
+            self.add_variable_item(self.variables_panel, key, value)

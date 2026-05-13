@@ -27,7 +27,6 @@ from ..utils import system
 from ..lib.highlighter import Format
 
 from .local import Launcher as LocalLauncher
-from .local_debug import Launcher as LocalLauncherDbg
 from .console import Launcher as ConsoleLauncher
 
 LAUNCH_CONFIG = {}
@@ -35,7 +34,6 @@ LAUNCH_CONFIG = {}
 _DEFS_VISIBLE = False
 
 LAUNCHERS = {
-    'local_dbg': LocalLauncherDbg(),
     'local': LocalLauncher(),
     'console': ConsoleLauncher()
 }
@@ -352,13 +350,7 @@ def launch_plask(window):
                 window.current_controller.save_data_in_model()
             except (etree.LxmlError, ValueError):
                 pass  # error is set in the controller
-            if dialog.current_launcher == 'local_dbg':
-                script_ctrl = window.document.controller_by_name("script")
-                python_editor = script_ctrl.get_source_widget()
-
-                launcher.launch(window, shlex.split(launch_args), launch_defs, debugger=python_editor.debugger)
-            else:
-                launcher.launch(window, shlex.split(launch_args), launch_defs)
+            launcher.launch(window, shlex.split(launch_args), launch_defs)
     finally:
         if launch_config.get('defines') == []:  # None != []
             del launch_config['defines']

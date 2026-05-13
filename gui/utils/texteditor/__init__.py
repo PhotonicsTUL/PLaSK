@@ -19,9 +19,6 @@ from ...qt.QtWidgets import *
 from ..config import CONFIG, dark_style
 from ..widgets import EDITOR_FONT, set_icon_size
 
-from ...debugger.ui import DebuggerPanel
-
-
 def update_textedit():
     global \
         CURRENT_LINE_COLOR, \
@@ -42,14 +39,90 @@ def update_textedit():
 update_textedit()
 
 
+class LineNumberArea(QWidget):
+    """Line numbers widget
+    http://qt4-project.org/doc/qt4-4.8/widgets-codeeditor.html
+    """
+
+    def __init__(self, editor):
+        super().__init__(editor)
+        self.editor = editor
+        self._offset = 0
+        self._count_cache = -1, -1
+
+    def get_width(self):
+        """Return required width"""
+        count = max(1, self.editor.blockCount() + self._offset)
+        digits = int(math.log10(count)) + 1
+        width = self.editor.fontMetrics().horizontalAdvance("9")
+        return 8 + width * digits
+
+    def sizeHint(self):
+        QSize(self.get_width(), 0)
+
+    def update_width(self):
+        self.editor.setViewportMargins(self.get_width(), 0, 0, 0)
+
+    def on_update_request(self, rect, dy):
+        if dy:
+            self.scroll(0, dy)
+        elif (
+            self._count_cache[0] != self.editor.blockCount()
+            or self._count_cache[1] != self.editor.textCursor().block().lineCount()
+        ):
+            self.update(0, rect.y(), self.width(), rect.height())
+            self._count_cache = (
+                self.editor.blockCount(),
+                self.editor.textCursor().block().lineCount(),
+            )
+        if rect.contains(self.editor.viewport().rect()):
+            self.update_width()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.fillRect(event.rect(), LINENUMBER_BACKGROUND_COLOR)
+        block = self.editor.firstVisibleBlock()
+        block_number = block.blockNumber() + 1 + self._offset
+        top = (
+            self.editor.blockBoundingGeometry(block)
+            .translated(self.editor.contentOffset())
+            .top()
+        )
+        bottom = top + self.editor.blockBoundingRect(block).height()
+        while block.isValid() and top <= event.rect().bottom():
+            if block.isVisible() and bottom >= event.rect().top():
+                painter.setPen(LINENUMBER_FOREGROUND_COLOR)
+                painter.drawText(
+                    0,
+                    int(top),
+                    self.width() - 3,
+                    self.editor.fontMetrics().height(),
+                    Qt.AlignmentFlag.AlignRight,
+                    str(block_number),
+                )
+            block = block.next()
+            top = bottom
+            bottom = top + self.editor.blockBoundingRect(block).height()
+            block_number += 1
+
+    @property
+    def offset(self):
+        return self._offset
+
+    @offset.setter
+    def offset(self, val):
+        if val is not None:
+            self._offset = val
+            self.update_width()
+
+
 class TextEditor(QPlainTextEdit):
     """Improved editor with line numbers and some other neat stuff"""
 
-    breakpoints_ready = QtSignal(set)
+    LineNumbers = LineNumberArea
 
     def __init__(self, parent=None, line_numbers=True):
         super().__init__(parent)
-        self.debug_lines = set()
         palette = self.palette()
         palette.setColor(
             QPalette.ColorRole.Base, QColor(CONFIG["editor/background_color"])
@@ -61,7 +134,7 @@ class TextEditor(QPlainTextEdit):
         self.setPalette(palette)
         self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
         if line_numbers:
-            self.line_numbers = LineNumberArea(self)
+            self.line_numbers = self.LineNumbers(self)
             self.line_numbers.setFont(EDITOR_FONT)
             self.line_numbers.update_width()
             self.blockCountChanged.connect(self.line_numbers.update_width)
@@ -82,10 +155,6 @@ class TextEditor(QPlainTextEdit):
                 QRect(cr.left(), cr.top(), self.line_numbers.get_width(), cr.height())
             )
 
-    def update_current_debug_line(self, line):
-        self.debug_lines = set([line])
-        self.update_selections()
-
     def insertFromMimeData(self, source):
         if source.hasText() and SELECT_AFTER_PASTE:
             cursor = self.textCursor()
@@ -100,34 +169,6 @@ class TextEditor(QPlainTextEdit):
 
     def on_text_change(self):
         self._changed_pos = self.textCursor().position()
-
-    def get_debugger_selections(self):
-        if not self.debug_lines:
-            return []
-
-        doc = self.document()
-        fm = self.fontMetrics()
-        selections = []
-
-        for line_no in self.debug_lines:
-            block = doc.findBlockByNumber(line_no - 1)
-            if not block.isValid():
-                continue
-            cursor = QTextCursor(block)
-
-            sel = QTextEdit.ExtraSelection()
-            sel.cursor = cursor
-            sel.cursor.clearSelection()
-
-            sel.format.setBackground(QColor("#4444aa80"))
-            sel.format.setProperty(QTextFormat.FullWidthSelection, True)
-
-            selections.append(sel)
-
-        return selections
-
-    def send_breakpoints(self):
-         self.breakpoints_ready.emit(self.line_numbers.get_breakpoints())
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -186,7 +227,6 @@ class TextEditor(QPlainTextEdit):
         self.setExtraSelections(
             self.highlight_current_line()
             + self.get_same_as_selected()
-            + self.get_debugger_selections()
             + self.selections
         )
 
@@ -317,130 +357,6 @@ class TextEditorWithCB(TextEditor):
             self.key_cb(event)
 
 
-class LineNumberArea(QWidget):
-    """Line numbers widget
-    http://qt4-project.org/doc/qt4-4.8/widgets-codeeditor.html
-    """
-
-    def __init__(self, editor):
-        super().__init__(editor)
-        self.editor = editor
-        self._offset = 0
-        self._count_cache = -1, -1
-        self.breakpoints = set()
-
-    def get_width(self):
-        """Return required width"""
-        count = max(1, self.editor.blockCount() + self._offset)
-        digits = int(math.log10(count)) + 1
-        width = self.editor.fontMetrics().horizontalAdvance("9")
-        return 8 + width * digits
-
-    def sizeHint(self):
-        QSize(self.get_width(), 0)
-
-    def update_width(self, n=0):
-        self.editor.setViewportMargins(self.get_width(), 0, 0, 0)
-
-    def on_update_request(self, rect, dy):
-        if dy:
-            self.scroll(0, dy)
-        elif (
-            self._count_cache[0] != self.editor.blockCount()
-            or self._count_cache[1] != self.editor.textCursor().block().lineCount()
-        ):
-            self.update(0, rect.y(), self.width(), rect.height())
-            self._count_cache = (
-                self.editor.blockCount(),
-                self.editor.textCursor().block().lineCount(),
-            )
-        if rect.contains(self.editor.viewport().rect()):
-            self.update_width()
-
-    def mousePressEvent(self, event):
-        y = event.pos().y()
-        block = self.editor.firstVisibleBlock()
-        top = (
-            self.editor.blockBoundingGeometry(block)
-            .translated(self.editor.contentOffset())
-            .top()
-        )
-        bottom = top + self.editor.blockBoundingRect(block).height()
-
-        while block.isValid() and top <= y:
-            if block.isVisible() and bottom >= y:
-                line_number = block.blockNumber() + 1 + self._offset
-                if line_number in self.breakpoints:
-                    self.breakpoints.remove(line_number)
-                else:
-                    self.breakpoints.add(line_number)
-                self.update()
-                break
-            block = block.next()
-            top = bottom
-            bottom = top + self.editor.blockBoundingRect(block).height()
-
-    def get_breakpoints(self):
-        return sorted(self.breakpoints)
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.fillRect(event.rect(), LINENUMBER_BACKGROUND_COLOR)
-        block = self.editor.firstVisibleBlock()
-        block_number = block.blockNumber() + 1 + self._offset
-        top = (
-            self.editor.blockBoundingGeometry(block)
-            .translated(self.editor.contentOffset())
-            .top()
-        )
-        bottom = top + self.editor.blockBoundingRect(block).height()
-        while block.isValid() and top <= event.rect().bottom():
-            if block.isVisible() and bottom >= event.rect().top():
-                painter.setPen(LINENUMBER_FOREGROUND_COLOR)
-                painter.drawText(
-                    0,
-                    int(top),
-                    self.width() - 3,
-                    self.editor.fontMetrics().height(),
-                    Qt.AlignmentFlag.AlignRight,
-                    str(block_number),
-                )
-            block = block.next()
-            top = bottom
-            bottom = top + self.editor.blockBoundingRect(block).height()
-            block_number += 1
-
-            if block.isVisible() and bottom >= event.rect().top():
-                painter.setPen(LINENUMBER_FOREGROUND_COLOR)
-                painter.drawText(
-                    0,
-                    int(top),
-                    self.width() - 3,
-                    self.editor.fontMetrics().height(),
-                    Qt.AlignmentFlag.AlignRight,
-                    str(block_number),
-                )
-
-                # Draw breakpoint marker
-                if block_number in self.breakpoints:
-                    radius = 5
-                    center_x = 4
-                    center_y = int(top + self.editor.fontMetrics().height() / 2)
-                    painter.setBrush(QColor("red"))
-                    painter.setPen(Qt.PenStyle.NoPen)
-                    painter.drawEllipse(QPoint(center_x, center_y), radius, radius)
-
-    @property
-    def offset(self):
-        return self._offset
-
-    @offset.setter
-    def offset(self, val):
-        if val is not None:
-            self._offset = val
-            self.update_width()
-
-
 class LineEditWithHistory(QLineEdit):
     historyChanged = QtSignal()
 
@@ -483,12 +399,6 @@ class EditorWidget(QWidget):
 
         self.editor = editor_class(self, *args, **kwargs)
 
-        self.debugger = DebuggerPanel(self.window())
-
-        self.debugger.ask_breakpoints.connect(self.editor.send_breakpoints)
-        self.editor.breakpoints_ready.connect(self.debugger.recieve_breakpoints)
-        self.debugger.current_line_signal.connect(self.editor.update_current_debug_line)
-
         self.toolbar = QToolBar(self)
         self.toolbar.setStyleSheet("QToolBar { border: 0px }")
         set_icon_size(self.toolbar)
@@ -505,7 +415,6 @@ class EditorWidget(QWidget):
             "&Replace...", "edit-find-replace", "editor_replace", self.show_replace
         )
         self.toolbar.addSeparator()
-        self.add_action("&Open debugger", "debugger-open", None, self.debugger.toggle_visibility)
 
         self.statusbar = QStatusBar(self)
         self.statusbar.setSizeGripEnabled(False)

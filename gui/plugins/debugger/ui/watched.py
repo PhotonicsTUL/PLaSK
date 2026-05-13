@@ -1,12 +1,12 @@
-from ...qt.QtWidgets import *
-from ...qt.QtCore import Qt
-from ...qt import QtSignal
+from gui.qt.QtWidgets import *
+from gui.qt.QtCore import Qt
+from gui.qt import QtSignal
 
 import json
 
 class WatchedPanel(QWidget):
 
-    update_watched_expressions = QtSignal(set)
+    update_watched_expressions = QtSignal(list)
 
     def __init__(self):
         super().__init__()

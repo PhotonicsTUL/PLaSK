@@ -1,18 +1,18 @@
 import json
-from debugger import Debugger
-from stack_manager import StackManager
-from locals_manager import LocalsManager
-from watchlist_manager import WatchlistManager
-
 import queue
 
-# PROTOCOL 
+from .debugger import Debugger
+from .locals_manager import LocalsManager
+from .stack_manager import StackManager
+from .watchlist_manager import WatchlistManager
+
+# PROTOCOL
 #
 # ui → debugger
 # {
 #   type: command
 #   name: <contiue | step_line | step_into | step_out | quit | update_watchlist>
-#   payload: {} 
+#   payload: {}
 # }
 #
 # debugger → ui
@@ -41,7 +41,7 @@ class DebuggerAdapter:
         self.debugger.on_line = self.handle_line
         self.debugger.on_paused = self.handle_paused
         self.debugger.on_call = self.handle_call
-        self.debugger.on_return = self.handle_return 
+        self.debugger.on_return = self.handle_return
         self.debugger.on_exception = self.handle_exception
         self.debugger.on_quit = self.handle_quit
 
@@ -50,8 +50,8 @@ class DebuggerAdapter:
         self.line_offset = line_offset
         self.current_line = -1
 
-    def run(self, code):
-        self.debugger.run(code)
+    def run(self, code, globals=None):
+        self.debugger.run(code, globals=globals)
 
     def handle_command(self, cmd):
         payload = cmd['payload']
@@ -97,10 +97,10 @@ class DebuggerAdapter:
             print(f"[DEBUGGER]: error when serialising state: {state}, error: {e}")
             json_state = "{}"
         return json_state
-    
+
     def update_watchlist(self, watchlist):
         self.watchlist_manager.update_watchlist(list(watchlist))
-    
+
     def handle_line(self, frame):
         self.current_line = frame.f_lineno - self.line_offset
         self.locals_manager.update_locals(frame)
@@ -128,7 +128,7 @@ class DebuggerAdapter:
         self.debugger.send_command("next_line")
 
     def step_into(self):
-        self.debugger.send_command("step_into") 
+        self.debugger.send_command("step_into")
 
     def step_out(self):
         self.debugger.send_command("step_out")

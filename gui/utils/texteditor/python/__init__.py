@@ -343,12 +343,14 @@ class PythonEditor(TextEditor):
 
 class PythonEditorWidget(QMainWindow):
 
+    Editor = PythonEditor
+
     def __init__(self, parent=None, document=None, read_only=False, *args, **kwargs):
         super().__init__(parent)
 
         self.setWindowFlags(Qt.WindowType.Widget)
 
-        widget = EditorWidget(parent, PythonEditor, document, *args, **kwargs)
+        widget = EditorWidget(parent, self.Editor, document, *args, **kwargs)
         self._editor_widget = widget
         self.editor = widget.editor
 
@@ -409,10 +411,6 @@ class PythonEditorWidget(QMainWindow):
             widget.toolbar.addAction(doc_action)
 
         self.setCentralWidget(widget)
-
-    @property
-    def debugger(self):
-        return self._editor_widget.debugger
 
     def cursor_position_changed(self):
         self.centralWidget().cursor_position_changed()

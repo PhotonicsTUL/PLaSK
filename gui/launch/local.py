@@ -39,13 +39,10 @@ class LaunchThread(QThread):
             si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
             si.wShowWindow = subprocess.SW_HIDE
         except AttributeError:
-            self.proc = subprocess.Popen([program, '-ldebug', '-g'] + list(defs) + ['--', fname] + list(args),
-                                         cwd=dirname, stdout=subprocess.PIPE, env=env, stderr=subprocess.STDOUT,
-                                         bufsize=0)
-        else:
-            self.proc = subprocess.Popen([program, '-ldebug', '-g'] + list(defs) + ['--', fname] + list(args),
-                                         cwd=dirname, stdout=subprocess.PIPE, env=env, stderr=subprocess.STDOUT,
-                                         bufsize=0, startupinfo=si)
+            si = None
+        self.proc = subprocess.Popen([program, '-ldebug', '-g'] + list(defs) + ['--', fname] + list(args),
+                                        cwd=dirname, stdout=subprocess.PIPE, env=env, stderr=subprocess.STDOUT,
+                                        bufsize=0, startupinfo=si)
         self.dock = dock
         try:
             self.terminated.connect(self.kill_process)
