@@ -8,7 +8,7 @@ from .watchlist_manager import WatchlistManager
 
 # PROTOCOL
 #
-# ui → debugger
+# ui → debugger
 # {
 #   type: command
 #   name: <contiue | step_line | step_into | step_out | quit | update_watchlist>
@@ -26,6 +26,7 @@ from .watchlist_manager import WatchlistManager
 #     'watch_list': ...
 #   }
 # }
+
 
 class DebuggerAdapter:
 
@@ -50,8 +51,10 @@ class DebuggerAdapter:
         self.line_offset = line_offset
         self.current_line = -1
 
-    def run(self, code, globals=None):
-        self.debugger.run(code, globals=globals)
+        self.ignored_vars = None
+
+    def run(self, code, env=None):
+        self.debugger.run(code, globals=env)
 
     def handle_command(self, cmd):
         payload = cmd['payload']
@@ -71,30 +74,30 @@ class DebuggerAdapter:
             print(f"[Debugger]: unknown command: {cmd}", flush=True)
 
     def handle_quit(self):
-        state = {
-                    'type': 'state_update',
-                    'name': 'quit',
-                    'payload': {}
-                }
+        state = {'type': 'state_update', 'name': 'quit', 'payload': {}}
         if self.emit_state:
             self.emit_state(json.dumps(state))
 
     def get_state(self):
+
+        def ensure_serializable(x):
+            try:
+                json.dumps(x)
+                return x
+            except Exception:
+                return {}
+
         payload = {
-                    'line': self.current_line,
-                    'locals': self.locals_manager.get_locals(),
-                    'call_stack': self.stack_manager.get_stack(),
-                    'watch_list': self.watchlist_manager.get_watchlist(),
-                }
-        state = {
-                    'type': 'state_update',
-                    'name': 'state_update',
-                    'payload': payload
-                }
+            'line': self.current_line,
+            'locals': ensure_serializable(self.locals_manager.get_locals()),
+            'call_stack': ensure_serializable(self.stack_manager.get_stack()),
+            'watch_list': ensure_serializable(self.watchlist_manager.get_watchlist()),
+        }
+        state = {'type': 'state_update', 'name': 'state_update', 'payload': payload}
         try:
             json_state = json.dumps(state)
         except Exception as e:
-            print(f"[DEBUGGER]: error when serialising state: {state}, error: {e}")
+            print(f"[DEBUGGER]: error when serialising state: {e}")
             json_state = "{}"
         return json_state
 
@@ -102,9 +105,11 @@ class DebuggerAdapter:
         self.watchlist_manager.update_watchlist(list(watchlist))
 
     def handle_line(self, frame):
+        if self.ignored_vars == None:
+            self.ignored_vars = dict(frame.f_locals)
         self.current_line = frame.f_lineno - self.line_offset
-        self.locals_manager.update_locals(frame)
-        self.stack_manager.rebuild_from_frame(frame)
+        self.locals_manager.update_locals(frame, ignored_vars=self.ignored_vars)
+        self.stack_manager.rebuild_from_frame(frame, ignored_vars=self.ignored_vars)
         self.watchlist_manager.eval_watchlist(frame)
 
     def handle_paused(self, frame):

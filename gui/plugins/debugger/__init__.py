@@ -216,7 +216,7 @@ class Launcher(LocalLauncher):
 
         breakpoints = ",".join([f"{filename}:" + str(bp) for bp in debugger.get_breakpoint_lines()])
         port = CONFIG['launcher_debug/port']
-        debugger_path = os.path.join(os.path.dirname(__file__), 'run.py')
+        debugger_path = os.path.join(os.path.dirname(__file__), 'debugger.py')
 
         dbs_args = ['--breakpoints', breakpoints, '--port', str(port)] + (list(defs) if defs else []) + \
                    ['--', filename] + list(args)

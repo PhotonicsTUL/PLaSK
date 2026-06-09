@@ -1,13 +1,15 @@
 import bdb
 import queue
 
+
 class Debugger(bdb.Bdb):
+
     def __init__(self):
         super().__init__()
         self.command_queue = queue.Queue()
         self._stop_requested = False
 
-        # call backs 
+        # call backs
         self.on_line = None
         self.on_paused = None
         self.on_call = None

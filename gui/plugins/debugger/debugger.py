@@ -6,11 +6,11 @@ import os
 
 import plask
 
-from debugger.adapter import DebuggerAdapter
+from plask_debugger.adapter import DebuggerAdapter
 
+running = True
 
-def run_server(adapter, code, host, port, globals=None):
-    dbg_thread = None
+def run_server(adapter, host, port):
     conn = None
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -20,11 +20,11 @@ def run_server(adapter, code, host, port, globals=None):
         s.listen()
 
         port = s.getsockname()[1]
-        print(f"[DEBUGGER]: Started socket on: {host}:{port}", flush=True)
+        plask.print_log('debug', f"[DEBUGGER]: Started socket on: {host}:{port}")
 
         try:
             conn, addr = s.accept()
-            print(f"[DEBUGGER]: Connected by {addr}", flush=True)
+            plask.print_log('debug', f"[DEBUGGER]: Connected by {addr}")
 
             def emit_state(state_json):
                 try:
@@ -34,30 +34,24 @@ def run_server(adapter, code, host, port, globals=None):
 
             adapter.emit_state = emit_state
 
-            def run_dbg():
-                adapter.run(code, globals=globals)
-
-            dbg_thread = threading.Thread(target=run_dbg, daemon=True)
-            dbg_thread.start()
-
             buffer = b""
 
             while True:
-                if dbg_thread and not dbg_thread.is_alive():
-                    print("[DEBUGGER]: Program finished, exiting.", flush=True)
+                if not running:
+                    plask.print_log('info', "[DEBUGGER]: Program finished, exiting")
                     break
 
                 try:
                     data = conn.recv(4096)
                 except ConnectionResetError:
-                    print("[DEBUGGER]: Connection reset by client.", flush=True)
+                    plask.print_log('critical_error', "[DEBUGGER]: Connection reset by client")
                     break
                 except OSError as e:
-                    print(f"[DEBUGGER]: Socket error: {e}", flush=True)
+                    plask.print_log('critical_error', f"[DEBUGGER]: Socket error: {e}")
                     break
 
                 if not data:
-                    print("[DEBUGGER]: Client disconnected.", flush=True)
+                    plask.print_log('info', "[DEBUGGER]: Client disconnected.")
                     break
 
                 buffer += data
@@ -67,24 +61,18 @@ def run_server(adapter, code, host, port, globals=None):
                     try:
                         cmd = json.loads(line.decode("utf-8"))
                     except Exception as e:
-                        print(f"[DEBUGGER]: Invalid command: {e}", flush=True)
+                        plask.print_log('warning', f"[DEBUGGER]: Invalid command: {e}")
                         continue
 
                     adapter.handle_command(cmd)
 
         finally:
-            if dbg_thread and dbg_thread.is_alive():
-                adapter.quit()
-                dbg_thread.join(timeout=2)
-
             if conn:
                 try:
                     conn.shutdown(socket.SHUT_RDWR)
                 except OSError:
                     pass
                 conn.close()
-
-    print("[DEBUGGER]: Successfully exited")
 
 
 if __name__ == "__main__":
@@ -152,12 +140,11 @@ if __name__ == "__main__":
     else:
         manager.load(script_path)
         first_line = manager._scriptline
-        # code_str = "import plask; from plask import *\n" + ("\n" * (first_line - 2)) + manager.script
         code_str = "\n" * (first_line - 1) + manager.script
 
-    script_globals = manager._globals
-    manager.export(script_globals)
-    script_globals.update(defines)
+    env = manager._globals
+    manager.export(env)
+    env.update(defines)
 
     adapter = DebuggerAdapter(line_offset=first_line)
 
@@ -168,11 +155,26 @@ if __name__ == "__main__":
                 bp_file, bp_line = bp.split(":")
                 adapter.debugger.set_break(bp_file.strip(), int(bp_line))
             except ValueError:
-                print(f"Invalid breakpoint format: {bp}", file=sys.stderr, flush=True)
+                plask.print_log('warning', f"Invalid breakpoint format: {bp}")
 
     code = compile(code_str, script_path, "exec")
-    print("[DEBUGGER]: Loading and compilation finished", file=sys.stderr, flush=True)
+    plask.print_log('debug', "[DEBUGGER]: Loading and compilation finished")
 
     HOST = "127.0.0.1"
 
-    run_server(adapter, code, HOST, PORT, globals=script_globals)
+    # Start server in another thread and run the debugger
+    running = True
+    server_thread = threading.Thread(target=run_server, args=(adapter, HOST, PORT), daemon=True)
+    server_thread.start()
+
+    try:
+        adapter.run(code, env=env)
+    finally:
+        adapter.quit()
+        running = False
+        server_thread.join(timeout=2)
+        if server_thread.is_alive():
+            plask.print_log('warning', "[DEBUGGER]: Warning: server thread did not exit cleanly")
+            server_thread.kill()
+
+    plask.print_log('info', "[DEBUGGER]: Successfully exited")
