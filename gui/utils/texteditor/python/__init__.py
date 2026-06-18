@@ -402,7 +402,7 @@ class PythonEditorWidget(QMainWindow):
 
             doc_action = QAction(QIcon.fromTheme('help-contextual'), 'Show &Docstring', widget)
             CONFIG.set_shortcut(doc_action, 'python_docstring')
-            doc_action.triggered.connect(self.show_docstring)
+            doc_action.triggered.connect(self.toggle_docstring)
             widget.editor.addAction(doc_action)
             hide_doc_action = QAction('Hide Docstring', widget)
             CONFIG.set_shortcut(hide_doc_action, 'python_hide_docstring')
@@ -426,24 +426,27 @@ class PythonEditorWidget(QMainWindow):
     def open_help(self):
         open_help('api', self._document.window)
 
-    def show_docstring(self):
-        if CONFIG['workarounds/no_jedi']: return
-        cursor = self.editor.textCursor()
-        cursor.movePosition(QTextCursor.MoveOperation.EndOfWord)
-        row = cursor.blockNumber()
-        col = cursor.positionInBlock()
-        # QApplication.setOverrideCursor(Qt.CursorShape.BusyCursor)
-        if CONFIG['workarounds/blocking_jedi']:
-            result = get_docstring(self._document, self.editor.toPlainText(), row, col)
-            if type(result) is tuple:
-                self.help_dock.show_help(*result)
-            else:
-                self.help_dock.show_help(result)
+    def toggle_docstring(self):
+        if self.help_dock.isVisible():
+            self.help_dock.hide()
         else:
-            task = BackgroundTask(lambda: get_docstring(self._document, self.editor.toPlainText(),
-                                                        row, col),
-                                  self.help_dock.show_help)
-            task.start()
+            if CONFIG['workarounds/no_jedi']: return
+            cursor = self.editor.textCursor()
+            cursor.movePosition(QTextCursor.MoveOperation.EndOfWord)
+            row = cursor.blockNumber()
+            col = cursor.positionInBlock()
+            # QApplication.setOverrideCursor(Qt.CursorShape.BusyCursor)
+            if CONFIG['workarounds/blocking_jedi']:
+                result = get_docstring(self._document, self.editor.toPlainText(), row, col)
+                if type(result) is tuple:
+                    self.help_dock.show_help(*result)
+                else:
+                    self.help_dock.show_help(result)
+            else:
+                task = BackgroundTask(lambda: get_docstring(self._document, self.editor.toPlainText(),
+                                                            row, col),
+                                    self.help_dock.show_help)
+                task.start()
 
 
 class HelpDock(QDockWidget):

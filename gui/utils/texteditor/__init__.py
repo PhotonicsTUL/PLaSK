@@ -414,7 +414,7 @@ class EditorWidget(QWidget):
         self.add_action(
             "&Replace...", "edit-find-replace", "editor_replace", self.show_replace
         )
-        self.toolbar.addSeparator()
+        # self.toolbar.addSeparator()
 
         self.statusbar = QStatusBar(self)
         self.statusbar.setSizeGripEnabled(False)
