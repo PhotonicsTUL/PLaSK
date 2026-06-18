@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="48" height="48">
+  <defs>
+    <linearGradient id="c">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="1"/>
+    </linearGradient>
+    <linearGradient id="a">
+      <stop offset="0" stop-color="#adb0a8"/>
+      <stop offset="1" stop-color="#464744"/>
+    </linearGradient>
+    <linearGradient id="b">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="1" stop-color="#d3d7cf"/>
+    </linearGradient>
+    <linearGradient id="f" x1="71.289" x2="70.827" y1="124.117" y2="95" gradientTransform="translate(-45 -71.094)" gradientUnits="userSpaceOnUse" xlink:href="#a"/>
+    <radialGradient id="e" cx="107.588" cy="83.991" r="12.552" fx="107.588" fy="83.991" gradientTransform="matrix(.05324 -.83624 2.01947 .12857 -151.92 108.077)" gradientUnits="userSpaceOnUse" xlink:href="#b"/>
+    <linearGradient id="d" x1="70.914" x2="70.952" y1="101.742" y2="88.924" gradientTransform="translate(-53.993 -83.36) scale(1.12818)" gradientUnits="userSpaceOnUse" xlink:href="#c"/>
+  </defs>
+  <g color="#000">
+    <path fill="none" stroke="url(#d)" stroke-linecap="square" stroke-linejoin="round" stroke-width="2" d="M 12,39.5 L 12,9 L 38.06998,23.817079 L 12,39.5 z" opacity=".15" style="marker:none"/>
+    <path fill="url(#e)" fill-rule="evenodd" d="M 12.49946,37.81149 L 12.49946,10.000005 L 36.602747,23.905748 L 12.49946,37.81149 z" style="marker:none"/>
+    <path fill="none" stroke="url(#f)" stroke-linecap="square" stroke-linejoin="round" d="M 12.49946,37.81149 L 12.49946,10.000005 L 36.602747,23.905748 L 12.49946,37.81149 z" style="marker:none"/>
+    <path fill="#fff" fill-rule="evenodd" d="M 12.99946,10.87449 L 12.99946,36.93699 L 35.59321,23.90574 L 12.99946,10.87449 z M 13.99946,12.62449 L 33.56196,23.90574 L 13.99946,35.18699 L 13.99946,12.62449 z" style="marker:none"/>
+    <path fill="#fff" d="M 13.9375,12.5625 L 13.9375,24.25 C 18.206698,24.205215 23.101656,23.904436 31,22.375 L 13.9375,12.5625 z" display="block" opacity=".5" style="marker:none"/>
+  </g>
+</svg>

@@ -74,6 +74,8 @@ def run_server(adapter, host, port):
                     pass
                 conn.close()
 
+            if running:
+                adapter.quit()
 
 if __name__ == "__main__":
     PORT = None
@@ -140,7 +142,7 @@ if __name__ == "__main__":
     else:
         manager.load(script_path)
         first_line = manager._scriptline
-        code_str = "\n" * (first_line - 1) + manager.script
+        code_str = "\n" * first_line + manager.script
 
     env = manager._globals
     manager.export(env)

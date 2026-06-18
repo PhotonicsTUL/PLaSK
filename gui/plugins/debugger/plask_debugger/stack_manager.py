@@ -109,4 +109,4 @@ class StackManager:
         self.stack = new_stack
 
     def get_stack(self):
-        return list(self.stack)
+        return list(self.stack)[1:]  # Exclude the first frame which is the debugger itself

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="48" height="48">
+  <defs>
+    <linearGradient id="b">
+      <stop offset="0" stop-color="#73d216"/>
+      <stop offset="1" stop-color="#4e9a06"/>
+    </linearGradient>
+    <linearGradient id="c">
+      <stop offset="0"/>
+      <stop offset="1" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="a">
+      <stop offset="0" stop-color="#fff"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="f" cx="24.538" cy=".4" r="17.171" fx="24.538" fy=".4" gradientTransform="matrix(0 -2.04673 1.55761 0 2.767 66.933)" gradientUnits="userSpaceOnUse" xlink:href="#a"/>
+    <radialGradient id="e" cx="11.319" cy="22.455" r="16.956" fx="11.319" fy="22.455" gradientTransform="matrix(0 -.84302 1.02017 0 .606 42.586)" gradientUnits="userSpaceOnUse" xlink:href="#b"/>
+    <radialGradient id="d" cx="24.837" cy="36.421" r="15.645" fx="24.837" fy="36.421" gradientTransform="matrix(1 0 0 .53672 0 16.873)" gradientUnits="userSpaceOnUse" xlink:href="#c"/>
+  </defs>
+  <g color="#000">
+    <path fill="url(#d)" fill-rule="evenodd" d="M 40.481863 36.421127 A 15.644737 8.3968935 0 1 1 9.1923885,36.421127 A 15.644737 8.3968935 0 1 1 40.481863 36.421127 z" opacity=".299" style="marker:none" transform="matrix(1.21447 0 0 .59546 -6.164 16.313)"/>
+    <path fill="url(#e)" fill-rule="evenodd" stroke="#3a7304" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" d="M 14.491792,38.500000 L 32.469477,38.500000 L 32.469477,25.547437 L 40.500000,25.547437 L 23.374809,5.4992135 L 6.5285585,25.489471 L 14.497096,25.555762 L 14.491792,38.500000 z" style="marker:none"/>
+    <path fill="url(#f)" fill-rule="evenodd" d="M 7.5855237,25.03253 L 14.995821,25.03253 L 15.062422,31.594339 C 20.718034,20.593878 31.055517,22.749928 31.656768,15.966674 C 31.656768,15.966674 23.366938,6.4219692 23.366938,6.4219692 L 7.5855237,25.03253 z" opacity=".508" style="marker:none"/>
+    <path fill="none" stroke="#fff" stroke-miterlimit="10" d="M 15.602735,37.500000 L 31.502578,37.500000 L 31.502578,24.507050 L 38.311576,24.507050 L 23.361206,7.0700896 L 8.6546798,24.550470 L 15.475049,24.528373 L 15.602735,37.500000 z" opacity=".481" style="marker:none"/>
+  </g>
+</svg>

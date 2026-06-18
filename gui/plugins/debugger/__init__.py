@@ -36,7 +36,6 @@ class DebuggerLineNumberArea(LineNumberArea):
     def __init__(self, editor):
         super().__init__(editor)
         self.breakpoints = set()
-
     def get_width(self):
         width = super().get_width()
         if self.breakpoints:
@@ -168,7 +167,7 @@ class DebuggerPythonEditorWidget(PythonEditorWidget):
         self.debugger.ask_breakpoints.connect(self.editor.send_breakpoints)
         self.debugger.current_line_signal.connect(self.editor.update_current_debug_line)
 
-        self._editor_widget.add_action("&Open debugger", "debugger-open", None, self.debugger.toggle_visibility)
+        self._editor_widget.add_action("Open Debugger", "debug-run", None, self.debugger.toggle_visibility)
 
 
 class Launcher(LocalLauncher):
@@ -234,3 +233,11 @@ class Launcher(LocalLauncher):
 
 ScriptController.SourceWidget = DebuggerPythonEditorWidget
 LAUNCHERS['local_dbg'] = Launcher()
+
+icons_path = QIcon.themeSearchPaths()
+icons_theme = str(CONFIG['main_window/icons_theme']).lower()
+if icons_theme == 'system':
+    icons_path.append(os.path.join(__path__[0], 'icons'))
+else:
+    icons_path.insert(1, os.path.join(__path__[0], 'icons'))
+QIcon.setThemeSearchPaths(icons_path)

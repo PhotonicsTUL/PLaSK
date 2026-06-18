@@ -425,7 +425,7 @@ class DebuggerPanel(QDockWidget):
 
     def stop_debugger(self):
         if self.socket_thread:
-            self.send_cmd(b"STOP\n")
+            self.send_cmd(b"QUIT\n")
             self.socket_thread.stop()
 
     def on_connected(self):
