@@ -77,6 +77,7 @@ def run_server(adapter, host, port):
             if running:
                 adapter.quit()
 
+
 if __name__ == "__main__":
     PORT = None
     breakpoints = ""
@@ -154,7 +155,7 @@ if __name__ == "__main__":
     for bp in breakpoints.split(","):
         if bp.strip():
             try:
-                bp_file, bp_line = bp.split(":")
+                bp_file, bp_line = bp.rsplit(":", 1)
                 adapter.debugger.set_break(bp_file.strip(), int(bp_line))
             except ValueError:
                 plask.print_log('warning', f"Invalid breakpoint format: {bp}")
