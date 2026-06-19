@@ -103,6 +103,8 @@ class DebuggerAdapter:
 
     def update_watchlist(self, watchlist):
         self.watchlist_manager.update_watchlist(list(watchlist))
+        self.watchlist_manager.eval_watchlist(self.debugger.frame)
+        self.handle_paused(self.debugger.frame)
 
     def handle_line(self, frame):
         if self.ignored_vars == None:
