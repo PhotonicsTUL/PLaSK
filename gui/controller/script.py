@@ -20,7 +20,7 @@ from .source import SourceEditController
 from ..model.script import ScriptModel
 from ..utils.config import CONFIG
 from ..utils.widgets import ComboBox
-from ..utils.texteditor.python import PythonEditorWidget, PYTHON_SCHEME
+from ..utils.texteditor.python import PythonEditorWidget
 
 
 LOG_LEVELS = ['Error', 'Warning', 'Important', 'Info', 'Result', 'Data', 'Detail', 'Debug']
@@ -28,13 +28,15 @@ LOG_LEVELS = ['Error', 'Warning', 'Important', 'Info', 'Result', 'Data', 'Detail
 
 class ScriptController(SourceEditController):
 
+    SourceWidget = PythonEditorWidget
+
     def __init__(self, document, model=None):
         if model is None: model = ScriptModel()
         super().__init__(document, model)
         self.document.window.config_changed.connect(self.reconfig)
 
     def create_source_widget(self, parent):
-        window = PythonEditorWidget(parent, self.document, self.model.is_read_only())
+        window = self.SourceWidget(parent, self.document, self.model.is_read_only())
         self.model.editor = window.editor
 
         try:
