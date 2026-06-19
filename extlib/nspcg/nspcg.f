@@ -5,7 +5,7 @@
 c
 c ... nspcg is the driver for the nspcg package.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       precon    preconditioning module
 c       accel     acceleration module
@@ -15,8 +15,8 @@ c       n         input integer.  order of the system (= nn)
 c       u         input/output vector.  on input, u contains the
 c                 initial guess to the solution.  on output, it
 c                 contains the latest estimate to the solution.
-c       ubar      input vector containing the true solution 
-c                  (optional) 
+c       ubar      input vector containing the true solution
+c                  (optional)
 c       rhs       input vector.  contains the right hand side
 c                 of the matrix problem.
 c       wksp      floating point workspace vector of length nw
@@ -27,25 +27,25 @@ c       inw       length of iwksp upon input, amount used upon
 c                  output
 c       iparm     integer vector of length 30.  allows user to
 c                 specify some integer parameters which affect
-c                 the method. 
-c       rparm     floating point vector of length 30.  allows user to 
-c                 specify some floating point parameters which affect 
-c                 the method. 
+c                 the method.
+c       rparm     floating point vector of length 30.  allows user to
+c                 specify some floating point parameters which affect
+c                 the method.
 c       ier       output integer.  error flag.
 c
 c ... specifications for parameters
 c
-      external  accel, precon 
+      external  accel, precon
       integer   iparm(30), jcoef(2), p(1), ip(1), iwksp(1)
       dimension coef(1), rhs(1), u(1), ubar(1), rparm(30), wksp(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
 c ... data common blocks
 c
@@ -72,7 +72,7 @@ c ... call preparatory routines.
 c
 c ... remove zeros from jcoef for purdue data structure.
 c
-      if (nstore .eq. 1) call adjust (n,ndim,maxnz,jcoef,1) 
+      if (nstore .eq. 1) call adjust (n,ndim,maxnz,jcoef,1)
       call prep (coef,jcoef,wksp(irpnt),iwksp(iipnt),n,nstore,ier)
       if (ier .lt. 0) then
          call ershow (ier,'nspcg')
@@ -84,14 +84,14 @@ c
       ielim = iparm(24)
       tol = rparm(15)
       if (ielim .eq. 1) call elim (n,jcoef,coef,rhs,wksp,iwksp,
-     a                             tol) 
+     a                             tol)
 c
 c ... determine symmetry of matrix.
 c
       if (nstore .eq. 1 .and. isymm .eq. 2) call detsym
      a                (ndim,maxnz,coef,jcoef,n,isymm)
 c
-c ... scale matrix. 
+c ... scale matrix.
 c
       call scale (coef,jcoef,wksp,1,n,u,ubar,rhs,ier)
       if (ier .lt. 0) go to 20
@@ -101,7 +101,7 @@ c
       call permut (coef,jcoef,p,ip,wksp,iwksp,1,n,u,ubar,rhs,ier)
       if (ier .lt. 0) go to 15
 c
-c ... call iterative routine. 
+c ... call iterative routine.
 c
       call precon (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a             iparm,rparm,ier)
@@ -116,7 +116,7 @@ c
 c
 c ... restore zeros to jcoef for purdue data structure.
 c
- 20   if (nstore .eq. 1) call adjust (n,ndim,maxnz,jcoef,2) 
+ 20   if (nstore .eq. 1) call adjust (n,ndim,maxnz,jcoef,2)
       t2 = timer (dummy)
       timtot = t2 - t1
       iparm(18) = ipropa
@@ -130,16 +130,16 @@ c
       inw = iimax
       maxnzz = maxnz
       return
-      end 
+      end
       subroutine rsnsp (precon,accel,ndimm,mdimm,nn,maxnzz,coef,
      a                  jcoef,p,ip,u,ubar,rhs,wksp,iwksp,nw,inw,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
-c ... rsnsp is the driver for the nspcg package for methods 
+c ... rsnsp is the driver for the nspcg package for methods
 c     applied to the explicitly computed reduced system.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       precon    preconditioning module
 c       accel     acceleration module
@@ -149,37 +149,37 @@ c       n         input integer.  order of the system (= nn)
 c       u         input/output vector.  on input, u contains the
 c                 initial guess to the solution.  on output, it
 c                 contains the latest estimate to the solution.
-c       ubar      input vector containing the true solution 
-c                  (optional) 
+c       ubar      input vector containing the true solution
+c                  (optional)
 c       rhs       input vector.  contains the right hand side
 c                 of the matrix problem.
 c       wksp      floating point workspace of length nw
-c       iwksp     integer workspace of length inw 
+c       iwksp     integer workspace of length inw
 c       nw        length of wksp upon input, amount used upon
 c                  output
 c       inw       length of iwksp upon input, amount used upon
 c                  output
 c       iparm     integer vector of length 30.  allows user to
 c                 specify some integer parameters which affect
-c                 the method. 
-c       rparm     floating point vector of length 30.  allows user to 
-c                 specify some floating point parameters which affect 
-c                 the method. 
+c                 the method.
+c       rparm     floating point vector of length 30.  allows user to
+c                 specify some floating point parameters which affect
+c                 the method.
 c       ier       output integer.  error flag.
 c
 c ... specifications for parameters
 c
-      external  accel, precon 
+      external  accel, precon
       integer   iparm(30), jcoef(2), p(1), ip(1), iwksp(1)
       dimension coef(1), rhs(1), u(1), ubar(1), rparm(30), wksp(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
 c ... data common blocks
 c
@@ -205,7 +205,7 @@ c ... call preparatory routines.
 c
 c ... remove zeros from jcoef for purdue data structure.
 c
-      if (nstore .eq. 1) call adjust (n,ndim,maxnz,jcoef,1) 
+      if (nstore .eq. 1) call adjust (n,ndim,maxnz,jcoef,1)
       call prep (coef,jcoef,wksp(irpnt),iwksp(iipnt),n,nstore,ier)
       if (ier .lt. 0) then
          call ershow (ier,'rsnsp')
@@ -217,7 +217,7 @@ c
       ielim = iparm(24)
       tol = rparm(15)
       if (ielim .eq. 1) call elim (n,jcoef,coef,rhs,wksp,iwksp,
-     a                             tol) 
+     a                             tol)
 c
 c ... determine symmetry of matrix.
 c
@@ -229,16 +229,16 @@ c
       call rsprep (coef,jcoef,wksp,iwksp,n,rhs,u,ubar,
      a             p,ip,nr,irs,ijcrs,irsrhs,ier)
 c
-c ... scale matrix. 
+c ... scale matrix.
 c
       call scale (wksp(irs),iwksp(ijcrs),wksp,1,nr,u,ubar,
      a            wksp(irsrhs),ier)
       if (ier .lt. 0) go to 20
 c
-c ... call iterative routine. 
+c ... call iterative routine.
 c
       call precon (accel,wksp(irs),iwksp(ijcrs),nr,u,ubar,
-     a             wksp(irsrhs),wksp,iwksp,iparm,rparm,ier) 
+     a             wksp(irsrhs),wksp,iwksp,iparm,rparm,ier)
 c
 c ... unscale matrix.
 c
@@ -252,7 +252,7 @@ c
 c
 c ... restore zeros to jcoef for purdue data structure.
 c
- 20   if (nstore .eq. 1) call adjust (n,ndim,maxnz,jcoef,2) 
+ 20   if (nstore .eq. 1) call adjust (n,ndim,maxnz,jcoef,2)
       t2 = timer (dummy)
       timtot = t2 - t1
       iparm(18) = ipropa
@@ -266,14 +266,14 @@ c
       inw = iimax
       maxnzz = maxnz
       return
-      end 
-      subroutine prep (coef,jcoef,wksp,iwksp,nn,nstore,ier) 
+      end
+      subroutine prep (coef,jcoef,wksp,iwksp,nn,nstore,ier)
       implicit double precision (a-h, o-z)
 c
 c ... prep puts the diagonal entries of the matrix into column
 c     one of coef.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n       dimension of matrix
 c         jcoef   integer matrix representation array
@@ -308,18 +308,18 @@ c
       mpstrt = iipnt
       iipnt = iipnt + mpart + 1
       return
-      end 
+      end
       subroutine pointr (icall,wksp,iwksp,ier)
       implicit double precision (a-h, o-z)
 c
-c ... pointr adjusts pointers according to ifact. 
+c ... pointr adjusts pointers according to ifact.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       icall     indicates beginning or ending call
 c                  = 1  for beginning
 c                  = 2  for ending
-c       wksp      floating point workspace vector 
+c       wksp      floating point workspace vector
 c       iwksp     integer workspace vector
 c
 c ... specifications for parameters
@@ -327,13 +327,13 @@ c
       integer   iwksp(1)
       dimension wksp(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
 c ... data common blocks
 c
@@ -367,14 +367,14 @@ c
       irpnt = nfactr + 1
       ifactr = 1
       return
-      end 
+      end
       subroutine needw (subnam,isw,istart,length,ier)
       implicit double precision (a-h, o-z)
 c
 c ... needw determines if enough integer or floating point
-c     workspace is available. 
+c     workspace is available.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        subnam  name of calling routine
 c        isw     switch for floating point or integer workspace check
@@ -403,20 +403,20 @@ c
       call ershow (ier,subnam)
  15   iimax = max (iimax,newlen)
       return
-      end 
+      end
       subroutine scale (coef,jcoef,wksp,icall,n,u,ubar,rhs,ier)
       implicit double precision (a-h, o-z)
 c
 c ... scale scales the matrix, u, ubar, and rhs.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       icall     key to indicate whether scaling (icall=1) or
 c                  unscaling (icall=2) is to be done
 c       n         order of system
 c       u         current solution estimate
-c       ubar      input vector containing the true solution 
-c                  (optional) 
+c       ubar      input vector containing the true solution
+c                  (optional)
 c       rhs       input vector.  contains the right hand side
 c                 of the matrix problem.
 c       ier       error flag
@@ -431,7 +431,7 @@ c
 c ... data common blocks
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
 c
       if (iscale .ne. 1) return
@@ -442,21 +442,21 @@ c
       return
  15   call scales (coef,jcoef,wksp,icall,n,u,ubar,rhs,ier)
       return
-      end 
+      end
       subroutine permut (coef,jcoef,p,ip,wksp,iwksp,icall,n,u,
      a                   ubar,rhs,ier)
       implicit double precision (a-h, o-z)
 c
 c ... permut permutes the matrix, u, ubar, and rhs.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       icall     key to indicate whether permuting (icall=1) or
 c                  unpermuting (icall=2) is to be done
 c       n         order of system
 c       u         current solution estimate
-c       ubar      input vector containing the true solution 
-c                  (optional) 
+c       ubar      input vector containing the true solution
+c                  (optional)
 c       rhs       input vector.  contains the right hand side
 c                 of the matrix problem.
 c       ier       error flag
@@ -473,7 +473,7 @@ c
 c ... data common blocks
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
 c
       if (iperm .ne. 1) return
@@ -487,7 +487,7 @@ c
  15   call perms (coef,jcoef,p,ip,wksp,iwksp,
      a            icall,n,u,ubar,rhs,ier)
       return
-      end 
+      end
       subroutine elim (n,jcoef,coef,rhs,wksp,iwksp,toll)
       implicit double precision (a-h, o-z)
 c
@@ -515,7 +515,7 @@ c
       common / dscons / ndim, mdim, maxnz
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       integer   jcoef(2), iwksp(1)
       dimension coef(1), rhs(1), wksp(1)
@@ -534,21 +534,21 @@ c
  25   call elim5 (mpart,iwksp(mpstrt),jcoef,jcoef(ndim+1),
      a            coef,rhs,wksp(irpnt),tol)
       return
-      end 
+      end
       subroutine scaled (coef,jcoef,wksp,icall,nn,u,ubar,rhs,ier)
       implicit double precision (a-h, o-z)
 c
-c ... scaled scales the matrix, u, ubar, and rhs. 
-c     (symmetric or nonsymmetric diagonal format) 
+c ... scaled scales the matrix, u, ubar, and rhs.
+c     (symmetric or nonsymmetric diagonal format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       icall     key to indicate whether scaling (icall=1) or
 c                  unscaling (icall=2) is to be done
 c       n         order of system
 c       u         current solution estimate
-c       ubar      input vector containing the true solution 
-c                  (optional) 
+c       ubar      input vector containing the true solution
+c                  (optional)
 c       rhs       input vector.  contains the right hand side
 c                 of the matrix problem.
 c       ier       error flag
@@ -560,12 +560,12 @@ c
       integer jcoef(2)
       dimension rhs(1), u(1), ubar(1), coef(1), wksp(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
 c ... data common blocks
 c
@@ -578,7 +578,7 @@ c
       if (ntest .eq. 6) iflag = 1
       if (icall .eq. 2) go to 20
 c
-c ... scale system. 
+c ... scale system.
 c
 c ... check for sufficient room.
 c
@@ -596,21 +596,21 @@ c
  20   call uscal2 (n,ndim,maxnz,jcoef,coef,rhs,u,ubar,
      a             wksp(iptscl),iflag)
       return
-      end 
+      end
       subroutine scalep (coef,jcoef,wksp,icall,nn,u,ubar,rhs,ier)
       implicit double precision (a-h, o-z)
 c
-c ... scalep scales the matrix, u, ubar, and rhs. 
+c ... scalep scales the matrix, u, ubar, and rhs.
 c     (purdue format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       icall     key to indicate whether scaling (icall=1) or
 c                  unscaling (icall=2) is to be done
 c       n         order of system
 c       u         current solution estimate
-c       ubar      input vector containing the true solution 
-c                  (optional) 
+c       ubar      input vector containing the true solution
+c                  (optional)
 c       rhs       input vector.  contains the right hand side
 c                 of the matrix problem.
 c       ier       error flag
@@ -622,12 +622,12 @@ c
       integer jcoef(2)
       dimension rhs(1), u(1), ubar(1), coef(1), wksp(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
 c ... data common blocks
 c
@@ -640,7 +640,7 @@ c
       if (ntest .eq. 6) iflag = 1
       if (icall .eq. 2) go to 20
 c
-c ... scale system. 
+c ... scale system.
 c
 c ... check for sufficient room.
 c
@@ -658,21 +658,21 @@ c
  20   call uscal1 (n,ndim,maxnz,jcoef,coef,rhs,u,ubar,
      a             wksp(iptscl),wksp(irpnt),iflag)
       return
-      end 
+      end
       subroutine scales (coef,jcoef,wksp,icall,nn,u,ubar,rhs,ier)
       implicit double precision (a-h, o-z)
 c
-c ... scales scales the matrix, u, ubar, and rhs. 
+c ... scales scales the matrix, u, ubar, and rhs.
 c     (sparse format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       icall     key to indicate whether scaling (icall=1) or
 c                  unscaling (icall=2) is to be done
 c       n         order of system
 c       u         current solution estimate
-c       ubar      input vector containing the true solution 
-c                  (optional) 
+c       ubar      input vector containing the true solution
+c                  (optional)
 c       rhs       input vector.  contains the right hand side
 c                 of the matrix problem.
 c       ier       error flag
@@ -684,12 +684,12 @@ c
       integer jcoef(2)
       dimension rhs(1), u(1), ubar(1), coef(1), wksp(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
 c ... data common blocks
 c
@@ -702,7 +702,7 @@ c
       if (ntest .eq. 6) iflag = 1
       if (icall .eq. 2) go to 10
 c
-c ... scale system. 
+c ... scale system.
 c
 c ... check for sufficient room.
 c
@@ -720,7 +720,7 @@ c
  10   call uscal3 (n,maxnz,jcoef,jcoef(ndim+1),coef,rhs,u,ubar,
      a             wksp(iptscl),wksp(irpnt),iflag)
       return
-      end 
+      end
       subroutine permd (coef,jcoef,p,ip,wksp,iwksp,icall,nn,u,
      a                  ubar,rhs,ier)
       implicit double precision (a-h, o-z)
@@ -728,14 +728,14 @@ c
 c ... permd permutes the matrix, u, ubar, and rhs.
 c     (diagonal format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       icall     key to indicate whether permuting (icall=1) or
 c                  unpermuting (icall=2) is to be done
 c       n         order of system
 c       u         current solution estimate
-c       ubar      input vector containing the true solution 
-c                  (optional) 
+c       ubar      input vector containing the true solution
+c                  (optional)
 c       rhs       input vector.  contains the right hand side
 c                 of the matrix problem.
 c       ier       error flag
@@ -749,21 +749,21 @@ c
       integer jcoef(2), p(1), ip(1), iwksp(1)
       dimension rhs(1), u(1), ubar(1), coef(1), wksp(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
 c ... data common blocks
 c
       common / dscons / ndim, mdim, maxnz
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
 c
@@ -789,7 +789,7 @@ c
       if (ier .lt. 0) return
       call iptgen (ncolor,iwksp(ipt),iwksp(nc))
       maxnew = ipt + ncolor + 1
-      jcnew = maxnew + ncolor 
+      jcnew = maxnew + ncolor
       lbhb = jcnew + ncolor*mdim
       call needw ('permd',1,maxnew,ncolor+ncolor*mdim+n,ier)
       if (ier .lt. 0) return
@@ -817,12 +817,12 @@ c
       is2 = is1 + ncolor
       call needw ('permd',1,is1,2*ncolor,ier)
       if (ier .lt. 0) return
-      call prbblk (ncolor,ncolor,iwksp(iblock),iwksp(lbhb), 
+      call prbblk (ncolor,ncolor,iwksp(iblock),iwksp(lbhb),
      a             iwksp(is1),iwksp(is2),propa)
       if (propa) ipropa = 1
       if (.not. propa) ipropa = 0
       iipnt = is1
-      call pervec (n,p,rhs,wksp(irpnt)) 
+      call pervec (n,p,rhs,wksp(irpnt))
       call pervec (n,p,u,wksp(irpnt))
       if (ntest .eq. 6) call pervec (n,p,ubar,wksp(irpnt))
       return
@@ -837,9 +837,9 @@ c
      a             iwksp(jcnew),wksp(irpnt),iwksp(iipnt),isym)
       call pervec (n,ip,rhs,wksp(irpnt))
       call pervec (n,ip,u,wksp(irpnt))
-      if (ntest .eq. 6) call pervec (n,ip,ubar,wksp(irpnt)) 
+      if (ntest .eq. 6) call pervec (n,ip,ubar,wksp(irpnt))
       return
-      end 
+      end
       subroutine permp (coef,jcoef,p,ip,wksp,iwksp,icall,nn,u,
      a                  ubar,rhs,ier)
       implicit double precision (a-h, o-z)
@@ -847,14 +847,14 @@ c
 c ... permp permutes the matrix, u, ubar, and rhs.
 c     (purdue format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       icall     key to indicate whether permuting (icall=1) or
 c                  unpermuting (icall=2) is to be done
 c       n         order of system
 c       u         current solution estimate
-c       ubar      input vector containing the true solution 
-c                  (optional) 
+c       ubar      input vector containing the true solution
+c                  (optional)
 c       rhs       input vector.  contains the right hand side
 c                 of the matrix problem.
 c       ier       error flag
@@ -869,21 +869,21 @@ c
       integer jcoef(2), p(1), ip(1), iwksp(1)
       dimension rhs(1), u(1), ubar(1), coef(1), wksp(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
 c ... data common blocks
 c
       common / dscons / ndim, mdim, maxnz
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
 c
       n = nn
       if (icall .eq. 2) go to 40
@@ -922,7 +922,7 @@ c
          call ershow (ier,'permp')
          return
       endif
-      call pervec (n,p,rhs,wksp(irpnt)) 
+      call pervec (n,p,rhs,wksp(irpnt))
       call pervec (n,p,u,wksp(irpnt))
       if (ntest .eq. 6) call pervec (n,p,ubar,wksp(irpnt))
       return
@@ -937,9 +937,9 @@ c
      a                    wksp(irpnt),iwksp(iipnt),n,ip)
       call pervec (n,ip,rhs,wksp(irpnt))
       call pervec (n,ip,u,wksp(irpnt))
-      if (ntest .eq. 6) call pervec (n,ip,ubar,wksp(irpnt)) 
+      if (ntest .eq. 6) call pervec (n,ip,ubar,wksp(irpnt))
       return
-      end 
+      end
       subroutine perms (coef,jcoef,p,ip,wksp,iwksp,icall,nn,u,
      a                  ubar,rhs,ier)
       implicit double precision (a-h, o-z)
@@ -947,14 +947,14 @@ c
 c ... perms permutes the matrix, u, ubar, and rhs.
 c     (sparse format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       icall     key to indicate whether permuting (icall=1) or
 c                  unpermuting (icall=2) is to be done
 c       n         order of system
 c       u         current solution estimate
-c       ubar      input vector containing the true solution 
-c                  (optional) 
+c       ubar      input vector containing the true solution
+c                  (optional)
 c       rhs       input vector.  contains the right hand side
 c                 of the matrix problem.
 c       ier       error flag
@@ -969,19 +969,19 @@ c
       integer jcoef(2), p(1), ip(1), iwksp(1)
       dimension rhs(1), u(1), ubar(1), coef(1), wksp(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
 c ... data common blocks
 c
       common / dscons / ndim, mdim, maxnz
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
 c
       n = nn
@@ -1000,7 +1000,7 @@ c
       call pgen (n,p,ip,iwksp(iipnt),ncolor)
       call permas (isym,n,maxnz,jcoef,jcoef(ndim+1),
      a             coef,wksp(irpnt),p)
-      call pervec (n,p,rhs,wksp(irpnt)) 
+      call pervec (n,p,rhs,wksp(irpnt))
       call pervec (n,p,u,wksp(irpnt))
       if (ntest .eq. 6) call pervec (n,p,ubar,wksp(irpnt))
       return
@@ -1012,12 +1012,12 @@ c
       call needw ('perms',1,iipnt,n,ier)
       if (ier .lt. 0) return
       call permas (isym,n,maxnz,jcoef,jcoef(ndim+1),
-     a             coef,wksp(irpnt),ip) 
+     a             coef,wksp(irpnt),ip)
       call pervec (n,ip,rhs,wksp(irpnt))
       call pervec (n,ip,u,wksp(irpnt))
-      if (ntest .eq. 6) call pervec (n,ip,ubar,wksp(irpnt)) 
+      if (ntest .eq. 6) call pervec (n,ip,ubar,wksp(irpnt))
       return
-      end 
+      end
       subroutine rsprep (coef,jcoef,wksp,iwksp,nn,rhs,u,ubar,
      a                   p,ip,nrr,irs,ijcrs,irsrhs,ier)
       implicit double precision (a-h, o-z)
@@ -1025,7 +1025,7 @@ c
 c ... rsprep is the preprocessor for methods using the
 c     explicitly-computed reduced system.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       coef      floating point matrix data array
 c       jcoef     integer matrix data array
@@ -1050,11 +1050,11 @@ c ... data common blocks
 c
       common / dscons / ndim, mdim, maxnz
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / rscons / ndimrs, mdimrs, maxzrs
 c
@@ -1071,7 +1071,7 @@ c
       nr = iwksp(nc)
       nb = iwksp(nc+1)
       irs = irpnt
-      ijcrs = iipnt 
+      ijcrs = iipnt
       length = lenr - irpnt + 1
       call vfill (length,wksp(irpnt),0.0d0)
       if (nstore .ge. 2) go to 30
@@ -1083,10 +1083,10 @@ c
       call needw ('rsprep',1,iipnt,2*nr,ier)
       if (ier .lt. 0) return
       lim1 = (lenr - 2*nr - irpnt + 1)/nr
-      lim2 = (leni - nr - iipnt + 1)/nr 
+      lim2 = (leni - nr - iipnt + 1)/nr
       maxlim = min(lim1,lim2)
-      ip1 = irpnt + nr*maxlim 
-      ip2 = iipnt + nr*maxlim 
+      ip1 = irpnt + nr*maxlim
+      ip2 = iipnt + nr*maxlim
       call rsmatp (ndim,nr,maxnz,jcoef,coef,maxrs,iwksp(ijcrs),
      a             wksp(irs),maxlim,wksp(ip1),iwksp(ip2),ier)
       if (ier .lt. 0) then
@@ -1123,7 +1123,7 @@ c
       call needw ('rsprep',0,irpnt,n+nr,ier)
       if (ier .lt. 0) return
       if (nstore .eq. 1) call rsbegp (n,nr,ndim,maxnz,jcoef,
-     a                     coef,wksp(irsrhs),rhs,wksp(ip1)) 
+     a                     coef,wksp(irsrhs),rhs,wksp(ip1))
       if (nstore .ge. 2) call rsrhsd (n,nr,ndim,iwksp(maxnew),
      a                    iwksp(jcnew),coef,wksp(irsrhs),rhs,
      a                    wksp(ip1))
@@ -1131,15 +1131,15 @@ c
 c
 c ... update constants.
 c
-      ndimrs = ndim 
-      mdimrs = mdim 
+      ndimrs = ndim
+      mdimrs = mdim
       maxzrs = maxnz
       ndim = nr
       mdim = maxrs
-      maxnz = maxrs 
+      maxnz = maxrs
       nrr = nr
       return
-      end 
+      end
       subroutine rspost (coef,jcoef,wksp,iwksp,nn,rhs,u,ubar,
      a                   p,ip,nrr,irs,ijcrs,ier)
       implicit double precision (a-h, o-z)
@@ -1147,7 +1147,7 @@ c
 c ... rspost is the postprocessor for methods using the
 c     explicitly-computed reduced system.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       coef      floating point matrix data array
 c       jcoef     integer matrix data array
@@ -1171,11 +1171,11 @@ c ... data common blocks
 c
       common / dscons / ndim, mdim, maxnz
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / rscons / ndimrs, mdimrs, maxzrs
 c
@@ -1185,11 +1185,11 @@ c
 c
 c ... update constants.
 c
-      ndim = ndimrs 
-      mdim = mdimrs 
+      ndim = ndimrs
+      mdim = mdimrs
       maxnz = maxzrs
       irpnt = irs
-      iipnt = ijcrs 
+      iipnt = ijcrs
 c
 c ... compute xb.
 c
@@ -1206,19 +1206,19 @@ c
      a             n,u,ubar,rhs,ier)
       if (ier .lt. 0) return
       return
-      end 
+      end
       subroutine redblk (ndim,n,maxnz,coef,jcoef,p,ip,nstore,
      a                   iwksp,ier)
       implicit double precision (a-h, o-z)
 c
 c ... redblk determines if the matrix has property a.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n        problem size
 c        nstore   storage mode
 c                  = 1  purdue format
-c                  = 2  symmetric diagonal format 
+c                  = 2  symmetric diagonal format
 c                  = 3  nonsymmetric diagonal format
 c                  = 4  symmetric sparse format
 c                  = 5  nonsymmetric sparse format
@@ -1227,7 +1227,7 @@ c        ier      error code
 c                  =  0   no errors detected
 c                  = -8   matrix does not have property a
 c
-c ... common blocks 
+c ... common blocks
 c
       integer jcoef(2), p(1), ip(1), iwksp(1)
       dimension coef(1)
@@ -1242,11 +1242,11 @@ c
       if (propal) return
       call ershow (ier,'redblk')
       return
-      end 
+      end
       subroutine noadp (coef,jcoef,wksp,iwksp,n,p,r,pdp,pldup)
       implicit double precision (a-h, o-z)
 c
-c ... noadp is a dummy routine to do no adaption. 
+c ... noadp is a dummy routine to do no adaption.
 c
 c ... specifications for parameters
 c
@@ -1255,7 +1255,7 @@ c
       dimension p(1), r(1), coef(1), wksp(1)
 c
       return
-      end 
+      end
       subroutine copy (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -1264,17 +1264,17 @@ c
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   z(i) = r(i)
       return
-      end 
-      subroutine split (accel,suba,subat,subq,subqt,subql,subqlt,
+      end
+      subroutine nspcg_split (accel,suba,subat,subq,subqt,subql,subqlt,
      a                  subqr,subqrt,subadp,
      a                  coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
-c ... split determines how to apply the splitting based on
+c ... nspcg_split determines how to apply the splitting based on
 c     iqlr.
 c
       external accel, suba, subat, subq, subqt, subql, subqlt,
@@ -1282,12 +1282,12 @@ c
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       if (iqlr .eq. 0) then
          call accel (suba,subat,copy,copy,copy,copy,subadp,
@@ -1311,12 +1311,12 @@ c
       endif
       if (jer .ne. 0) ier = jer
       return
-      end 
+      end
       subroutine rich1 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
-c ... rich1 drives the richardson preconditioner. 
+c ... rich1 drives the richardson preconditioner.
 c
       external accel, suba8, suba9, copy, noadp
       integer   iparm(30), jcoef(2), iwksp(1)
@@ -1327,15 +1327,15 @@ c
 c
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + n
-      call split (accel,suba8,suba9,copy,copy,copy,copy,
+      call nspcg_split (accel,suba8,suba9,copy,copy,copy,copy,
      a            copy,copy,noadp,
      a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,
      a            ier)
       if (keygs .eq. 1) irpnt = irpnt - n
       return
-      end 
+      end
       subroutine jac1 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... jac1 drives the jacobi preconditioner.
@@ -1349,24 +1349,24 @@ c
 c
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + n
-      call split (accel,suba8,suba9,subq1,subq1,subq1,subq1,
+      call nspcg_split (accel,suba8,suba9,subq1,subq1,subq1,subq1,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       if (keygs .eq. 1) irpnt = irpnt - n
       return
-      end 
+      end
       subroutine sor1 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
-c ... sor1 drives the point sor method. 
+c ... sor1 drives the point sor method.
 c
       external accel, suba8, suba9, subq78, noadp, copy
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
 c
@@ -1377,12 +1377,12 @@ c
          call ershow (ier,'sor1')
          return
       endif
-      call split (accel,suba8,suba9,subq78,subq78,subq78,subq78,
+      call nspcg_split (accel,suba8,suba9,subq78,subq78,subq78,subq78,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
       return
-      end 
+      end
       subroutine ssor1 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -1395,11 +1395,11 @@ c
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
 c
       n = nn
@@ -1411,20 +1411,20 @@ c
          call ershow (ier,'ssor1')
          return
       endif
-      call split (accel,suba8,suba9,subq79,subq80,subq81,subq82,
-     a            subq83,subq84,subq85, 
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+      call nspcg_split (accel,suba8,suba9,subq79,subq80,subq81,subq82,
+     a            subq83,subq84,subq85,
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       if (isymm .ne. 0) irpnt = irpnt - n
       irpnt = irpnt - n
       return
-      end 
+      end
       subroutine ic1 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
      a                iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
-c ... ic1 drives the ic preconditioner. 
+c ... ic1 drives the ic preconditioner.
 c
-      external accel, suba8, suba9, subq86, subq87, subq88, 
+      external accel, suba8, suba9, subq86, subq87, subq88,
      a         subq89, subq90, subq91, noadp
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
@@ -1433,9 +1433,9 @@ c
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
 c
 c
@@ -1443,7 +1443,7 @@ c
       if (ifact .eq. 0 .and. lvfill .gt. 0) go to 20
       call move1 (ndim,mdim,n,maxnz,jcoef,coef,maxt,maxb,ier)
       if (ier .lt. 0) then
-         call ershow (ier,'ic1') 
+         call ershow (ier,'ic1')
          return
       endif
  20   t1 = timer (dummy)
@@ -1453,30 +1453,30 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + n
-      call split (accel,suba8,suba9,subq86,subq87,subq88,subq89,
+      call nspcg_split (accel,suba8,suba9,subq86,subq87,subq88,subq89,
      a            subq90,subq91,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
       return
-      end 
+      end
       subroutine mic1 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... mic1 drives the mic preconditioner.
 c
-      external accel, suba8, suba9, subq86, subq87, subq88, 
+      external accel, suba8, suba9, subq86, subq87, subq88,
      a         subq89, subq90, subq91, noadp
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
 c
 c
@@ -1494,14 +1494,14 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + n
-      call split (accel,suba8,suba9,subq86,subq87,subq88,subq89,
+      call nspcg_split (accel,suba8,suba9,subq86,subq87,subq88,subq89,
      a            subq90,subq91,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
       return
-      end 
+      end
       subroutine lsp1 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... lsp1 drives the least squares polynomial preconditioner.
@@ -1524,15 +1524,15 @@ c
       irpnt = irpnt + 2*n
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + n
-      call split (accel,suba8,suba9,subq92,subq93,subq92,subq93,
+      call nspcg_split (accel,suba8,suba9,subq92,subq93,subq92,subq93,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
       if (keygs .eq. 1) irpnt = irpnt - n
       return
-      end 
+      end
       subroutine neu1 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... neu1 drives the neumann polynomial preconditioner.
@@ -1546,36 +1546,36 @@ c
       common / itcom4 / srelpr, keyzer, keygs
 c
       n = nn
-      call needw ('neu1',0,irpnt,n,ier) 
+      call needw ('neu1',0,irpnt,n,ier)
       if (ier .lt. 0) return
       iwkpt2 = irpnt
       irpnt = irpnt + n
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + n
-      call split (accel,suba8,suba9,subq94,subq95,subq94,subq95,
+      call nspcg_split (accel,suba8,suba9,subq94,subq95,subq94,subq95,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
       if (keygs .eq. 1) irpnt = irpnt - n
       return
-      end 
+      end
       subroutine rich2 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
-c ... rich2 drives the richardson preconditioner. 
+c ... rich2 drives the richardson preconditioner.
 c
       external accel, suba1, copy, noadp
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
-      call split (accel,suba1,suba1,copy,copy,copy,copy,
+      call nspcg_split (accel,suba1,suba1,copy,copy,copy,copy,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
-      end 
+      end
       subroutine jac2 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... jac2 drives the jacobi preconditioner.
@@ -1584,11 +1584,11 @@ c
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
-      call split (accel,suba1,suba1,subq1,subq1,subq1,subq1,
+      call nspcg_split (accel,suba1,suba1,subq1,subq1,subq1,subq1,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
-      end 
+      end
       subroutine ljac2 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -1601,7 +1601,7 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
 c
@@ -1610,11 +1610,11 @@ c
       t2 = timer (dummy)
       timfac = t2 - t1
       if (ier .lt. 0) return
-      call split (accel,suba1,suba1,subq2,subq2,subq2,subq2,
+      call nspcg_split (accel,suba1,suba1,subq2,subq2,subq2,subq2,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
-      end 
+      end
       subroutine ljacx2 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                   iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -1627,7 +1627,7 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
 c
@@ -1636,23 +1636,23 @@ c
       t2 = timer (dummy)
       timfac = t2 - t1
       if (ier .lt. 0) return
-      call split (accel,suba1,suba1,subq4,subq4,subq4,subq4,
+      call nspcg_split (accel,suba1,suba1,subq4,subq4,subq4,subq4,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
-      end 
+      end
       subroutine sor2 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
-c ... sor2 drives the point sor method. 
+c ... sor2 drives the point sor method.
 c
       external accel, suba1, subq6, noadp, copy
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
 c
@@ -1661,12 +1661,12 @@ c
       if (ier .lt. 0) return
       iwkpt1 = iipnt
       iipnt = iipnt + maxnz
-      call split (accel,suba1,suba1,subq6,subq6,subq6,subq6,
+      call nspcg_split (accel,suba1,suba1,subq6,subq6,subq6,subq6,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       iipnt = iipnt - maxnz
       return
-      end 
+      end
       subroutine ssor2 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -1674,12 +1674,12 @@ c
 c ... ssor2 drives the point ssor method.
 c
       external accel, suba1, subq7, subq8, subq9, subq10,
-     a         subq11, subq12 
+     a         subq11, subq12
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
 c
@@ -1688,17 +1688,17 @@ c
       if (ier .lt. 0) return
       iwkpt1 = iipnt
       iipnt = iipnt + maxnz
-      call split (accel,suba1,suba1,subq7,subq7,subq8,subq9,
-     a            subq10,subq11,subq12, 
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+      call nspcg_split (accel,suba1,suba1,subq7,subq7,subq8,subq9,
+     a            subq10,subq11,subq12,
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       iipnt = iipnt - maxnz
       return
-      end 
+      end
       subroutine ic2 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
-c ... ic2 drives the symmetric ic preconditioner. 
+c ... ic2 drives the symmetric ic preconditioner.
 c
       external accel, suba1, subq13, subq14, subq15, subq16,
      a         subq17, noadp
@@ -1708,7 +1708,7 @@ c
       common / dscons / ndim, mdim, maxnz
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
@@ -1722,14 +1722,14 @@ c
       leniw = max (maxnz,nfacti)
       iwkpt1 = iipnt
       iipnt = iipnt + leniw
-      call split (accel,suba1,suba1,subq13,subq13,subq14,subq15,
+      call nspcg_split (accel,suba1,suba1,subq13,subq13,subq14,subq15,
      a            subq16,subq17,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       iipnt = iipnt - leniw
       return
-      end 
+      end
       subroutine mic2 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... mic2 drives the symmetric mic preconditioner.
@@ -1741,7 +1741,7 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
@@ -1756,14 +1756,14 @@ c
       leniw = max (maxnz,nfacti)
       iwkpt1 = iipnt
       iipnt = iipnt + leniw
-      call split (accel,suba1,suba1,subq13,subq13,subq14,subq15,
+      call nspcg_split (accel,suba1,suba1,subq13,subq13,subq14,subq15,
      a            subq16,subq17,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       iipnt = iipnt - leniw
       return
-      end 
+      end
       subroutine lsp2 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... lsp2 drives the least squares polynomial preconditioner.
@@ -1783,14 +1783,14 @@ c
       call ainfn (n,ndim,maxnz,jcoef,coef,2,ainf,wksp(irpnt))
       iwkpt1 = irpnt
       irpnt = irpnt + 2*n
-      call split (accel,suba1,suba1,subq18,subq18,subq18,subq18,
+      call nspcg_split (accel,suba1,suba1,subq18,subq18,subq18,subq18,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
       return
-      end 
+      end
       subroutine neu2 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... neu2 drives the neumann polynomial preconditioner.
@@ -1803,21 +1803,21 @@ c
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
 c
       n = nn
-      call needw ('neu2',0,irpnt,n,ier) 
+      call needw ('neu2',0,irpnt,n,ier)
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + n
-      call split (accel,suba1,suba1,subq19,subq19,subq19,subq19,
+      call nspcg_split (accel,suba1,suba1,subq19,subq19,subq19,subq19,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
       return
-      end 
+      end
       subroutine lsor2 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
-c ... lsor2 drives the line sor method. 
+c ... lsor2 drives the line sor method.
 c
       external accel, suba1, subq20, copy, noadp
       integer   iparm(30), jcoef(2), iwksp(1)
@@ -1825,7 +1825,7 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
 c
@@ -1836,24 +1836,24 @@ c
       t2 = timer (dummy)
       timfac = t2 - t1
       if (ier .lt. 0) return
-      call split (accel,suba1,suba1,subq20,subq20,subq20,subq20,
+      call nspcg_split (accel,suba1,suba1,subq20,subq20,subq20,subq20,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
-      end 
+      end
       subroutine lssor2 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
      a                   iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... lssor2 drives the line ssor method.
 c
-      external accel, suba1, subq21, subq22, copy 
+      external accel, suba1, subq21, subq22, copy
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
@@ -1868,12 +1868,12 @@ c
       iwkpt1 = irpnt
       irpnt = irpnt + n
       if (ier .lt. 0) return
-      call split (accel,suba1,suba1,subq21,subq21,subq21,subq21,
+      call nspcg_split (accel,suba1,suba1,subq21,subq21,subq21,subq21,
      a            copy,copy,subq22,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
       return
-      end 
+      end
       subroutine bic2 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -1887,7 +1887,7 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
@@ -1902,12 +1902,12 @@ c
       iwkpt1 = irpnt
       irpnt = irpnt + kblsz
       if (ier .lt. 0) return
-      call split (accel,suba1,suba1,subq25,subq25,subq25,subq25,
+      call nspcg_split (accel,suba1,suba1,subq25,subq25,subq25,subq25,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - kblsz
       return
-      end 
+      end
       subroutine mbic2 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                   iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -1922,7 +1922,7 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
@@ -1937,12 +1937,12 @@ c
       iwkpt1 = irpnt
       irpnt = irpnt + kblsz
       if (ier .lt. 0) return
-      call split (accel,suba1,suba1,subq25,subq25,subq25,subq25,
+      call nspcg_split (accel,suba1,suba1,subq25,subq25,subq25,subq25,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - kblsz
       return
-      end 
+      end
       subroutine bicx2 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -1956,7 +1956,7 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
@@ -1971,12 +1971,12 @@ c
       iwkpt1 = irpnt
       irpnt = irpnt + kblsz
       if (ier .lt. 0) return
-      call split (accel,suba1,suba1,subq25,subq25,subq25,subq25,
+      call nspcg_split (accel,suba1,suba1,subq25,subq25,subq25,subq25,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - kblsz
       return
-      end 
+      end
       subroutine mbicx2 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                   iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -1991,7 +1991,7 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
@@ -2006,12 +2006,12 @@ c
       iwkpt1 = irpnt
       irpnt = irpnt + kblsz
       if (ier .lt. 0) return
-      call split (accel,suba1,suba1,subq25,subq25,subq25,subq25,
+      call nspcg_split (accel,suba1,suba1,subq25,subq25,subq25,subq25,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - kblsz
       return
-      end 
+      end
       subroutine llsp2 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -2028,7 +2028,7 @@ c
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
 c
       n = nn
@@ -2044,12 +2044,12 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + 2*n
-      call split (accel,suba1,suba1,subq23,subq23,subq23,subq23,
+      call nspcg_split (accel,suba1,suba1,subq23,subq23,subq23,subq23,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
       return
-      end 
+      end
       subroutine lneu2 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -2064,7 +2064,7 @@ c
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
 c
       n = nn
@@ -2077,29 +2077,29 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + 2*n
-      call split (accel,suba1,suba1,subq24,subq24,subq24,subq24,
+      call nspcg_split (accel,suba1,suba1,subq24,subq24,subq24,subq24,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
       return
-      end 
+      end
       subroutine rich3 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
-c ... rich3 drives the richardson preconditioner. 
+c ... rich3 drives the richardson preconditioner.
 c
       external accel, suba4, suba5, copy, noadp
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
-      call split (accel,suba4,suba5,copy,copy,copy,copy,
+      call nspcg_split (accel,suba4,suba5,copy,copy,copy,copy,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
-      end 
+      end
       subroutine jac3 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... jac3 drives the jacobi preconditioner.
@@ -2108,11 +2108,11 @@ c
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
-      call split (accel,suba4,suba5,subq1,subq1,subq1,subq1,
+      call nspcg_split (accel,suba4,suba5,subq1,subq1,subq1,subq1,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
-      end 
+      end
       subroutine ljac3 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -2125,7 +2125,7 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
 c
@@ -2134,11 +2134,11 @@ c
       t2 = timer (dummy)
       timfac = t2 - t1
       if (ier .lt. 0) return
-      call split (accel,suba4,suba5,subq2,subq3,subq2,subq3,
+      call nspcg_split (accel,suba4,suba5,subq2,subq3,subq2,subq3,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
-      end 
+      end
       subroutine ljacx3 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                   iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -2151,7 +2151,7 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
 c
@@ -2160,41 +2160,41 @@ c
       t2 = timer (dummy)
       timfac = t2 - t1
       if (ier .lt. 0) return
-      call split (accel,suba4,suba5,subq4,subq5,subq4,subq5,
+      call nspcg_split (accel,suba4,suba5,subq4,subq5,subq4,subq5,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
-      end 
+      end
       subroutine sor3 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
-c ... sor3 drives the point sor method. 
+c ... sor3 drives the point sor method.
 c
       external accel, suba4, suba5, subq40, noadp, copy
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
 c
       call rowise (maxnz,jcoef,irwise)
       call needw ('sor3',1,iipnt,maxnz,ier)
       if (ier .lt. 0) return
-      call needw ('sor3',0,irpnt,n,ier) 
+      call needw ('sor3',0,irpnt,n,ier)
       if (ier .lt. 0) return
       call move2 (ndim,n,maxnz,jcoef,coef,wksp(irpnt),
      a            iwksp(iipnt),maxt,maxb)
       iwkpt1 = iipnt
       iipnt = iipnt + maxnz
-      call split (accel,suba4,suba5,subq40,subq40,subq40,subq40,
+      call nspcg_split (accel,suba4,suba5,subq40,subq40,subq40,subq40,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       iipnt = iipnt - maxnz
       return
-      end 
+      end
       subroutine ssor3 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -2207,7 +2207,7 @@ c
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
 c
@@ -2223,29 +2223,29 @@ c
       irpnt = irpnt + n
       iwkpt2 = iipnt
       iipnt = iipnt + maxnz
-      call split (accel,suba4,suba5,subq41,subq42,subq43,subq44,
-     a            subq45,subq46,subq47, 
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+      call nspcg_split (accel,suba4,suba5,subq41,subq42,subq43,subq44,
+     a            subq45,subq46,subq47,
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
       iipnt = iipnt - maxnz
       return
-      end 
+      end
       subroutine ic3 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
      a                iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... ic3 drives the nonsymmetric ic preconditioner.
 c
-      external accel, suba4, suba5, subq48, subq49, subq50, 
+      external accel, suba4, suba5, subq48, subq49, subq50,
      a         subq51, subq52, subq53, noadp
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
@@ -2267,28 +2267,28 @@ c
       leniw = max (maxnz,nfacti)
       iwkpt1 = iipnt
       iipnt = iipnt + leniw
-      call split (accel,suba4,suba5,subq48,subq49,subq50,subq51,
+      call nspcg_split (accel,suba4,suba5,subq48,subq49,subq50,subq51,
      a            subq52,subq53,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       iipnt = iipnt - leniw
       return
-      end 
+      end
       subroutine mic3 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... mic3 drives the nonsymmetric mic preconditioner.
 c
-      external accel, suba4, suba5, subq48, subq49, subq50, 
+      external accel, suba4, suba5, subq48, subq49, subq50,
      a         subq51, subq52, subq53, noadp
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
@@ -2297,7 +2297,7 @@ c
       n = nn
       call needw ('mic3',1,iipnt,maxnz,ier)
       if (ier .lt. 0) return
-      call needw ('mic3',0,irpnt,n,ier) 
+      call needw ('mic3',0,irpnt,n,ier)
       if (ier .lt. 0) return
       if (ifact .eq. 0 .and. lvfill .gt. 0) go to 20
       call move2 (ndim,n,maxnz,jcoef,coef,wksp(irpnt),
@@ -2310,14 +2310,14 @@ c
       leniw = max (maxnz,nfacti)
       iwkpt1 = iipnt
       iipnt = iipnt + leniw
-      call split (accel,suba4,suba5,subq48,subq49,subq50,subq51,
+      call nspcg_split (accel,suba4,suba5,subq48,subq49,subq50,subq51,
      a            subq52,subq53,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       iipnt = iipnt - leniw
       return
-      end 
+      end
       subroutine lsp3 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... lsp3 drives the least squares polynomial preconditioner.
@@ -2337,14 +2337,14 @@ c
       call ainfn (n,ndim,maxnz,jcoef,coef,3,ainf,wksp(irpnt))
       iwkpt1 = irpnt
       irpnt = irpnt + 2*n
-      call split (accel,suba4,suba5,subq54,subq55,subq54,subq55,
+      call nspcg_split (accel,suba4,suba5,subq54,subq55,subq54,subq55,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
       return
-      end 
+      end
       subroutine neu3 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... neu3 drives the neumann polynomial preconditioner.
@@ -2357,21 +2357,21 @@ c
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
 c
       n = nn
-      call needw ('neu3',0,irpnt,n,ier) 
+      call needw ('neu3',0,irpnt,n,ier)
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + n
-      call split (accel,suba4,suba5,subq56,subq57,subq56,subq57,
+      call nspcg_split (accel,suba4,suba5,subq56,subq57,subq56,subq57,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
       return
-      end 
+      end
       subroutine lsor3 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
-c ... lsor3 drives the line sor method. 
+c ... lsor3 drives the line sor method.
 c
       external accel, suba4, suba5, subq58, copy, noadp
       integer   iparm(30), jcoef(2), iwksp(1)
@@ -2379,7 +2379,7 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
 c
@@ -2390,25 +2390,25 @@ c
       t2 = timer (dummy)
       timfac = t2 - t1
       if (ier .lt. 0) return
-      call split (accel,suba4,suba5,subq58,subq58,subq58,subq58,
+      call nspcg_split (accel,suba4,suba5,subq58,subq58,subq58,subq58,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
-      end 
+      end
       subroutine lssor3 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
      a                   iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... lssor3 drives the line ssor method.
 c
-      external accel, suba4, suba5, subq59, subq60, subq61, 
+      external accel, suba4, suba5, subq59, subq60, subq61,
      a         subq62, subq63, subq64, subq65
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
@@ -2423,19 +2423,19 @@ c
       iwkpt1 = irpnt
       irpnt = irpnt + n
       if (ier .lt. 0) return
-      call split (accel,suba4,suba5,subq59,subq60,subq61,subq62,
-     a            subq63,subq64,subq65, 
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+      call nspcg_split (accel,suba4,suba5,subq59,subq60,subq61,subq62,
+     a            subq63,subq64,subq65,
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
       return
-      end 
+      end
       subroutine bic3 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... bic3 drives the block factorization (version 1) method.
 c
-      external accel, suba4, suba5, subq70, subq71, subq72, 
+      external accel, suba4, suba5, subq70, subq71, subq72,
      a         subq73, subq74, subq75, noadp
       external ibfcn1
       integer   iparm(30), jcoef(2), iwksp(1)
@@ -2443,7 +2443,7 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
@@ -2457,13 +2457,13 @@ c
       timfac = t2 - t1
       if (ier .lt. 0) return
       iwkpt1 = irpnt
-      irpnt = irpnt + 2*kblsz 
-      call split (accel,suba4,suba5,subq70,subq71,subq72,subq73,
+      irpnt = irpnt + 2*kblsz
+      call nspcg_split (accel,suba4,suba5,subq70,subq71,subq72,subq73,
      a            subq74,subq75,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
-      irpnt = irpnt - 2*kblsz 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
+      irpnt = irpnt - 2*kblsz
       return
-      end 
+      end
       subroutine mbic3 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                   iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -2471,7 +2471,7 @@ c
 c ... mbic3 drives the block factorization (version 1, modified)
 c     method.
 c
-      external accel, suba4, suba5, subq70, subq71, subq72, 
+      external accel, suba4, suba5, subq70, subq71, subq72,
      a         subq73, subq74, subq75, noadp
       external ibfcn3
       integer   iparm(30), jcoef(2), iwksp(1)
@@ -2479,7 +2479,7 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
@@ -2493,13 +2493,13 @@ c
       timfac = t2 - t1
       if (ier .lt. 0) return
       iwkpt1 = irpnt
-      irpnt = irpnt + 2*kblsz 
-      call split (accel,suba4,suba5,subq70,subq71,subq72,subq73,
+      irpnt = irpnt + 2*kblsz
+      call nspcg_split (accel,suba4,suba5,subq70,subq71,subq72,subq73,
      a            subq74,subq75,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
-      irpnt = irpnt - 2*kblsz 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
+      irpnt = irpnt - 2*kblsz
       return
-      end 
+      end
       subroutine bicx3 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -2507,7 +2507,7 @@ c
 c ... bicx3 drives the block factorization (version 2)
 c     method.
 c
-      external accel, suba4, suba5, subq70, subq71, subq72, 
+      external accel, suba4, suba5, subq70, subq71, subq72,
      a         subq73, subq74, subq75, noadp
       external ibfcn2
       integer   iparm(30), jcoef(2), iwksp(1)
@@ -2515,7 +2515,7 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
@@ -2529,13 +2529,13 @@ c
       timfac = t2 - t1
       if (ier .lt. 0) return
       iwkpt1 = irpnt
-      irpnt = irpnt + 2*kblsz 
-      call split (accel,suba4,suba5,subq70,subq71,subq72,subq73,
+      irpnt = irpnt + 2*kblsz
+      call nspcg_split (accel,suba4,suba5,subq70,subq71,subq72,subq73,
      a            subq74,subq75,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
-      irpnt = irpnt - 2*kblsz 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
+      irpnt = irpnt - 2*kblsz
       return
-      end 
+      end
       subroutine mbicx3 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                   iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -2543,7 +2543,7 @@ c
 c ... mbicx3 drives the block factorization (version 2, modified)
 c     method.
 c
-      external accel, suba4, suba5, subq70, subq71, subq72, 
+      external accel, suba4, suba5, subq70, subq71, subq72,
      a         subq73, subq74, subq75, noadp
       external ibfcn4
       integer   iparm(30), jcoef(2), iwksp(1)
@@ -2551,7 +2551,7 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
@@ -2565,13 +2565,13 @@ c
       timfac = t2 - t1
       if (ier .lt. 0) return
       iwkpt1 = irpnt
-      irpnt = irpnt + 2*kblsz 
-      call split (accel,suba4,suba5,subq70,subq71,subq72,subq73,
+      irpnt = irpnt + 2*kblsz
+      call nspcg_split (accel,suba4,suba5,subq70,subq71,subq72,subq73,
      a            subq74,subq75,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
-      irpnt = irpnt - 2*kblsz 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
+      irpnt = irpnt - 2*kblsz
       return
-      end 
+      end
       subroutine llsp3 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -2588,7 +2588,7 @@ c
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
 c
       n = nn
@@ -2604,12 +2604,12 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + 2*n
-      call split (accel,suba4,suba5,subq66,subq67,subq66,subq67,
+      call nspcg_split (accel,suba4,suba5,subq66,subq67,subq66,subq67,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
       return
-      end 
+      end
       subroutine lneu3 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -2624,7 +2624,7 @@ c
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
 c
       n = nn
@@ -2637,17 +2637,17 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + 2*n
-      call split (accel,suba4,suba5,subq68,subq69,subq68,subq69,
+      call nspcg_split (accel,suba4,suba5,subq68,subq69,subq68,subq69,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
       return
-      end 
+      end
       subroutine rich4 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
-c ... rich4 drives the richardson preconditioner. 
+c ... rich4 drives the richardson preconditioner.
 c
       external accel, suba12, copy, noadp
       integer   iparm(30), jcoef(2), iwksp(1)
@@ -2658,14 +2658,14 @@ c
 c
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + 2*n
-      call split (accel,suba12,suba12,copy,copy,copy,copy,
+      call nspcg_split (accel,suba12,suba12,copy,copy,copy,copy,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       if (keygs .eq. 1) irpnt = irpnt - 2*n
       return
-      end 
+      end
       subroutine jac4 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... jac4 drives the jacobi preconditioner.
@@ -2679,19 +2679,19 @@ c
 c
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + 2*n
-      call split (accel,suba12,suba12,subq1,subq1,subq1,subq1,
+      call nspcg_split (accel,suba12,suba12,subq1,subq1,subq1,subq1,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       if (keygs .eq. 1) irpnt = irpnt - 2*n
       return
-      end 
+      end
       subroutine lsp4 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... lsp4 drives the least squares polynomial preconditioner.
 c
-      external accel, suba12, sub110, copy, noadp 
+      external accel, suba12, sub110, copy, noadp
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
@@ -2709,20 +2709,20 @@ c
       irpnt = irpnt + 2*n
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + 2*n
-      call split (accel,suba12,suba12,sub110,sub110,sub110,sub110,
+      call nspcg_split (accel,suba12,suba12,sub110,sub110,sub110,sub110,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
       if (keygs .eq. 1) irpnt = irpnt - 2*n
       return
-      end 
+      end
       subroutine neu4 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... neu4 drives the neumann polynomial preconditioner.
 c
-      external accel, suba12, sub111, copy, noadp 
+      external accel, suba12, sub111, copy, noadp
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
@@ -2731,26 +2731,26 @@ c
       common / itcom4 / srelpr, keyzer, keygs
 c
       n = nn
-      call needw ('neu4',0,irpnt,n,ier) 
+      call needw ('neu4',0,irpnt,n,ier)
       if (ier .lt. 0) return
       iwkpt2 = irpnt
       irpnt = irpnt + n
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + 2*n
-      call split (accel,suba12,suba12,sub111,sub111,sub111,sub111,
+      call nspcg_split (accel,suba12,suba12,sub111,sub111,sub111,sub111,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
       if (keygs .eq. 1) irpnt = irpnt - 2*n
       return
-      end 
+      end
       subroutine rich5 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
-c ... rich5 drives the richardson preconditioner. 
+c ... rich5 drives the richardson preconditioner.
 c
-      external accel, suba13, suba14, copy, noadp 
+      external accel, suba13, suba14, copy, noadp
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
@@ -2759,14 +2759,14 @@ c
 c
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + 2*n
-      call split (accel,suba13,suba14,copy,copy,copy,copy,
+      call nspcg_split (accel,suba13,suba14,copy,copy,copy,copy,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       if (keygs .eq. 1) irpnt = irpnt - 2*n
       return
-      end 
+      end
       subroutine jac5 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... jac5 drives the jacobi preconditioner.
@@ -2780,14 +2780,14 @@ c
 c
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + 2*n
-      call split (accel,suba13,suba14,subq1,subq1,subq1,subq1,
+      call nspcg_split (accel,suba13,suba14,subq1,subq1,subq1,subq1,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       if (keygs .eq. 1) irpnt = irpnt - 2*n
       return
-      end 
+      end
       subroutine lsp5 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... lsp5 drives the least squares polynomial preconditioner.
@@ -2810,15 +2810,15 @@ c
       irpnt = irpnt + 2*n
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + 2*n
-      call split (accel,suba13,suba14,sub112,sub113,sub112,sub113,
+      call nspcg_split (accel,suba13,suba14,sub112,sub113,sub112,sub113,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - 2*n
       if (keygs .eq. 1) irpnt = irpnt - 2*n
       return
-      end 
+      end
       subroutine neu5 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... neu5 drives the neumann polynomial preconditioner.
@@ -2832,21 +2832,21 @@ c
       common / itcom4 / srelpr, keyzer, keygs
 c
       n = nn
-      call needw ('neu5',0,irpnt,n,ier) 
+      call needw ('neu5',0,irpnt,n,ier)
       if (ier .lt. 0) return
       iwkpt2 = irpnt
       irpnt = irpnt + n
       iwkpt1 = irpnt
       if (keygs .eq. 1) irpnt = irpnt + 2*n
-      call split (accel,suba13,suba14,sub114,sub115,sub114,sub115,
+      call nspcg_split (accel,suba13,suba14,sub114,sub115,sub114,sub115,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
       if (keygs .eq. 1) irpnt = irpnt - 2*n
       return
-      end 
+      end
       subroutine sor6 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... sor6 drives the multi-color sor method.
@@ -2860,12 +2860,12 @@ c
 c
       iwkpt1 = irpnt
       irpnt = irpnt + n
-      call split (accel,suba8,suba8,subq96,subq96,subq96,subq96,
+      call nspcg_split (accel,suba8,suba8,subq96,subq96,subq96,subq96,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
       return
-      end 
+      end
       subroutine ssor6 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -2879,26 +2879,26 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
 c
       iwkpt1 = irpnt
       irpnt = irpnt + n + ncmax
-      call split (accel,suba8,suba9,subq97,subq98,subq99,sub100,
-     a            sub101,sub102,sub103, 
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+      call nspcg_split (accel,suba8,suba9,subq97,subq98,subq99,sub100,
+     a            sub101,sub102,sub103,
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n - ncmax
       return
-      end 
+      end
       subroutine ic6 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
      a                iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
-c ... ic6 drives the ic preconditioner. 
+c ... ic6 drives the ic preconditioner.
 c     (multi-color ordering)
 c
-      external accel, suba8, suba9, sub104, sub105, sub106, 
+      external accel, suba8, suba9, sub104, sub105, sub106,
      a         sub107, sub108, sub109, noadp
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
@@ -2907,7 +2907,7 @@ c
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
 c
 c
@@ -2919,20 +2919,20 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + n
-      call split (accel,suba8,suba9,sub104,sub105,sub106,sub107,
+      call nspcg_split (accel,suba8,suba9,sub104,sub105,sub106,sub107,
      a            sub108,sub109,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
       return
-      end 
+      end
       subroutine mic6 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... mic6 drives the mic preconditioner.
 c     (multi-color ordering)
 c
-      external accel, suba8, suba9, sub104, sub105, sub106, 
+      external accel, suba8, suba9, sub104, sub105, sub106,
      a         sub107, sub108, sub109, noadp
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
@@ -2941,7 +2941,7 @@ c
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
 c
 c
@@ -2953,12 +2953,12 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + n
-      call split (accel,suba8,suba9,sub104,sub105,sub106,sub107,
+      call nspcg_split (accel,suba8,suba9,sub104,sub105,sub106,sub107,
      a            sub108,sub109,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
       return
-      end 
+      end
       subroutine rs6 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
      a                iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -2972,7 +2972,7 @@ c
 c
       common / dscons / ndim, mdim, maxnz
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
@@ -2992,16 +2992,16 @@ c
      a             wksp(irpnt))
       iwkpt1 = irpnt
       irpnt = irpnt + n + nb
-      call split (accel,suba10,suba11,subq1,subq1,subq1,subq1,
+      call nspcg_split (accel,suba10,suba11,subq1,subq1,subq1,subq1,
      a            copy,copy,noadp,
      a            coef,jcoef,nr,u,ubar,wksp(irhs),wksp,iwksp,
      a            iparm,rparm,ier)
       call rsendp (n,nr,ndim,maxnz,jcoef,coef,u,rhs,wksp(iwkpt1))
       irpnt = irpnt - 2*n
       return
-      end 
+      end
       subroutine sor7 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
-     a                 iparm,rparm,ier) 
+     a                 iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... sor7 drives the multi-color sor method.
@@ -3012,7 +3012,7 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
 c
@@ -3021,25 +3021,25 @@ c
       t2 = timer (dummy)
       timfac = t2 - t1
       if (ier .lt. 0) return
-      call split (accel,suba2,suba2,subq26,subq26,subq26,subq26,
+      call nspcg_split (accel,suba2,suba2,subq26,subq26,subq26,subq26,
      a            copy,copy,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       return
-      end 
+      end
       subroutine ssor7 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
 c
 c ... ssor7 drives the multi-color ssor method.
 c
-      external accel, suba2, suba3, subq27, subq28, subq29, 
+      external accel, suba2, suba3, subq27, subq28, subq29,
      a         subq30, subq31, subq32, subq33
       integer   iparm(30), jcoef(2), iwksp(1)
       dimension rhs(1), u(1), ubar(1), rparm(30), coef(1), wksp(1)
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
@@ -3052,12 +3052,12 @@ c
       if (ier .lt. 0) return
       iwkpt1 = irpnt
       irpnt = irpnt + n
-      call split (accel,suba2,suba3,subq27,subq28,subq29,subq30,
-     a            subq31,subq32,subq33, 
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
+      call nspcg_split (accel,suba2,suba3,subq27,subq28,subq29,subq30,
+     a            subq31,subq32,subq33,
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
       irpnt = irpnt - n
       return
-      end 
+      end
       subroutine bic7 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -3065,7 +3065,7 @@ c
 c ... bic7 drives the block factorization (version 1) method.
 c     (multi-color ordering)
 c
-      external accel, suba2, suba3, subq34, subq35, subq36, 
+      external accel, suba2, suba3, subq34, subq35, subq36,
      a         subq37, subq38, subq39, noadp
       external ibfcn1
       integer   iparm(30), jcoef(2), iwksp(1)
@@ -3073,9 +3073,9 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
@@ -3088,13 +3088,13 @@ c
       timfac = t2 - t1
       if (ier .lt. 0) return
       iwkpt1 = irpnt
-      irpnt = irpnt + 2*ncmax 
-      call split (accel,suba2,suba3,subq34,subq35,subq36,subq37,
+      irpnt = irpnt + 2*ncmax
+      call nspcg_split (accel,suba2,suba3,subq34,subq35,subq36,subq37,
      a            subq38,subq39,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
-      irpnt = irpnt - 2*ncmax 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
+      irpnt = irpnt - 2*ncmax
       return
-      end 
+      end
       subroutine mbic7 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                   iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -3102,7 +3102,7 @@ c
 c ... mbic7 drives the block factorization (version 1, modified)
 c     method (multi-color ordering)
 c
-      external accel, suba2, suba3, subq34, subq35, subq36, 
+      external accel, suba2, suba3, subq34, subq35, subq36,
      a         subq37, subq38, subq39, noadp
       external ibfcn3
       integer   iparm(30), jcoef(2), iwksp(1)
@@ -3110,9 +3110,9 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
@@ -3125,13 +3125,13 @@ c
       timfac = t2 - t1
       if (ier .lt. 0) return
       iwkpt1 = irpnt
-      irpnt = irpnt + 2*ncmax 
-      call split (accel,suba2,suba3,subq34,subq35,subq36,subq37,
+      irpnt = irpnt + 2*ncmax
+      call nspcg_split (accel,suba2,suba3,subq34,subq35,subq36,subq37,
      a            subq38,subq39,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
-      irpnt = irpnt - 2*ncmax 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
+      irpnt = irpnt - 2*ncmax
       return
-      end 
+      end
       subroutine bicx7 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                  iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -3139,7 +3139,7 @@ c
 c ... bicx7 drives the block factorization (version 2)
 c     method (multi-color ordering)
 c
-      external accel, suba2, suba3, subq34, subq35, subq36, 
+      external accel, suba2, suba3, subq34, subq35, subq36,
      a         subq37, subq38, subq39, noadp
       external ibfcn2
       integer   iparm(30), jcoef(2), iwksp(1)
@@ -3147,9 +3147,9 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
@@ -3162,13 +3162,13 @@ c
       timfac = t2 - t1
       if (ier .lt. 0) return
       iwkpt1 = irpnt
-      irpnt = irpnt + 2*ncmax 
-      call split (accel,suba2,suba3,subq34,subq35,subq36,subq37,
+      irpnt = irpnt + 2*ncmax
+      call nspcg_split (accel,suba2,suba3,subq34,subq35,subq36,subq37,
      a            subq38,subq39,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
-      irpnt = irpnt - 2*ncmax 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
+      irpnt = irpnt - 2*ncmax
       return
-      end 
+      end
       subroutine mbicx7 (accel,coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a                   iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -3176,7 +3176,7 @@ c
 c ... mbicx7 drives the block factorization (version 2, modified)
 c     method (multi-color ordering)
 c
-      external accel, suba2, suba3, subq34, subq35, subq36, 
+      external accel, suba2, suba3, subq34, subq35, subq36,
      a         subq37, subq38, subq39, noadp
       external ibfcn4
       integer   iparm(30), jcoef(2), iwksp(1)
@@ -3184,9 +3184,9 @@ c
 c
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
@@ -3199,13 +3199,13 @@ c
       timfac = t2 - t1
       if (ier .lt. 0) return
       iwkpt1 = irpnt
-      irpnt = irpnt + 2*ncmax 
-      call split (accel,suba2,suba3,subq34,subq35,subq36,subq37,
+      irpnt = irpnt + 2*ncmax
+      call nspcg_split (accel,suba2,suba3,subq34,subq35,subq36,subq37,
      a            subq38,subq39,noadp,
-     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier) 
-      irpnt = irpnt - 2*ncmax 
+     a            coef,jcoef,n,u,ubar,rhs,wksp,iwksp,iparm,rparm,ier)
+      irpnt = irpnt - 2*ncmax
       return
-      end 
+      end
       subroutine rs7 (accel,coef,jcoef,nn,u,ubar,rhs,wksp,iwksp,
      a                iparm,rparm,ier)
       implicit double precision (a-h, o-z)
@@ -3220,14 +3220,14 @@ c
       common / dscons / ndim, mdim, maxnz
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
 c
       n = nn
       t1 = timer (dummy)
@@ -3248,7 +3248,7 @@ c
      a             coef,wksp(irhs),rhs,wksp(ifactr),wksp(irpnt))
       iwkpt1 = irpnt
       irpnt = irpnt + nb
-      call split (accel,suba6,suba7,subq76,subq77,subq76,subq77,
+      call nspcg_split (accel,suba6,suba7,subq76,subq77,subq76,subq77,
      a            copy,copy,noadp,
      a            coef,jcoef,nr,u,ubar,wksp(irhs),wksp,iwksp,
      a            iparm,rparm,ier)
@@ -3256,7 +3256,7 @@ c
      a             coef,u,rhs,wksp(ifactr))
       irpnt = irpnt - n
       return
-      end 
+      end
       subroutine suba1 (coef,jcoef,wksp,iwksp,n,x,y)
       implicit double precision (a-h, o-z)
 c
@@ -3268,14 +3268,14 @@ c
 c
       call mult2s (ndim,maxnz,coef,jcoef,n,x,y)
       return
-      end 
+      end
       subroutine suba2 (coef,jcoef,wksp,iwksp,n,x,y)
       implicit double precision (a-h, o-z)
 c
 c ... suba2 calls muldc.
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       integer jcoef(2), iwksp(1)
@@ -3284,14 +3284,14 @@ c
       call muldc (ndim,n,coef,ncolor,iwksp(nc),iwksp(maxnew),
      a            iwksp(jcnew),x,y)
       return
-      end 
+      end
       subroutine suba3 (coef,jcoef,wksp,iwksp,n,x,y)
       implicit double precision (a-h, o-z)
 c
 c ... suba3 calls muldct.
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       integer jcoef(2), iwksp(1)
@@ -3300,7 +3300,7 @@ c
       call muldct (ndim,n,coef,ncolor,iwksp(nc),iwksp(maxnew),
      a             iwksp(jcnew),x,y)
       return
-      end 
+      end
       subroutine suba4 (coef,jcoef,wksp,iwksp,n,x,y)
       implicit double precision (a-h, o-z)
 c
@@ -3312,7 +3312,7 @@ c
 c
       call mult2n (ndim,maxnz,coef,jcoef,n,x,y)
       return
-      end 
+      end
       subroutine suba5 (coef,jcoef,wksp,iwksp,n,x,y)
       implicit double precision (a-h, o-z)
 c
@@ -3324,19 +3324,19 @@ c
 c
       call mul2nt (ndim,maxnz,coef,jcoef,n,x,y)
       return
-      end 
+      end
       subroutine suba6 (coef,jcoef,wksp,iwksp,n,x,y)
       implicit double precision (a-h, o-z)
 c
 c ... suba6 calls rsad.
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension x(1), y(1), coef(1), wksp(1)
 c
@@ -3346,19 +3346,19 @@ c
       call rsad (nbig,n,n,ndim,iwksp(maxnew),ndt,ndb,
      a           iwksp(jcnew),coef,y,x,wksp(ifactr),wksp(iwkpt1))
       return
-      end 
+      end
       subroutine suba7 (coef,jcoef,wksp,iwksp,n,x,y)
       implicit double precision (a-h, o-z)
 c
 c ... suba7 calls rsatd.
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension x(1), y(1), coef(1), wksp(1)
 c
@@ -3368,7 +3368,7 @@ c
       call rsatd (nbig,n,n,ndim,iwksp(maxnew),ndt,ndb,
      a           iwksp(jcnew),coef,y,x,wksp(ifactr),wksp(iwkpt1))
       return
-      end 
+      end
       subroutine suba8 (coef,jcoef,wksp,iwksp,n,x,y)
       implicit double precision (a-h, o-z)
 c
@@ -3379,9 +3379,9 @@ c
       integer jcoef(2), iwksp(1)
       dimension x(1), y(1), coef(1), wksp(1)
 c
-      call mult1 (ndim,maxnz,coef,jcoef,wksp(iwkpt1),n,x,y) 
+      call mult1 (ndim,maxnz,coef,jcoef,wksp(iwkpt1),n,x,y)
       return
-      end 
+      end
       subroutine suba9 (coef,jcoef,wksp,iwksp,n,x,y)
       implicit double precision (a-h, o-z)
 c
@@ -3392,16 +3392,16 @@ c
       integer jcoef(2), iwksp(1)
       dimension x(1), y(1), coef(1), wksp(1)
 c
-      call mul1t (ndim,maxnz,coef,jcoef,wksp(iwkpt1),n,x,y) 
+      call mul1t (ndim,maxnz,coef,jcoef,wksp(iwkpt1),n,x,y)
       return
-      end 
+      end
       subroutine suba10 (coef,jcoef,wksp,iwksp,n,x,y)
       implicit double precision (a-h, o-z)
 c
 c ... suba10 calls rsap.
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
@@ -3413,19 +3413,19 @@ c
       nbig = nr + nb
       call rsap (ndim,nbig,n,maxnz,jcoef,coef,x,y,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine suba11 (coef,jcoef,wksp,iwksp,n,x,y)
       implicit double precision (a-h, o-z)
 c
 c ... suba11 calls rsatp.
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       integer jcoef(2), iwksp(1)
       dimension x(1), y(1), coef(1), wksp(1)
@@ -3438,7 +3438,7 @@ c
       if (isymm .eq. 1) call rsatp (ndim,nbig,n,maxnz,jcoef,coef,
      a                                   x,y,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine suba12 (coef,jcoef,wksp,iwksp,n,x,y)
       implicit double precision (a-h, o-z)
 c
@@ -3453,7 +3453,7 @@ c
       call mult3 (mpart,iwksp(mpstrt),coef,jcoef,jcoef(ndim+1),
      a            wksp(iwkpt1),x,y)
       return
-      end 
+      end
       subroutine suba13 (coef,jcoef,wksp,iwksp,n,x,y)
       implicit double precision (a-h, o-z)
 c
@@ -3468,7 +3468,7 @@ c
       call mult3n (mpart,iwksp(mpstrt),coef,jcoef,jcoef(ndim+1),
      a             wksp(iwkpt1),x,y)
       return
-      end 
+      end
       subroutine suba14 (coef,jcoef,wksp,iwksp,n,x,y)
       implicit double precision (a-h, o-z)
 c
@@ -3483,7 +3483,7 @@ c
       call mul3nt (mpart,iwksp(mpstrt),coef,jcoef,jcoef(ndim+1),
      a             wksp(iwkpt1),x,y)
       return
-      end 
+      end
       subroutine subq1 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -3494,17 +3494,17 @@ c
 c
       call pjac (coef,n,r,z)
       return
-      end 
+      end
       subroutine subq2 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
 c ... subq2 calls bdsol, for line jacobi preconditioning.
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -3512,23 +3512,23 @@ c
       if (nstore .eq. 3) isym = 1
       call bdsol (n,n,kblsz,ndt,ndb,wksp(ifactr),r,z,isym)
       return
-      end 
+      end
       subroutine subq3 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
 c ... subq3 calls bdsolt, for line jacobi preconditioning.
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
       call bdsolt (n,n,kblsz,ndt,ndb,wksp(ifactr),r,z)
       return
-      end 
+      end
       subroutine subq4 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -3536,10 +3536,10 @@ c ... subq4 call bmul or bmuln, for line jacobi preconditioning
 c     (approximate inverse)
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -3547,11 +3547,11 @@ c
       if (nstore .eq. 3) isym = 1
       ift = ifactr + n
       ifb = ifactr + n*(ndt + 1)
-      if (isym .eq. 0) call bmul (n,n,ndt,wksp(ifactr),wksp(ift),r,z) 
+      if (isym .eq. 0) call bmul (n,n,ndt,wksp(ifactr),wksp(ift),r,z)
       if (isym .eq. 1) call bmuln (n,n,ndt,ndb,wksp(ifactr),
-     a                             wksp(ift),wksp(ifb),r,z) 
+     a                             wksp(ift),wksp(ifb),r,z)
       return
-      end 
+      end
       subroutine subq5 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -3559,10 +3559,10 @@ c ... subq5 call bmul or bmulnt, for line jacobi preconditioning
 c     (approximate inverse)
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -3570,12 +3570,12 @@ c
       if (nstore .eq. 3) isym = 1
       ift = ifactr + n
       ifb = ifactr + n*(ndt + 1)
-      if (isym .eq. 0) call bmul (n,n,ndt,wksp(ifactr),wksp(ift),r,z) 
+      if (isym .eq. 0) call bmul (n,n,ndt,wksp(ifactr),wksp(ift),r,z)
       if (isym .eq. 1) call bmulnt (n,n,ndt,ndb,wksp(ifactr),
-     a                             wksp(ift),wksp(ifb),r,z) 
+     a                             wksp(ift),wksp(ifb),r,z)
       return
-      end 
-      subroutine subq6 (coef,jcoef,wksp,iwksp,n,u,rhs,unew) 
+      end
+      subroutine subq6 (coef,jcoef,wksp,iwksp,n,u,rhs,unew)
       implicit double precision (a-h, o-z)
 c
 c ... subq6 calls the basic sor iterative step
@@ -3583,7 +3583,7 @@ c
       logical           omgadp
       common / itcom5 / omega, alphab, betab, fff, specr, omgadp
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
       dimension u(1), rhs(1), unew(1), coef(1), wksp(1)
@@ -3592,7 +3592,7 @@ c
       call sords (ndim,n,maxt,jcoef(2),coef,coef(ndim+1),omega,
      a            irwise,u,rhs,unew,iwksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq7 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -3607,7 +3607,7 @@ c
 c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
@@ -3616,7 +3616,7 @@ c
       call srs (ndim,n,maxt,jcoef(2),coef,coef(ndim+1),omega,
      a          irwise,iwksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq8 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -3631,7 +3631,7 @@ c
 c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
@@ -3640,7 +3640,7 @@ c
       call srs1 (ndim,n,maxt,jcoef(2),coef,coef(ndim+1),omega,
      a          irwise,iwksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq9 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -3655,7 +3655,7 @@ c
 c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
@@ -3664,7 +3664,7 @@ c
       call srs3 (ndim,n,maxt,jcoef(2),coef,coef(ndim+1),omega,
      a          irwise,iwksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq10 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -3679,7 +3679,7 @@ c
 c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
@@ -3688,7 +3688,7 @@ c
       call srs2 (ndim,n,maxt,jcoef(2),coef,coef(ndim+1),omega,
      a          irwise,iwksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq11 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -3703,7 +3703,7 @@ c
 c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
@@ -3712,7 +3712,7 @@ c
       call srs4 (ndim,n,maxt,jcoef(2),coef,coef(ndim+1),omega,
      a          irwise,iwksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq12 (coef,jcoef,wksp,iwksp,n,p,r,pdp,pldup)
       implicit double precision (a-h, o-z)
 c
@@ -3727,7 +3727,7 @@ c
       call ssord (ndim,maxt,jcoef(2),coef,coef(ndim+1),n,p,r,
      a            pdp,pldup)
       return
-      end 
+      end
       subroutine subq13 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -3735,10 +3735,10 @@ c ... subq13 calls ics, for ic(s) preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       integer jcoef(2), iwksp(1)
@@ -3750,7 +3750,7 @@ c
      a                           wksp(ifactr),wksp(ifactr+n),
      a                           0,irwise,iwksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq14 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -3758,10 +3758,10 @@ c ... subq14 calls ics1, for ic(s) preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -3769,11 +3769,11 @@ c
 c
       if (propa) call ics1 (ndim,n,maxt,jcoef(2),wksp(ifactr),
      a                     coef(ndim+1),1,irwise,iwksp(iwkpt1),r,z)
-      if (.not. propa) call ics1 (n,n,maxt,iwksp(ifacti+1), 
+      if (.not. propa) call ics1 (n,n,maxt,iwksp(ifacti+1),
      a                           wksp(ifactr),wksp(ifactr+n),
      a                           0,irwise,iwksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq15 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -3781,10 +3781,10 @@ c ... subq15 calls ics3, for ic(s) preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -3792,11 +3792,11 @@ c
 c
       if (propa) call ics3 (ndim,n,maxt,jcoef(2),wksp(ifactr),
      a                     coef(ndim+1),1,irwise,iwksp(iwkpt1),r,z)
-      if (.not. propa) call ics3 (n,n,maxt,iwksp(ifacti+1), 
+      if (.not. propa) call ics3 (n,n,maxt,iwksp(ifacti+1),
      a                           wksp(ifactr),wksp(ifactr+n),
      a                           0,irwise,iwksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq16 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -3804,10 +3804,10 @@ c ... subq16 calls ics2, for ic(s) preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -3815,11 +3815,11 @@ c
 c
       if (propa) call ics2 (ndim,n,maxt,jcoef(2),wksp(ifactr),
      a                     coef(ndim+1),1,irwise,iwksp(iwkpt1),r,z)
-      if (.not. propa) call ics2 (n,n,maxt,iwksp(ifacti+1), 
+      if (.not. propa) call ics2 (n,n,maxt,iwksp(ifacti+1),
      a                           wksp(ifactr),wksp(ifactr+n),
      a                           0,irwise,iwksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq17 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -3827,10 +3827,10 @@ c ... subq17 calls ics4, for ic(s) preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -3838,11 +3838,11 @@ c
 c
       if (propa) call ics4 (ndim,n,maxt,jcoef(2),wksp(ifactr),
      a                     coef(ndim+1),1,irwise,iwksp(iwkpt1),r,z)
-      if (.not. propa) call ics4 (n,n,maxt,iwksp(ifacti+1), 
+      if (.not. propa) call ics4 (n,n,maxt,iwksp(ifacti+1),
      a                           wksp(ifactr),wksp(ifactr+n),
      a                           0,irwise,iwksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq18 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -3850,7 +3850,7 @@ c ... subq18 calls ppii, for lspoly preconditioning.
 c
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom8 / ainf
@@ -3859,9 +3859,9 @@ c
       external suba1
 c
       call ppii (suba1,coef,jcoef,wksp,iwksp,ainf,
-     a           0.0d0,0.0d0,ndeg,wksp(iwkpt1),n,r,z) 
+     a           0.0d0,0.0d0,ndeg,wksp(iwkpt1),n,r,z)
       return
-      end 
+      end
       subroutine subq19 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -3869,7 +3869,7 @@ c ... subq19 calls pneu, for neumann polynomial preconditioning.
 c
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -3879,7 +3879,7 @@ c
       call pneu (suba1,coef,jcoef,wksp,iwksp,coef,ndeg,
      a           wksp(iwkpt1),n,r,z)
       return
-      end 
+      end
       subroutine subq20 (coef,jcoef,wksp,iwksp,n,u,rhs,unew)
       implicit double precision (a-h, o-z)
 c
@@ -3887,13 +3887,13 @@ c ... subq20 calls the basic lsor iterative step
 c
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       logical           omgadp
       common / itcom5 / omega, alphab, betab, fff, specr, omgadp
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       integer jcoef(2), iwksp(1)
       dimension u(1), rhs(1), unew(1), coef(1), wksp(1)
@@ -3901,7 +3901,7 @@ c
       call sordb (n,ndim,kblsz,kblsz,iwksp(ifacti),lbhb,
      a            wksp(ifactr),coef,jcoef,n,omega,u,rhs,unew)
       return
-      end 
+      end
       subroutine subq21 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -3919,9 +3919,9 @@ c
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       integer jcoef(2), iwksp(1)
@@ -3933,7 +3933,7 @@ c
      a           wksp(ifactr),coef(ipt1),jcoef(ipt2),r,z,
      a           omega,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq22 (coef,jcoef,wksp,iwksp,n,p,r,pdp,pldup)
       implicit double precision (a-h, o-z)
 c
@@ -3944,9 +3944,9 @@ c
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       integer jcoef(2), iwksp(1)
@@ -3955,14 +3955,14 @@ c
       call ssrcd (n,ndim,maxnz,kblsz,iwksp(ifacti),wksp(ifactr),
      a            coef,jcoef,n,p,r,wksp(iwkpt1),pdp,pldup)
       return
-      end 
+      end
       subroutine subq23 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
 c ... subq23 calls pbpii, for line lspoly preconditioning.
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom8 / ainf
@@ -3973,7 +3973,7 @@ c
       call pbpii (suba1,subq2,coef,jcoef,wksp,iwksp,ainf,
      a            0.0d0,0.0d0,ndeg,wksp(iwkpt1),n,r,z)
       return
-      end 
+      end
       subroutine subq24 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -3981,7 +3981,7 @@ c ... subq24 calls pbneu, for line neumann polynomial
 c     preconditioning.
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -3991,30 +3991,30 @@ c
       call pbneu (suba1,subq2,coef,jcoef,wksp,iwksp,ndeg,
      a            wksp(iwkpt1),n,r,z)
       return
-      end 
+      end
       subroutine subq25 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
-c ... subq25 calls ibsl, for bic preconditioning. 
+c ... subq25 calls ibsl, for bic preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
       n = nn
-      ipt2 = ifactr + n*iwksp(ifacti+2) 
+      ipt2 = ifactr + n*iwksp(ifacti+2)
       if (lvfill .gt. 0) go to 10
-      nwdiag = iwksp(ifacti+2) - ltrunc 
+      nwdiag = iwksp(ifacti+2) - ltrunc
       if (propa) call ibsl
      a           (n,ndim,n,kblsz,kblsz,lbhb,iwksp(ifacti),
      a            wksp(ifactr),coef(ndim*nwdiag+1),
@@ -4029,15 +4029,15 @@ c
      a           wksp(ifactr),wksp(ipt2),iwksp(ipt1),r,z,
      a           ivers,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq26 (coef,jcoef,wksp,iwksp,n,u,rhs,unew)
       implicit double precision (a-h, o-z)
 c
-c ... subq26 calls the basic multi-color sor iterative step 
+c ... subq26 calls the basic multi-color sor iterative step
 c
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       logical           omgadp
@@ -4049,7 +4049,7 @@ c
      a             iwksp(nc),iwksp(ipt),wksp(ifactr),coef,
      a             iwksp(jcnew),n,omega,u,rhs,unew)
       return
-      end 
+      end
       subroutine subq27 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4066,7 +4066,7 @@ c
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       integer jcoef(2), iwksp(1)
@@ -4079,7 +4079,7 @@ c
      a            iwksp(lbhb),iwksp(iblock),wksp(ifactr),
      a            coef(ipt1),iwksp(ipt2),r,z,omega,0,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq28 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4096,7 +4096,7 @@ c
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       integer jcoef(2), iwksp(1)
@@ -4109,7 +4109,7 @@ c
      a            iwksp(lbhb),iwksp(iblock),wksp(ifactr),
      a            coef(ipt1),iwksp(ipt2),r,z,omega,0,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq29 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4126,7 +4126,7 @@ c
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       integer jcoef(2), iwksp(1)
@@ -4139,7 +4139,7 @@ c
      a            iwksp(lbhb),iwksp(iblock),wksp(ifactr),
      a            coef(ipt1),iwksp(ipt2),r,z,omega,0)
       return
-      end 
+      end
       subroutine subq30 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4156,7 +4156,7 @@ c
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       integer jcoef(2), iwksp(1)
@@ -4169,7 +4169,7 @@ c
      a            iwksp(lbhb),iwksp(iblock),wksp(ifactr),
      a            coef(ipt1),iwksp(ipt2),r,z,omega,0)
       return
-      end 
+      end
       subroutine subq31 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4186,7 +4186,7 @@ c
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       integer jcoef(2), iwksp(1)
@@ -4199,7 +4199,7 @@ c
      a            iwksp(lbhb),iwksp(iblock),wksp(ifactr),
      a            coef(ipt1),iwksp(ipt2),r,z,omega,0,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq32 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4216,7 +4216,7 @@ c
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       integer jcoef(2), iwksp(1)
@@ -4229,7 +4229,7 @@ c
      a            iwksp(lbhb),iwksp(iblock),wksp(ifactr),
      a            coef(ipt1),iwksp(ipt2),r,z,omega,0,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq33 (coef,jcoef,wksp,iwksp,n,p,r,pdp,pldup)
       implicit double precision (a-h, o-z)
 c
@@ -4239,7 +4239,7 @@ c
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       integer jcoef(2), iwksp(1)
@@ -4248,9 +4248,9 @@ c
       call ssrcdm (n,ndim,iwksp(lbhb),n,ncolor,iwksp(nc),
      a             iwksp(ipt),iwksp(iblock),wksp(ifactr),
      a             coef,iwksp(jcnew),n,p,r,wksp(iwkpt1),
-     a             pdp,pldup) 
+     a             pdp,pldup)
       return
-      end 
+      end
       subroutine subq34 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4259,12 +4259,12 @@ c
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -4284,7 +4284,7 @@ c
      a            wksp(iwkpt2),iwksp(jcnew+nwdiag*ncolor),
      a            r,z,ivers,0,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq35 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4293,12 +4293,12 @@ c
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -4318,7 +4318,7 @@ c
      a            wksp(iwkpt2),iwksp(jcnew+nwdiag*ncolor),
      a            r,z,ivers,0,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq36 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4327,12 +4327,12 @@ c
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -4352,7 +4352,7 @@ c
      a            wksp(iwkpt2),iwksp(jcnew+nwdiag*ncolor),
      a            r,z,ivers,0,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq37 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4361,12 +4361,12 @@ c
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -4386,7 +4386,7 @@ c
      a            wksp(iwkpt2),iwksp(jcnew+nwdiag*ncolor),
      a            r,z,ivers,0,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq38 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4395,12 +4395,12 @@ c
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -4420,7 +4420,7 @@ c
      a            wksp(iwkpt2),iwksp(jcnew+nwdiag*ncolor),
      a            r,z,ivers,0,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq39 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4429,12 +4429,12 @@ c
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -4454,14 +4454,14 @@ c
      a            wksp(iwkpt2),iwksp(jcnew+nwdiag*ncolor),
      a            r,z,ivers,0,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq40 (coef,jcoef,wksp,iwksp,n,u,rhs,unew)
       implicit double precision (a-h, o-z)
 c
 c ... subq40 calls the basic sor iterative step
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       logical           omgadp
       common / itcom5 / omega, alphab, betab, fff, specr, omgadp
@@ -4473,7 +4473,7 @@ c
      a            coef(ndim+1),coef(maxtp1*ndim+1),omega,
      a            irwise,u,rhs,unew,iwksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq41 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4488,7 +4488,7 @@ c
 c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
@@ -4498,7 +4498,7 @@ c
      a           coef(ndim+1),coef(ndim*maxtp1+1),omega,irwise,
      a           iwksp(iwkpt2),r,z)
       return
-      end 
+      end
       subroutine subq42 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4513,7 +4513,7 @@ c
 c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
@@ -4523,7 +4523,7 @@ c
      a           coef(ndim+1),coef(ndim*maxtp1+1),omega,irwise,
      a           iwksp(iwkpt2),r,z)
       return
-      end 
+      end
       subroutine subq43 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4538,17 +4538,17 @@ c
 c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
       maxtp1 = maxt + 1
-      call srsn1 (ndim,n,maxb,jcoef(maxt+2),coef, 
+      call srsn1 (ndim,n,maxb,jcoef(maxt+2),coef,
      a           coef(ndim*maxtp1+1),omega,irwise,
      a           iwksp(iwkpt2),r,z)
       return
-      end 
+      end
       subroutine subq44 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4563,17 +4563,17 @@ c
 c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
       maxtp1 = maxt + 1
-      call srsn3 (ndim,n,maxb,jcoef(maxt+2),coef, 
+      call srsn3 (ndim,n,maxb,jcoef(maxt+2),coef,
      a           coef(ndim*maxtp1+1),omega,irwise,
      a           iwksp(iwkpt2),r,z)
       return
-      end 
+      end
       subroutine subq45 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4588,7 +4588,7 @@ c
 c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
@@ -4597,7 +4597,7 @@ c
      a           coef(ndim+1),omega,irwise,
      a           iwksp(iwkpt2),r,z)
       return
-      end 
+      end
       subroutine subq46 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4612,7 +4612,7 @@ c
 c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
@@ -4621,7 +4621,7 @@ c
      a           coef(ndim+1),omega,irwise,
      a           iwksp(iwkpt2),r,z)
       return
-      end 
+      end
       subroutine subq47 (coef,jcoef,wksp,iwksp,n,p,r,pdp,pldup)
       implicit double precision (a-h, o-z)
 c
@@ -4629,7 +4629,7 @@ c ... subq47 calls the ssor adaption routine.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
       dimension p(1), r(1), coef(1), wksp(1)
@@ -4639,7 +4639,7 @@ c
      a             coef(ndim+1),coef(ndim*maxtp1+1),n,p,r,
      a             wksp(iwkpt1),pdp,pldup)
       return
-      end 
+      end
       subroutine subq48 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4647,10 +4647,10 @@ c ... subq48 calls icsn, for ic(s) preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -4667,7 +4667,7 @@ c
      a                 wksp(ifactr+n),wksp(ifactr+n*maxtp1),
      a                 0,irwise,iwksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq49 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4675,10 +4675,10 @@ c ... subq49 calls icsnt, for ic(s) preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       integer jcoef(2), iwksp(1)
@@ -4686,7 +4686,7 @@ c
 c
       n = nn
       maxtp1 = maxt + 1
-      if (propa) call icsnt (ndim,n,maxt,maxb,jcoef(2),jcoef(maxt+2), 
+      if (propa) call icsnt (ndim,n,maxt,maxb,jcoef(2),jcoef(maxt+2),
      a                      wksp(ifactr),coef(ndim+1),
      a                      coef(ndim*maxtp1+1),1,irwise,
      a                      iwksp(iwkpt1),r,z)
@@ -4695,7 +4695,7 @@ c
      a                 wksp(ifactr+n),wksp(ifactr+n*maxtp1),
      a                 0,irwise,iwksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq50 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4703,10 +4703,10 @@ c ... subq50 calls icsn1, for ic(s) preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -4723,7 +4723,7 @@ c
      a                 wksp(ifactr+n*maxtp1),
      a                 0,irwise,iwksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq51 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4731,10 +4731,10 @@ c ... subq51 calls icsn3, for ic(s) preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -4751,7 +4751,7 @@ c
      a                 wksp(ifactr+n*maxtp1),
      a                 0,irwise,iwksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq52 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4759,10 +4759,10 @@ c ... subq52 calls icsn2, for ic(s) preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -4777,7 +4777,7 @@ c
      a                 wksp(ifactr+n),
      a                 0,irwise,iwksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq53 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4785,10 +4785,10 @@ c ... subq53 calls icsn4, for ic(s) preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -4803,7 +4803,7 @@ c
      a                 wksp(ifactr+n),
      a                 0,irwise,iwksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq54 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4811,7 +4811,7 @@ c ... subq54 calls ppii, for lspoly preconditioning.
 c
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom8 / ainf
@@ -4820,9 +4820,9 @@ c
       external suba4
 c
       call ppii (suba4,coef,jcoef,wksp,iwksp,ainf,
-     a           0.0d0,0.0d0,ndeg,wksp(iwkpt1),n,r,z) 
+     a           0.0d0,0.0d0,ndeg,wksp(iwkpt1),n,r,z)
       return
-      end 
+      end
       subroutine subq55 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4830,7 +4830,7 @@ c ... subq55 calls ppii, for lspoly preconditioning.
 c
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom8 / ainf
@@ -4839,9 +4839,9 @@ c
       external suba5
 c
       call ppii (suba5,coef,jcoef,wksp,iwksp,ainf,
-     a           0.0d0,0.0d0,ndeg,wksp(iwkpt1),n,r,z) 
+     a           0.0d0,0.0d0,ndeg,wksp(iwkpt1),n,r,z)
       return
-      end 
+      end
       subroutine subq56 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4849,7 +4849,7 @@ c ... subq56 calls pneu, for neumann polynomial preconditioning.
 c
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -4859,7 +4859,7 @@ c
       call pneu (suba4,coef,jcoef,wksp,iwksp,coef,ndeg,
      a           wksp(iwkpt1),n,r,z)
       return
-      end 
+      end
       subroutine subq57 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4867,7 +4867,7 @@ c ... subq57 calls pneu, for neumann polynomial preconditioning.
 c
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -4877,7 +4877,7 @@ c
       call pneu (suba5,coef,jcoef,wksp,iwksp,coef,ndeg,
      a           wksp(iwkpt1),n,r,z)
       return
-      end 
+      end
       subroutine subq58 (coef,jcoef,wksp,iwksp,n,u,rhs,unew)
       implicit double precision (a-h, o-z)
 c
@@ -4885,13 +4885,13 @@ c ... subq58 calls the basic lsor iterative step
 c
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       logical           omgadp
       common / itcom5 / omega, alphab, betab, fff, specr, omgadp
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       integer jcoef(2), iwksp(1)
       dimension u(1), rhs(1), unew(1), coef(1), wksp(1)
@@ -4899,7 +4899,7 @@ c
       call sordnb (n,ndim,kblsz,kblsz,iwksp(ifacti),lbhb,
      a             wksp(ifactr),coef,jcoef,n,omega,u,rhs,unew)
       return
-      end 
+      end
       subroutine subq59 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4917,9 +4917,9 @@ c
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       dimension r(1), z(1), coef(1), wksp(1)
@@ -4935,7 +4935,7 @@ c
      a            iwksp(ifacti),wksp(ifactr),coef(ipt1),
      a            jcoef(ipt2),r,z,omega,1,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq60 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4953,9 +4953,9 @@ c
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       dimension r(1), z(1), coef(1), wksp(1)
@@ -4971,7 +4971,7 @@ c
      a             iwksp(ifacti),wksp(ifactr),coef(ipt1),
      a             jcoef(ipt2),r,z,omega,1,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq61 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -4989,9 +4989,9 @@ c
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       dimension r(1), z(1), coef(1), wksp(1)
@@ -5007,7 +5007,7 @@ c
      a             iwksp(ifacti),wksp(ifactr),coef(ipt1),
      a             jcoef(ipt2),r,z,omega,1)
       return
-      end 
+      end
       subroutine subq62 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5025,9 +5025,9 @@ c
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       dimension r(1), z(1), coef(1), wksp(1)
@@ -5043,7 +5043,7 @@ c
      a             iwksp(ifacti),wksp(ifactr),coef(ipt1),
      a             jcoef(ipt2),r,z,omega,1)
       return
-      end 
+      end
       subroutine subq63 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5061,9 +5061,9 @@ c
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       dimension r(1), z(1), coef(1), wksp(1)
@@ -5079,7 +5079,7 @@ c
      a             iwksp(ifacti),wksp(ifactr),coef(ipt1),
      a             jcoef(ipt2),r,z,omega,1,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq64 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5097,9 +5097,9 @@ c
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       dimension r(1), z(1), coef(1), wksp(1)
@@ -5115,7 +5115,7 @@ c
      a             iwksp(ifacti),wksp(ifactr),coef(ipt1),
      a             jcoef(ipt2),r,z,omega,1,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq65 (coef,jcoef,wksp,iwksp,n,p,r,pdp,pldup)
       implicit double precision (a-h, o-z)
 c
@@ -5126,25 +5126,25 @@ c
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       integer jcoef(2), iwksp(1)
       dimension p(1), r(1), coef(1), wksp(1)
 c
       call ssrcdn (n,ndim,lbhb,kblsz,iwksp(ifacti),wksp(ifactr),
-     a             coef,jcoef,n,p,r,wksp(iwkpt1),pdp,pldup) 
+     a             coef,jcoef,n,p,r,wksp(iwkpt1),pdp,pldup)
       return
-      end 
+      end
       subroutine subq66 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
 c ... subq66 calls pbpii, for line lspoly preconditioning.
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom8 / ainf
@@ -5155,14 +5155,14 @@ c
       call pbpii (suba4,subq2,coef,jcoef,wksp,iwksp,ainf,
      a            0.0d0,0.0d0,ndeg,wksp(iwkpt1),n,r,z)
       return
-      end 
+      end
       subroutine subq67 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
 c ... subq67 calls pbpii, for line lspoly preconditioning.
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom8 / ainf
@@ -5173,7 +5173,7 @@ c
       call pbpii (suba5,subq3,coef,jcoef,wksp,iwksp,ainf,
      a            0.0d0,0.0d0,ndeg,wksp(iwkpt1),n,r,z)
       return
-      end 
+      end
       subroutine subq68 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5181,7 +5181,7 @@ c ... subq68 calls pbneu, for line neumann polynomial
 c     preconditioning.
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -5191,7 +5191,7 @@ c
       call pbneu (suba4,subq2,coef,jcoef,wksp,iwksp,ndeg,
      a            wksp(iwkpt1),n,r,z)
       return
-      end 
+      end
       subroutine subq69 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5199,7 +5199,7 @@ c ... subq69 calls pbneu, for line neumann polynomial
 c     preconditioning.
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -5209,7 +5209,7 @@ c
       call pbneu (suba5,subq3,coef,jcoef,wksp,iwksp,ndeg,
      a            wksp(iwkpt1),n,r,z)
       return
-      end 
+      end
       subroutine subq70 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5218,12 +5218,12 @@ c
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       dimension r(1), z(1), coef(1), wksp(1)
@@ -5234,7 +5234,7 @@ c
 c
       n = nn
       nwnew = iwksp(ifacti+2) + iwksp(ifacti+5)
-      ipt2 = ifactr + n*nwnew 
+      ipt2 = ifactr + n*nwnew
       if (lvfill .gt. 0) go to 10
       nwdiag = nwnew - 2*ltrunc
       if (propa) call ibsln
@@ -5254,7 +5254,7 @@ c
      a             wksp(ipt2),iwksp(ipt1),
      a             r,z,ivers,1,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq71 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5263,12 +5263,12 @@ c
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       dimension r(1), z(1), coef(1), wksp(1)
@@ -5279,7 +5279,7 @@ c
 c
       n = nn
       nwnew = iwksp(ifacti+2) + iwksp(ifacti+5)
-      ipt2 = ifactr + n*nwnew 
+      ipt2 = ifactr + n*nwnew
       if (lvfill .gt. 0) go to 10
       nwdiag = nwnew - 2*ltrunc
       if (propa) call ibslnt
@@ -5299,7 +5299,7 @@ c
      a             wksp(ipt2),iwksp(ipt1),
      a             r,z,ivers,1,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq72 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5308,12 +5308,12 @@ c
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       dimension r(1), z(1), coef(1), wksp(1)
@@ -5324,7 +5324,7 @@ c
 c
       n = nn
       nwnew = iwksp(ifacti+2) + iwksp(ifacti+5)
-      ipt2 = ifactr + n*nwnew 
+      ipt2 = ifactr + n*nwnew
       if (lvfill .gt. 0) go to 10
       nwdiag = nwnew - 2*ltrunc
       if (propa) call ibsln1
@@ -5344,7 +5344,7 @@ c
      a             wksp(ipt2),iwksp(ipt1),
      a             r,z,ivers,1,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq73 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5353,12 +5353,12 @@ c
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       dimension r(1), z(1), coef(1), wksp(1)
@@ -5369,7 +5369,7 @@ c
 c
       n = nn
       nwnew = iwksp(ifacti+2) + iwksp(ifacti+5)
-      ipt2 = ifactr + n*nwnew 
+      ipt2 = ifactr + n*nwnew
       if (lvfill .gt. 0) go to 10
       nwdiag = nwnew - 2*ltrunc
       if (propa) call ibsln3
@@ -5389,7 +5389,7 @@ c
      a             wksp(ipt2),iwksp(ipt1),
      a             r,z,ivers,1,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq74 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5398,12 +5398,12 @@ c
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       dimension r(1), z(1), coef(1), wksp(1)
@@ -5414,7 +5414,7 @@ c
 c
       n = nn
       nwnew = iwksp(ifacti+2) + iwksp(ifacti+5)
-      ipt2 = ifactr + n*nwnew 
+      ipt2 = ifactr + n*nwnew
       if (lvfill .gt. 0) go to 10
       nwdiag = nwnew - 2*ltrunc
       if (propa) call ibsln2
@@ -5434,7 +5434,7 @@ c
      a             wksp(ipt2),iwksp(ipt1),
      a             r,z,ivers,1,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq75 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5443,12 +5443,12 @@ c
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       dimension r(1), z(1), coef(1), wksp(1)
@@ -5459,7 +5459,7 @@ c
 c
       n = nn
       nwnew = iwksp(ifacti+2) + iwksp(ifacti+5)
-      ipt2 = ifactr + n*nwnew 
+      ipt2 = ifactr + n*nwnew
       if (lvfill .gt. 0) go to 10
       nwdiag = nwnew - 2*ltrunc
       if (propa) call ibsln4
@@ -5479,18 +5479,18 @@ c
      a             wksp(ipt2),iwksp(ipt1),
      a             r,z,ivers,1,wksp(iwkpt1))
       return
-      end 
+      end
       subroutine subq76 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
-c ... subq76 calls bdsol, for rs preconditioning. 
+c ... subq76 calls bdsol, for rs preconditioning.
 c
 c
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -5500,18 +5500,18 @@ c
       nbig = nr + nb
       call bdsol (nbig,n,n,ndt,ndb,wksp(ifactr),r,z,1)
       return
-      end 
+      end
       subroutine subq77 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
 c ... subq77 calls bdsolt, for rs preconditioning.
 c
 c
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -5521,14 +5521,14 @@ c
       nbig = nr + nb
       call bdsolt (nbig,n,n,ndt,ndb,wksp(ifactr),r,z)
       return
-      end 
+      end
       subroutine subq78 (coef,jcoef,wksp,iwksp,n,u,rhs,unew)
       implicit double precision (a-h, o-z)
 c
 c ... subq78 calls the basic sor iterative step
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       logical           omgadp
       common / itcom5 / omega, alphab, betab, fff, specr, omgadp
       integer jcoef(2), iwksp(1)
@@ -5539,7 +5539,7 @@ c
       call sorp (ndim,n,maxt,maxb,jcoef(ip1),jcoef(ip2),coef,
      a           coef(ip1),coef(ip2),omega,u,rhs,unew)
       return
-      end 
+      end
       subroutine subq79 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5554,7 +5554,7 @@ c
 c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -5563,7 +5563,7 @@ c
       call srsp (ndim,n,maxt,maxb,jcoef(ip1),jcoef(ip2),coef,
      a           coef(ip1),coef(ip2),omega,r,z)
       return
-      end 
+      end
       subroutine subq80 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5578,16 +5578,16 @@ c
 c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
       ip1 = ndim + 1
       ip2 = ndim*(maxt + 1) + 1
       call srsntp (ndim,n,maxt,maxb,jcoef(ip1),jcoef(ip2),coef,
-     a             coef(ip1),coef(ip2),omega,r,z) 
+     a             coef(ip1),coef(ip2),omega,r,z)
       return
-      end 
+      end
       subroutine subq81 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5602,14 +5602,14 @@ c
 c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
       ip2 = ndim*(maxt + 1) + 1
       call srsp1 (ndim,n,maxb,jcoef(ip2),coef,coef(ip2),omega,r,z)
       return
-      end 
+      end
       subroutine subq82 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5624,14 +5624,14 @@ c
 c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
       ip2 = ndim*(maxt + 1) + 1
       call srsp3 (ndim,n,maxb,jcoef(ip2),coef,coef(ip2),omega,r,z)
       return
-      end 
+      end
       subroutine subq83 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5646,14 +5646,14 @@ c
 c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
       ip1 = ndim + 1
       call srsp2 (ndim,n,maxt,jcoef(ip1),coef,coef(ip1),omega,r,z)
       return
-      end 
+      end
       subroutine subq84 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5668,14 +5668,14 @@ c
 c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
       ip1 = ndim + 1
       call srsp4 (ndim,n,maxt,jcoef(ip1),coef,coef(ip1),omega,r,z)
       return
-      end 
+      end
       subroutine subq85 (coef,jcoef,wksp,iwksp,n,p,r,pdp,pldup)
       implicit double precision (a-h, o-z)
 c
@@ -5683,10 +5683,10 @@ c ... subq85 calls the ssor adaption routine.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       integer jcoef(2), iwksp(1)
       dimension p(1), r(1), coef(1), wksp(1)
@@ -5701,7 +5701,7 @@ c
      a                               coef(ip2),n,p,r,wksp(iwkpt1),
      a                               pdp,pldup)
       return
-      end 
+      end
       subroutine subq86 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5709,13 +5709,13 @@ c ... subq86 calls ics, for ic(s) preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
@@ -5727,8 +5727,8 @@ c
          ip1 = ndim + 1
          ip2 = ndim*(maxt + 1) + 1
          if (symm) call icsp (ndim,ndim,n,maxt,jcoef(ip1),
-     a                        wksp(ifactr),coef(ip1),1,r,z) 
-         if (.not. symm) call icsnp (ndim,ndim,n,maxt,maxb, 
+     a                        wksp(ifactr),coef(ip1),1,r,z)
+         if (.not. symm) call icsnp (ndim,ndim,n,maxt,maxb,
      a                        jcoef(ip1),jcoef(ip2),wksp(ifactr),
      a                        coef(ip1),coef(ip2),1,r,z)
          return
@@ -5738,7 +5738,7 @@ c
          ip3 = ifactr + n
          ip4 = n*(maxt + 1)+ ifactr
          if (symm) call icsp (n,ndim,n,maxt,jcoef(ip1),
-     a                        wksp(ifactr),wksp(ip3),0,r,z) 
+     a                        wksp(ifactr),wksp(ip3),0,r,z)
          if (.not. symm) call icsnp (n,ndim,n,maxt,maxb,
      a                        jcoef(ip1),jcoef(ip2),wksp(ifactr),
      a                        wksp(ip3),wksp(ip4),0,r,z)
@@ -5749,12 +5749,12 @@ c
          ip3 = ifactr + n
          ip4 = n*(maxt + 1)+ ifactr
          if (symm) call icsp (n,n,n,maxt,iwksp(ip1),
-     a                        wksp(ifactr),wksp(ip3),0,r,z) 
+     a                        wksp(ifactr),wksp(ip3),0,r,z)
          if (.not. symm) call icsnp (n,n,n,maxt,maxb,
      a                        iwksp(ip1),iwksp(ip2),wksp(ifactr),
      a                        wksp(ip3),wksp(ip4),0,r,z)
          return
-      end 
+      end
       subroutine subq87 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5762,13 +5762,13 @@ c ... subq87 calls ics, for ic(s) preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
@@ -5780,7 +5780,7 @@ c
          ip1 = ndim + 1
          ip2 = ndim*(maxt + 1) + 1
          if (symm) call icsp (ndim,ndim,n,maxt,jcoef(ip1),
-     a                        wksp(ifactr),coef(ip1),1,r,z) 
+     a                        wksp(ifactr),coef(ip1),1,r,z)
          if (.not. symm) call icsntp (ndim,ndim,n,maxt,maxb,
      a                        jcoef(ip1),jcoef(ip2),wksp(ifactr),
      a                        coef(ip1),coef(ip2),1,r,z)
@@ -5791,7 +5791,7 @@ c
          ip3 = ifactr + n
          ip4 = n*(maxt + 1)+ ifactr
          if (symm) call icsp (n,ndim,n,maxt,jcoef(ip1),
-     a                        wksp(ifactr),wksp(ip3),0,r,z) 
+     a                        wksp(ifactr),wksp(ip3),0,r,z)
          if (.not. symm) call icsntp (n,ndim,n,maxt,maxb,
      a                        jcoef(ip1),jcoef(ip2),wksp(ifactr),
      a                        wksp(ip3),wksp(ip4),0,r,z)
@@ -5802,12 +5802,12 @@ c
          ip3 = ifactr + n
          ip4 = n*(maxt + 1)+ ifactr
          if (symm) call icsp (n,n,n,maxt,iwksp(ip1),
-     a                        wksp(ifactr),wksp(ip3),0,r,z) 
+     a                        wksp(ifactr),wksp(ip3),0,r,z)
          if (.not. symm) call icsntp (n,n,n,maxt,maxb,
      a                        iwksp(ip1),iwksp(ip2),wksp(ifactr),
      a                        wksp(ip3),wksp(ip4),0,r,z)
          return
-      end 
+      end
       subroutine subq88 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5815,13 +5815,13 @@ c ... subq88 calls ics, for ic(s) preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
@@ -5832,8 +5832,8 @@ c
       if (.not. propa) go to 10
          ip1 = ndim + 1
          ip2 = ndim*(maxt + 1) + 1
-         if (symm) call icsp1 (ndim,ndim,n,maxt,jcoef(ip1), 
-     a                        wksp(ifactr),coef(ip1),1,r,z) 
+         if (symm) call icsp1 (ndim,ndim,n,maxt,jcoef(ip1),
+     a                        wksp(ifactr),coef(ip1),1,r,z)
          if (.not. symm) call icsnp1 (ndim,ndim,n,maxb,
      a                        jcoef(ip2),wksp(ifactr),
      a                        coef(ip2),1,r,z)
@@ -5844,7 +5844,7 @@ c
          ip3 = ifactr + n
          ip4 = n*(maxt + 1)+ ifactr
          if (symm) call icsp1 (n,ndim,n,maxt,jcoef(ip1),
-     a                        wksp(ifactr),wksp(ip3),0,r,z) 
+     a                        wksp(ifactr),wksp(ip3),0,r,z)
          if (.not. symm) call icsnp1 (n,ndim,n,maxb,
      a                        jcoef(ip2),wksp(ifactr),
      a                        wksp(ip4),0,r,z)
@@ -5855,12 +5855,12 @@ c
          ip3 = ifactr + n
          ip4 = n*(maxt + 1)+ ifactr
          if (symm) call icsp1 (n,n,n,maxt,iwksp(ip1),
-     a                        wksp(ifactr),wksp(ip3),0,r,z) 
-         if (.not. symm) call icsnp1 (n,n,n,maxb, 
+     a                        wksp(ifactr),wksp(ip3),0,r,z)
+         if (.not. symm) call icsnp1 (n,n,n,maxb,
      a                        iwksp(ip2),wksp(ifactr),
      a                        wksp(ip4),0,r,z)
          return
-      end 
+      end
       subroutine subq89 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5868,13 +5868,13 @@ c ... subq89 calls ics, for ic(s) preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
@@ -5885,8 +5885,8 @@ c
       if (.not. propa) go to 10
          ip1 = ndim + 1
          ip2 = ndim*(maxt + 1) + 1
-         if (symm) call icsp3 (ndim,ndim,n,maxt,jcoef(ip1), 
-     a                        wksp(ifactr),coef(ip1),1,r,z) 
+         if (symm) call icsp3 (ndim,ndim,n,maxt,jcoef(ip1),
+     a                        wksp(ifactr),coef(ip1),1,r,z)
          if (.not. symm) call icsnp3 (ndim,ndim,n,maxb,
      a                        jcoef(ip2),wksp(ifactr),
      a                        coef(ip2),1,r,z)
@@ -5897,7 +5897,7 @@ c
          ip3 = ifactr + n
          ip4 = n*(maxt + 1)+ ifactr
          if (symm) call icsp3 (n,ndim,n,maxt,jcoef(ip1),
-     a                        wksp(ifactr),wksp(ip3),0,r,z) 
+     a                        wksp(ifactr),wksp(ip3),0,r,z)
          if (.not. symm) call icsnp3 (n,ndim,n,maxb,
      a                        jcoef(ip2),wksp(ifactr),
      a                        wksp(ip4),0,r,z)
@@ -5908,12 +5908,12 @@ c
          ip3 = ifactr + n
          ip4 = n*(maxt + 1)+ ifactr
          if (symm) call icsp3 (n,n,n,maxt,iwksp(ip1),
-     a                        wksp(ifactr),wksp(ip3),0,r,z) 
-         if (.not. symm) call icsnp3 (n,n,n,maxb, 
+     a                        wksp(ifactr),wksp(ip3),0,r,z)
+         if (.not. symm) call icsnp3 (n,n,n,maxb,
      a                        iwksp(ip2),wksp(ifactr),
      a                        wksp(ip4),0,r,z)
          return
-      end 
+      end
       subroutine subq90 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5921,13 +5921,13 @@ c ... subq90 calls ics, for ic(s) preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
@@ -5937,8 +5937,8 @@ c
       symm = isymm .eq. 0
       if (.not. propa) go to 10
          ip1 = ndim + 1
-         if (symm) call icsp2 (ndim,ndim,n,maxt,jcoef(ip1), 
-     a                        wksp(ifactr),coef(ip1),1,r,z) 
+         if (symm) call icsp2 (ndim,ndim,n,maxt,jcoef(ip1),
+     a                        wksp(ifactr),coef(ip1),1,r,z)
          if (.not. symm) call icsnp2 (ndim,ndim,n,maxt,
      a                        jcoef(ip1),wksp(ifactr),
      a                        coef(ip1),1,r,z)
@@ -5947,7 +5947,7 @@ c
          ip1 = ndim + 1
          ip3 = ifactr + n
          if (symm) call icsp2 (n,ndim,n,maxt,jcoef(ip1),
-     a                        wksp(ifactr),wksp(ip3),0,r,z) 
+     a                        wksp(ifactr),wksp(ip3),0,r,z)
          if (.not. symm) call icsnp2 (n,ndim,n,maxt,
      a                        jcoef(ip1),wksp(ifactr),
      a                        wksp(ip3),0,r,z)
@@ -5956,12 +5956,12 @@ c
          ip1 = ifacti + n
          ip3 = ifactr + n
          if (symm) call icsp2 (n,n,n,maxt,iwksp(ip1),
-     a                        wksp(ifactr),wksp(ip3),0,r,z) 
-         if (.not. symm) call icsnp2 (n,n,n,maxt, 
+     a                        wksp(ifactr),wksp(ip3),0,r,z)
+         if (.not. symm) call icsnp2 (n,n,n,maxt,
      a                        iwksp(ip1),wksp(ifactr),
      a                        wksp(ip3),0,r,z)
          return
-      end 
+      end
       subroutine subq91 (coef,jcoef,wksp,iwksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -5969,13 +5969,13 @@ c ... subq91 calls ics, for ic(s) preconditioning.
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
@@ -5985,8 +5985,8 @@ c
       symm = isymm .eq. 0
       if (.not. propa) go to 10
          ip1 = ndim + 1
-         if (symm) call icsp4 (ndim,ndim,n,maxt,jcoef(ip1), 
-     a                        wksp(ifactr),coef(ip1),1,r,z) 
+         if (symm) call icsp4 (ndim,ndim,n,maxt,jcoef(ip1),
+     a                        wksp(ifactr),coef(ip1),1,r,z)
          if (.not. symm) call icsnp4 (ndim,ndim,n,maxt,
      a                        jcoef(ip1),wksp(ifactr),
      a                        coef(ip1),1,r,z)
@@ -5995,7 +5995,7 @@ c
          ip1 = ndim + 1
          ip3 = ifactr + n
          if (symm) call icsp4 (n,ndim,n,maxt,jcoef(ip1),
-     a                        wksp(ifactr),wksp(ip3),0,r,z) 
+     a                        wksp(ifactr),wksp(ip3),0,r,z)
          if (.not. symm) call icsnp4 (n,ndim,n,maxt,
      a                        jcoef(ip1),wksp(ifactr),
      a                        wksp(ip3),0,r,z)
@@ -6004,12 +6004,12 @@ c
          ip1 = ifacti + n
          ip3 = ifactr + n
          if (symm) call icsp4 (n,n,n,maxt,iwksp(ip1),
-     a                        wksp(ifactr),wksp(ip3),0,r,z) 
-         if (.not. symm) call icsnp4 (n,n,n,maxt, 
+     a                        wksp(ifactr),wksp(ip3),0,r,z)
+         if (.not. symm) call icsnp4 (n,n,n,maxt,
      a                        iwksp(ip1),wksp(ifactr),
      a                        wksp(ip3),0,r,z)
          return
-      end 
+      end
       subroutine subq92 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6017,7 +6017,7 @@ c ... subq92 calls ppii, for lspoly preconditioning.
 c
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom8 / ainf
@@ -6026,9 +6026,9 @@ c
       external suba8
 c
       call ppii (suba8,coef,jcoef,wksp,iwksp,ainf,
-     a           0.0d0,0.0d0,ndeg,wksp(iwkpt2),n,r,z) 
+     a           0.0d0,0.0d0,ndeg,wksp(iwkpt2),n,r,z)
       return
-      end 
+      end
       subroutine subq93 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6036,7 +6036,7 @@ c ... subq93 calls ppii, for lspoly preconditioning.
 c
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom8 / ainf
@@ -6045,9 +6045,9 @@ c
       external suba9
 c
       call ppii (suba9,coef,jcoef,wksp,iwksp,ainf,
-     a           0.0d0,0.0d0,ndeg,wksp(iwkpt2),n,r,z) 
+     a           0.0d0,0.0d0,ndeg,wksp(iwkpt2),n,r,z)
       return
-      end 
+      end
       subroutine subq94 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6055,7 +6055,7 @@ c ... subq94 calls pneu, for neumann polynomial preconditioning.
 c
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -6065,7 +6065,7 @@ c
       call pneu (suba8,coef,jcoef,wksp,iwksp,coef,ndeg,
      a           wksp(iwkpt2),n,r,z)
       return
-      end 
+      end
       subroutine subq95 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6073,7 +6073,7 @@ c ... subq95 calls pneu, for neumann polynomial preconditioning.
 c
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -6083,17 +6083,17 @@ c
       call pneu (suba9,coef,jcoef,wksp,iwksp,coef,ndeg,
      a           wksp(iwkpt2),n,r,z)
       return
-      end 
+      end
       subroutine subq96 (coef,jcoef,wksp,iwksp,n,u,rhs,unew)
       implicit double precision (a-h, o-z)
 c
-c ... subq96 calls the basic multi-color sor iterative step 
+c ... subq96 calls the basic multi-color sor iterative step
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       logical           omgadp
       common / itcom5 / omega, alphab, betab, fff, specr, omgadp
       integer jcoef(2), iwksp(1)
@@ -6103,7 +6103,7 @@ c
      a            iwksp(nc),iwksp(ndt),iwksp(ndb),omega,u,rhs,
      a            unew)
       return
-      end 
+      end
       subroutine subq97 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6119,10 +6119,10 @@ c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -6131,7 +6131,7 @@ c
      a            iwksp(nc),iwksp(ndt),iwksp(ndb),omega,
      a            wksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq98 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6147,10 +6147,10 @@ c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -6159,7 +6159,7 @@ c
      a             iwksp(nc),iwksp(ndt),iwksp(ndb),omega,
      a             wksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine subq99 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6175,10 +6175,10 @@ c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -6187,7 +6187,7 @@ c
      a             iwksp(nc),iwksp(ndt),iwksp(ndb),omega,
      a             wksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine sub100 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6203,10 +6203,10 @@ c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -6215,7 +6215,7 @@ c
      a             iwksp(nc),iwksp(ndt),iwksp(ndb),omega,
      a             wksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine sub101 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6231,10 +6231,10 @@ c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -6243,7 +6243,7 @@ c
      a             iwksp(nc),iwksp(ndt),omega,
      a             wksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine sub102 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6259,10 +6259,10 @@ c *** end   -- itpack common
 c
       common / dscons / ndim, mdim, maxnz
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -6271,7 +6271,7 @@ c
      a             iwksp(nc),iwksp(ndt),omega,
      a             wksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine sub103 (coef,jcoef,wksp,iwksp,n,p,r,pdp,pldup)
       implicit double precision (a-h, o-z)
 c
@@ -6280,19 +6280,19 @@ c
 c
       common / dscons / ndim, mdim, maxnz
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
 c
       integer jcoef(2), iwksp(1)
       dimension p(1), r(1), coef(1), wksp(1)
 c
       ipt1 = ndim + 1
-      if (isymm .eq. 0) call ssrcp (ndim,jcoef(ipt1),coef,coef(ipt1), 
+      if (isymm .eq. 0) call ssrcp (ndim,jcoef(ipt1),coef,coef(ipt1),
      a                              n,ncolor,iwksp(nc),iwksp(ndt),p,
      a                              r,wksp(iwkpt1),pdp,pldup)
       if (isymm .eq. 1) call ssrcpn (ndim,jcoef(ipt1),coef,coef(ipt1),
@@ -6300,7 +6300,7 @@ c
      a                               iwksp(ndb),p,r,wksp(iwkpt1),
      a                               pdp,pldup)
       return
-      end 
+      end
       subroutine sub104 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6311,10 +6311,10 @@ c
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -6322,12 +6322,12 @@ c
       ipt2 = ifactr + n
       if (propa) call icscp (ndim,ndim,n,jcoef(ipt1),wksp(ifactr),
      a                       coef(ipt1),ncolor,iwksp(nc),iwksp(ndt),
-     a                       iwksp(ndb),1,wksp(iwkpt1),r,z) 
-      if (.not. propa) call icscp (n,ndim,n,jcoef(ipt1),wksp(ifactr), 
+     a                       iwksp(ndb),1,wksp(iwkpt1),r,z)
+      if (.not. propa) call icscp (n,ndim,n,jcoef(ipt1),wksp(ifactr),
      a                       wksp(ipt2),ncolor,iwksp(nc),iwksp(ndt),
-     a                       iwksp(ndb),0,wksp(iwkpt1),r,z) 
+     a                       iwksp(ndb),0,wksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine sub105 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6338,10 +6338,10 @@ c
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -6349,12 +6349,12 @@ c
       ipt2 = ifactr + n
       if (propa) call icscpt (ndim,ndim,n,jcoef(ipt1),wksp(ifactr),
      a                       coef(ipt1),ncolor,iwksp(nc),iwksp(ndt),
-     a                       iwksp(ndb),1,wksp(iwkpt1),r,z) 
+     a                       iwksp(ndb),1,wksp(iwkpt1),r,z)
       if (.not. propa) call icscpt (n,ndim,n,jcoef(ipt1),wksp(ifactr),
      a                       wksp(ipt2),ncolor,iwksp(nc),iwksp(ndt),
-     a                       iwksp(ndb),0,wksp(iwkpt1),r,z) 
+     a                       iwksp(ndb),0,wksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine sub106 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6365,10 +6365,10 @@ c
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -6376,12 +6376,12 @@ c
       ipt2 = ifactr + n
       if (propa) call icscp1 (ndim,ndim,n,jcoef(ipt1),wksp(ifactr),
      a                       coef(ipt1),ncolor,iwksp(nc),iwksp(ndt),
-     a                       iwksp(ndb),1,wksp(iwkpt1),r,z) 
+     a                       iwksp(ndb),1,wksp(iwkpt1),r,z)
       if (.not. propa) call icscp1 (n,ndim,n,jcoef(ipt1),wksp(ifactr),
      a                       wksp(ipt2),ncolor,iwksp(nc),iwksp(ndt),
-     a                       iwksp(ndb),0,wksp(iwkpt1),r,z) 
+     a                       iwksp(ndb),0,wksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine sub107 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6390,12 +6390,12 @@ c     (multicolor purdue)
 c
 c
       common / dscons / ndim, mdim, maxnz
-      logical           propa 
+      logical           propa
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -6403,12 +6403,12 @@ c
       ipt2 = ifactr + n
       if (propa) call icscp3 (ndim,ndim,n,jcoef(ipt1),wksp(ifactr),
      a                       coef(ipt1),ncolor,iwksp(nc),iwksp(ndt),
-     a                       iwksp(ndb),1,wksp(iwkpt1),r,z) 
+     a                       iwksp(ndb),1,wksp(iwkpt1),r,z)
       if (.not. propa) call icscp3 (n,ndim,n,jcoef(ipt1),wksp(ifactr),
      a                       wksp(ipt2),ncolor,iwksp(nc),iwksp(ndt),
-     a                       iwksp(ndb),0,wksp(iwkpt1),r,z) 
+     a                       iwksp(ndb),0,wksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine sub108 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6419,10 +6419,10 @@ c
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -6435,7 +6435,7 @@ c
      a                       wksp(ipt2),ncolor,iwksp(nc),iwksp(ndt),
      a                       0,wksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine sub109 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6446,10 +6446,10 @@ c
       common / dscons / ndim, mdim, maxnz
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2), iwksp(1)
       dimension r(1), z(1), coef(1), wksp(1)
 c
@@ -6462,7 +6462,7 @@ c
      a                       wksp(ipt2),ncolor,iwksp(nc),iwksp(ndt),
      a                       0,wksp(iwkpt1),r,z)
       return
-      end 
+      end
       subroutine sub110 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6470,7 +6470,7 @@ c ... sub110 calls ppii, for lspoly preconditioning.
 c
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom8 / ainf
@@ -6479,9 +6479,9 @@ c
       external suba12
 c
       call ppii (suba12,coef,jcoef,wksp,iwksp,ainf,
-     a           0.0d0,0.0d0,ndeg,wksp(iwkpt2),n,r,z) 
+     a           0.0d0,0.0d0,ndeg,wksp(iwkpt2),n,r,z)
       return
-      end 
+      end
       subroutine sub111 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6489,7 +6489,7 @@ c ... sub111 calls pneu, for neumann polynomial preconditioning.
 c
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -6499,7 +6499,7 @@ c
       call pneu (suba12,coef,jcoef,wksp,iwksp,coef,ndeg,
      a           wksp(iwkpt2),n,r,z)
       return
-      end 
+      end
       subroutine sub112 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6507,7 +6507,7 @@ c ... sub112 calls ppii, for lspoly preconditioning.
 c
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom8 / ainf
@@ -6516,9 +6516,9 @@ c
       external suba13
 c
       call ppii (suba13,coef,jcoef,wksp,iwksp,ainf,
-     a           0.0d0,0.0d0,ndeg,wksp(iwkpt2),n,r,z) 
+     a           0.0d0,0.0d0,ndeg,wksp(iwkpt2),n,r,z)
       return
-      end 
+      end
       subroutine sub113 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6526,7 +6526,7 @@ c ... sub113 calls ppii, for lspoly preconditioning.
 c
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       common / itcom8 / ainf
@@ -6535,9 +6535,9 @@ c
       external suba14
 c
       call ppii (suba14,coef,jcoef,wksp,iwksp,ainf,
-     a           0.0d0,0.0d0,ndeg,wksp(iwkpt2),n,r,z) 
+     a           0.0d0,0.0d0,ndeg,wksp(iwkpt2),n,r,z)
       return
-      end 
+      end
       subroutine sub114 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6545,7 +6545,7 @@ c ... sub114 calls pneu, for neumann polynomial preconditioning.
 c
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -6555,7 +6555,7 @@ c
       call pneu (suba13,coef,jcoef,wksp,iwksp,coef,ndeg,
      a           wksp(iwkpt2),n,r,z)
       return
-      end 
+      end
       subroutine sub115 (coef,jcoef,wksp,iwksp,n,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -6563,7 +6563,7 @@ c ... sub115 calls pneu, for neumann polynomial preconditioning.
 c
 c
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
       integer jcoef(2), iwksp(1)
@@ -6573,26 +6573,26 @@ c
       call pneu (suba14,coef,jcoef,wksp,iwksp,coef,ndeg,
      a           wksp(iwkpt2),n,r,z)
       return
-      end 
+      end
       subroutine lfact (coef,jcoef,wksp,nn,ier)
       implicit double precision (a-h, o-z)
 c
 c ... lfact computes a line factorization.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n        problem size
 c        nfactr   factorization size
 c
-c ... common blocks 
+c ... common blocks
 c
       common / dscons / ndim, mdim, maxnz
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2)
       dimension coef(1), wksp(1)
 c
@@ -6657,26 +6657,26 @@ c
  75   call bdfac (n,n,kblsz,ndt,ndb,wksp(ifactr),isym)
       irpnt = irpnt + nfactr
       return
-      end 
+      end
       subroutine linv (coef,jcoef,wksp,nn,ier)
       implicit double precision (a-h, o-z)
 c
 c ... linv computes a line approximate inverse.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n        problem size
 c        nfactr   factorization size
 c
-c ... common blocks 
+c ... common blocks
 c
       common / dscons / ndim, mdim, maxnz
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       integer jcoef(2)
       dimension coef(1), wksp(1)
 c
@@ -6746,24 +6746,24 @@ c
       call bdinv (n,n,kblsz,ndt,ndb,wksp(ifactr),isym)
       irpnt = irpnt + nfactr
       return
-      end 
+      end
       subroutine mfact (coef,jcoef,wksp,iwksp,nn,ier)
       implicit double precision (a-h, o-z)
 c
 c ... mfact computes a line factorization of a multi-color matrix.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n        problem size
 c        nfactr   factorization size
 c
-c ... common blocks 
+c ... common blocks
 c
       common / dscons / ndim, mdim, maxnz
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
-      logical           propa 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       integer jcoef(2), iwksp(1)
@@ -6791,7 +6791,7 @@ c
       call bdfac (n,n,n,ndt,ndb,wksp(ifactr),1)
       irpnt = irpnt + nfactr
       return
-      end 
+      end
       subroutine pfact1 (coef,jcoef,wksp,iwksp,nn,methh,ier)
       implicit double precision (a-h, o-z)
 c
@@ -6800,7 +6800,7 @@ c
 c ... parameters
 c
 c       n       order of system
-c       meth    method of factorization 
+c       meth    method of factorization
 c                = 1   ic   (unmodified)
 c                = 2   mic  (modified)
 c       nfactr  amount of floating point workspace needed for factorization
@@ -6814,13 +6814,13 @@ c
       dimension coef(1), wksp(1)
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       logical           omgadp
       common / itcom5 / omega, alphab, betab, fff, specr, omgadp
@@ -6831,7 +6831,7 @@ c
 c ... if requested, find out if matrix has property a.
 c
       if (ipropa .eq. 0) propa = .false.
-      if (ipropa .eq. 1) propa = .true. 
+      if (ipropa .eq. 1) propa = .true.
       if (lvfill .gt. 0) propa = .false.
       if (lvfill .gt. 0) go to 55
       if (ipropa .ne. 2) go to 15
@@ -6858,9 +6858,9 @@ c
       if (isymm .eq. 0) call icfp (ndim,ndim,n,maxt,jcoef(ip1),
      a                        wksp(ifactr),coef(ip1),meth,1,omega,
      a                        wksp(irpnt),iflag)
-      if (isymm .ne. 0) call icfnp (ndim,ndim,n,maxt,maxb,jcoef(ip1), 
+      if (isymm .ne. 0) call icfnp (ndim,ndim,n,maxt,maxb,jcoef(ip1),
      a                        jcoef(ip2),wksp(ifactr),coef(ip1),
-     a                        coef(ip2),meth,1,omega,iflag) 
+     a                        coef(ip2),meth,1,omega,iflag)
       if (iflag .eq. 1) ier = -12
       if (iflag .eq. 2) ier = 5
       if (iflag .eq. 0) return
@@ -6892,7 +6892,7 @@ c
      a                        wksp(irpnt),iflag)
       if (isymm .ne. 0) call icfnp (n,ndim,n,maxt,maxb,jcoef(ip1),
      a                        jcoef(ip2),wksp(ifactr),wksp(ip3),
-     a                        wksp(ip4),meth,0,omega,iflag) 
+     a                        wksp(ip4),meth,0,omega,iflag)
       if (iflag .eq. 1) ier = -12
       if (iflag .eq. 2) ier = 5
       if (iflag .eq. 0) return
@@ -6902,7 +6902,7 @@ c
 c ... propa = .false., lvfill .gt. 0
 c
  55   len = n*(maxt + 1)
-      if (isymm .ne. 0) len = n*(1 + maxt + maxb) 
+      if (isymm .ne. 0) len = n*(1 + maxt + maxb)
       call needw ('pfact1',1,iipnt,len,ier)
       if (ier .lt. 0) return
       call needw ('pfact1',0,irpnt,len,ier)
@@ -6918,7 +6918,7 @@ c
  70   continue
       mw1 = (leni - (iipnt + n) + 1)/n
       mw2 = (lenr - (irpnt + n) + 1)/n
-      mwidth = min (mw1,mw2) 
+      mwidth = min (mw1,mw2)
       maxc = maxt + maxb
       do 75 i = 1,lvfill
          if (isymm .eq. 0) call fillsp (n,n,maxt,iwksp(iipnt+n),
@@ -6964,7 +6964,7 @@ c
       if (iflag .eq. 0) return
       call ershow (ier,'pfact1')
       return
-      end 
+      end
       subroutine pfact2 (coef,jcoef,wksp,iwksp,nn,methh,ier)
       implicit double precision (a-h, o-z)
 c
@@ -6973,7 +6973,7 @@ c
 c ... parameters
 c
 c       n       order of system
-c       meth    method of factorization 
+c       meth    method of factorization
 c                = 1   ic   (unmodified)
 c                = 2   mic  (modified)
 c       nfactr  amount of floating point workspace needed for factorization
@@ -6984,13 +6984,13 @@ c
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       logical           omgadp
       common / itcom5 / omega, alphab, betab, fff, specr, omgadp
@@ -7003,7 +7003,7 @@ c
 c ... if requested, find out if matrix has property a.
 c
       if (ipropa .eq. 0) propa = .false.
-      if (ipropa .eq. 1) propa = .true. 
+      if (ipropa .eq. 1) propa = .true.
       if (lvfill .gt. 0) propa = .false.
       if (lvfill .gt. 0) go to 20
       if (ipropa .ne. 2) go to 15
@@ -7082,8 +7082,8 @@ c
       if (iflag .eq. 0) return
       call ershow (ier,'pfact2')
       return
-      end 
-      subroutine pfact3 (coef,jcoef,wksp,iwksp,nn,meth,ier) 
+      end
+      subroutine pfact3 (coef,jcoef,wksp,iwksp,nn,meth,ier)
       implicit double precision (a-h, o-z)
 c
 c ... pfact3 computes a point incomplete factorization.
@@ -7091,7 +7091,7 @@ c
 c ... parameters
 c
 c       n       order of system
-c       meth    method of factorization 
+c       meth    method of factorization
 c                = 1   ic   (unmodified)
 c                = 2   mic  (modified)
 c       nfactr  amount of floating point workspace needed for factorization
@@ -7102,13 +7102,13 @@ c
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       logical           omgadp
       common / itcom5 / omega, alphab, betab, fff, specr, omgadp
@@ -7120,7 +7120,7 @@ c
 c ... if requested, find out if matrix has property a.
 c
       if (ipropa .eq. 0) propa = .false.
-      if (ipropa .eq. 1) propa = .true. 
+      if (ipropa .eq. 1) propa = .true.
       if (lvfill .gt. 0) propa = .false.
       if (lvfill .gt. 0) go to 20
       if (ipropa .ne. 2) go to 15
@@ -7141,7 +7141,7 @@ c
       call needw ('pfact3',0,irpnt,nfactr+n,ier)
       if (ier .lt. 0) return
       call rowise (maxnz,jcoef,irwise)
-      call needw ('pfact3',1,iipnt,maxt*maxb,ier) 
+      call needw ('pfact3',1,iipnt,maxt*maxb,ier)
       if (ier .lt. 0) return
       call vfill (n,wksp(ifactr),0.0d0)
       call vcopy (n,coef,wksp(ifactr))
@@ -7164,7 +7164,7 @@ c
       do 25 i = 1,lvfill
  25   call filln (maxz,iwksp(iipnt))
  26   nfactr = n*maxz
-      nfacti = maxz 
+      nfacti = maxz
       call needw ('pfact3',1,iipnt,maxz,ier)
       if (ier .lt. 0) return
       call needw ('pfact3',0,irpnt,nfactr,ier)
@@ -7185,11 +7185,11 @@ c
       if (ier .lt. 0) return
       call move2 (n,n,maxz,iwksp(ifacti),wksp(ifactr),
      a            wksp(irpnt),iwksp(iipnt),maxt,maxb)
-      call needw ('pfact3',1,iipnt,maxt*maxb,ier) 
+      call needw ('pfact3',1,iipnt,maxt*maxb,ier)
       if (ier .lt. 0) return
       ipt1 = ifacti + maxt + 1
       ipt2 = ifactr + n*(maxt + 1)
-      call icfn (n,n,maxt,maxb,iwksp(ifacti+1),iwksp(ipt1), 
+      call icfn (n,n,maxt,maxb,iwksp(ifacti+1),iwksp(ipt1),
      a           wksp(ifactr),wksp(ifactr+n),wksp(ipt2),
      a           meth,0,omega,wksp(irpnt),iwksp(iipnt),iflag)
       if (iflag .eq. 1) ier = -12
@@ -7197,7 +7197,7 @@ c
       if (iflag .eq. 0) return
       call ershow (ier,'pfact3')
       return
-      end 
+      end
       subroutine pfactc (coef,jcoef,wksp,iwksp,nn,methh,ier)
       implicit double precision (a-h, o-z)
 c
@@ -7207,7 +7207,7 @@ c
 c ... parameters
 c
 c       n       order of system
-c       meth    method of factorization 
+c       meth    method of factorization
 c                = 1   ic   (unmodified)
 c                = 2   mic  (modified)
 c       ier     error flag
@@ -7219,13 +7219,13 @@ c
       dimension coef(1), wksp(1)
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       logical           omgadp
       common / itcom5 / omega, alphab, betab, fff, specr, omgadp
@@ -7236,7 +7236,7 @@ c
 c ... if requested, find out if matrix has property a.
 c
       if (ipropa .eq. 0) propa = .false.
-      if (ipropa .eq. 1) propa = .true. 
+      if (ipropa .eq. 1) propa = .true.
       if (ipropa .ne. 2) go to 15
       call needw ('pfactc',1,iipnt,2*n,ier)
       if (ier .lt. 0) return
@@ -7258,7 +7258,7 @@ c
       irpnt = irpnt + nfactr
       ip1 = ndim + 1
       maxc = maxnz - 1
-      call icfcp (ndim,ndim,n,maxc,jcoef(ip1),wksp(ifactr), 
+      call icfcp (ndim,ndim,n,maxc,jcoef(ip1),wksp(ifactr),
      a            coef(ip1),ncolor,iwksp(ndt),iwksp(ndb),
      a            meth,1,iwksp(ipt),omega,iflag)
       if (iflag .eq. 1) ier = -12
@@ -7292,12 +7292,12 @@ c
       if (iflag .eq. 0) return
       call ershow (ier,'pfactc')
       return
-      end 
+      end
       subroutine bfacmz (methf,factor,coef,jcoef,wksp,iwksp,nn,ier)
       implicit double precision (a-h, o-z)
 c
 c ... bfacmz computes a block factorization.
-c     (nonsymmetric diagonal) 
+c     (nonsymmetric diagonal)
 c
 c ... parameters
 c
@@ -7311,13 +7311,13 @@ c
       external factor
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       logical           omgadp
@@ -7333,7 +7333,7 @@ c ... if requested, find out if matrix has block property a.
 c
       ncol = n/kblsz
       if (ipropa .eq. 0) propa = .false.
-      if (ipropa .eq. 1) propa = .true. 
+      if (ipropa .eq. 1) propa = .true.
       if (lvfill .gt. 0) propa = .false.
       if (lvfill .gt. 0) go to 15
       if (ipropa .ne. 2) go to 15
@@ -7374,14 +7374,14 @@ c
      a                idumb(1),iwksp(iblock),idumb(3),1,0,
      a                idumb(2),omega,wksp(irpnt),ier)
       endif
-      if (lvfill .gt. 0) then 
+      if (lvfill .gt. 0) then
          call factor (n,n,n,iwksp(ipt1),iwksp(ipt2),
      a                wksp(ifactr),wksp(iwkpt2),1,
      a                idumb(1),iwksp(iblock),idumb(3),1,0,
      a                idumb(2),omega,wksp(irpnt),ier)
       endif
       return
-      end 
+      end
       subroutine bfacs (methf,factor,coef,jcoef,wksp,iwksp,nn,ier)
       implicit double precision (a-h, o-z)
 c
@@ -7400,13 +7400,13 @@ c
       external factor
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       logical           omgadp
@@ -7422,7 +7422,7 @@ c ... if requested, find out if matrix has block property a.
 c
       ncol = n/kblsz
       if (ipropa .eq. 0) propa = .false.
-      if (ipropa .eq. 1) propa = .true. 
+      if (ipropa .eq. 1) propa = .true.
       if (lvfill .gt. 0) propa = .false.
       if (lvfill .gt. 0) go to 15
       if (ipropa .ne. 2) go to 15
@@ -7438,8 +7438,8 @@ c ... calculate fill-in and factor.
 c
  15   call fillb (n,coef,jcoef,iwksp(iblock),wksp,iwksp,ier)
       if (ier .lt. 0) return
-      nwnew = iwksp(iblock+2) 
-      nwdiag = nwnew - ltrunc 
+      nwnew = iwksp(iblock+2)
+      nwdiag = nwnew - ltrunc
       if (methf .eq. 1) nwkp = kblsz*nwnew
       if (methf .eq. 2) nwkp = kblsz*(nwnew + 1)
       if (methf .eq. 3) nwkp = 0
@@ -7458,39 +7458,39 @@ c
      a                wksp(ifactr),wksp(iwkpt2),kblsz,
      a                iwksp(iblock),lbhb,0,omega,wksp(irpnt),ier)
       endif
-      if (lvfill .gt. 0) then 
+      if (lvfill .gt. 0) then
          call factor (n,n,n,iwksp(ipt1),iwksp(ipt2),wksp(ifactr),
      a                wksp(iwkpt2),kblsz,iwksp(iblock),lbhb,0,
      a                omega,wksp(irpnt),ier)
       endif
       return
-      end 
+      end
       subroutine fillb (nn,coef,jcoef,iblock,wksp,iwksp,ier)
       implicit double precision (a-h, o-z)
 c
-c ... fillb calculates block fill-in for block factorization methods. 
+c ... fillb calculates block fill-in for block factorization methods.
 c     (symmetric diagonal storage)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       n       order of system
 c       coef    floating point matrix coefficient array
 c       jcoef   integer matrix coefficient array
 c       iblock  array for block information
 c       wksp    floating point workspace array
-c       iwksp   integer workspace array 
+c       iwksp   integer workspace array
 c       ier     error flag
 c
 c ... specifications for parameters
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblk, ncmax
       dimension coef(1), wksp(1)
@@ -7500,11 +7500,11 @@ c
 c
 c ... determine block fill-in pattern.
 c
-      if (lvfill .gt. 0) then 
+      if (lvfill .gt. 0) then
          lbhbsa = lbhb
          do 25 lv = 1,lvfill
             lbhbl = lbhb
-            do 20 j1 = 3,lbhb 
+            do 20 j1 = 3,lbhb
                do 15 j2 = 3,lbhb
                   jd = iblock(1,j1) - iblock(1,j2)
                   if (jd .le. 0) go to 15
@@ -7520,12 +7520,12 @@ c
  25      continue
       endif
 c
-c ... compute constants and check for sufficient workspace. 
+c ... compute constants and check for sufficient workspace.
 c
       call needw ('fillb',1,iblk,3*lbhb,ier)
       if (ier .lt. 0) return
       nwdiag = iblock(3,1)
-      nwnew = nwdiag + ltrunc 
+      nwnew = nwdiag + ltrunc
       iipnt = iblk + 3*lbhb
       ifactr = irpnt
       nwk = 3*lbhb + maxnz + ltrunc + (lbhb-2)*(2*nwnew-1)
@@ -7535,9 +7535,9 @@ c
  30   iwksp(iipnt+j-1) = j - 1
       iblock(3,1) = nwnew
 c
-c ... determine diagonal numbers in filled-in block matrix. 
+c ... determine diagonal numbers in filled-in block matrix.
 c
-      if (lvfill .gt. 0) then 
+      if (lvfill .gt. 0) then
          jmax = 3
          do 32 j = 3,lbhbsa
             if (iblock(1,j) .gt. iblock(1,jmax)) jmax = j
@@ -7548,15 +7548,15 @@ c
                jstc = iblock(2,jjc)
                mc = iblock(3,jjc)
                j1 = jnext
-               do 35 j = 1,mc 
+               do 35 j = 1,mc
                   iwksp(jnext) = jcoef(nwdiag+jstc+j-1)
                   jnext = jnext + 1
  35            continue
-               j2 = jnext - 1 
+               j2 = jnext - 1
             endif
-            if (jjc .eq. jmax) go to 50 
+            if (jjc .eq. jmax) go to 50
             jblkc = iblock(1,jjc)
-            inc = jblkc*kblsz 
+            inc = jblkc*kblsz
             lim1 = inc - (nwnew - 1)
             lim2 = inc + (nwnew - 1)
             do 45 j = lim1,lim2
@@ -7586,7 +7586,7 @@ c
          nfactr = n*(maxnz + ltrunc)
          nfacti = 3*lbhb
       endif
-      if (lvfill .gt. 0) then 
+      if (lvfill .gt. 0) then
          ndg = 0
          do 55 j = 1,lbhb
  55      ndg = ndg + iblock(3,j)
@@ -7599,14 +7599,14 @@ c
       if (ier .lt. 0) return
       call vfill (nfactr,wksp(ifactr),0.0d0)
       ipt1 = 1
-      ipt2 = ifactr 
+      ipt2 = ifactr
       do 60 j = 1,nwdiag
          call vcopy (n,coef(ipt1),wksp(ipt2))
          ipt1 = ipt1 + ndim
          ipt2 = ipt2 + n
  60   continue
       iwkpt2 = ifactr + n*nwnew
-      ipt2 = iwkpt2 
+      ipt2 = iwkpt2
       if (.not. propa .and. lvfill .eq. 0) then
          do 62 j = nwdiag+1,maxnz
             call vcopy (n,coef(ipt1),wksp(ipt2))
@@ -7614,9 +7614,9 @@ c
             ipt2 = ipt2 + n
  62      continue
       endif
-      if (lvfill .gt. 0) then 
+      if (lvfill .gt. 0) then
          j1 = iipnt + nwnew
-         j2 = iipnt + ndg - 1 
+         j2 = iipnt + ndg - 1
          do 70 j = nwdiag+1,maxnz
             jcol = jcoef(j)
             ipt1 = (j - 1)*ndim + 1
@@ -7628,36 +7628,36 @@ c
  65         continue
  70      continue
       endif
-      irpnt = ifactr + nfactr 
-      iipnt = ifacti + nfacti 
+      irpnt = ifactr + nfactr
+      iipnt = ifacti + nfacti
       return
-      end 
+      end
       subroutine fillbn (nn,coef,jcoef,iblock,wksp,iwksp,ier)
       implicit double precision (a-h, o-z)
 c
 c ... fillbn calculates block fill-in for block factorization methods.
 c     (nonsymmetric diagonal storage)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       n       order of system
 c       coef    floating point matrix coefficient array
 c       jcoef   integer matrix coefficient array
 c       iblock  array for block information
 c       wksp    floating point workspace array
-c       iwksp   integer workspace array 
+c       iwksp   integer workspace array
 c       ier     error flag
 c
 c ... specifications for parameters
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblk, ncmax
       dimension coef(1), wksp(1)
@@ -7667,11 +7667,11 @@ c
 c
 c ... determine block fill-in pattern.
 c
-      if (lvfill .gt. 0) then 
+      if (lvfill .gt. 0) then
          lbhbsa = lbhb
          do 25 lv = 1,lvfill
             lbhbl = lbhb
-            do 20 j1 = 3,lbhb 
+            do 20 j1 = 3,lbhb
                do 15 j2 = 3,lbhb
                   jd = iblock(1,j1) + iblock(1,j2)
                   if (iblock(1,j1)*iblock(1,j2) .ge. 0) go to 15
@@ -7687,7 +7687,7 @@ c
  25      continue
       endif
 c
-c ... compute constants and check for sufficient workspace. 
+c ... compute constants and check for sufficient workspace.
 c
       call needw ('fillbn',1,iblk,3*lbhb,ier)
       if (ier .lt. 0) return
@@ -7708,9 +7708,9 @@ c
       iblock(3,2) = ndb + ltrunc
       iblock(2,2) = iblock(2,1) + iblock(3,1)
 c
-c ... determine diagonal numbers in filled-in block matrix. 
+c ... determine diagonal numbers in filled-in block matrix.
 c
-      if (lvfill .gt. 0) then 
+      if (lvfill .gt. 0) then
          jmax = 3
          jmin = 3
          do 32 j = 3,lbhbsa
@@ -7723,17 +7723,17 @@ c
                jstc = iblock(2,jjc)
                mc = iblock(3,jjc)
                j1 = jnext
-               do 35 j = 1,mc 
+               do 35 j = 1,mc
                   iwksp(jnext) = jcoef(nwdiag+jstc+j-1)
                   jnext = jnext + 1
  35            continue
-               j2 = jnext - 1 
+               j2 = jnext - 1
             endif
             if (jjc .eq. jmax .or. jjc .eq. jmin) go to 50
             jblkc = iblock(1,jjc)
-            inc = jblkc*kblsz 
-            lim1 = inc - (ndb + ltrunc) 
-            lim2 = inc + (ndt + ltrunc) 
+            inc = jblkc*kblsz
+            lim1 = inc - (ndb + ltrunc)
+            lim2 = inc + (ndt + ltrunc)
             do 45 j = lim1,lim2
                if (jjc .le. lbhbsa) then
                   do 40 jj = j1,j2
@@ -7761,7 +7761,7 @@ c
          nfactr = n*(maxnz + 2*ltrunc)
          nfacti = 3*lbhb
       endif
-      if (lvfill .gt. 0) then 
+      if (lvfill .gt. 0) then
          ndg = 0
          do 55 j = 1,lbhb
  55      ndg = ndg + iblock(3,j)
@@ -7774,7 +7774,7 @@ c
       if (ier .lt. 0) return
       call vfill (nfactr,wksp(ifactr),0.0d0)
       ipt1 = 1
-      ipt2 = ifactr 
+      ipt2 = ifactr
       do 60 j = 1,ndt+1
          call vcopy (n,coef(ipt1),wksp(ipt2))
          ipt1 = ipt1 + ndim
@@ -7787,7 +7787,7 @@ c
          ipt2 = ipt2 + n
  61   continue
       iwkpt2 = ifactr + n*nwnew
-      ipt2 = iwkpt2 
+      ipt2 = iwkpt2
       if (.not. propa .and. lvfill .eq. 0) then
          do 62 j = nwdiag+1,maxnz
             call vcopy (n,coef(ipt1),wksp(ipt2))
@@ -7795,9 +7795,9 @@ c
             ipt2 = ipt2 + n
  62      continue
       endif
-      if (lvfill .gt. 0) then 
+      if (lvfill .gt. 0) then
          j1 = iipnt + nwnew
-         j2 = iipnt + ndg - 1 
+         j2 = iipnt + ndg - 1
          do 70 j = nwdiag+1,maxnz
             jcol = jcoef(j)
             ipt1 = (j - 1)*ndim + 1
@@ -7809,10 +7809,10 @@ c
  65         continue
  70      continue
       endif
-      irpnt = ifactr + nfactr 
-      iipnt = ifacti + nfacti 
+      irpnt = ifactr + nfactr
+      iipnt = ifacti + nfacti
       return
-      end 
+      end
       subroutine bfacmy (methf,factor,coef,jcoef,wksp,iwksp,nn,ier)
       implicit double precision (a-h, o-z)
 c
@@ -7831,13 +7831,13 @@ c
       external factor
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       logical           omgadp
@@ -7852,7 +7852,7 @@ c
 c ... calculate constants.
 c
       if (ipropa .eq. 0) propa = .false.
-      if (ipropa .eq. 1) propa = .true. 
+      if (ipropa .eq. 1) propa = .true.
 c
 c ... calculate fill-in and factor.
 c
@@ -7868,61 +7868,61 @@ c
       if (ier .lt. 0) return
       if (propa) then
          call factor (n,ndim,n,iwksp(iipnt),
-     a                iwksp(jcnew+ncolor*nwdiag), 
+     a                iwksp(jcnew+ncolor*nwdiag),
      a                wksp(ifactr),coef(ndim*nwdiag+1),ncolor,
      a                iwksp(nc),iwksp(iblock),iwksp(lbhb),0,1,
      a                iwksp(ipt),omega,wksp(irpnt),ier)
       endif
       if (.not. propa) then
          call factor (n,n,n,iwksp(iipnt),
-     a                iwksp(jcnew+ncolor*nwdiag), 
+     a                iwksp(jcnew+ncolor*nwdiag),
      a                wksp(ifactr),wksp(iwkpt2),ncolor,
      a                iwksp(nc),iwksp(iblock),iwksp(lbhb),0,0,
      a                iwksp(ipt),omega,wksp(irpnt),ier)
       endif
       return
-      end 
+      end
       subroutine fillbc (nn,ncolor,coef,jcoef,iblock,wksp,iwksp,ier)
       implicit double precision (a-h, o-z)
 c
-c ... fillbc sets ups wksp for block factorization methods. 
+c ... fillbc sets ups wksp for block factorization methods.
 c     (multicolor nonsymmetric diagonal)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       n       order of system
 c       coef    floating point matrix coefficient array
 c       jcoef   integer matrix coefficient array
 c       iblock  array for block information
 c       wksp    floating point workspace array
-c       iwksp   integer workspace array 
+c       iwksp   integer workspace array
 c       ier     error flag
 c
 c ... specifications for parameters
 c
       common / dscons / ndim, mdim, maxnz
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      common / intern / ndt, ndb, maxt, maxb, ivers, irwise 
+      common / intern / ndt, ndb, maxt, maxb, ivers, irwise
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / point  / iptscl, iwkpt1, iwkpt2, iwkpt3
-      logical           propa 
-      common / cblock / propa, ncol, maxd, nc, ipt, maxnew, 
+      logical           propa
+      common / cblock / propa, ncol, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblk, ncmax
       dimension coef(1), wksp(1)
       integer   jcoef(1), iblock(3,ncolor,3), iwksp(1)
 c
       n = nn
 c
-c ... compute constants and check for sufficient workspace. 
+c ... compute constants and check for sufficient workspace.
 c
       ndt = 0
       ndb = 0
       do 10 j = 1,ncolor
          ndt = max (ndt,iblock(3,j,1)-1)
-         ndb = max (ndb,iblock(3,j,2)) 
+         ndb = max (ndb,iblock(3,j,2))
  10   continue
       nwdiag = ndt + ndb + 1
       nwnew = nwdiag + 2*ltrunc
@@ -7938,7 +7938,7 @@ c
       if (ier .lt. 0) return
       call vfill (nfactr,wksp(ifactr),0.0d0)
       ipt1 = 1
-      ipt2 = ifactr 
+      ipt2 = ifactr
       do 15 j = 1,ndt+1
          call vcopy (n,coef(ipt1),wksp(ipt2))
          ipt1 = ipt1 + ndim
@@ -7951,7 +7951,7 @@ c
          ipt2 = ipt2 + n
  20   continue
       iwkpt2 = ifactr + n*nwnew
-      ipt2 = iwkpt2 
+      ipt2 = iwkpt2
       if (.not. propa) then
          do 25 j = nwdiag+1,maxd
             call vcopy (n,coef(ipt1),wksp(ipt2))
@@ -7959,7 +7959,7 @@ c
             ipt2 = ipt2 + n
  25      continue
       endif
-      irpnt = ifactr + nfactr 
+      irpnt = ifactr + nfactr
       do 40 ico = 1,ncolor
          do 30 j = 1,ndt+ltrunc+1
  30      iwksp(iipnt+(j-1)*ncolor+ico-1) = j - 1
@@ -7968,30 +7968,30 @@ c
  40   continue
       do 45 ico = 1,ncolor
          iblock(3,ico,1) = ndt + ltrunc + 1
-         iblock(3,ico,2) = ndb + ltrunc 
+         iblock(3,ico,2) = ndb + ltrunc
          iblock(2,ico,2) = iblock(2,ico,1) + iblock(3,ico,1)
  45   continue
       return
-      end 
+      end
       subroutine blkdef (coef,jcoef,wksp,iwksp,nn,ier)
       implicit double precision (a-h, o-z)
 c
-c ... blkdef defines various block constants for a constant 
+c ... blkdef defines various block constants for a constant
 c     block size matrix.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n        problem size
 c
-c ... common blocks 
+c ... common blocks
 c
       common / dscons / ndim, mdim, maxnz
       common / cwkcon / lenr, irpnt, irmax, leni, iipnt, iimax
       common / cfactr / nfactr, nfacti, ifactr, ifacti, timfac
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
-      logical           propa 
+      logical           propa
       common / cblock / propa, ncolor, maxd, nc, ipt, maxnew,
      a                  jcnew, lbhb, iblock, ncmax
       integer jcoef(2), iwksp(1)
@@ -8008,9 +8008,9 @@ c
       call defcon (ndim,n,maxnz,jcoef,coef,kblsz,iwksp(ifacti),
      a             lbhb)
       nfacti = 3*lbhb
-      iipnt = ifacti + 3*lbhb 
+      iipnt = ifacti + 3*lbhb
       return
-      end 
+      end
       subroutine cg (suba,subat,subql,subqlt,subqr,subqrt,subadp,
      a               coef,jcoef,n,u,ubar,rhs,wksp,iwksp,
      a               iparm,rparm,ier)
@@ -8493,7 +8493,7 @@ c form the c**(t)*a*c matrix
 c
  1    if (nbl1d .le. 0 .or. nbl2d .le. 0) go to 998
       nbl0d = 1
-      if (mod(nbl2d,nbl1d) .ne. 0 .or. mod(nbl1d,nbl0d) .ne. 0) 
+      if (mod(nbl2d,nbl1d) .ne. 0 .or. mod(nbl1d,nbl0d) .ne. 0)
      a          go to 998
       nblk = n / nbl2d
       if (nblk .eq. 1) nblk = n / nbl1d
@@ -11985,7 +11985,7 @@ c
 c
 c rstrt tells us whether this is the last step before restarting ...
       rstrt = (is+1 .eq. ns2)
-      if (evadpt .and. is .eq. 0) 
+      if (evadpt .and. is .eq. 0)
      &         call vfill (nhess*nbwh,wk(ihess),0.0d0)
 c
 c-----------------------compute the new arnoldi vector----------------
@@ -15199,12 +15199,12 @@ c                converged after 30*n iterations ..........
  1000 ierr = en
  1001 return
       end
-      subroutine adjust (n,ndim,maxnzz,jcoef,key) 
+      subroutine adjust (n,ndim,maxnzz,jcoef,key)
       implicit double precision (a-h, o-z)
 c
 c ... adjust makes adjustments to the jcoef array.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      dimension of the matrix.
 c          ndim   row dimension of jcoef array in defining routine
@@ -15216,7 +15216,7 @@ c                  = 2   restore zeros to jcoef array
 c
 c ... specifications for parameters
 c
-      integer   jcoef(ndim,1) 
+      integer   jcoef(ndim,1)
 c
       maxnz = maxnzz
       if (maxnz .lt. 2) return
@@ -15237,14 +15237,14 @@ c
  25      if (jcoef(i,j) .eq. i) jcoef(i,j) = 0
  30   continue
       return
-      end 
+      end
       subroutine adinfn (nn,ndim,maxnzz,jcoef,coef,nstore,ainf,wksp)
       implicit double precision (a-h, o-z)
 c
 c ... adinfn computes an upper bound on the spectral radius of
 c     inv(d)*a.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n       order of system (= nn)
 c         ndim    row dimension of coef array in defining routine
@@ -15265,14 +15265,14 @@ c
       n = nn
       maxnz = maxnzz
       if (ainf .gt. 0.0d0) return
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   wksp(i) = coef(i,1)
       do 25 jd = 1,maxnz
          do 20 j = 1,maxnz
             if (jcoef(j) .ne. jd) go to 20
             do 15 i = 1,n
  15         wksp(i) = wksp(i) - abs (coef(i,j))
-            if (nstore .eq. 3) go to 25 
+            if (nstore .eq. 3) go to 25
             len = n - jd
             do 18 i = 1,len
  18         wksp(i+jd) = wksp(i+jd) - abs (coef(i,j))
@@ -15295,17 +15295,17 @@ c ... factor.
 c
  50   t1 = vmin (n,wksp)
       if (t1 .le. 0.0d0) t1 = 1.0d0
-      call ainfn (n,ndim,maxnz,jcoef,coef,nstore,ainf,wksp) 
+      call ainfn (n,ndim,maxnz,jcoef,coef,nstore,ainf,wksp)
       ainf = ainf/t1
       return
-      end 
+      end
       subroutine ainfn (nn,ndim,maxnzz,jcoef,coef,nstore,ainf,
-     a                  wksp) 
+     a                  wksp)
       implicit double precision (a-h, o-z)
 c
 c ... ainfn calculates the infinity norm of the matrix a.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n       order of system (= nn)
 c         ndim    row dimension of coef array in defining routine
@@ -15324,7 +15324,7 @@ c         wksp    workspace vector of length n
 c
 c ... specifications for parameters
 c
-      integer   jcoef(ndim,2) 
+      integer   jcoef(ndim,2)
       dimension coef(ndim,1), wksp(1)
 c
       n = nn
@@ -15332,9 +15332,9 @@ c
       if (ainf .gt. 0.0d0) return
       go to (10,30,55,75,75), nstore
 c
-c ... ellpack data structure. 
+c ... ellpack data structure.
 c
- 10   do 15 i = 1,n 
+ 10   do 15 i = 1,n
  15   wksp(i) = abs (coef(i,1))
       if (maxnz .le. 1) go to 995
       do 25 j = 2,maxnz
@@ -15345,7 +15345,7 @@ c
 c
 c ... symmetric diagonal data structure.
 c
- 30   do 35 i = 1,n 
+ 30   do 35 i = 1,n
  35   wksp(i) = abs (coef(i,1))
       if (maxnz .le. 1) go to 995
       do 50 j = 2,maxnz
@@ -15360,7 +15360,7 @@ c
 c
 c ... nonsymmetric diagonal data structure.
 c
- 55   do 60 i = 1,n 
+ 55   do 60 i = 1,n
  60   wksp(i) = abs (coef(i,1))
       if (maxnz .le. 1) go to 995
       do 70 j = 2,maxnz
@@ -15375,31 +15375,31 @@ c
 c
 c ... sparse structure.
 c
- 75   do 80 i = 1,n 
+ 75   do 80 i = 1,n
  80   wksp(i) = abs (coef(i,1))
       if (maxnz .le. n) go to 995
       np1 = n + 1
       do 85 k = np1,maxnz
- 85   wksp(jcoef(k,1)) = wksp(jcoef(k,1)) + abs (coef(k,1)) 
+ 85   wksp(jcoef(k,1)) = wksp(jcoef(k,1)) + abs (coef(k,1))
       if (nstore .eq. 5) go to 995
       do 90 k = np1,maxnz
- 90   wksp(jcoef(k,2)) = wksp(jcoef(k,2)) + abs (coef(k,1)) 
+ 90   wksp(jcoef(k,2)) = wksp(jcoef(k,2)) + abs (coef(k,1))
 c
 c ... determine ainf = max (wksp(i)).
 c
  995  ainf = vmax (n,wksp)
       return
-      end 
+      end
       subroutine bdfac (lda,nn,nsizee,nt,nb,a,isym)
       implicit double precision (a-h, o-z)
 c
 c ... bdfac computes the factorization of a dense banded matrix.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        lda    leading dimension of array a
 c        n      active size of array a
-c        nsize  size of an individual subsystem (if multiple systems) 
+c        nsize  size of an individual subsystem (if multiple systems)
 c                nsize = n upon input if not a multiple system
 c        nt     number of diagonals needed to store the super-
 c                diagonals
@@ -15429,7 +15429,7 @@ c
 c ... diagonal case (maxt = 0).
 c
       if (maxt .ne. 0) go to 15
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   a(i,1) = 1.0d0/a(i,1)
       return
 c
@@ -15460,7 +15460,7 @@ c
 c ... diagonal case (maxt = maxb = 0).
 c
       if (maxt .ne. 0 .or. maxb .ne. 0) go to 40
-      do 35 i = 1,n 
+      do 35 i = 1,n
  35   a(i,1) = 1.0d0/a(i,1)
       return
 c
@@ -15487,17 +15487,17 @@ c
       if (nsys .gt. lenv) call bfacnm (n,nsize,nsys,maxt,maxb,a,a(1,2),
      a                                 a(1,maxt+2))
       return
-      end 
+      end
       subroutine bdinv (lda,nn,nsizee,nt,nb,fac,isym)
       implicit double precision (a-h, o-z)
 c
 c ... bdinv computes the inverse of a dense banded matrix.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        lda    leading dimension of factorization matrix fac
 c        n      active size of factorization matrix fac
-c        nsize  size of an individual subsystem (if multiple systems) 
+c        nsize  size of an individual subsystem (if multiple systems)
 c                nsize = n upon input if not a multiple system
 c        nt     number of diagonals needed to store the super-
 c                diagonals
@@ -15533,7 +15533,7 @@ c
 c ... tridiagonal case (maxt = 1).
 c
  20   if (nsys .le. lenv) call tinv (n,fac,fac(1,2))
-      if (nsys .gt. lenv) call tinvm (n,nsize,fac,fac(1,2)) 
+      if (nsys .gt. lenv) call tinvm (n,nsize,fac,fac(1,2))
       return
 c
 c ... banded case (maxt .ge. 2).
@@ -15554,26 +15554,26 @@ c ... tridiagonal case (maxt = maxb = 1).
 c
  40   if (maxt .ne. 1 .or. maxb .ne. 1) go to 45
       if (nsys .le. lenv) call tinvn (n,fac,fac(1,2),fac(2,3))
-      if (nsys .gt. lenv) call tinvnm (n,nsize,fac,fac(1,2),fac(2,3)) 
+      if (nsys .gt. lenv) call tinvnm (n,nsize,fac,fac(1,2),fac(2,3))
       return
 c
 c ... all other cases.
 c
  45   call binvn (lda,n,maxt,maxb,fac,fac(1,2),fac(1,maxt+2))
       return
-      end 
+      end
       subroutine bdsol (lda,nn,nsizee,nt,nb,fac,y,x,isym)
       implicit double precision (a-h, o-z)
 c
-c ... bdsol computes the solution to a dense banded matrix. 
+c ... bdsol computes the solution to a dense banded matrix.
 c     thus, bdsol finds the solution to   a*x = y,  where fac
-c     contains the factorization of the a matrix. 
+c     contains the factorization of the a matrix.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        lda    leading dimension of array fac
 c        n      active size of array fac
-c        nsize  size of an individual subsystem (if multiple systems) 
+c        nsize  size of an individual subsystem (if multiple systems)
 c                nsize = n upon input if not a multiple system
 c        nt     number of diagonals needed to store the super-
 c                diagonals of the factorization
@@ -15605,7 +15605,7 @@ c
 c ... diagonal case (maxt = 0).
 c
       if (maxt .ne. 0) go to 15
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = fac(i,1)*y(i)
       return
 c
@@ -15622,7 +15622,7 @@ c
  20   if (maxt .ne. 2) go to 25
       if (nsys .le. lenv) call psoln (n,fac,fac(1,2),fac(1,3),
      a                                fac(1,2),fac(1,3),y,x)
-      if (nsys .gt. lenv) call psolnm (n,nsize,fac,fac(1,2),fac(1,3), 
+      if (nsys .gt. lenv) call psolnm (n,nsize,fac,fac(1,2),fac(1,3),
      a                                 fac(1,2),fac(1,3),y,x)
       return
 c
@@ -15639,7 +15639,7 @@ c
 c ... diagonal case (maxt = maxb = 0).
 c
       if (maxt .ne. 0 .or. maxb .ne. 0) go to 40
-      do 35 i = 1,n 
+      do 35 i = 1,n
  35   x(i) = fac(i,1)*y(i)
       return
 c
@@ -15647,7 +15647,7 @@ c ... tridiagonal case (maxt = maxb = 1).
 c
  40   if (maxt .ne. 1 .or. maxb .ne. 1) go to 45
       if (nsys .le. lenv) call tsoln (n,fac,fac(1,2),fac(2,3),y,x)
-      if (nsys .gt. lenv) call tsolnm (n,nsize,fac,fac(1,2),fac(2,3), 
+      if (nsys .gt. lenv) call tsolnm (n,nsize,fac,fac(1,2),fac(2,3),
      a                                 y,x)
       return
 c
@@ -15656,7 +15656,7 @@ c
  45   if (maxt .ne. 2 .or. maxb .ne. 2) go to 50
       if (nsys .le. lenv) call psoln (n,fac,fac(1,2),fac(1,3),
      a                                fac(2,4),fac(3,5),y,x)
-      if (nsys .gt. lenv) call psolnm (n,nsize,fac,fac(1,2),fac(1,3), 
+      if (nsys .gt. lenv) call psolnm (n,nsize,fac,fac(1,2),fac(1,3),
      a                                 fac(2,4),fac(3,5),y,x)
       return
 c
@@ -15667,20 +15667,20 @@ c
       if (nsys .gt. lenv) call bsolnm (n,nsize,maxt,maxb,fac,
      a                            fac(1,2),fac(1,maxt+2),y,x)
       return
-      end 
+      end
       subroutine bdsolt (lda,nn,nsizee,nt,nb,fac,y,x)
       implicit double precision (a-h, o-z)
 c
 c ... bdsolt computes the transpose solution to a nonsymmetric
 c     dense banded matrix.
 c     thus, bdsolt finds the solution to   (a**t)*x = y,  where fac
-c     contains the factorization of the a matrix. 
+c     contains the factorization of the a matrix.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        lda    leading dimension of array fac
 c        n      active size of array fac
-c        nsize  size of an individual subsystem (if multiple systems) 
+c        nsize  size of an individual subsystem (if multiple systems)
 c                nsize = n upon input if not a multiple system
 c        nt     number of diagonals needed to store the super-
 c                diagonals of the factorization
@@ -15706,7 +15706,7 @@ c
 c ... diagonal case (maxt = maxb = 0).
 c
       if (maxt .ne. 0 .or. maxb .ne. 0) go to 15
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = fac(i,1)*y(i)
       return
 c
@@ -15714,7 +15714,7 @@ c ... tridiagonal case (maxt = maxb = 1).
 c
  15   if (maxt .ne. 1 .or. maxb .ne. 1) go to 20
       if (nsys .le. lenv) call tsoln (n,fac,fac(2,3),fac(1,2),y,x)
-      if (nsys .gt. lenv) call tsolnm (n,nsize,fac,fac(2,3),fac(1,2), 
+      if (nsys .gt. lenv) call tsolnm (n,nsize,fac,fac(2,3),fac(1,2),
      a                                 y,x)
       return
 c
@@ -15723,7 +15723,7 @@ c
  20   if (maxt .ne. 2 .or. maxb .ne. 2) go to 25
       if (nsys .le. lenv) call psoln (n,fac,fac(2,4),fac(3,5),
      a                                fac(1,2),fac(1,3),y,x)
-      if (nsys .gt. lenv) call psolnm (n,nsize,fac,fac(2,4),fac(3,5), 
+      if (nsys .gt. lenv) call psolnm (n,nsize,fac,fac(2,4),fac(3,5),
      a                                 fac(1,2),fac(1,3),y,x)
       return
 c
@@ -15734,14 +15734,14 @@ c
       if (nsys .gt. lenv) call bsontm (n,nsize,maxt,maxb,fac,
      a                            fac(1,2),fac(1,maxt+2),y,x)
       return
-      end 
-      subroutine bbs (ndim,nn,maxt,t,x) 
+      end
+      subroutine bbs (ndim,nn,maxt,t,x)
       implicit double precision (a-h, o-z)
 c
 c ... bbs does a banded back substitution  (i + t)*x = y.
 c     t is a rectangular matrix of adjacent super-diagonals.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of t array in defining routine
 c          n      order of system
@@ -15757,28 +15757,28 @@ c
 c
       n = nn
       do 20 i = n-1,1,-1
-         sum = x(i) 
+         sum = x(i)
          lim = min (maxt,n-i)
          do 15 j = 1,lim
             sum = sum - t(i,j)*x(i+j)
  15      continue
-         x(i) = sum 
+         x(i) = sum
  20   continue
       return
-      end 
+      end
       subroutine bbsm (nsize,nsys,maxt,t,x)
       implicit double precision (a-h, o-z)
 c
 c ... bbsm does a back solve  (i + t)*x = y  where t is an array
 c     containing superdiagonals in order 1,2,... .
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
 c          nsize  size of a single subsystem
 c          nsys   number of independent subsystems
 c          maxt   number of columns in t array
-c          t      array of active size n by maxt containing 
+c          t      array of active size n by maxt containing
 c                  the super-diagonal elements of the factorization
 c          x      on input, x contains y
 c                 vector containing solution upon output
@@ -15796,19 +15796,19 @@ c
  20      continue
  25   continue
       return
-      end 
+      end
       subroutine bbst (ndim,nn,maxb,b,x)
       implicit double precision (a-h, o-z)
 c
-c ... bbst does a backward substitution  (i + (b**t))*x = y 
+c ... bbst does a backward substitution  (i + (b**t))*x = y
 c     where the array b represents sub-diagonals.  b corresponds
 c     to a banded system.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of b in defining routine
 c          n      order of system (= nn)
-c          maxb   number of diagonals stored in b 
+c          maxb   number of diagonals stored in b
 c          b      array of active size n x maxb giving the
 c                  sub-diagonals in the order -1,-2,... .
 c          x      on input, x contains y
@@ -15827,20 +15827,20 @@ c
  20      continue
  25   continue
       return
-      end 
+      end
       subroutine bbstm (nsize,nsys,maxb,b,x)
       implicit double precision (a-h, o-z)
 c
 c ... bbstm does the backward solve (i + (b**t))*x = y  where b
 c     contains subdiagonals for multiple banded systems.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
 c          nsize  the size of an individual subsystem
 c          nsys   the number of subsystems
 c          maxb   number of columns in b array
-c          b      array of active size n by maxb containing 
+c          b      array of active size n by maxb containing
 c                  sub-diagonals in the order -1,-2,-3,...
 c          x      on input, x contains y
 c                 vector containing solution upon output
@@ -15853,18 +15853,18 @@ c
          lim = min (i-1,maxb)
          do 20 j = 1,lim
             do 15 l = 1,nsys
- 15         x(i-j,l) = x(i-j,l) - b(i,l,j)*x(i,l) 
+ 15         x(i-j,l) = x(i-j,l) - b(i,l,j)*x(i,l)
  20      continue
  25   continue
       return
-      end 
+      end
       subroutine bfac (ndim,nn,maxt,d,t)
       implicit double precision (a-h, o-z)
 c
 c ... bfac computes a factorization to a single banded
 c     symmetric matrix represented by d and t and replaces it.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of t array in defining routine
 c          n      order of system (= nn)
@@ -15894,22 +15894,22 @@ c
  10         continue
  15      continue
  20   continue
-      do 25 i = 1,n 
+      do 25 i = 1,n
  25   d(i) = 1.0d0/d(i)
       do 35 j = 1,maxt
          len = n - j
          do 30 i = 1,len
- 30      t(i,j) = d(i)*t(i,j) 
+ 30      t(i,j) = d(i)*t(i,j)
  35   continue
       return
-      end 
+      end
       subroutine bfacm (n,nsize,nsys,maxt,d,t)
       implicit double precision (a-h, o-z)
 c
 c ... bfacm computes factorizations to multiple banded
 c     symmetric matrices represented by d and t and replaces it.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of global system (= nn)
 c          nsize  order of a single system
@@ -15930,14 +15930,14 @@ c
          do 25 j1 = 1,lim
             jcol1 = k + j1
             do 10 l = 1,nsys
- 10         d(jcol1,l) = d(jcol1,l) - (t(k,l,j1)**2)/d(k,l) 
+ 10         d(jcol1,l) = d(jcol1,l) - (t(k,l,j1)**2)/d(k,l)
             if (j1 .eq. lim) go to 25
             j1p1 = j1 + 1
             do 20 j2 = j1p1,lim
                jcol2 = j2 - j1
                do 15 l = 1,nsys
                   t(jcol1,l,jcol2) = t(jcol1,l,jcol2)
-     a               - t(k,l,j1)*t(k,l,j2)/d(k,l) 
+     a               - t(k,l,j1)*t(k,l,j2)/d(k,l)
  15            continue
  20         continue
  25      continue
@@ -15948,7 +15948,7 @@ c
          call vexopy (len,t(1,1,jj),d,t(1,1,jj),3)
  35   continue
       return
-      end 
+      end
       subroutine bfacn (ndim,nn,maxt,maxb,d,t,b)
       implicit double precision (a-h, o-z)
 c
@@ -15956,12 +15956,12 @@ c ... bfacn computes a factorization to a single banded
 c     nonsymmetric matrix represented by d, t, and b and
 c     replaces it.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of t and b in defining routine
 c          n      order of system (= nn)
-c          maxt   number of diagonals stored in t 
-c          maxb   number of diagonals stored in b 
+c          maxt   number of diagonals stored in t
+c          maxb   number of diagonals stored in b
 c          d      vector of length n containing the diagonal
 c                  elements of a
 c          t      array of active size n x maxt giving the
@@ -15982,7 +15982,7 @@ c
          do 30 ip = 1,liml
             i = k + ip
             term = b(i,ip)/pivot
-            do 25 jp = 1,limu 
+            do 25 jp = 1,limu
                term1 = term*t(k,jp)
                l = jp - ip
                if (l) 10,15,20
@@ -15995,12 +15995,12 @@ c
  30      continue
  35   continue
 c
-      do 40 i = 1,n 
+      do 40 i = 1,n
  40   d(i) = 1.0d0/d(i)
       do 50 j = 1,maxt
          len = n - j
          do 45 i = 1,len
- 45      t(i,j) = d(i)*t(i,j) 
+ 45      t(i,j) = d(i)*t(i,j)
  50   continue
       do 60 j = 1,maxb
          len = n - j
@@ -16008,7 +16008,7 @@ c
  55      b(i+j,j) = d(i)*b(i+j,j)
  60   continue
       return
-      end 
+      end
       subroutine bfacnm (nn,nsize,nsys,maxt,maxb,d,t,b)
       implicit double precision (a-h, o-z)
 c
@@ -16016,12 +16016,12 @@ c ... bfacnm computes a factorization to multiple banded
 c     nonsymmetric matrices represented by d, t, and b and
 c     replaces it.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          nsize  size of a subsystem
 c          nsys   number of independent subsystems
-c          maxt   number of diagonals stored in t 
-c          maxb   number of diagonals stored in b 
+c          maxt   number of diagonals stored in t
+c          maxb   number of diagonals stored in b
 c          n      order of system (= nn)
 c          d      vector of length n containing the diagonal
 c                  elements of a
@@ -16041,14 +16041,14 @@ c
          limu = min (maxt,nsize-k)
          do 45 ip = 1,liml
             i = k + ip
-            do 40 jp = 1,limu 
+            do 40 jp = 1,limu
                l = jp - ip
                if (l) 10,20,30
  10            do 15 m = 1,nsys
  15            b(i,m,-l) = b(i,m,-l) - b(i,m,ip)*t(k,m,jp)/d(k,m)
                go to 40
  20            do 25 m = 1,nsys
- 25            d(i,m) = d(i,m) - b(i,m,ip)*t(k,m,jp)/d(k,m) 
+ 25            d(i,m) = d(i,m) - b(i,m,ip)*t(k,m,jp)/d(k,m)
                go to 40
  30            do 35 m = 1,nsys
  35            t(i,m,l) = t(i,m,l) - b(i,m,ip)*t(k,m,jp)/d(k,m)
@@ -16066,19 +16066,19 @@ c
          call vexopy (len,b(j+1,1,j),d,b(j+1,1,j),3)
  60   continue
       return
-      end 
-      subroutine bfs (ndim,nn,maxb,b,x) 
+      end
+      subroutine bfs (ndim,nn,maxb,b,x)
       implicit double precision (a-h, o-z)
 c
 c ... bfs does a forward substitution  (i + b)*x = y  where the
-c     array b represents sub-diagonals.  b corresponds to a 
+c     array b represents sub-diagonals.  b corresponds to a
 c     banded system.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of b in defining routine
 c          n      order of system (= nn)
-c          maxb   number of diagonals stored in b 
+c          maxb   number of diagonals stored in b
 c          b      array of active size n x maxb giving the
 c                  sub-diagonals in the order -1,-2,-3,... .
 c          x      on input, x contains y
@@ -16089,29 +16089,29 @@ c
       dimension b(ndim,1), x(1)
 c
       n = nn
-      do 15 i = 2,n 
+      do 15 i = 2,n
          lim = min (i-1,maxb)
-         sum = x(i) 
+         sum = x(i)
          do 10 j = 1,lim
             sum = sum - b(i,j)*x(i-j)
  10      continue
-         x(i) = sum 
+         x(i) = sum
  15   continue
       return
-      end 
+      end
       subroutine bfsm (nsize,nsys,maxb,b,x)
       implicit double precision (a-h, o-z)
 c
 c ... bfsm does the forward solve (i + b)*x = y  where b contains
 c     subdiagonals for multiple banded systems.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
 c          nsize  the size of an individual subsystem
 c          nsys   the number of subsystems
 c          maxb   number of columns in b array
-c          b      array of active size n by maxb containing 
+c          b      array of active size n by maxb containing
 c                  sub-diagonals in the order -1,-2,-3,... .
 c          x      on input, x contains y
 c                 vector containing solution upon output
@@ -16128,14 +16128,14 @@ c
  15      continue
  20   continue
       return
-      end 
+      end
       subroutine bfst (ndim,nn,maxt,t,x)
       implicit double precision (a-h, o-z)
 c
 c ... bfst does a banded forward substitution  (i + (t**t))*x = y.
 c     t is a rectangular matrix of adjacent super-diagonals.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of t array in defining routine
 c          n      order of system
@@ -16159,21 +16159,21 @@ c
  15      continue
  20   continue
       return
-      end 
+      end
       subroutine bfstm (nsize,nsys,maxt,t,x)
       implicit double precision (a-h, o-z)
 c
 c ... bfstm does a forward solve  (i + (t**t))*x = y  where t is
-c     an array containing superdiagonals in order 1,2,... . 
+c     an array containing superdiagonals in order 1,2,... .
 c     (multiple systems)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
 c          nsize  size of a single subsystem
 c          nsys   number of independent subsystems
 c          maxt   number of columns in t array
-c          t      array of active size n by maxt containing 
+c          t      array of active size n by maxt containing
 c                  the super-diagonal elements of the factorization
 c          x      on input, x contains y
 c                 vector containing solution upon output
@@ -16192,7 +16192,7 @@ c
  15      continue
  20   continue
       return
-      end 
+      end
       subroutine binv (ndim,nn,maxnz,fact)
       implicit double precision (a-h, o-z)
 c
@@ -16200,7 +16200,7 @@ c ... binv computes an approximate inverse to a single banded
 c     symmetric matrix.  fact must contain upon input the output
 c     from a factorization routine.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of fact in the defining routine
 c          n      order of system (= nn)
@@ -16218,7 +16218,7 @@ c
 c ... general banded matrix.
 c
       do 25 ik = 1,nm1
-         k = n - ik 
+         k = n - ik
          lim = min (ik+1,maxnz)
          sum1= 0.0d0
          do 15 i = 2,lim
@@ -16241,7 +16241,7 @@ c
       do 30 i = 2,maxnz
  30   fact(n,i)= 0.0d0
       return
-      end 
+      end
       subroutine binvn (ndim,nn,maxt,maxb,d,t,b)
       implicit double precision (a-h, o-z)
 c
@@ -16249,7 +16249,7 @@ c ... binvn computes an approximate inverse to a single banded
 c     nonsymmetric matrix.  d, t, and b must contain upon input
 c     the output from a factorization routine.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of t and b in the defining routine
 c          n      order of system (= nn)
@@ -16257,10 +16257,10 @@ c          maxt   number of columns in t
 c          maxb   number of columns in b
 c          d      vector of length n containing the diagonal
 c                  elements of the factorization
-c          t      array of active size n by maxt containing 
+c          t      array of active size n by maxt containing
 c                  the superdiagonals of the factorization
 c                  in the order 1,2,3,...
-c          b      array of active size n by maxb containing 
+c          b      array of active size n by maxb containing
 c                  the subdiagonals of the factorization
 c                   in the order -1,-2,-3,....
 c
@@ -16274,7 +16274,7 @@ c
 c ... general banded matrix.
 c
       do 75 ik = 1,nm1
-         k = n - ik 
+         k = n - ik
 c
 c ... copy kth row and column into wksp.
 c
@@ -16324,11 +16324,11 @@ c
 c
 c ... compute kth diagonal element.
 c
-         sum = d(k) 
+         sum = d(k)
          lim = min (limr,limc)
          do 70 j = 1,lim
  70      sum = sum - t(n,j)*b(k+j,j)
-         d(k) = sum 
+         d(k) = sum
  75   continue
 c
 c ... zero out workspace rows.
@@ -16338,17 +16338,17 @@ c
       do 85 j = 1,maxb
  85   b(1,j)= 0.0d0
       return
-      end 
+      end
       subroutine bmul (ndim,n,maxt,d,t,x,y)
       implicit double precision (a-h, o-z)
 c
 c ... bmul computes y = a*x, where x and y are vectors and
 c ... a is a banded symmetric matrix.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim          row dimension of array t
-c         n             order of matrix 
+c         n             order of matrix
 c         maxt          number of columns in t
 c         d             vector of length n giving the
 c                        diagonal elements of a
@@ -16361,9 +16361,9 @@ c ... specifications for parameters
 c
       dimension d(1), t(ndim,1), x(1), y(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   y(i) = d(i)*x(i)
-      if (maxt .le. 0) return 
+      if (maxt .le. 0) return
       do 25 la = 1,maxt
          len = n - la
          do 15 i = 1,len
@@ -16372,15 +16372,15 @@ c
  20      y(i+la) = y(i+la) + t(i,la)*x(i)
  25   continue
       return
-      end 
+      end
       subroutine bmuln (ndim,n,maxt,maxb,d,t,b,x,y)
       implicit double precision (a-h, o-z)
 c
-c ... bmuln computes y = a*x, where x and y are vectors and 
+c ... bmuln computes y = a*x, where x and y are vectors and
 c ... d, t, and b represent a stored in nonsymmetric band
 c ... storage format.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim          row dimension of arrays t and b
 c         n             order of array a
@@ -16400,7 +16400,7 @@ c ... specifications for parameters
 c
       dimension d(1), t(ndim,1), b(ndim,1), x(1), y(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   y(i) = d(i)*x(i)
       if (maxt .lt. 1) go to 25
       do 20 j = 1,maxt
@@ -16408,14 +16408,14 @@ c
          do 15 i = 1,len
  15      y(i) = y(i) + t(i,j)*x(i+j)
  20   continue
- 25   if (maxb .lt. 1) return 
+ 25   if (maxb .lt. 1) return
       do 35 j = 1,maxb
          len = n - j
          do 30 i = 1,len
  30      y(i+j) = y(i+j) + b(i+j,j)*x(i)
  35   continue
       return
-      end 
+      end
       subroutine bmulnt (ndim,n,maxt,maxb,d,t,b,x,y)
       implicit double precision (a-h, o-z)
 c
@@ -16423,7 +16423,7 @@ c ... bmulnt computes y = (a**t)*x, where x and y are vectors and
 c ... d, t, and b represent a stored in nonsymmetric band
 c ... storage format.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim          row dimension of arrays t and b
 c         n             order of array a
@@ -16443,7 +16443,7 @@ c ... specifications for parameters
 c
       dimension d(1), t(ndim,1), b(ndim,1), x(1), y(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   y(i) = d(i)*x(i)
       if (maxt .lt. 1) go to 25
       do 20 j = 1,maxt
@@ -16451,21 +16451,21 @@ c
          do 15 i = 1,len
  15      y(i+j) = y(i+j) + t(i,j)*x(i)
  20   continue
- 25   if (maxb .lt. 1) return 
+ 25   if (maxb .lt. 1) return
       do 35 j = 1,maxb
          len = n - j
          do 30 i = 1,len
  30      y(i) = y(i) + b(i+j,j)*x(i+j)
  35   continue
       return
-      end 
+      end
       subroutine bsol (ndim,nn,maxt,d,t,y,x)
       implicit double precision (a-h, o-z)
 c
 c ... bsol solves a*x = y for a banded and symmetric matrix a. d and
 c     t must contain upon input the factorization arrays from bfac.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of t array in defining routine
 c          n      order of system
@@ -16483,29 +16483,29 @@ c
       dimension t(ndim,1), x(1), y(1), d(1)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call bfst (ndim,n,maxt,t,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = d(i)*x(i)
       call bbs (ndim,n,maxt,t,x)
       return
-      end 
+      end
       subroutine bsolm (nn,nsize,maxt,d,t,y,x)
       implicit double precision (a-h, o-z)
 c
 c ... bsolm solves the system  ax = y  for x, where a is multiple
-c     symmetric banded matrices whose factorizations are contained in 
+c     symmetric banded matrices whose factorizations are contained in
 c     d and t.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
 c          nsize  size of a single subsystem
 c          maxt   number of columns in t array
 c          d      vector of length n containing the diagonal
 c                  elements of the factorization
-c          t      array of active size n by maxt containing 
+c          t      array of active size n by maxt containing
 c                  the super-diagonal elements of the factorization
 c                  in the order 1,2,3,...
 c          y      right-hand-side vector
@@ -16516,15 +16516,15 @@ c
       dimension d(1), t(1), y(1), x(1)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       nsys = n/nsize
       call bfstm (nsize,nsys,maxt,t,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = d(i)*x(i)
       call bbsm (nsize,nsys,maxt,t,x)
       return
-      end 
+      end
       subroutine bsoln (ndim,nn,maxt,maxb,d,t,b,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -16532,7 +16532,7 @@ c ... bsoln solves a*x = y for a banded and nonsymmetric matrix a.
 c     d, t, and b must contain upon input the factorization arrays
 c     from bfacn.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of t array in defining routine
 c          n      order of system
@@ -16554,14 +16554,14 @@ c
       dimension t(ndim,1), x(1), y(1), d(1), b(ndim,1)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call bfs (ndim,n,maxb,b,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = d(i)*x(i)
       call bbs (ndim,n,maxt,t,x)
       return
-      end 
+      end
       subroutine bsolnm (nn,nsize,maxt,maxb,d,t,b,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -16569,10 +16569,10 @@ c ... bsolnm solves a*x = y for a banded and nonsymmetric matrix a.
 c     d, t, and b must contain upon input the factorization arrays
 c     from bfacnm.  (multiple systems)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
-c          nsize  size of an individual subsystem 
+c          nsize  size of an individual subsystem
 c          maxt   number of columns in t array
 c          maxb   number of columns in b array
 c          d      vector of length n containing the diagonal
@@ -16591,15 +16591,15 @@ c
       dimension t(1), x(1), y(1), d(1), b(1)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       nsys = n/nsize
       call bfsm (nsize,nsys,maxb,b,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = d(i)*x(i)
       call bbsm (nsize,nsys,maxt,t,x)
       return
-      end 
+      end
       subroutine bsolnt (ndim,nn,maxt,maxb,d,t,b,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -16607,7 +16607,7 @@ c ... bsolnt solves (a**t)*x = y for a banded and nonsymmetric
 c     matrix a.  d, t, and b must contain upon input the
 c     factorization arrays from bfacn.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of t array in defining routine
 c          n      order of system
@@ -16629,25 +16629,25 @@ c
       dimension t(ndim,1), x(1), y(1), d(1), b(ndim,1)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call bfst (ndim,n,maxt,t,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = d(i)*x(i)
       call bbst (ndim,n,maxb,b,x)
       return
-      end 
+      end
       subroutine bsontm (nn,nsize,maxt,maxb,d,t,b,y,x)
       implicit double precision (a-h, o-z)
 c
 c ... bsontm solves (a**t)*x = y for a banded and nonsymmetric
 c     matrix a.  d, t, and b must contain upon input the
-c     factorization arrays from bfacnm.  (multiple systems) 
+c     factorization arrays from bfacnm.  (multiple systems)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
-c          nsize  size of an individual subsystem 
+c          nsize  size of an individual subsystem
 c          maxt   number of columns in t array
 c          maxb   number of columns in b array
 c          d      vector of length n containing the diagonal
@@ -16666,15 +16666,15 @@ c
       dimension t(1), x(1), y(1), d(1), b(1)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       nsys = n/nsize
       call bfstm (nsize,nsys,maxt,t,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = d(i)*x(i)
       call bbstm (nsize,nsys,maxb,b,x)
       return
-      end 
+      end
       subroutine bicol (n,nz,ia,ja,count,father,oppos,propa)
       implicit double precision (a-h, o-z)
 c
@@ -16682,7 +16682,7 @@ c ... bicolor determines whether or not the matrix represented
 c     in the sparse (ia,ja) format is bi-colorable.
 c     the algorithm used is the union-find algorithm.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n      number of vertices
 c        nz     number of edges (length of ia and ja vectors)
@@ -16696,26 +16696,26 @@ c                matrix has property a
 c
 c ... specification of parameters
 c
-      logical propa 
+      logical propa
       integer ia(1), ja(1), count(1), father(1), oppos(1)
       integer v, w, w0, a, b, c, d
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
          count(i) = 1
          father(i) = 0
          oppos(i) = 0
  10   continue
       do 60 k = 1,nz
-         if (ia(k) .eq. ja(k)) go to 60 
+         if (ia(k) .eq. ja(k)) go to 60
 c
 c ... a = find (ia(k)).
 c
          v = ia(k)
- 15      if (father(v) .eq. 0) go to 20 
+ 15      if (father(v) .eq. 0) go to 20
          v = father(v)
          go to 15
  20      w = ia(k)
- 25      if (father(w) .eq. 0) go to 30 
+ 25      if (father(w) .eq. 0) go to 30
          w0 = w
          w = father(w)
          father(w0) = v
@@ -16725,11 +16725,11 @@ c
 c ... b = find (ja(k)).
 c
          v = ja(k)
- 35      if (father(v) .eq. 0) go to 40 
+ 35      if (father(v) .eq. 0) go to 40
          v = father(v)
          go to 35
  40      w = ja(k)
- 45      if (father(w) .eq. 0) go to 50 
+ 45      if (father(w) .eq. 0) go to 50
          w0 = w
          w = father(w)
          father(w0) = v
@@ -16749,7 +16749,7 @@ c
             c = a
          else
 c
-c ... c = merge (a,oppos(b)). 
+c ... c = merge (a,oppos(b)).
 c
             i = a
             j = oppos(b)
@@ -16767,7 +16767,7 @@ c
             d = b
          else
 c
-c ... d = merge (b,oppos(a)). 
+c ... d = merge (b,oppos(a)).
 c
             i = b
             j = oppos(a)
@@ -16787,18 +16787,18 @@ c
 c
 c ... do coloring.
 c
-      do 65 i = 1,n 
+      do 65 i = 1,n
  65   count(i) = 0
-      do 90 i = 1,n 
+      do 90 i = 1,n
 c
 c ... a = find(i).
 c
          v = i
- 70      if (father(v) .eq. 0) go to 75 
+ 70      if (father(v) .eq. 0) go to 75
          v = father(v)
          go to 70
  75      w = i
- 80      if (father(w) .eq. 0) go to 85 
+ 80      if (father(w) .eq. 0) go to 85
          w0 = w
          w = father(w)
          father(w0) = v
@@ -16815,15 +16815,15 @@ c
  90   continue
       propa = .true.
       return
-      end 
+      end
       subroutine chgcon (tri,ier)
       implicit double precision (a-h, o-z)
 c
-c ... chgcon computes the new estimates for the largest and 
+c ... chgcon computes the new estimates for the largest and
 c     smallest eigenvalues (emax and emin) for conjugate gradient
-c     acceleration. 
+c     acceleration.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          tri    tridiagonal matrix associated with the eigenvalues
 c                    of the conjugate gradient polynomial
@@ -16833,19 +16833,19 @@ c ... specifications for parameters
 c
       dimension tri(2,2)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
       logical           halt, maxadp, minadp, maxadd, minadd
       common / itcom2 / halt, maxadp, minadp, maxadd, minadd
-      common / itcom3 / alpha, beta, zeta, emax, emin, pap, 
+      common / itcom3 / alpha, beta, zeta, emax, emin, pap,
      b                  alphao, gamma, sigma, rr, rho, dkq, dkm1,
      b                  ff, rqmin, rqmax, stptst, udnm, ubarnm,
      b                  bnorm, bnorm1
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
 c     description of variables in common blocks in main routine
 c
@@ -16857,7 +16857,7 @@ c ... ip = 0
 c
  10   end = 1.0d0/alpha
       tri(1,1) = end
-      tri(2,1)= 0.0d0 
+      tri(2,1)= 0.0d0
       if (maxadp) emax = end
       if (minadp) emin = end
       return
@@ -16866,8 +16866,8 @@ c ... ip = 1
 c
  20   t1 = 1.0d0/alpha + beta/alphao
       t2 = beta/(alphao**2)
-      tri(1,2) = t1 
-      tri(2,2) = t2 
+      tri(1,2) = t1
+      tri(2,2) = t2
       tsqr = sqrt (t2)
       tl1 = tri(1,1) + tsqr
       tl2 = t1 + tsqr
@@ -16895,7 +16895,7 @@ c
       emaxo = emax
       end = max (tl1,tl2)
       e1 = eigvss (ip+1,tri,emaxo,end,2,ier)
-      if (ier .ne. 3  .and.  ier .ne. 4) go to 35 
+      if (ier .ne. 3  .and.  ier .ne. 4) go to 35
 c
 c ... poor estimate for emax.  therefore need to stop adaptive
 c     procedure and keep old value of emax.
@@ -16921,7 +16921,7 @@ c
       start = max ( 0.0d0, min (bl1,bl2) )
       emino = emin
       e1 = eigvss (ip+1,tri,start,emino,1,ier)
-      if (ier .ne. 3  .and.  ier .ne. 4) go to 45 
+      if (ier .ne. 3  .and.  ier .ne. 4) go to 45
 c
 c ... poor estimate for emin.  therefore need to stop adaptive
 c     procedure and keep old value of emin.
@@ -16939,36 +16939,36 @@ c
  45   emin = e1
       if (abs (emin - emino) .lt. emin*zeta) minadp = .false.
       return
-      end 
+      end
       subroutine chgsi (suba,coef,jcoef,wfac,jwfac,nn,z,wksp,
      a                  icode,ier)
       implicit double precision (a-h, o-z)
 c
 c ... chgsi adapts on the iteration parameters.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n         order of system (= nn)
 c         z         current pseudo-residual vector
 c         wksp      workspace vector of length n
 c         icode     output indicator of parameter changes
 c                    = 0    estimates of emax, emin not changed
-c                    = 1    estimates of emax, emin changed 
+c                    = 1    estimates of emax, emin changed
 c         ier       error code
 c
 c ... specifications for parameters
 c
-      external suba 
+      external suba
       integer jcoef(2), jwfac(1)
       dimension z(1), wksp(1), coef(1), wfac(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
       logical           halt, maxadp, minadp, maxadd, minadd
       common / itcom2 / halt, maxadp, minadp, maxadd, minadd
-      common / itcom3 / alpha, beta, zeta, emax, emin, pap, 
+      common / itcom3 / alpha, beta, zeta, emax, emin, pap,
      b                  alphao, gamma, sigma, rr, rho, dkq, dkm1,
      b                  ff, rqmin, rqmax, stptst, udnm, ubarnm,
      b                  bnorm, bnorm1
@@ -16979,7 +16979,7 @@ c
       logical rhave, zhave, zthave, rcalp, zcalp, ztcalp,
      a        udhav, rdhav, rzhav, rzthav, zdhav, zzthav, ztdhav
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       n = nn
 c
@@ -17001,7 +17001,7 @@ c ...        rq = (z,a*z)/(r,z)
 c
       call suba (coef,jcoef,wfac,jwfac,n,z,wksp)
       top= 0.0d0
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   top = top + z(i)*wksp(i)
       if (top .ge. 0.0d0) go to 15
       ier = -6
@@ -17020,13 +17020,13 @@ c
 c ... emin adjustment.
 c
       eminp = (emax+emin)*(1.0d0-xx)*(xx-rr)/(2.0d0*xx*(rr+1.0d0))
-      if (minadp) emin = min (emin,eminp,rqmin) 
+      if (minadp) emin = min (emin,eminp,rqmin)
       if (maxadp) emax = max (emax,rqmax)
       if (level .ge. 2) write (nout,20) in,rq,eminp,emin,emax
  20   format (/1x,15x,'parameters were changed at iteration',i7/
-     a        1x,20x,'rayleigh quotient  ',f15.9/ 
-     a        1x,20x,'young estimate     ',f15.9/ 
-     a        1x,20x,'emin               ',f15.9/ 
+     a        1x,20x,'rayleigh quotient  ',f15.9/
+     a        1x,20x,'young estimate     ',f15.9/
+     a        1x,20x,'emin               ',f15.9/
      a        1x,20x,'emax               ',f15.9/)
       return
 c
@@ -17039,13 +17039,13 @@ c
       if (minadp) emin = rqmin
       if (level .ge. 2) write (nout,30) in,rq,emaxp,emaxpp,emin,emax
  30   format (/1x,15x,'parameters were changed at iteration',i7/
-     a        1x,20x,'rayleigh quotient  ',f15.9/ 
-     a        1x,20x,'young estimate     ',f15.9/ 
-     a        1x,20x,'hageman estimate   ',f15.9/ 
-     a        1x,20x,'emin               ',f15.9/ 
+     a        1x,20x,'rayleigh quotient  ',f15.9/
+     a        1x,20x,'young estimate     ',f15.9/
+     a        1x,20x,'hageman estimate   ',f15.9/
+     a        1x,20x,'emin               ',f15.9/
      a        1x,20x,'emax               ',f15.9/)
       return
-      end 
+      end
       subroutine color (nxp,nyp,nzp,nx,ny,nz,pp,p)
       implicit double precision (a-h, o-z)
 c
@@ -17053,7 +17053,7 @@ c ... routine color reproduces a color pattern given by array
 c     pp of dimensions nxp x nyp x nzp into the grid color
 c     array p of dimensions nx x ny x nz.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       nxp,    integer variables giving the x, y, and z dimensions
 c        nyp,    of the pattern array, respectively.
@@ -17080,14 +17080,14 @@ c
  20      continue
  30   continue
       return
-      end 
+      end
       subroutine defcon (ndim,nn,maxnz,jcoef,coef,kblsz,iblock,lbhb)
       implicit double precision (a-h, o-z)
 c
 c ... define defines block constants for block-structured matrices.
 c     (diagonal data structure, constant block size)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim     row dimension of coef array in defining routine
 c         nn       size of system
@@ -17123,7 +17123,7 @@ c
 c
 c ... find block for jcol.
 c
-         ib = (i-1)/kblsz + 1 
+         ib = (i-1)/kblsz + 1
          jb = (jcol-1)/kblsz + 1
          id = jb - ib
          if (id .eq. iblock(1,ipt)) go to 20
@@ -17134,7 +17134,7 @@ c
  25   continue
       lbhb = ipt
 c
-c ... split zero diagonal block into super and sub diagonals.
+c ... nspcg_split zero diagonal block into super and sub diagonals.
 c
       jlim = iblock(3,2)
       do 30 j = 1,jlim
@@ -17148,13 +17148,13 @@ c
 c
 c ... form starting positions.
 c
-      if (lbhb .le. 2) return 
+      if (lbhb .le. 2) return
       iblock(2,3) = 1
-      if (lbhb .le. 3) return 
+      if (lbhb .le. 3) return
       do 40 j = 4,lbhb
- 40   iblock(2,j) = iblock(2,j-1) + iblock(3,j-1) 
+ 40   iblock(2,j) = iblock(2,j-1) + iblock(3,j-1)
       return
-      end 
+      end
       subroutine define (ndim,maxnew,jcnew,coef,ncol,nc,
      a                   iblock,lbhb)
       implicit double precision (a-h, o-z)
@@ -17162,17 +17162,17 @@ c
 c ... define defines block constants for block-structured matrices.
 c     (diagonal data structure, nonconstant block size)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim     row dimension of coef array in defining routine
 c         maxnew   integer vector giving the number of diagonals
-c                   for each distinct block size. 
+c                   for each distinct block size.
 c         jcnew    integer array of size ncolor*max(maxnew(i))
 c                   giving the diagonal numbers for each distinct
 c                   block size.
 c         coef     matrix representation array
-c         ncolor   number of distinct block sizes 
-c         nc       integer vector of length ncolor, giving the number 
+c         ncolor   number of distinct block sizes
+c         nc       integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants upon output
@@ -17186,7 +17186,7 @@ c
      a          iblock(3,ncol,3)
       dimension coef(ndim,1)
 c
-      ncolor = ncol 
+      ncolor = ncol
       ist = 1
       do 60 k = 1,ncolor
          ncc = nc(k)
@@ -17200,7 +17200,7 @@ c
          iblock(3,k,2) = 0
          do 35 j = 1,maxnz
             jd = jcnew(k,j)
-            do 10 i = ist,ied 
+            do 10 i = ist,ied
                if (coef(i,j) .ne. 0.0d0) go to 15
  10         continue
             go to 35
@@ -17214,19 +17214,19 @@ c
                js = js + nc(ij)
                if (js .ge. jcol) go to 25
  20         continue
- 25         jb = ij 
+ 25         jb = ij
             id = jb - ib
-            if (id .eq. iblock(1,k,ipt)) go to 30 
+            if (id .eq. iblock(1,k,ipt)) go to 30
             ipt = ipt + 1
             iblock(1,k,ipt) = id
             iblock(3,k,ipt) = 0
- 30         iblock(3,k,ipt) = iblock(3,k,ipt) + 1 
+ 30         iblock(3,k,ipt) = iblock(3,k,ipt) + 1
  35      continue
          lbhb(k) = ipt
 c
-c ... split zero diagonal block into super and sub diagonals.
+c ... nspcg_split zero diagonal block into super and sub diagonals.
 c
-         jlim = iblock(3,k,2) 
+         jlim = iblock(3,k,2)
          do 40 j = 1,jlim
             jd = jcnew(k,j)
             if (jd .lt. 0) go to 45
@@ -17247,14 +17247,14 @@ c
  55      ist = ied + 1
  60   continue
       return
-      end 
+      end
       double precision function determ (n,tri,xlmda)
       implicit double precision (a-h, o-z)
 c
 c     determ computes the determinant of a symmetric
 c     tridiagonal matrix given by tri. det(tri - xlmda*i) = 0
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of tridiagonal system
 c          tri    symmetric tridiagonal matrix of order n
@@ -17282,36 +17282,36 @@ c
    20 determ = d1
 c
       return
-      end 
+      end
       subroutine detsym (ndim,maxnzz,coef,jcoef,nn,isymm)
       implicit double precision (a-h, o-z)
 c
 c ... detsym determines if the matrix is symmetric.
-c     (purdue storage format) 
+c     (purdue storage format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim     row dimension of coef in defining routine
 c         maxnz    number of columns in coef
 c         coef     array of matrix nonzeros
-c         jcoef    array of matrix column numbers 
+c         jcoef    array of matrix column numbers
 c         n        order of matrix (= nn)
-c         isymm    symmetry switch.  upon output, 
+c         isymm    symmetry switch.  upon output,
 c                   isymm = 0  if matrix is symmetric
 c                         = 1  if matrix is nonsymmetric
 c
 c ... specifications for parameters
 c
       dimension coef(ndim,2)
-      integer   jcoef(ndim,2) 
+      integer   jcoef(ndim,2)
 c
       n = nn
       maxnz = maxnzz
       isymm = 0
       if (maxnz .le. 1) return
-      do 20 i = 1,n 
+      do 20 i = 1,n
          do 15 j = 2,maxnz
-            jcol = jcoef(i,j) 
+            jcol = jcoef(i,j)
             if (jcol .eq. i) go to 15
             val = coef(i,j)
             do 10 jj = 2,maxnz
@@ -17327,15 +17327,15 @@ c
  15      continue
  20   continue
       return
-      end 
+      end
       subroutine echall (n,iparm,rparm,icall,icallr,ier)
       implicit double precision (a-h, o-z)
 c
-c ... echall initializes the package common blocks from the 
+c ... echall initializes the package common blocks from the
 c ... information contained in iparm and rparm.  echall also
 c ... prints the values of all parameters in iparm and rparm.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          iparm
 c           and
@@ -17343,7 +17343,7 @@ c          rparm  arrays of parameters specifying options and
 c                    tolerances
 c          icall  indicator of which parameters are being printed
 c                    icall = 1,  initial parameters
-c                          = 2,  final parameters 
+c                          = 2,  final parameters
 c          icallr  indicator of calling routine
 c                          = 1,  called from nspcg
 c                          = 2,  called from accelerator
@@ -17351,13 +17351,13 @@ c
 c ... specifications for parameters
 c
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
       logical           halt, maxadp, minadp, maxadd, minadd
       common / itcom2 / halt, maxadp, minadp, maxadd, minadd
-      common / itcom3 / alpha, beta, zeta, emax, emin, pap, 
+      common / itcom3 / alpha, beta, zeta, emax, emin, pap,
      b                  alphao, gamma, sigma, rr, rho, dkq, dkm1,
      b                  ff, rqmin, rqmax, stptst, udnm, ubarnm,
      b                  bnorm, bnorm1
@@ -17365,11 +17365,11 @@ c
       logical           omgadp
       common / itcom5 / omega, alphab, betab, fff, specr, omgadp
       common / itcom6 / method, iscale, iperm, nstore,
-     a                  ifact, kblsz, lvfill, ltrunc, ndeg, 
+     a                  ifact, kblsz, lvfill, ltrunc, ndeg,
      a                  ipropa, isymm, ifctv
       common / itcom8 / ainf
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       logical erflag
       integer   iparm(25)
@@ -17395,9 +17395,9 @@ c
       nout   = iparm(4)
       idgts  = iparm(5)
       maxad  = iparm(6)
-      maxadd = (maxad .eq. 1) 
+      maxadd = (maxad .eq. 1)
       minad  = iparm(7)
-      minadd = (minad .eq. 1) 
+      minadd = (minad .eq. 1)
       maxadp = maxadd
       minadp = minadd
       iomgad = iparm(8)
@@ -17406,7 +17406,7 @@ c
       ns2    = iparm(10)
       ns3    = iparm(11)
       iqlr   = iparm(22)
-      iplr   = iqlr 
+      iplr   = iqlr
 c
       zeta   = rparm(1)
       emax   = rparm(2)
@@ -17423,7 +17423,7 @@ c
 c
       erflag = .false.
       erflag = erflag .or. ntest .lt. 1 .or. ntest .gt. 10
-      erflag = erflag .or. itmax .le. 0 
+      erflag = erflag .or. itmax .le. 0
       erflag = erflag .or. maxad .lt. 0 .or. maxad .gt. 1
       erflag = erflag .or. minad .lt. 0 .or. minad .gt. 1
       erflag = erflag .or. ns1 .lt. 0
@@ -17469,10 +17469,10 @@ c
 c
       if (nbl1d .eq. -1) nbl1d = n
       if (nbl2d .eq. -1) nbl2d = n
-      kblsz = nbl1d 
+      kblsz = nbl1d
       erflag = .false.
       erflag = erflag .or. iqlr .lt. 0 .or. iqlr .gt. 3
-      erflag = erflag .or. ipropa .lt. 0 .or. ipropa .gt. 3 
+      erflag = erflag .or. ipropa .lt. 0 .or. ipropa .gt. 3
       if (erflag) go to 999
 c
 c
@@ -17487,7 +17487,7 @@ c prepare to do output ...
 c
       if (level .le. 2) return
       write (nout,15)
- 15   format (/5x,'initial iterative parameters') 
+ 15   format (/5x,'initial iterative parameters')
       go to 30
 c
  20   if (level .le. 2) return
@@ -17505,9 +17505,9 @@ c
  305  write (nout,302)
  302  format (5x,'general and acceleration parameters')
       ibip = 1
-      ieip = naiprm 
+      ieip = naiprm
       ibrp = 1
-      ierp = narprm 
+      ierp = narprm
 c
  300  write (nout,35) (i,iparm(i),inames(i),i=ibip,ieip)
  35   format (10x,'iparm(',i2,') =',i15,4x,'(',a6,')'  )
@@ -17515,21 +17515,21 @@ c
  40   format (10x,'rparm(',i2,') =',d15.8,4x,'(',a6,')'  )
       return
 c
-c error returns ... 
+c error returns ...
 c
 c inadmissible option ...
  999  ier = -10
       call ershow (ier,'echall')
       return
-      end 
-      double precision function eigvss (n,tri,start,end,icode,ier) 
+      end
+      double precision function eigvss (n,tri,start,end,icode,ier)
       implicit double precision (a-h, o-z)
 c
 c ... eigvss computes a selected eigenvalue of a symmetric
 c     tridiagonal matrix for conjugate gradient acceleration.
 c     modified imsl routine zbrent used.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of tridiagonal system
 c          tri    symmetric tridiagonal matrix of order n
@@ -17544,24 +17544,24 @@ c ... specifications for parameters
 c
       dimension tri(2,1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
       logical           halt, maxadp, minadp, maxadd, minadd
       common / itcom2 / halt, maxadp, minadp, maxadd, minadd
-      common / itcom3 / alpha, beta, zeta, emax, emin, pap, 
+      common / itcom3 / alpha, beta, zeta, emax, emin, pap,
      b                  alphao, gamma, sigma, rr, rho, dkq, dkm1,
      b                  ff, rqmin, rqmax, stptst, udnm, ubarnm,
      b                  bnorm, bnorm1
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       eigvss= 0.0d0
-      itmp = int (-dlog10 (abs (zeta))) 
+      itmp = int (-dlog10 (abs (zeta)))
       nsig = max (itmp,4)
-      maxfn = max (itmax,50) 
+      maxfn = max (itmax,50)
       eps= 0.0d0
       a = start
       b = end
@@ -17570,7 +17570,7 @@ c
       if (icode .eq. 2) eigvss = min (a,b)
 c
       return
-      end 
+      end
       subroutine elim1 (nn,ndim,maxnzz,jcoef,coef,rhs,wksp,toll)
       implicit double precision (a-h, o-z)
 c
@@ -17589,7 +17589,7 @@ c
 c         n       dimension of matrix ( = nn)
 c         ndim    row dimension of arrays jcoef and coef in the
 c                    calling program
-c         maxnz   maximum number of nonzero entries per row (=maxnzz) 
+c         maxnz   maximum number of nonzero entries per row (=maxnzz)
 c         jcoef   integer array of matrix representation
 c         coef    array of sparse matrix representation
 c         rhs     right hand side of matrix problem
@@ -17598,7 +17598,7 @@ c         tol     tolerance factor  (= toll)
 c
 c ... specifications for arguments
 c
-      integer   jcoef(ndim,1) 
+      integer   jcoef(ndim,1)
       dimension coef(ndim,1), rhs(1), wksp(1)
 c
       n = nn
@@ -17606,21 +17606,21 @@ c
       tol = toll
       if (n .le. 0  .or.  maxnz .lt. 2) return
 c
-c ... find maximum off-diagonal elements in absolute value. 
+c ... find maximum off-diagonal elements in absolute value.
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   wksp(i)= 0.0d0
       do 20 j = 2,maxnz
          do 15 i = 1,n
  15      wksp(i) = wksp(i) + abs (coef(i,j))
  20   continue
-      do 25 i = 1,n 
+      do 25 i = 1,n
  25   wksp(i) = wksp(i) / abs(coef(i,1))
 c
 c ... eliminate desired rows and columns.
 c
-      do 35 i = 1,n 
-         if (wksp(i) .gt. tol) go to 35 
+      do 35 i = 1,n
+         if (wksp(i) .gt. tol) go to 35
          rhs(i) = rhs(i)/coef(i,1)
          coef(i,1) = 1.0d0
          do 30 j = 2,maxnz
@@ -17630,15 +17630,15 @@ c
  35   continue
       do 45 j = 2,maxnz
          do 40 i = 1,n
-            jcol = jcoef(i,j) 
+            jcol = jcoef(i,j)
             if (wksp(jcol) .gt. tol) go to 40
-            rhs(i) = rhs(i) - coef(i,j)*rhs(jcol) 
+            rhs(i) = rhs(i) - coef(i,j)*rhs(jcol)
             coef(i,j)= 0.0d0
             jcoef(i,j) = i
  40      continue
  45   continue
       return
-      end 
+      end
       subroutine elim2 (nn,ndim,maxnzz,jcoef,coef,rhs,wksp,toll)
       implicit double precision (a-h, o-z)
 c
@@ -17674,9 +17674,9 @@ c
       tol = toll
       if (n .le. 0  .or.  maxnz .lt. 2) return
 c
-c ... find maximum off-diagonal elements in absolute value. 
+c ... find maximum off-diagonal elements in absolute value.
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   wksp(i)= 0.0d0
       do 25 j = 2,maxnz
          ind = jcoef(j)
@@ -17686,13 +17686,13 @@ c
          do 20 i = 1,len
  20      wksp(i+ind) = wksp(i+ind) + abs (coef(i,j))
  25   continue
-      do 30 i = 1,n 
+      do 30 i = 1,n
  30   wksp(i) = wksp(i) / abs(coef(i,1))
 c
 c ... eliminate desired rows and columns.
 c
-      do 50 i = 1,n 
-         if (wksp(i) .gt. tol) go to 50 
+      do 50 i = 1,n
+         if (wksp(i) .gt. tol) go to 50
          rhs(i) = rhs(i)/coef(i,1)
          coef(i,1) = 1.0d0
          do 40 j = 2,maxnz
@@ -17710,7 +17710,7 @@ c
  45      coef(i,j)= 0.0d0
  50   continue
       return
-      end 
+      end
       subroutine elim3 (nn,ndim,maxnzz,jcoef,coef,rhs,wksp,toll)
       implicit double precision (a-h, o-z)
 c
@@ -17746,9 +17746,9 @@ c
       tol = toll
       if (n .le. 0  .or.  maxnz .lt. 2) return
 c
-c ... find maximum off-diagonal elements in absolute value. 
+c ... find maximum off-diagonal elements in absolute value.
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   wksp(i)= 0.0d0
       do 20 j = 2,maxnz
          ind = jcoef(j)
@@ -17757,29 +17757,29 @@ c
          do 15 i = ist1,ist2
  15      wksp(i) = wksp(i) + abs (coef(i,j))
  20   continue
-      do 25 i = 1,n 
+      do 25 i = 1,n
  25   wksp(i) = wksp(i) / abs(coef(i,1))
 c
 c ... eliminate desired rows and columns.
 c
-      do 35 i = 1,n 
-         if (wksp(i) .gt. tol) go to 35 
+      do 35 i = 1,n
+         if (wksp(i) .gt. tol) go to 35
          rhs(i) = rhs(i)/coef(i,1)
          coef(i,1) = 1.0d0
          do 30 j = 2,maxnz
  30      coef(i,j)= 0.0d0
  35   continue
-      do 45 i = 1,n 
-         if (wksp(i) .gt. tol) go to 45 
+      do 45 i = 1,n
+         if (wksp(i) .gt. tol) go to 45
          do 40 j = 2,maxnz
             inew = i - jcoef(j)
             if (inew .lt. 1 .or. inew .gt. n) go to 40
             rhs(inew) = rhs(inew) - coef(inew,j)*rhs(i)
-            coef(inew,j)= 0.0d0 
+            coef(inew,j)= 0.0d0
  40      continue
  45   continue
       return
-      end 
+      end
       subroutine elim4 (mm,np,ia,ja,a,rhs,wksp,toll)
       implicit double precision (a-h, o-z)
 c
@@ -17801,7 +17801,7 @@ c         ia      vector of i values
 c         ja      vector of j values
 c         a       vector of coefficients
 c         rhs     right hand side of matrix problem
-c         wksp    wksp vector of length n (2n if keygs = 1) 
+c         wksp    wksp vector of length n (2n if keygs = 1)
 c         tol     tolerance factor  (= toll)
 c
 c ... specifications for arguments
@@ -17809,24 +17809,24 @@ c
       integer ia(1), ja(1), np(2)
       dimension a(1), rhs(1), wksp(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       m = mm
-      n = np(2) - 1 
+      n = np(2) - 1
       nz = np(m+1) - 1
       tol = toll
       np1 = n + 1
 c
 c ... find sum of absolute values of off-diagonal coefficients.
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   wksp(i)= 0.0d0
       if (keygs .eq. 1) go to 30
-      do 25 k = 2,m 
+      do 25 k = 2,m
          ist = np(k)
          ied = np(k+1) - 1
 cdir$ ivdep
@@ -17837,33 +17837,33 @@ cdir$ ivdep
  20      wksp(ja(i)) = wksp(ja(i)) + abs(a(i))
  25   continue
       go to 50
- 30   do 45 k = 2,m 
+ 30   do 45 k = 2,m
          ist = np(k)
          ied = np(k+1) - 1
          len = ied - ist + 1
-         call vgathr (len,wksp,ia(ist),wksp(n+1)) 
+         call vgathr (len,wksp,ia(ist),wksp(n+1))
          do 35 i = ist,ied
  35      wksp(i-ist+1+n) = wksp(i-ist+1+n) + abs(a(i))
-         call vscatr (len,wksp(n+1),ia(ist),wksp) 
-         call vgathr (len,wksp,ja(ist),wksp(n+1)) 
+         call vscatr (len,wksp(n+1),ia(ist),wksp)
+         call vgathr (len,wksp,ja(ist),wksp(n+1))
          do 40 i = ist,ied
  40      wksp(i-ist+1+n) = wksp(i-ist+1+n) + abs(a(i))
-         call vscatr (len,wksp(n+1),ja(ist),wksp) 
+         call vscatr (len,wksp(n+1),ja(ist),wksp)
  45   continue
- 50   do 55 i = 1,n 
+ 50   do 55 i = 1,n
  55   wksp(i) = wksp(i) / abs(a(i))
 c
 c ... eliminate desired rows and columns.
 c
-      do 70 l = 1,n 
-         if (wksp(l) .gt. tol) go to 70 
-         rhs(l) = rhs(l)/a(l) 
-         a(l) = 1.0d0 
+      do 70 l = 1,n
+         if (wksp(l) .gt. tol) go to 70
+         rhs(l) = rhs(l)/a(l)
+         a(l) = 1.0d0
          do 60 k = np1,nz
             i = ia(k)
             j = ja(k)
             if (i .eq. l .and. wksp(j) .gt. tol)
-     a              rhs(j) = rhs(j) - a(k)*rhs(i) 
+     a              rhs(j) = rhs(j) - a(k)*rhs(i)
             if (j .ne. l) go to 60
             rhs(i) = rhs(i) - a(k)*rhs(j)
             a(k) = 0.0d0
@@ -17873,7 +17873,7 @@ c
  65      continue
  70   continue
       return
-      end 
+      end
       subroutine elim5 (mm,np,ia,ja,a,rhs,wksp,toll)
       implicit double precision (a-h, o-z)
 c
@@ -17895,7 +17895,7 @@ c         ia      vector of i values
 c         ja      vector of j values
 c         a       vector of coefficients
 c         rhs     right hand side of matrix problem
-c         wksp    wksp vector of length n (2n if keygs = 1) 
+c         wksp    wksp vector of length n (2n if keygs = 1)
 c         tol     tolerance factor  (= toll)
 c
 c ... specifications for arguments
@@ -17903,23 +17903,23 @@ c
       integer ia(1), ja(1), np(2)
       dimension a(1), rhs(1), wksp(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       m = mm
-      n = np(2) - 1 
+      n = np(2) - 1
       nz = np(m+1) - 1
       tol = toll
 c
 c ... find sum of absolute values of off-diagonal coefficients.
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   wksp(i)= 0.0d0
       if (keygs .eq. 1) go to 25
-      do 20 k = 2,m 
+      do 20 k = 2,m
          ist = np(k)
          ied = np(k+1) - 1
 cdir$ ivdep
@@ -17927,24 +17927,24 @@ cdir$ ivdep
  15      wksp(ia(i)) = wksp(ia(i)) + abs(a(i))
  20   continue
       go to 40
- 25   do 35 k = 2,m 
+ 25   do 35 k = 2,m
          ist = np(k)
          ied = np(k+1) - 1
          len = ied - ist + 1
-         call vgathr (len,wksp,ia(ist),wksp(n+1)) 
+         call vgathr (len,wksp,ia(ist),wksp(n+1))
          do 30 i = ist,ied
  30      wksp(i-ist+1+n) = wksp(i-ist+1+n) + abs(a(i))
-         call vscatr (len,wksp(n+1),ia(ist),wksp) 
+         call vscatr (len,wksp(n+1),ia(ist),wksp)
  35   continue
- 40   do 45 i = 1,n 
+ 40   do 45 i = 1,n
  45   wksp(i) = wksp(i) / abs(a(i))
 c
 c ... eliminate desired rows and columns.
 c
-      do 50 i = 1,n 
-         if (wksp(i) .gt. tol) go to 50 
-         rhs(i) = rhs(i)/a(i) 
-         a(i) = 1.0d0 
+      do 50 i = 1,n
+         if (wksp(i) .gt. tol) go to 50
+         rhs(i) = rhs(i)/a(i)
+         a(i) = 1.0d0
  50   continue
       np1 = n + 1
       do 55 k = np1,nz
@@ -17952,20 +17952,20 @@ c
  55   continue
       do 60 k = np1,nz
          j = ja(k)
-         if (wksp(j) .gt. tol) go to 60 
+         if (wksp(j) .gt. tol) go to 60
          i = ia(k)
          rhs(i) = rhs(i) - a(k)*rhs(j)
-         a(k) = 0.0d0 
+         a(k) = 0.0d0
  60   continue
       return
-      end 
+      end
       subroutine ershow (ierr,iname)
       implicit double precision (a-h, o-z)
 c
 c ... ershow prints an appropriate error message for the error
-c     numbered ier. 
+c     numbered ier.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ier     error number (input)
 c                 .gt. 0     for warning errors
@@ -17976,19 +17976,19 @@ c ... specifications for parameters
 c
       character*10 iname
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
-      common / itcom3 / alpha, beta, zeta, emax, emin, pap, 
+      common / itcom3 / alpha, beta, zeta, emax, emin, pap,
      b                  alphao, gamma, sigma, rr, rho, dkq, dkm1,
      b                  ff, rqmin, rqmax, stptst, udnm, ubarnm,
      b                  bnorm, bnorm1
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
-      character*80  fmess(20), wmess(6) 
+      character*80  fmess(20), wmess(6)
       data fmess(1)  / 'nonpositive matrix size n' /
       data fmess(2)  / 'insufficient floating point workspace' /
       data fmess(3)  / 'insufficient integer workspace' /
@@ -18003,7 +18003,7 @@ c
       data fmess(12) / 'zero pivot encountered during factorization' /
       data fmess(13) / 'breakdown in direction vector calculation' /
       data fmess(14) / 'breakdown in attempt to perform rotation' /
-      data fmess(15) / 'breakdown in iterate calculation' / 
+      data fmess(15) / 'breakdown in iterate calculation' /
       data fmess(16) / 'unimplemented combination of parameters' /
       data fmess(17) / 'error in computing preconditioning polynomial' /
       data fmess(18) / 'unable to perform eigenvalue estimation' /
@@ -18012,30 +18012,30 @@ c
       data wmess(1)  / 'failure to converge in itmax iterations' /
       data wmess(2)  / 'zeta too small' /
       data wmess(3)  / 'no convergence in maxfn iterations in zbrent' /
-      data wmess(4)  / 'f(a) and f(b) have the same sign in zbrent' / 
+      data wmess(4)  / 'f(a) and f(b) have the same sign in zbrent' /
       data wmess(5)  / 'negative pivot encountered in factorization' /
       data wmess(6)  / 'unknown warning' /
 c
       ier = ierr
       if (ier .eq. 0) return
-      if (ier .lt. 0  .and.  level .lt. 0) return 
-      if (ier .gt. 0  .and.  level .lt. 1) return 
+      if (ier .lt. 0  .and.  level .lt. 0) return
+      if (ier .gt. 0  .and.  level .lt. 1) return
       if (ier .lt. -19) ier = -20
       if (ier .gt.   5) ier =   6
       if (ier .lt. 0) write (nout,10)
  10   format (//1x,60('*') /
      a          1x,18('*'),' f a t a l    e r r o r ',18('*') /
-     a          1x,60('*') /) 
+     a          1x,60('*') /)
       if (ier .gt. 0) write (nout,20)
  20   format (//1x,60('*') /
      a          1x,16('*'),' w a r n i n g    e r r o r ',16('*') /
-     a          1x,60('*') /) 
+     a          1x,60('*') /)
       write (nout,23) iname
  23   format (1x,'routine ',a10)
       inum = iabs(ier)
       if (ier .gt. 0) go to 30
 c
-c ... print out fatal errors. 
+c ... print out fatal errors.
 c
       write (nout,25) fmess(inum)
  25   format (1x,a80)
@@ -18057,18 +18057,18 @@ c
  999  write (nout,1000)
  1000 format (/1x,60('*')/)
       return
-      end 
+      end
       subroutine filln (maxnz,jcoef)
       implicit double precision (a-h, o-z)
 c
 c ... filln determines the fill-in diagonals for nonsymmetric
 c     diagonal storage.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        maxnz   upon input, the number of diagonals
 c                upon output, the number of diagonals with fill-in
-c        jcoef   upon input, the diagonal numbers 
+c        jcoef   upon input, the diagonal numbers
 c                upon output, the diagonal numbers with fill-in
 c
 c ... specifications for parameters
@@ -18080,7 +18080,7 @@ c
          do 15 j2 = 1,maxnz
             jd = jcoef(j1) + jcoef(j2)
             if (jcoef(j1)*jcoef(j2) .ge. 0) go to 15
-            do 10 j3 = 1,maxn 
+            do 10 j3 = 1,maxn
                if (jcoef(j3) .eq. jd) go to 15
  10         continue
             maxn = maxn + 1
@@ -18089,34 +18089,34 @@ c
  20   continue
       maxnz = maxn
       return
-      end 
+      end
       subroutine fills (maxt,jt)
       implicit double precision (a-h, o-z)
 c
 c ... fills determines the fill-in diagonals for symmetric
 c     diagonal storage.
 c
-c ... parameters -- 
+c ... parameters --
 c
-c        maxt    upon input, the number of diagonals in the 
+c        maxt    upon input, the number of diagonals in the
 c                 upper triangle
 c                upon output, the number of diagonals in the
 c                 upper triangle with fill-in
 c        jt      upon input, the diagonal numbers in the upper
 c                 triangle
 c                upon output, the diagonal numbers in the upper
-c                 triangle with fill-in 
+c                 triangle with fill-in
 c
 c ... specifications for parameters
 c
-      integer jt(1) 
+      integer jt(1)
 c
       maxn = maxt
       do 20 j1 = 1,maxt
          do 15 j2 = 1,maxt
             jd = jt(j1) - jt(j2)
             if (jd .le. 0) go to 15
-            do 10 j3 = 1,maxn 
+            do 10 j3 = 1,maxn
                if (jt(j3) .eq. jd) go to 15
  10         continue
             maxn = maxn + 1
@@ -18125,14 +18125,14 @@ c
  20   continue
       maxt = maxn
       return
-      end 
+      end
       subroutine fillnp (ndim,nn,maxcc,jc,c,mwidth,ier)
       implicit double precision (a-h, o-z)
 c
 c ... fillnp determines the fill-in structure.
 c     (purdue storage, nonsymmetric matrix)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of jc and c arrays
 c          n      order of system (= nn)
@@ -18142,7 +18142,7 @@ c                 upon output, maxc is the number of columns in
 c                  the c array with fill-in
 c          jc     integer array of active size n by maxc giving the
 c                  column numbers of the corresponding elements in c
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  coefficients of the off-diagonal elements
 c          mwidth maximum column width to be allowed for fill-in
 c          ier    error code
@@ -18159,14 +18159,14 @@ c
       maxc = maxcc
       maxu = maxc
 c
-      if (maxc .lt. 1) return 
+      if (maxc .lt. 1) return
       nm1 = n - 1
       do 45 k = 1,nm1
          kp1 = k + 1
          do 40 j1 = 1,maxc
          do 35 i = kp1,n
             if (jc(i,j1) .ne. k) go to 35
-            do 30 j2 = 1,maxc 
+            do 30 j2 = 1,maxc
                j = jc(k,j2)
                if (j .le. k .or. j .eq. i) go to 30
                do 10 j3 = 1,maxu
@@ -18181,7 +18181,7 @@ c
                if (maxu .le. mwidth) go to 20
                ier = -2
                return
- 20            do 25 ii = 1,n 
+ 20            do 25 ii = 1,n
                   jc(ii,maxu) = ii
                   c(ii,maxu)= 0.0d0
  25            continue
@@ -18199,14 +18199,14 @@ c
  55   continue
       maxcc = maxu
       return
-      end 
+      end
       subroutine fillsp (ndim,nn,maxtt,jt,t,mwidth,ier)
       implicit double precision (a-h, o-z)
 c
 c ... fillsp determines the fill-in structure.
 c     (purdue storage, symmetric matrix)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of t and jt arrays
 c          n      order of system (= nn)
@@ -18216,7 +18216,7 @@ c                 upon output, maxt is the number of columns in
 c                  the t array with fill-in
 c          jt     integer array of active size n by maxt giving the
 c                  column numbers of the corresponding elements in t
-c          t      array of active size n by maxt giving the 
+c          t      array of active size n by maxt giving the
 c                  coefficients of the upper triangle of the matrix
 c          mwidth maximum column width of jt and t to be allowed
 c          ier    error code
@@ -18234,22 +18234,22 @@ c
       maxu = maxt
       ier = 0
 c
-      if (maxt .lt. 1) return 
+      if (maxt .lt. 1) return
       nm1 = n - 1
       do 40 k = 1,nm1
          do 35 j1 = 1,maxt
             jcol1 = jt(k,j1)
             if (jcol1 .le. 0 .or. jcol1 .eq. k) go to 35
-            do 30 j2 = 1,maxt 
+            do 30 j2 = 1,maxt
                jcol2 = jt(k,j2)
-               if (jcol2 .le. 0 .or. jcol2 .eq. k) go to 30 
+               if (jcol2 .le. 0 .or. jcol2 .eq. k) go to 30
                if (jcol2 .le. jcol1) go to 30
                do 10 j3 = 1,maxu
                   if (jcol2 .eq. iabs(jt(jcol1,j3))) go to 30
  10            continue
                do 15 j3 = 1,maxu
                   if (jt(jcol1,j3) .ne. jcol1) go to 15
-                  jt(jcol1,j3) = -jcol2 
+                  jt(jcol1,j3) = -jcol2
                   go to 30
  15            continue
                maxu = maxu + 1
@@ -18273,7 +18273,7 @@ c
  50   continue
       maxtt = maxu
       return
-      end 
+      end
       subroutine ibfcn1 (lddd,ldtt,n,jd,jt,d,t,ncol,nci,
      a                   iblock,lbhb,iunif,ipropa,ipt,
      a                   omega,wksp,ier)
@@ -18284,24 +18284,24 @@ c     contained in d and t (version 1, unmodified).
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ic (version 1) preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         jd       integer array of size ncolor by whatever 
+c         jd       integer array of size ncolor by whatever
 c                   giving the diagonal block diagonal numbers for
 c                   each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
@@ -18316,7 +18316,7 @@ c         ipropa   property a switch
 c                   = 0   matrix does not have block property a
 c                   = 1   matrix has block property a
 c         ipt      integer pointer vector of length ncolor+1 if
-c                   iunif = 0 
+c                   iunif = 0
 c         wksp     floating point workspace vector
 c
 c ... specifications for parameters
@@ -18328,14 +18328,14 @@ c
 c
       ldd = lddd
       ldt = ldtt
-      ncolor = ncol 
+      ncolor = ncol
       unif = iunif .eq. 1
       propa = ipropa .eq. 1
 c
 c ... define various constants.
 c
       if (unif) go to 15
-      klim = ncolor 
+      klim = ncolor
       go to 20
  15   kblsz = nci(1)
       na = kblsz
@@ -18346,7 +18346,7 @@ c
       jlim = lbhb(1)
       llim = jlim
       klim = n/kblsz
-      ndt = iblock(3,1,1) - 1 
+      ndt = iblock(3,1,1) - 1
       ndb = iblock(3,1,2)
       ma = ndt + ndb + 1
 c
@@ -18383,7 +18383,7 @@ c
             incc = ipt(k) - ipt(i)
             go to 55
  50         incc = (k - i)*kblsz
- 55         istc = ist - incc 
+ 55         istc = ist - incc
             jstc = iblock(2,ii,l)
             do 85 j = 3,jlim
                jcol = k + iblock(1,kk,j)
@@ -18407,14 +18407,14 @@ c
                jstd = iblock(2,ii,m)
                md = iblock(3,ii,m)
                if (m .eq. 1) go to 80
-               call t1prod (na,ldt,ldt,ldt,ncolor,na,nc,nb, 
+               call t1prod (na,ldt,ldt,ldt,ncolor,na,nc,nb,
      a                      ma,mb,mc,md,incb,incc,incd,jd(kk,1),
      a                      jt(kk,jstb),jt(ii,jstc),
      a                      jt(ii,jstd),wksp,t(istb,jstb),
      a                      t(istc,jstc),t(istd,jstd))
                go to 85
- 80            md = md + iblock(3,ii,2) 
-               call t1prod (na,ldt,ldt,ldd,ncolor,na,nc,nb, 
+ 80            md = md + iblock(3,ii,2)
+               call t1prod (na,ldt,ldt,ldd,ncolor,na,nc,nb,
      a                      ma,mb,mc,md,incb,incc,incd,jd(kk,1),
      a                      jt(kk,jstb),jt(ii,jstc),
      a                      jd(ii,jstd),wksp,t(istb,jstb),
@@ -18423,7 +18423,7 @@ c
  90      continue
  95   continue
       return
-      end 
+      end
       subroutine ibfcn2 (lddd,ldtt,n,jd,jt,d,t,ncol,nci,
      a                   iblock,lbhb,iunif,ipropa,ipt,
      a                   omega,wksp,ier)
@@ -18434,24 +18434,24 @@ c     contained in d and t (version 2, unmodified).
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ic (version 2) preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         jd       integer array of size ncolor by whatever 
+c         jd       integer array of size ncolor by whatever
 c                   giving the diagonal block diagonal numbers for
 c                   each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
@@ -18466,7 +18466,7 @@ c         ipropa   property a switch
 c                   = 0   matrix does not have block property a
 c                   = 1   matrix has block property a
 c         ipt      integer pointer vector of length ncolor+1 if
-c                   iunif = 0 
+c                   iunif = 0
 c
 c ... specifications for parameters
 c
@@ -18477,14 +18477,14 @@ c
 c
       ldd = lddd
       ldt = ldtt
-      ncolor = ncol 
+      ncolor = ncol
       unif = iunif .eq. 1
       propa = ipropa .eq. 1
 c
 c ... define various constants.
 c
       if (unif) go to 15
-      klim = ncolor 
+      klim = ncolor
       go to 20
  15   kblsz = nci(1)
       na = kblsz
@@ -18495,7 +18495,7 @@ c
       jlim = lbhb(1)
       llim = jlim
       klim = n/kblsz
-      ndt = iblock(3,1,1) - 1 
+      ndt = iblock(3,1,1) - 1
       ndb = iblock(3,1,2)
       ma = ndt + ndb + 1
 c
@@ -18531,7 +18531,7 @@ c
             incc = ipt(k) - ipt(i)
             go to 55
  50         incc = (k - i)*kblsz
- 55         istc = ist - incc 
+ 55         istc = ist - incc
             jstc = iblock(2,ii,l)
             do 85 j = 3,jlim
                jcol = k + iblock(1,kk,j)
@@ -18561,7 +18561,7 @@ c
      a                      jt(ii,jstd),d(ist,1),t(istb,jstb),
      a                      t(istc,jstc),t(istd,jstd))
                go to 85
- 80            md = md + iblock(3,ii,2) 
+ 80            md = md + iblock(3,ii,2)
                call t1prod (ldd,ldt,ldt,ldd,ncolor,na,nc,nb,
      a                      ma,mb,mc,md,incb,incc,incd,jd(kk,1),
      a                      jt(kk,jstb),jt(ii,jstc),
@@ -18571,35 +18571,35 @@ c
  90      continue
  95   continue
       return
-      end 
+      end
       subroutine ibfcn3 (lddd,ldtt,n,jd,jt,d,t,ncol,nci,
      a                   iblock,lbhb,iunif,ipropa,ipt,omega,wksp,
-     a                   ier) 
+     a                   ier)
       implicit double precision (a-h, o-z)
 c
 c ... ibfcn3 does an incomplete block factorization of the matrix
-c     contained in d and t (version 1, modified). 
+c     contained in d and t (version 1, modified).
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ic (version 1) preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         jd       integer array of size ncolor by whatever 
+c         jd       integer array of size ncolor by whatever
 c                   giving the diagonal block diagonal numbers for
 c                   each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
@@ -18614,7 +18614,7 @@ c         ipropa   property a switch
 c                   = 0   matrix does not have block property a
 c                   = 1   matrix has block property a
 c         ipt      integer pointer vector of length ncolor+1 if
-c                   iunif = 0 
+c                   iunif = 0
 c         omega    relaxation factor between 0 and 1.
 c         wksp     floating point workspace vector
 c
@@ -18627,14 +18627,14 @@ c
 c
       ldd = lddd
       ldt = ldtt
-      ncolor = ncol 
+      ncolor = ncol
       unif = iunif .eq. 1
       propa = ipropa .eq. 1
 c
 c ... define various constants.
 c
       if (unif) go to 15
-      klim = ncolor 
+      klim = ncolor
       go to 20
  15   kblsz = nci(1)
       na = kblsz
@@ -18645,7 +18645,7 @@ c
       jlim = lbhb(1)
       llim = jlim
       klim = n/kblsz
-      ndt = iblock(3,1,1) - 1 
+      ndt = iblock(3,1,1) - 1
       ndb = iblock(3,1,2)
       ma = ndt + ndb + 1
 c
@@ -18684,7 +18684,7 @@ c
             incc = ipt(k) - ipt(i)
             go to 55
  50         incc = (k - i)*kblsz
- 55         istc = ist - incc 
+ 55         istc = ist - incc
             jstc = iblock(2,ii,l)
             do 90 j = 3,jlim
                jcol = k + iblock(1,kk,j)
@@ -18708,7 +18708,7 @@ c
  75            jstd = iblock(2,ii,m)
                md = iblock(3,ii,m)
                if (m .eq. 1) go to 80
-               call t1prod (na,ldt,ldt,ldt,ncolor,na,nc,nb, 
+               call t1prod (na,ldt,ldt,ldt,ncolor,na,nc,nb,
      a                      ma,mb,mc,md,incb,incc,incd,jd(kk,1),
      a                      jt(kk,jstb),jt(ii,jstc),
      a                      jt(ii,jstd),wksp,t(istb,jstb),
@@ -18719,8 +18719,8 @@ c
      a                jt(ii,jstd),wksp,t(istb,jstb),t(istc,jstc),
      a                d(istd,1),omega)
                go to 85
- 80            md = md + iblock(3,ii,2) 
-               call t1prod (na,ldt,ldt,ldd,ncolor,na,nc,nb, 
+ 80            md = md + iblock(3,ii,2)
+               call t1prod (na,ldt,ldt,ldd,ncolor,na,nc,nb,
      a                      ma,mb,mc,md,incb,incc,incd,jd(kk,1),
      a                      jt(kk,jstb),jt(ii,jstc),
      a                      jd(ii,jstd),wksp,t(istb,jstb),
@@ -18734,42 +18734,42 @@ c
                do 87 iii = ip1,ip2
  87            wksp(iii) = omega*wksp(iii)
                call bdsol (ldd,na,na,ndt,ndb,d(ist,1),wksp(ip1),
-     a                     wksp(ip1),1) 
+     a                     wksp(ip1),1)
                call vsubd (ldt,ncolor,nc,na,mc,t(istc,jstc),
      a                      jt(ii,jstc),d(istd,1),wksp(ip1),incc)
  90         continue
  95      continue
  100  continue
       return
-      end 
+      end
       subroutine ibfcn4 (lddd,ldtt,n,jd,jt,d,t,ncol,nci,
      a                   iblock,lbhb,iunif,ipropa,ipt,omega,wksp,
-     a                   ier) 
+     a                   ier)
       implicit double precision (a-h, o-z)
 c
 c ... ibfcn4 does an incomplete block factorization of the matrix
-c     contained in d and t (version 2, modified). 
+c     contained in d and t (version 2, modified).
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ic (version 2) preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         jd       integer array of size ncolor by whatever 
+c         jd       integer array of size ncolor by whatever
 c                   giving the diagonal block diagonal numbers for
 c                   each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
@@ -18784,7 +18784,7 @@ c         ipropa   property a switch
 c                   = 0   matrix does not have block property a
 c                   = 1   matrix has block property a
 c         ipt      integer pointer vector of length ncolor+1 if
-c                   iunif = 0 
+c                   iunif = 0
 c         omega    relaxation factor between 0 and 1.
 c         wksp     floating point workspace vector
 c
@@ -18797,7 +18797,7 @@ c
 c
       ldd = lddd
       ldt = ldtt
-      ncolor = ncol 
+      ncolor = ncol
       unif = iunif .eq. 1
       propa = ipropa .eq. 1
 c
@@ -18805,7 +18805,7 @@ c ... define various constants.
 c
       ip1 = n + 1
       if (unif) go to 15
-      klim = ncolor 
+      klim = ncolor
       do 13 k = 1,ncolor
          ist = ipt(k) + 1
          na = nci(k)
@@ -18824,7 +18824,7 @@ c
       jlim = lbhb(1)
       llim = jlim
       klim = n/kblsz
-      ndt = iblock(3,1,1) - 1 
+      ndt = iblock(3,1,1) - 1
       ndb = iblock(3,1,2)
       ma = ndt + ndb + 1
       call rowsum (ldd,n,ma,d,wksp,1)
@@ -18874,7 +18874,7 @@ c
             incc = ipt(k) - ipt(i)
             go to 55
  50         incc = (k - i)*kblsz
- 55         istc = ist - incc 
+ 55         istc = ist - incc
             jstc = iblock(2,ii,l)
             do 90 j = 3,jlim
                jcol = k + iblock(1,kk,j)
@@ -18906,10 +18906,10 @@ c
                call tsumn
      a               (na,nc,nb,ldd,ldt,ldt,ncolor,ma,mb,mc,md,incb,
      a                incc,incd,jd(kk,1),jt(kk,jstb),jt(ii,jstc),
-     a                jt(ii,jstd),d(ist,1),t(istb,jstb),t(istc,jstc), 
+     a                jt(ii,jstd),d(ist,1),t(istb,jstb),t(istc,jstc),
      a                wksp(istd),1.0d0)
                go to 85
- 80            md = md + iblock(3,ii,2) 
+ 80            md = md + iblock(3,ii,2)
                call t1prod (ldd,ldt,ldt,ldd,ncolor,na,nc,nb,
      a                      ma,mb,mc,md,incb,incc,incd,jd(kk,1),
      a                      jt(kk,jstb),jt(ii,jstc),
@@ -18924,9 +18924,9 @@ c
  95      continue
  100  continue
       return
-      end 
+      end
       subroutine ibfcs1 (lddd,ldtt,nn,jd,jt,d,t,kblszz,
-     a                   iblock,lbhb,ipropa,omega,wksp,ier) 
+     a                   iblock,lbhb,ipropa,omega,wksp,ier)
       implicit double precision (a-h, o-z)
 c
 c ... ibfcs1 does an incomplete block factorization of the matrix
@@ -18934,7 +18934,7 @@ c     contained in d and t (version 1, unmodified).
 c     symmetric diagonal data structure, natural ordering.
 c     block ic (version 1) preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
@@ -18945,10 +18945,10 @@ c         jt       integer vector giving the diagonal numbers
 c                   for the off-diagonal blocks
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         kblsz    block size 
+c         kblsz    block size
 c         iblock   integer array of size 3 by lbhb
 c                   giving block constants
-c         lbhb     number of blocks per block row 
+c         lbhb     number of blocks per block row
 c         ipropa   property a switch
 c                   = 0   matrix does not have block property a
 c                   = 1   matrix has block property a
@@ -18969,21 +18969,21 @@ c
       ma = iblock(3,1)
       ndt = ma - 1
 c
-c ... block tridiagonal case. 
+c ... block tridiagonal case.
 c
       if (lbhb .gt. 3) go to 25
       jblkb = iblock(1,3)
       mb = iblock(3,3)
       incb = jblkb*na
       do 20 k = 1,klim
-         ist = (k - 1)*na + 1 
+         ist = (k - 1)*na + 1
          istd = ist + incb
          call bdfac (ldd,na,na,ndt,0,d(ist,1),0)
          if (istd .gt. n) go to 20
          call mcopy (ldd,na,na,ma,d(ist,1),wksp)
          call bdinv (na,na,na,ndt,0,wksp,0)
          call t2prod (na,na,ldt,ldt,ldd,ma,mb,mb,ma,
-     a                incb,incb,0,jd,jt,jt,jd,wksp,t(ist,1),t(ist,1), 
+     a                incb,incb,0,jd,jt,jt,jd,wksp,t(ist,1),t(ist,1),
      a                d(istd,1))
  20   continue
       return
@@ -18991,7 +18991,7 @@ c
 c ... general block structure.
 c
  25   do 50 k = 1,klim
-         ist = (k - 1)*na + 1 
+         ist = (k - 1)*na + 1
          call bdfac (ldd,na,na,ndt,0,d(ist,1),0)
          if (k .eq. klim) go to 50
          call mcopy (ldd,na,na,ma,d(ist,1),wksp)
@@ -19002,7 +19002,7 @@ c
             jstc = iblock(2,jjc)
             mc = iblock(3,jjc)
             incc = jblkc*na
-            istd = ist + incc 
+            istd = ist + incc
             if (istd .gt. n) go to 45
             do 40 jjb = 3,jjlim
                jblkb = iblock(1,jjb)
@@ -19034,9 +19034,9 @@ c
  45      continue
  50   continue
       return
-      end 
+      end
       subroutine ibfcs2 (lddd,ldtt,nn,jd,jt,d,t,kblszz,
-     a                   iblock,lbhb,ipropa,omega,wksp,ier) 
+     a                   iblock,lbhb,ipropa,omega,wksp,ier)
       implicit double precision (a-h, o-z)
 c
 c ... ibfcs2 does an incomplete block factorization of the matrix
@@ -19044,7 +19044,7 @@ c     contained in d and t (version 2, unmodified).
 c     symmetric diagonal data structure, natural ordering.
 c     block ic (version 2) preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
@@ -19055,10 +19055,10 @@ c         jt       integer vector giving the diagonal numbers
 c                   for the off-diagonal blocks
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         kblsz    block size 
+c         kblsz    block size
 c         iblock   integer array of size 3 by lbhb
 c                   giving block constants
-c         lbhb     number of blocks per block row 
+c         lbhb     number of blocks per block row
 c         ipropa   property a switch
 c                   = 0   matrix does not have block property a
 c                   = 1   matrix has block property a
@@ -19078,14 +19078,14 @@ c
       ma = iblock(3,1)
       ndt = ma - 1
 c
-c ... block tridiagonal case. 
+c ... block tridiagonal case.
 c
       if (lbhb .gt. 3) go to 25
       jblkb = iblock(1,3)
       mb = iblock(3,3)
       incb = jblkb*na
       do 20 k = 1,klim
-         ist = (k - 1)*na + 1 
+         ist = (k - 1)*na + 1
          istd = ist + incb
          call bdfac (ldd,na,na,ndt,0,d(ist,1),0)
          call bdinv (ldd,na,na,ndt,0,d(ist,1),0)
@@ -19099,7 +19099,7 @@ c
 c ... general block structure.
 c
  25   do 50 k = 1,klim
-         ist = (k - 1)*na + 1 
+         ist = (k - 1)*na + 1
          call bdfac (ldd,na,na,ndt,0,d(ist,1),0)
          call bdinv (ldd,na,na,ndt,0,d(ist,1),0)
          if (k .eq. klim) go to 50
@@ -19109,7 +19109,7 @@ c
             jstc = iblock(2,jjc)
             mc = iblock(3,jjc)
             incc = jblkc*na
-            istd = ist + incc 
+            istd = ist + incc
             if (istd .gt. n) go to 45
             do 40 jjb = 3,jjlim
                jblkb = iblock(1,jjb)
@@ -19141,17 +19141,17 @@ c
  45      continue
  50   continue
       return
-      end 
+      end
       subroutine ibfcs3 (lddd,ldtt,nn,jd,jt,d,t,kblszz,
      a                   iblock,lbhb,ipropa,omegaa,wksp,ier)
       implicit double precision (a-h, o-z)
 c
 c ... ibfcs3 does an incomplete block factorization of the matrix
-c     contained in d and t (version 1, modified). 
+c     contained in d and t (version 1, modified).
 c     symmetric diagonal data structure, natural ordering.
 c     block ic (version 1) preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
@@ -19162,10 +19162,10 @@ c         jt       integer vector giving the diagonal numbers
 c                   for the off-diagonal blocks
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         kblsz    block size 
+c         kblsz    block size
 c         iblock   integer array of size 3 by lbhb
 c                   giving block constants
-c         lbhb     number of blocks per block row 
+c         lbhb     number of blocks per block row
 c         ipropa   property a switch
 c                   = 0   matrix does not have block property a
 c                   = 1   matrix has block property a
@@ -19190,7 +19190,7 @@ c
       ma = iblock(3,1)
       ndt = ma - 1
 c
-c ... block tridiagonal case. 
+c ... block tridiagonal case.
 c
       if (lbhb .gt. 3) go to 25
       ip1 = na*ma + 1
@@ -19199,7 +19199,7 @@ c
       mb = iblock(3,3)
       incb = jblkb*na
       do 20 k = 1,klim
-         ist = (k - 1)*na + 1 
+         ist = (k - 1)*na + 1
          istd = ist + incb
          call bdfac (ldd,na,na,ndt,0,d(ist,1),0)
          if (istd .gt. n) go to 20
@@ -19216,7 +19216,7 @@ c
  15      wksp(iii) = omega*wksp(iii)
          call bdsol (ldd,na,na,ndt,0,d(ist,1),wksp(ip1),
      a               wksp(ip1),0)
-         call vsubdt (ldt,1,na,na,mb,t(ist,1),jt,d(istd,1), 
+         call vsubdt (ldt,1,na,na,mb,t(ist,1),jt,d(istd,1),
      a                wksp(ip1),incb)
  20   continue
       return
@@ -19226,7 +19226,7 @@ c
  25   ip1 = na*ma + 1
       ip2 = ip1 + na - 1
       do 60 k = 1,klim
-         ist = (k - 1)*na + 1 
+         ist = (k - 1)*na + 1
          call bdfac (ldd,na,na,ndt,0,d(ist,1),0)
          if (k .eq. klim) go to 60
          call mcopy (ldd,na,na,ma,d(ist,1),wksp)
@@ -19237,7 +19237,7 @@ c
             jstc = iblock(2,jjc)
             mc = iblock(3,jjc)
             incc = jblkc*na
-            istd = ist + incc 
+            istd = ist + incc
             if (istd .gt. n) go to 55
             do 50 jjb = 3,jjlim
                jblkb = iblock(1,jjb)
@@ -19282,7 +19282,7 @@ c
                do 42 iii = ip1,ip2
  42            wksp(iii) = omega*wksp(iii)
                call bdsol (ldd,na,na,ndt,0,d(ist,1),wksp(ip1),
-     a                     wksp(ip1),0) 
+     a                     wksp(ip1),0)
                call vsubdt (ldt,1,na,na,mc,t(ist,jstc),jt(jstc),
      a                      d(istd,1),wksp(ip1),incc)
                if (jdiff .eq. 0) go to 50
@@ -19290,24 +19290,24 @@ c
                do 45 iii = ip1,ip2
  45            wksp(iii) = omega*wksp(iii)
                call bdsol (ldd,na,na,ndt,0,d(ist,1),wksp(ip1),
-     a                     wksp(ip1),0) 
+     a                     wksp(ip1),0)
                call vsubdt (ldt,1,na,na,mb,t(ist,jstb),jt(jstb),
      a                      d(istdd,1),wksp(ip1),incb)
  50         continue
  55      continue
  60   continue
       return
-      end 
+      end
       subroutine ibfcs4 (lddd,ldtt,nn,jd,jt,d,t,kblszz,
      a                   iblock,lbhb,ipropa,omegaa,wksp,ier)
       implicit double precision (a-h, o-z)
 c
 c ... ibfcs4 does an incomplete block factorization of the matrix
-c     contained in d and t (version 2, modified). 
+c     contained in d and t (version 2, modified).
 c     symmetric diagonal data structure, natural ordering.
 c     block ic (version 2) preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
@@ -19318,10 +19318,10 @@ c         jt       integer vector giving the diagonal numbers
 c                   for the off-diagonal blocks
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         kblsz    block size 
+c         kblsz    block size
 c         iblock   integer array of size 3 by lbhb
 c                   giving block constants
-c         lbhb     number of blocks per block row 
+c         lbhb     number of blocks per block row
 c         ipropa   property a switch
 c                   = 0   matrix does not have block property a
 c                   = 1   matrix has block property a
@@ -19346,7 +19346,7 @@ c
       ma = iblock(3,1)
       ndt = ma - 1
 c
-c ... block tridiagonal case. 
+c ... block tridiagonal case.
 c
       if (lbhb .gt. 3) go to 25
       ip1 = n + 1
@@ -19356,12 +19356,12 @@ c
       incb = jblkb*na
       call rowsum (ldd,n,ma,d,wksp,0)
       do 20 k = 1,klim
-         ist = (k - 1)*na + 1 
-         isu = k*na 
+         ist = (k - 1)*na + 1
+         isu = k*na
          istd = ist + incb
          call bdfac (ldd,na,na,ndt,0,d(ist,1),0)
          call bdinv (ldd,na,na,ndt,0,d(ist,1),0)
-         call bmul (ldd,na,ndt,d(ist,1),d(ist,2),wksp(ist),wksp(ip1)) 
+         call bmul (ldd,na,ndt,d(ist,1),d(ist,2),wksp(ist),wksp(ip1))
          do 10 ii = ist,isu
             if (wksp(ii) .ne. 0.0d0) go to 10
             ier = -12
@@ -19376,7 +19376,7 @@ c
      a                incb,incb,0,jd,jt,jt,jd,d(ist,1),t(ist,1),
      a                t(ist,1),d(istd,1))
          call rowsum (ldt,na,mb,t(ist,1),wksp(ip1),1)
-         call bmul (ldd,na,ndt,d(ist,1),d(ist,2),wksp(ip1), 
+         call bmul (ldd,na,ndt,d(ist,1),d(ist,2),wksp(ip1),
      a              wksp(ip2))
          call vsubdt (ldt,1,na,na,mb,t(ist,1),jt,wksp(istd),
      a                wksp(ip2),incb)
@@ -19389,11 +19389,11 @@ c
       ip2 = ip1 + na
       call rowsum (ldd,n,ma,d,wksp,0)
       do 60 k = 1,klim
-         ist = (k - 1)*na + 1 
-         isu = k*na 
+         ist = (k - 1)*na + 1
+         isu = k*na
          call bdfac (ldd,na,na,ndt,0,d(ist,1),0)
          call bdinv (ldd,na,na,ndt,0,d(ist,1),0)
-         call bmul (ldd,na,ndt,d(ist,1),d(ist,2),wksp(ist),wksp(ip1)) 
+         call bmul (ldd,na,ndt,d(ist,1),d(ist,2),wksp(ist),wksp(ip1))
          do 26 ii = ist,isu
             if (wksp(ii) .ne. 0.0d0) go to 26
             ier = -12
@@ -19410,7 +19410,7 @@ c
             jstc = iblock(2,jjc)
             mc = iblock(3,jjc)
             incc = jblkc*na
-            istd = ist + incc 
+            istd = ist + incc
             if (istd .gt. n) go to 55
             do 50 jjb = 3,jjlim
                jblkb = iblock(1,jjb)
@@ -19461,24 +19461,24 @@ c
  55      continue
  60   continue
       return
-      end 
+      end
       subroutine ibbs (ldd,ldt,n,kblszz,nsize,lbhb,iblock,d,t,
-     a                 jt,x,ivers,wksp) 
+     a                 jt,x,ivers,wksp)
       implicit double precision (a-h, o-z)
 c
 c ... ibbs does an incomplete block backward pass.
 c     symmetric diagonal data structure, natural ordering.
 c     block ic preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         kblsz    block size 
-c         nsize    size of an individual subsystem within a 
+c         kblsz    block size
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         lbhb     number of blocks per block row 
+c         lbhb     number of blocks per block row
 c         iblock   integer array of size 3 by lbhb
 c                   giving block constants
 c         d        array for diagonal block
@@ -19494,7 +19494,7 @@ c
 c ... specifications for parameters
 c
       integer   jt(1), iblock(3,1)
-      dimension d(ldd,2), t(ldt,1), wksp(1), x(1) 
+      dimension d(ldd,2), t(ldt,1), wksp(1), x(1)
       logical   vers2
 c
       kblsz = kblszz
@@ -19526,10 +19526,10 @@ c
          go to 40
  30      call bmul (ldd,kblsz,nt,d(ist,1),d(ist,2),x(ist),wksp)
          do 35 i = ist,ied
- 35      x(i) = wksp(i-ist+1) 
+ 35      x(i) = wksp(i-ist+1)
  40   continue
       return
-      end 
+      end
       subroutine ibbsn (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,ivers,iunif,wksp)
       implicit double precision (a-h, o-z)
@@ -19538,16 +19538,16 @@ c ... ibbsn does an incomplete block backward solve.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ic preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -19559,7 +19559,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -19576,7 +19576,7 @@ c ... specifications for parameters
 c
       integer   ipt(1), jt(ncolor,1), nci(1), lbhb(1),
      a          iblock(3,ncolor,2)
-      dimension d(ldd,2), t(ldt,1), wksp(1), x(1) 
+      dimension d(ldd,2), t(ldt,1), wksp(1), x(1)
       logical   unif, vers2
 c
       vers2 = ivers .eq. 2
@@ -19588,7 +19588,7 @@ c
       nb = na
       jlim = lbhb(1)
       l = n/na
-      ndt = iblock(3,1,1) - 1 
+      ndt = iblock(3,1,1) - 1
       ndb = iblock(3,1,2)
       kk = 1
 c
@@ -19604,7 +19604,7 @@ c
          ndt = iblock(3,k,1) - 1
          ndb = iblock(3,k,2)
          go to 20
- 15      ist = (k - 1)*na + 1 
+ 15      ist = (k - 1)*na + 1
  20      ied = ist + na - 1
          do 22 i = 1,na
  22      wksp(i) = 0.0d0
@@ -19621,7 +19621,7 @@ c
             call vaddd (ldt,ncolor,na,nb,mb,t(ist,jstb),jt(kk,jstb),
      a                  wksp,x(istb),inc)
  25      continue
-         if (ndt + ndb .ge. 1) go to 35 
+         if (ndt + ndb .ge. 1) go to 35
          do 30 i = ist,ied
  30      x(i) = x(i) - d(i,1)*wksp(i-ist+1)
          go to 50
@@ -19634,10 +19634,10 @@ c
          call bmuln (ldd,na,ndt,ndb,d(ist,1),d(ist,2),d(ist,ndt+2),
      a               wksp,wksp(nap1))
          do 45 i = ist,ied
- 45      x(i) = x(i) - wksp(i-ist+nap1) 
+ 45      x(i) = x(i) - wksp(i-ist+nap1)
  50   continue
       return
-      end 
+      end
       subroutine ibbsnt (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                   iblock,d,t,jt,x,ivers,iunif,wksp)
       implicit double precision (a-h, o-z)
@@ -19646,16 +19646,16 @@ c ... ibbsnt does an incomplete block transpose backward solve.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ic preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -19667,7 +19667,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -19684,7 +19684,7 @@ c ... specifications for parameters
 c
       integer   ipt(1), jt(ncolor,1), nci(1), lbhb(1),
      a          iblock(3,ncolor,2)
-      dimension d(ldd,2), t(ldt,1), wksp(1), x(1) 
+      dimension d(ldd,2), t(ldt,1), wksp(1), x(1)
       logical   unif, vers1
 c
       vers1 = ivers .eq. 1
@@ -19696,7 +19696,7 @@ c
       nb = na
       jlim = lbhb(1)
       l = n/na
-      ndt = iblock(3,1,1) - 1 
+      ndt = iblock(3,1,1) - 1
       ndb = iblock(3,1,2)
       kk = 1
 c
@@ -19711,9 +19711,9 @@ c
          ndt = iblock(3,k,1) - 1
          ndb = iblock(3,k,2)
          go to 20
- 15      ist = (k - 1)*na + 1 
+ 15      ist = (k - 1)*na + 1
  20      ied = ist + na - 1
-         if (ndt + ndb .ge. 1) go to 30 
+         if (ndt + ndb .ge. 1) go to 30
          do 25 i = ist,ied
  25      x(i) = d(i,1)*x(i)
          go to 35
@@ -19724,7 +19724,7 @@ c
      a              (ldd,na,ndt,ndb,d(ist,1),d(ist,2),d(ist,ndt+2),
      a               x(ist),wksp)
          do 32 i = ist,ied
- 32      x(i) = wksp(i-ist+1) 
+ 32      x(i) = wksp(i-ist+1)
  35      do 40 j = 3,jlim
             jcol = k + iblock(1,kk,j)
             if (jcol .ge. k) go to 40
@@ -19735,29 +19735,29 @@ c
             if (.not. unif) nb = nci(jcol)
             istb = ist + inc
             if (istb .lt. 1) go to 40
-            call vsubdt (ldt,ncolor,na,nb,mb,t(ist,jstb),jt(kk,jstb), 
+            call vsubdt (ldt,ncolor,na,nb,mb,t(ist,jstb),jt(kk,jstb),
      a                  x(istb),x(ist),inc)
  40      continue
  45   continue
       return
-      end 
+      end
       subroutine ibfs (ldd,ldt,n,kblszz,nsize,lbhb,iblock,d,t,
-     a                 jt,x,ivers,wksp) 
+     a                 jt,x,ivers,wksp)
       implicit double precision (a-h, o-z)
 c
-c ... ibfs does an incomplete block forward pass. 
+c ... ibfs does an incomplete block forward pass.
 c     symmetric diagonal data structure, natural ordering.
 c     block ic preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         kblsz    block size 
-c         nsize    size of an individual subsystem within a 
+c         kblsz    block size
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         lbhb     number of blocks per block row 
+c         lbhb     number of blocks per block row
 c         iblock   integer array of size 3 by lbhb
 c                   giving block constants
 c         d        array for diagonal block
@@ -19773,7 +19773,7 @@ c
 c ... specifications for parameters
 c
       integer   jt(1), iblock(3,1)
-      dimension d(ldd,2), t(ldt,1), wksp(1), x(1) 
+      dimension d(ldd,2), t(ldt,1), wksp(1), x(1)
       logical   vers1, vers2
 c
       kblsz = kblszz
@@ -19806,7 +19806,7 @@ c
  25      continue
  30   continue
       return
-      end 
+      end
       subroutine ibfsn (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,ivers,iunif,wksp)
       implicit double precision (a-h, o-z)
@@ -19815,16 +19815,16 @@ c ... ibfsn does an incomplete block forward solve.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ic preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -19836,7 +19836,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -19853,7 +19853,7 @@ c ... specifications for parameters
 c
       integer   ipt(1), jt(ncolor,1), nci(1), lbhb(1),
      a          iblock(3,ncolor,2)
-      dimension d(ldd,2), t(ldt,1), wksp(1), x(1) 
+      dimension d(ldd,2), t(ldt,1), wksp(1), x(1)
       logical   unif, vers2
 c
       vers2 = ivers .eq. 2
@@ -19865,13 +19865,13 @@ c
       nb = na
       jlim = lbhb(1)
       l = n/na
-      ndt = iblock(3,1,1) - 1 
+      ndt = iblock(3,1,1) - 1
       ndb = iblock(3,1,2)
       kk = 1
 c
 c ... do forward solution.
 c
- 10   do 50 k = 1,l 
+ 10   do 50 k = 1,l
          if (unif) go to 15
          kk = k
          ist = ipt(k) + 1
@@ -19880,7 +19880,7 @@ c
          ndt = iblock(3,k,1) - 1
          ndb = iblock(3,k,2)
          go to 20
- 15      ist = (k - 1)*na + 1 
+ 15      ist = (k - 1)*na + 1
  20      ied = ist + na - 1
          do 25 j = 3,jlim
             jcol = k + iblock(1,kk,j)
@@ -19895,7 +19895,7 @@ c
             call vsubd (ldt,ncolor,na,nb,mb,t(ist,jstb),jt(kk,jstb),
      a                  x(ist),x(istb),inc)
  25      continue
-         if (ndt + ndb .ge. 1) go to 35 
+         if (ndt + ndb .ge. 1) go to 35
          do 30 i = ist,ied
  30      x(i) = d(i,1)*x(i)
          go to 50
@@ -19905,10 +19905,10 @@ c
  40      call bmuln (ldd,na,ndt,ndb,d(ist,1),d(ist,2),d(ist,ndt+2),
      a               x(ist),wksp)
          do 45 i = ist,ied
- 45      x(i) = wksp(i-ist+1) 
+ 45      x(i) = wksp(i-ist+1)
  50   continue
       return
-      end 
+      end
       subroutine ibfsnt (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                   iblock,d,t,jt,x,ivers,iunif,wksp)
       implicit double precision (a-h, o-z)
@@ -19917,16 +19917,16 @@ c ... ibfsnt does an incomplete block transpose forward solve.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ic preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -19938,7 +19938,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -19955,7 +19955,7 @@ c ... specifications for parameters
 c
       integer   ipt(1), jt(ncolor,1), nci(1), lbhb(1),
      a          iblock(3,ncolor,2)
-      dimension d(ldd,2), t(ldt,1), wksp(1), x(1) 
+      dimension d(ldd,2), t(ldt,1), wksp(1), x(1)
       logical   unif, vers1, vers2
 c
       vers1 = ivers .eq. 1
@@ -19968,7 +19968,7 @@ c
       nb = na
       jlim = lbhb(1)
       l = n/na
-      ndt = iblock(3,1,1) - 1 
+      ndt = iblock(3,1,1) - 1
       ndb = iblock(3,1,2)
       kk = 1
 c
@@ -19984,9 +19984,9 @@ c
          ndt = iblock(3,k,1) - 1
          ndb = iblock(3,k,2)
          go to 20
- 15      ist = (k - 1)*na + 1 
+ 15      ist = (k - 1)*na + 1
  20      ied = ist + na - 1
-         if (ndt + ndb .ge. 1) go to 30 
+         if (ndt + ndb .ge. 1) go to 30
          do 25 i = ist,ied
  25      wksp(i-ist+1) = d(i,1)*x(i)
          go to 35
@@ -20005,12 +20005,12 @@ c
             if (.not. unif) nb = nci(jcol)
             istb = ist + inc
             if (istb .gt. n) go to 40
-            call vsubdt (ldt,ncolor,na,nb,mb,t(ist,jstb),jt(kk,jstb), 
+            call vsubdt (ldt,ncolor,na,nb,mb,t(ist,jstb),jt(kk,jstb),
      a                  x(istb),wksp,inc)
  40      continue
  45   continue
       return
-      end 
+      end
       subroutine ibsl (ldd,ldt,n,kblsz,nsize,lbhb,iblock,d,t,
      a                 jt,y,x,ivers,wksp)
       implicit double precision (a-h, o-z)
@@ -20019,15 +20019,15 @@ c ... ibsl does an incomplete block solution.
 c     symmetric diagonal data structure, natural ordering.
 c     block ic preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         kblsz    block size 
-c         nsize    size of an individual subsystem within a 
+c         kblsz    block size
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         lbhb     number of blocks per block row 
+c         lbhb     number of blocks per block row
 c         iblock   integer array of size 3 by lbhb
 c                   giving block constants
 c         d        array for diagonal block
@@ -20046,32 +20046,32 @@ c
       integer   jt(1), iblock(3,1)
       dimension d(ldd,1), t(ldt,1), wksp(1), x(1), y(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call ibfs (ldd,ldt,n,kblsz,nsize,lbhb,iblock,d,t,
      a           jt,x,ivers,wksp)
       call ibbs (ldd,ldt,n,kblsz,nsize,lbhb,iblock,d,t,
      a           jt,x,ivers,wksp)
       return
-      end 
+      end
       subroutine ibsln (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
-     a                  iblock,d,t,jt,y,x,ivers,iunif,wksp) 
+     a                  iblock,d,t,jt,y,x,ivers,iunif,wksp)
       implicit double precision (a-h, o-z)
 c
 c ... ibsln does an incomplete block solution.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ic preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -20083,7 +20083,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -20103,14 +20103,14 @@ c
      a          iblock(3,ncolor,2)
       dimension d(ldd,1), t(ldt,1), wksp(1), x(1), y(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call ibfsn (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,ivers,iunif,wksp)
       call ibbsn (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,ivers,iunif,wksp)
       return
-      end 
+      end
       subroutine ibslnt (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                   iblock,d,t,jt,y,x,ivers,iunif,wksp)
       implicit double precision (a-h, o-z)
@@ -20119,16 +20119,16 @@ c ... ibslnt does an incomplete block transpose solution.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ic preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -20140,7 +20140,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -20160,32 +20160,32 @@ c
      a          iblock(3,ncolor,2)
       dimension d(ldd,1), t(ldt,1), wksp(1), x(1), y(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call ibfsnt (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,ivers,iunif,wksp)
       call ibbsnt (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,ivers,iunif,wksp)
       return
-      end 
+      end
       subroutine ibsln1 (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
-     a                  iblock,d,t,jt,y,x,ivers,iunif,wksp) 
+     a                  iblock,d,t,jt,y,x,ivers,iunif,wksp)
       implicit double precision (a-h, o-z)
 c
 c ... ibsln1 does an incomplete block forward pass.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ic preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -20197,7 +20197,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -20217,30 +20217,30 @@ c
      a          iblock(3,ncolor,2)
       dimension d(ldd,1), t(ldt,1), wksp(1), x(1), y(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call ibfsn (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,ivers,iunif,wksp)
       return
-      end 
+      end
       subroutine ibsln2 (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
-     a                  iblock,d,t,jt,y,x,ivers,iunif,wksp) 
+     a                  iblock,d,t,jt,y,x,ivers,iunif,wksp)
       implicit double precision (a-h, o-z)
 c
 c ... ibsln2 does an incomplete block backward pass.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ic preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -20252,7 +20252,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -20272,30 +20272,30 @@ c
      a          iblock(3,ncolor,2)
       dimension d(ldd,1), t(ldt,1), wksp(1), x(1), y(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call ibbsn (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,ivers,iunif,wksp)
       return
-      end 
+      end
       subroutine ibsln3 (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                   iblock,d,t,jt,y,x,ivers,iunif,wksp)
       implicit double precision (a-h, o-z)
 c
-c ... ibsln3 does an incomplete block transpose back solve. 
+c ... ibsln3 does an incomplete block transpose back solve.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ic preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -20307,7 +20307,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -20327,12 +20327,12 @@ c
      a          iblock(3,ncolor,2)
       dimension d(ldd,1), t(ldt,1), wksp(1), x(1), y(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call ibbsnt (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,ivers,iunif,wksp)
       return
-      end 
+      end
       subroutine ibsln4 (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                   iblock,d,t,jt,y,x,ivers,iunif,wksp)
       implicit double precision (a-h, o-z)
@@ -20341,16 +20341,16 @@ c ... ibsln4 does an incomplete block transpose forward pass.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ic preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -20362,7 +20362,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -20382,12 +20382,12 @@ c
      a          iblock(3,ncolor,2)
       dimension d(ldd,1), t(ldt,1), wksp(1), x(1), y(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call ibfsnt (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,ivers,iunif,wksp)
       return
-      end 
+      end
       subroutine icf (ndim,nn,maxtt,jt,d,t,meth,
      a                 ipropa,omega,wksp,iwksp,iflag)
       implicit double precision (a-h, o-z)
@@ -20396,16 +20396,16 @@ c ... icf computes an incomplete factorization of the matrix
 c     stored in d and t and replaces it.
 c     (symmetric diagonal storage)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of t array
 c          n      order of system (= nn)
 c          maxt   number of columns in t array
 c          jt     integer vector giving the diagonal indices of
-c                  the corresponding columns in t 
+c                  the corresponding columns in t
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          t      array of active size n by maxt giving the 
+c          t      array of active size n by maxt giving the
 c                  super-diagonals of the matrix
 c          meth   point factorization wanted
 c                  = 1   ic
@@ -20456,8 +20456,8 @@ c
 c
 c ... mic, propa = t.
 c
-      do 25 i = 1,n 
- 25   wksp(i) = 0.0d0 
+      do 25 i = 1,n
+ 25   wksp(i) = 0.0d0
       do 35 j = 1,maxt
          do 30 i = 1,n
  30      wksp(i) = wksp(i) + t(i,j)
@@ -20502,7 +20502,7 @@ c
             d(kf) = d(kf) - wksp(i)
             do 90 j = i,maxt
                if (j .eq. i) go to 90
-               kg = k + jt(j) 
+               kg = k + jt(j)
                if (kg .gt. n) go to 90
                iloc = (j-1)*maxt+i
                id = iwksp(iloc)
@@ -20526,19 +20526,19 @@ c
       do 515 j = 1,maxt
          len = n - jt(j)
          do 510 i = 1,len
- 510     t(i,j) = d(i)*t(i,j) 
+ 510     t(i,j) = d(i)*t(i,j)
  515  continue
 c
 c ... check for negative pivots.
 c
- 990  if (vmin(n,d) .lt. 0.0d0) iflag = 2 
+ 990  if (vmin(n,d) .lt. 0.0d0) iflag = 2
       return
 c
 c ... error - matrix cannot be factored since a pivot is zero
 c
  995  iflag = 1
       return
-      end 
+      end
       subroutine icfn (ndim,nn,maxtt,maxbb,jt,jb,d,t,b,meth,
      a                 ipropa,omega,wksp,iwksp,iflag)
       implicit double precision (a-h, o-z)
@@ -20547,21 +20547,21 @@ c ... icfn computes an incomplete factorization of the matrix
 c     stored in d, t, and b and replaces it.
 c     (nonsymmetric diagonal storage)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of t,b arrays
 c          n      order of system (= nn)
 c          maxt   number of columns in t array
 c          maxb   number of columns in b array
 c          jt     integer vector giving the diagonal indices of
-c                  the corresponding columns in t 
+c                  the corresponding columns in t
 c          jb     integer vector giving the diagonal indices of
-c                  the corresponding columns in b 
+c                  the corresponding columns in b
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          t      array of active size n by maxt giving the 
+c          t      array of active size n by maxt giving the
 c                  super-diagonals of the matrix
-c          b      array of active size n by maxb giving the 
+c          b      array of active size n by maxb giving the
 c                  sub-diagonals of the matrix
 c          meth   point factorization wanted
 c                  = 1   ic
@@ -20619,8 +20619,8 @@ c
          do 20 j = 1,nval
             kf = k + iwksp(3*j)
             if (kf .gt. n) go to 20
-            i1 = iwksp(3*j-2) 
-            i2 = iwksp(3*j-1) 
+            i1 = iwksp(3*j-2)
+            i2 = iwksp(3*j-1)
             d(kf) = d(kf) - b(kf,i1)*t(k,i2)/pivot
  20      continue
  25   continue
@@ -20630,8 +20630,8 @@ c
 c
 c ... mic, propa = t.
 c
-      do 35 i = 1,n 
- 35   wksp(i) = 0.0d0 
+      do 35 i = 1,n
+ 35   wksp(i) = 0.0d0
       do 45 j = 1,maxt
          do 40 i = 1,n
  40      wksp(i) = wksp(i) + t(i,j)
@@ -20655,7 +20655,7 @@ c
             term = b(kf,i)/pivot
             t1 = 0.0d0
             i1 = iwksp(i)
-            if (i1 .ne. 0) t1 = t(k,i1) 
+            if (i1 .ne. 0) t1 = t(k,i1)
             d(kf) = d(kf) - term*(omega*wksp(k)-(omega-1.0d0)*t1)
  60      continue
  65   continue
@@ -20693,9 +20693,9 @@ c
          do 135 i = 1,maxb
             kf = k - jb(i)
             if (kf .gt. n) go to 135
-            do 110 j = 1,maxt 
+            do 110 j = 1,maxt
  110        wksp(j) = b(kf,i)*t(k,j)/pivot
-            do 130 j = 1,maxt 
+            do 130 j = 1,maxt
                iloc = (j-1)*maxb+i
                id = iwksp(iloc)
                if (id) 115,120,125
@@ -20720,7 +20720,7 @@ c
       do 515 j = 1,maxt
          len = n - jt(j)
          do 510 i = 1,len
- 510     t(i,j) = d(i)*t(i,j) 
+ 510     t(i,j) = d(i)*t(i,j)
  515  continue
  520  if (maxb .lt. 1 .or. propa) go to 990
       do 530 j = 1,maxb
@@ -20732,15 +20732,15 @@ c
 c
 c ... check for negative pivots.
 c
- 990  if (vmin(n,d) .lt. 0.0d0) iflag = 2 
+ 990  if (vmin(n,d) .lt. 0.0d0) iflag = 2
       return
 c
 c ... error - matrix cannot be factored since a pivot is zero
 c
  995  iflag = 1
       return
-      end 
-      subroutine icfv (ndim,nn,maxtt,jt,d,t,meth, 
+      end
+      subroutine icfv (ndim,nn,maxtt,jt,d,t,meth,
      a                 ipropa,omega,wksp,iwksp,iflag)
       implicit double precision (a-h, o-z)
 c
@@ -20748,16 +20748,16 @@ c ... icfv computes an incomplete factorization of the matrix
 c     stored in d and t and replaces it.
 c     (symmetric diagonal storage, vectorized version)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of t array
 c          n      order of system (= nn)
 c          maxt   number of columns in t array
 c          jt     integer vector giving the diagonal indices of
-c                  the corresponding columns in t 
+c                  the corresponding columns in t
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          t      array of active size n by maxt giving the 
+c          t      array of active size n by maxt giving the
 c                  super-diagonals of the matrix
 c          meth   point factorization wanted
 c                  = 1   ic
@@ -20781,7 +20781,7 @@ c ... specifications for parameters
 c
       integer   jt(1), iwksp(1)
       dimension d(1), t(ndim,1), wksp(1)
-      logical propa 
+      logical propa
 c
 c
       n = nn
@@ -20800,14 +20800,14 @@ c ... determine nc, imin.
 c
  15   nc = n
       do 20 i = 1,maxt
-         nterm = iwksp(i) - 1 
+         nterm = iwksp(i) - 1
          if (nterm .ge. nc) go to 20
-         nc = nterm 
+         nc = nterm
          imin = i
  20   continue
       if (nc .ge. n) go to 500
       ndel = jt(imin)
-      ibeg = nc + 1 
+      ibeg = nc + 1
       if (ndel .gt. 1) go to 35
 c
 c ... special case for first super-diagonal.
@@ -20828,14 +20828,14 @@ c
       ied = min (ibeg+ndel-1,n)
 cdir$ ivdep
       do 40 i = ibeg,ied
- 40   d(i) = d(i) - (t(i-ndel,imin)**2)/d(i-ndel) 
+ 40   d(i) = d(i) - (t(i-ndel,imin)**2)/d(i-ndel)
       go to 15
- 45   if (meth .ne. 2 .or. .not. propa) go to 100 
+ 45   if (meth .ne. 2 .or. .not. propa) go to 100
 c
 c ... mic, propa = t.
 c
-      do 50 i = 1,n 
- 50   wksp(i) = 0.0d0 
+      do 50 i = 1,n
+ 50   wksp(i) = 0.0d0
       do 60 j = 1,maxt
          do 55 i = 1,n
  55      wksp(i) = wksp(i) + t(i,j)
@@ -20847,14 +20847,14 @@ c ... determine nc, imin.
 c
  70   nc = n
       do 75 i = 1,maxt
-         nterm = iwksp(i) - 1 
+         nterm = iwksp(i) - 1
          if (nterm .ge. nc) go to 75
-         nc = nterm 
+         nc = nterm
          imin = i
  75   continue
       if (nc .ge. n) go to 500
       ndel = jt(imin)
-      ibeg = nc + 1 
+      ibeg = nc + 1
       if (ndel .gt. 1) go to 90
 c
 c ... special case for first super-diagonal.
@@ -20866,7 +20866,7 @@ c
  80   continue
       iwksp(imin) = nc1 + 1
       do 85 j = ibeg,nc1
- 85   d(j) = d(j) - t(j-1,imin)*(omega*wksp(j-1)- 
+ 85   d(j) = d(j) - t(j-1,imin)*(omega*wksp(j-1)-
      a             (omega-1.0d0)*t(j-1,imin))/d(j-1)
       go to 70
 c
@@ -20885,9 +20885,9 @@ c
  100  nbig = maxt + 1
       do 115 i = 1,maxt
          do 110 j = 1,maxt
-            iloc = j*maxt + i 
+            iloc = j*maxt + i
             id = iabs (jt(j) - jt(i))
-            do 105 k = 1,maxt 
+            do 105 k = 1,maxt
                if (jt(k) .ne. id) go to 105
                iwksp(iloc) = k
                go to 110
@@ -20905,35 +20905,35 @@ c ... determine nc, imin.
 c
  125  nc = n
       do 130 i = 1,maxt
-         nterm = iwksp(i) - 1 
+         nterm = iwksp(i) - 1
          if (nterm .ge. nc) go to 130
-         nc = nterm 
+         nc = nterm
          imin = i
  130  continue
       if (nc .ge. n) go to 500
       ndel = jt(imin)
       iwksp(imin) = iwksp(imin) + ndel
-      ibeg = nc + 1 
+      ibeg = nc + 1
       ied = min (ibeg+ndel-1,n)
 cdir$ ivdep
       do 135 i = ibeg,ied
- 135  d(i) = d(i) - (t(i-ndel,imin)**2)/d(i-ndel) 
+ 135  d(i) = d(i) - (t(i-ndel,imin)**2)/d(i-ndel)
       do 160 j = 1,maxt
          jcol = jt(j)
          if (jcol .le. ndel) go to 160
-         iloc = j*maxt + imin 
+         iloc = j*maxt + imin
          id = iwksp(iloc)
          ied1 = min (ied,n-jcol+ndel)
          if (id .eq. nbig) go to 145
 cdir$ ivdep
-         do 140 i = ibeg,ied1 
+         do 140 i = ibeg,ied1
  140     t(i,id) = t(i,id) - t(i-ndel,imin)*t(i-ndel,j)/d(i-ndel)
          go to 160
  145     if (meth .eq. 1) go to 160
-         do 150 i = ibeg,ied1 
+         do 150 i = ibeg,ied1
  150     wksp(i) = omega*t(i-ndel,imin)*t(i-ndel,j)/d(i-ndel)
          ish = jcol - ndel
-         do 155 i = ibeg,ied1 
+         do 155 i = ibeg,ied1
             d(i) = d(i) - wksp(i)
             d(i+ish) = d(i+ish) - wksp(i)
  155     continue
@@ -20951,19 +20951,19 @@ c
       do 520 j = 1,maxt
          len = n - jt(j)
          do 515 i = 1,len
- 515     t(i,j) = d(i)*t(i,j) 
+ 515     t(i,j) = d(i)*t(i,j)
  520  continue
 c
 c ... check for negative pivots.
 c
- 990  if (vmin(n,d) .lt. 0.0d0) iflag = 2 
+ 990  if (vmin(n,d) .lt. 0.0d0) iflag = 2
       return
 c
 c ... error - matrix cannot be factored since a pivot is zero
 c
  995  iflag = 1
       return
-      end 
+      end
       subroutine icfnp (ndimr,ndimi,nn,maxtt,maxbb,jt,jb,d,t,b,meth,
      a                  ipropa,omega,iflag)
       implicit double precision (a-h, o-z)
@@ -20972,9 +20972,9 @@ c ... icfnp computes an incomplete factorization of the matrix
 c     stored in d, t, and b and replaces it.
 c     (purdue storage, nonsymmetric matrix)
 c
-c ... parameters -- 
+c ... parameters --
 c
-c          ndimr  row dimension of t and b arrays 
+c          ndimr  row dimension of t and b arrays
 c          ndimi  row dimension of jt and jb arrays
 c          n      order of system (= nn)
 c          maxt   number of columns in t,jt arrays
@@ -20985,9 +20985,9 @@ c          jb     integer array giving the column indices of the
 c                  corresponding elements in b
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          t      array of active size n by maxt giving the 
+c          t      array of active size n by maxt giving the
 c                  upper triangle of the matrix
-c          b      array of active size n by maxb giving the 
+c          b      array of active size n by maxb giving the
 c                  lower triangle of the matrix
 c          meth   point factorization wanted
 c                  = 1   ic
@@ -21029,7 +21029,7 @@ c
             jcol1 = jb(i,j1)
             if (jcol1 .ne. k) go to 35
             term1 = b(i,j1)/pivot
-            do 30 j2 = 1,maxt 
+            do 30 j2 = 1,maxt
                j = jt(k,j2)
                if (j .le. k) go to 30
                term2 = term1*t(k,j2)
@@ -21058,12 +21058,12 @@ c
 c
 c ... store reciprocals of pivots.
 c
- 50   do 55 i = 1,n 
+ 50   do 55 i = 1,n
  55   d(i) = 1.0d0/d(i)
       if (maxt .lt. 1 .or. propa) go to 70
       do 65 j = 1,maxt
          do 60 i = 1,n
- 60      t(i,j) = d(i)*t(i,j) 
+ 60      t(i,j) = d(i)*t(i,j)
  65   continue
  70   if (maxb .lt. 1 .or. propa) go to 990
       do 80 j = 1,maxb
@@ -21073,15 +21073,15 @@ c
 c
 c ... check for negative pivots.
 c
- 990  if (vmin(n,d) .lt. 0.0d0) iflag = 2 
+ 990  if (vmin(n,d) .lt. 0.0d0) iflag = 2
       return
 c
 c ... error - matrix cannot be factored since a pivot is zero
 c
  995  iflag = 1
       return
-      end 
-      subroutine icfp (ndimr,ndimi,nn,maxtt,jt,d,t,meth,ipropa,omega, 
+      end
+      subroutine icfp (ndimr,ndimi,nn,maxtt,jt,d,t,meth,ipropa,omega,
      a                 wksp,iflag)
       implicit double precision (a-h, o-z)
 c
@@ -21089,7 +21089,7 @@ c ... icfp computes an incomplete factorization of the matrix
 c     stored in d and t and replaces it.
 c     (purdue storage, symmetric matrix)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndimr  row dimension of t array
 c          ndimi  row dimension of jt array
@@ -21099,7 +21099,7 @@ c          jt     integer array of active size n by maxt giving the
 c                  column numbers of the corresponding elements in t
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          t      array of active size n by maxt giving the 
+c          t      array of active size n by maxt giving the
 c                  coefficients of the upper triangle of the matrix
 c          meth   point factorization wanted
 c                  = 1   ic
@@ -21149,8 +21149,8 @@ c
 c
 c ... mic, propa = t.
 c
-      do 25 i = 1,n 
- 25   wksp(i) = 0.0d0 
+      do 25 i = 1,n
+ 25   wksp(i) = 0.0d0
       do 35 j = 1,maxt
          do 30 i = 1,n
  30      wksp(i) = wksp(i) + t(i,j)
@@ -21179,7 +21179,7 @@ c
             if (jcol1 .eq. k) go to 65
             d(jcol1) = d(jcol1) - (t(k,j1)**2)/pivot
             term1 = t(k,j1)/pivot
-            do 60 j2 = 1,maxt 
+            do 60 j2 = 1,maxt
                jcol2 = jt(k,j2)
                if (jcol2 .le. jcol1) go to 60
                if (jcol2 .eq. k) go to 60
@@ -21204,19 +21204,19 @@ c
       if (maxt .lt. 1 .or. propa) go to 990
       do 520 j = 1,maxt
          do 515 i = 1,n
- 515     t(i,j) = d(i)*t(i,j) 
+ 515     t(i,j) = d(i)*t(i,j)
  520   continue
 c
 c ... check for negative pivots.
 c
- 990  if (vmin(n,d) .lt. 0.0d0) iflag = 2 
+ 990  if (vmin(n,d) .lt. 0.0d0) iflag = 2
       return
 c
 c ... error - matrix cannot be factored since a pivot is zero
 c
  995  iflag = 1
       return
-      end 
+      end
       subroutine icfcp (ndimr,ndimi,nn,maxcc,jc,d,c,ncolor,nt,nb,
      a                  meth,ipropa,ipt,omega,iflag)
       implicit double precision (a-h, o-z)
@@ -21225,7 +21225,7 @@ c ... icfcp computes an incomplete factorization of the matrix
 c     stored in d and c and replaces it.
 c     (purdue storage, multicolor)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndimr  row dimension of c array
 c          ndimi  row dimension of jc array
@@ -21235,10 +21235,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
 c                  of upper columns for each color
@@ -21263,14 +21263,14 @@ c                                 (successful factorization)
 c
 c ... specifications for parameters
 c
-      integer   jc(ndimi,1), nt(1), nb(1), ipt(1) 
+      integer   jc(ndimi,1), nt(1), nb(1), ipt(1)
       dimension d(1), c(ndimr,1)
       logical   propa
 c
 c
       n = nn
       maxc = maxcc
-      ncol = ncolor 
+      ncol = ncolor
       iflag = 0
       propa = ipropa .eq. 1
       if (maxc .lt. 1) go to 75
@@ -21287,7 +21287,7 @@ c
             if (pivot .eq. 0.0d0) go to 995
             do 55 l1 = icol+1,ncol
                i1 = ipt(l1) + 1
-               i2 = ipt(l1+1) 
+               i2 = ipt(l1+1)
                j11 = nt(l1) + 1
                j12 = nt(l1) + nb(l1)
                j32 = nt(l1)
@@ -21296,7 +21296,7 @@ c
                do 45 i = i1,i2
                   jcol1 = jc(i,j1)
                   if (jcol1 .ne. k) go to 45
-                  term1 = c(i,j1)/pivot 
+                  term1 = c(i,j1)/pivot
                   do 40 j2 = 1,j22
                      j = jc(k,j2)
                      if (j .le. k) go to 40
@@ -21304,18 +21304,18 @@ c
                      if (j .eq. i) go to 35
                      if (propa) go to 30
                      if (j .gt. i) go to 20
-                     do 15 j3 = j11,j12 
+                     do 15 j3 = j11,j12
                         if (jc(i,j3) .ne. j) go to 15
-                        c(i,j3) = c(i,j3) - term2 
+                        c(i,j3) = c(i,j3) - term2
                         go to 40
- 15                  continue 
-                     go to 30 
+ 15                  continue
+                     go to 30
  20                  if (j32 .le. 0) go to 30
                      do 25 j3 = 1,j32
                         if (jc(i,j3) .ne. j) go to 25
-                        c(i,j3) = c(i,j3) - term2 
+                        c(i,j3) = c(i,j3) - term2
                         go to 40
- 25                  continue 
+ 25                  continue
  30                  if (meth .eq. 1) go to 40
  35                  d(i) = d(i) - omega*term2
  40               continue
@@ -21332,7 +21332,7 @@ c
 c
 c ... store reciprocals of pivots.
 c
- 75   do 80 i = 1,n 
+ 75   do 80 i = 1,n
  80   d(i) = 1.0d0/d(i)
       if (maxc .lt. 1 .or. propa) go to 990
       do 105 icol = 1,ncol
@@ -21351,24 +21351,24 @@ c
 c
 c ... check for negative pivots.
 c
- 990  if (vmin(n,d) .lt. 0.0d0) iflag = 2 
+ 990  if (vmin(n,d) .lt. 0.0d0) iflag = 2
       return
 c
 c ... error - matrix cannot be factored since a pivot is zero
 c
  995  iflag = 1
       return
-      end 
+      end
       subroutine ics (ndim,nn,maxtt,jt,d,t,ipropa,irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
 c
 c ... ics does an ic solution (natural ordering,
 c     symmetric diagonal storage).
 c
-c        (i + (t**t))*inv(d)*(i + t)*x = y            propa = .false. 
+c        (i + (t**t))*inv(d)*(i + t)*x = y            propa = .false.
 c        (i + (t**t)*d)*inv(d)*(i + d*t)*x = y        propa = .true.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system (= nn)
@@ -21382,7 +21382,7 @@ c                diagonals of the factorization if not property a
 c                or the super-diagonals of the matrix if property a
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        irwise rowwise algorithm switch
 c                = 0  use diagonal algorithm
 c                = 1  use row-wise algorithm
@@ -21397,14 +21397,14 @@ c
 c
       n = nn
       maxt = maxtt
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
-      call icfst (ndim,n,maxt,jt,d,t,ipropa,irwise,iwksp,x) 
-      do 15 i = 1,n 
+      call icfst (ndim,n,maxt,jt,d,t,ipropa,irwise,iwksp,x)
+      do 15 i = 1,n
  15   x(i) = d(i)*x(i)
       call icbs (ndim,n,maxt,jt,d,t,ipropa,irwise,iwksp,x)
       return
-      end 
+      end
       subroutine ics1 (ndim,nn,maxtt,jt,d,t,ipropa,irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -21414,7 +21414,7 @@ c
 c        (i + (t**t))*inv(d)*x = y            propa = .false.
 c        (i + (t**t)*d)*inv(d)*x = y          propa = .true.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system (= nn)
@@ -21428,7 +21428,7 @@ c                diagonals of the factorization if not property a
 c                or the super-diagonals of the matrix if property a
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        irwise rowwise algorithm switch
 c                = 0  use diagonal algorithm
 c                = 1  use row-wise algorithm
@@ -21443,23 +21443,23 @@ c
 c
       n = nn
       maxt = maxtt
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
-      call icfst (ndim,n,maxt,jt,d,t,ipropa,irwise,iwksp,x) 
-      do 15 i = 1,n 
+      call icfst (ndim,n,maxt,jt,d,t,ipropa,irwise,iwksp,x)
+      do 15 i = 1,n
  15   x(i) = sqrt(abs(d(i)))*x(i)
       return
-      end 
+      end
       subroutine ics2 (ndim,nn,maxtt,jt,d,t,ipropa,irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
 c
 c ... ics2 does an ic back solution (natural ordering,
 c     symmetric diagonal storage).
 c
-c        (i + t)*x = y            propa = .false. 
+c        (i + t)*x = y            propa = .false.
 c        (i + d*t)*x = y          propa = .true.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system (= nn)
@@ -21473,7 +21473,7 @@ c                diagonals of the factorization if not property a
 c                or the super-diagonals of the matrix if property a
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        irwise rowwise algorithm switch
 c                = 0  use diagonal algorithm
 c                = 1  use row-wise algorithm
@@ -21488,11 +21488,11 @@ c
 c
       n = nn
       maxt = maxtt
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)*sign(1.0d0,d(i))*sqrt(abs(d(i)))
       call icbs (ndim,n,maxt,jt,d,t,ipropa,irwise,iwksp,x)
       return
-      end 
+      end
       subroutine ics3 (ndim,nn,maxtt,jt,d,t,ipropa,irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -21502,7 +21502,7 @@ c
 c        inv(d)*(i + t)*x = y                 propa = .false.
 c        inv(d)*(i + d*t)*x = y               propa = .true.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system (= nn)
@@ -21516,7 +21516,7 @@ c                diagonals of the factorization if not property a
 c                or the super-diagonals of the matrix if property a
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        irwise rowwise algorithm switch
 c                = 0  use diagonal algorithm
 c                = 1  use row-wise algorithm
@@ -21531,11 +21531,11 @@ c
 c
       n = nn
       maxt = maxtt
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = sqrt(abs(d(i)))*y(i)
       call icbs (ndim,n,maxt,jt,d,t,ipropa,irwise,iwksp,x)
       return
-      end 
+      end
       subroutine ics4 (ndim,nn,maxtt,jt,d,t,ipropa,irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -21545,7 +21545,7 @@ c
 c        (i + (t**t))*x = y            propa = .false.
 c        (i + (t**t)*d)*x = y          propa = .true.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system (= nn)
@@ -21559,7 +21559,7 @@ c                diagonals of the factorization if not property a
 c                or the super-diagonals of the matrix if property a
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        irwise rowwise algorithm switch
 c                = 0  use diagonal algorithm
 c                = 1  use row-wise algorithm
@@ -21574,24 +21574,24 @@ c
 c
       n = nn
       maxt = maxtt
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
-      call icfst (ndim,n,maxt,jt,d,t,ipropa,irwise,iwksp,x) 
-      do 15 i = 1,n 
+      call icfst (ndim,n,maxt,jt,d,t,ipropa,irwise,iwksp,x)
+      do 15 i = 1,n
  15   x(i) = x(i)*sign(1.0d0,d(i))*sqrt(abs(d(i)))
       return
-      end 
+      end
       subroutine icsn (ndim,nn,maxtt,maxbb,jt,jb,d,t,b,ipropa,
      a                 irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
 c
-c ... icsn does an ic solution (natural ordering, 
+c ... icsn does an ic solution (natural ordering,
 c     nonsymmetric diagonal storage).
 c
 c        (i + b)*inv(d)*(i + t)*x = y            propa = .false.
 c        (i + b*d)*inv(d)*(i + d*t)*x = y        propa = .true.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t and b arrays
 c        n      order of system (= nn)
@@ -21611,7 +21611,7 @@ c                diagonals of the factorization if not property a
 c                or the sub-diagonals of the matrix if property a
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        irwise rowwise algorithm switch
 c                = 0  use diagonal algorithm
 c                = 1  use row-wise algorithm
@@ -21627,14 +21627,14 @@ c
       n = nn
       maxt = maxtt
       maxb = maxbb
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call icfs (ndim,n,maxb,jb,d,b,ipropa,irwise,iwksp,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = d(i)*x(i)
       call icbs (ndim,n,maxt,jt,d,t,ipropa,irwise,iwksp,x)
       return
-      end 
+      end
       subroutine icsnt (ndim,nn,maxtt,maxbb,jt,jb,d,t,b,ipropa,
      a                  irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
@@ -21642,10 +21642,10 @@ c
 c ... icsnt does an transpose ic solution (natural ordering,
 c     nonsymmetric diagonal storage).
 c
-c       (i + (t**t))*inv(d)*(i + (b**t))*x = y        propa = .false. 
+c       (i + (t**t))*inv(d)*(i + (b**t))*x = y        propa = .false.
 c       (i + (t**t)*d)*inv(d)*(i + d*(b**t))*x = y    propa = .true.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t and b arrays
 c        n      order of system (= nn)
@@ -21665,7 +21665,7 @@ c                diagonals of the factorization if not property a
 c                or the sub-diagonals of the matrix if property a
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        irwise rowwise algorithm switch
 c                = 0  use diagonal algorithm
 c                = 1  use row-wise algorithm
@@ -21681,14 +21681,14 @@ c
       n = nn
       maxt = maxtt
       maxb = maxbb
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
-      call icfst (ndim,n,maxt,jt,d,t,ipropa,irwise,iwksp,x) 
-      do 15 i = 1,n 
+      call icfst (ndim,n,maxt,jt,d,t,ipropa,irwise,iwksp,x)
+      do 15 i = 1,n
  15   x(i) = d(i)*x(i)
-      call icbst (ndim,n,maxb,jb,d,b,ipropa,irwise,iwksp,x) 
+      call icbst (ndim,n,maxb,jb,d,b,ipropa,irwise,iwksp,x)
       return
-      end 
+      end
       subroutine icsn1 (ndim,n,maxb,jb,d,b,ipropa,
      a                  irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
@@ -21699,7 +21699,7 @@ c
 c        (i + b)*inv(d)*(i + t)*x = y            propa = .false.
 c        (i + b*d)*inv(d)*(i + d*t)*x = y        propa = .true.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t and b arrays
 c        n      order of system (= nn)
@@ -21713,7 +21713,7 @@ c                diagonals of the factorization if not property a
 c                or the sub-diagonals of the matrix if property a
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        irwise rowwise algorithm switch
 c                = 0  use diagonal algorithm
 c                = 1  use row-wise algorithm
@@ -21726,13 +21726,13 @@ c
       dimension y(1), x(1), d(1), b(ndim,1)
       integer   jb(1), iwksp(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call icfs (ndim,n,maxb,jb,d,b,ipropa,irwise,iwksp,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = sqrt(abs(d(i)))*x(i)
       return
-      end 
+      end
       subroutine icsn2 (ndim,n,maxt,jt,d,t,ipropa,
      a                  irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
@@ -21743,7 +21743,7 @@ c
 c        (i + b)*inv(d)*(i + t)*x = y            propa = .false.
 c        (i + b*d)*inv(d)*(i + d*t)*x = y        propa = .true.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t and b arrays
 c        n      order of system (= nn)
@@ -21757,7 +21757,7 @@ c                diagonals of the factorization if not property a
 c                or the super-diagonals of the matrix if property a
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        irwise rowwise algorithm switch
 c                = 0  use diagonal algorithm
 c                = 1  use row-wise algorithm
@@ -21770,11 +21770,11 @@ c
       dimension y(1), x(1), d(1), t(ndim,1)
       integer   jt(1), iwksp(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)*sign(1.0d0,d(i))*sqrt(abs(d(i)))
       call icbs (ndim,n,maxt,jt,d,t,ipropa,irwise,iwksp,x)
       return
-      end 
+      end
       subroutine icsn3 (ndim,n,maxb,jb,d,b,ipropa,
      a                  irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
@@ -21785,7 +21785,7 @@ c
 c        (i + b)*inv(d)*(i + t)*x = y            propa = .false.
 c        (i + b*d)*inv(d)*(i + d*t)*x = y        propa = .true.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t and b arrays
 c        n      order of system (= nn)
@@ -21799,7 +21799,7 @@ c                diagonals of the factorization if not property a
 c                or the sub-diagonals of the matrix if property a
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        irwise rowwise algorithm switch
 c                = 0  use diagonal algorithm
 c                = 1  use row-wise algorithm
@@ -21812,11 +21812,11 @@ c
       dimension y(1), x(1), d(1), b(ndim,1)
       integer   jb(1), iwksp(1)
 c
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = sqrt(abs(d(i)))*y(i)
-      call icbst (ndim,n,maxb,jb,d,b,ipropa,irwise,iwksp,x) 
+      call icbst (ndim,n,maxb,jb,d,b,ipropa,irwise,iwksp,x)
       return
-      end 
+      end
       subroutine icsn4 (ndim,n,maxt,jt,d,t,ipropa,
      a                  irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
@@ -21827,7 +21827,7 @@ c
 c        (i + b)*inv(d)*(i + t)*x = y            propa = .false.
 c        (i + b*d)*inv(d)*(i + d*t)*x = y        propa = .true.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t and b arrays
 c        n      order of system (= nn)
@@ -21841,7 +21841,7 @@ c                diagonals of the factorization if not property a
 c                or the super-diagonals of the matrix if property a
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        irwise rowwise algorithm switch
 c                = 0  use diagonal algorithm
 c                = 1  use row-wise algorithm
@@ -21854,13 +21854,13 @@ c
       dimension y(1), x(1), d(1), t(ndim,1)
       integer   jt(1), iwksp(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
-      call icfst (ndim,n,maxt,jt,d,t,ipropa,irwise,iwksp,x) 
-      do 15 i = 1,n 
+      call icfst (ndim,n,maxt,jt,d,t,ipropa,irwise,iwksp,x)
+      do 15 i = 1,n
  15   x(i) = x(i)*sign(1.0d0,d(i))*sqrt(abs(d(i)))
       return
-      end 
+      end
       subroutine icsnp (ndimr,ndimi,nn,maxtt,maxbb,jt,jb,d,t,b,
      a                  ipropa,y,x)
       implicit double precision (a-h, o-z)
@@ -21871,7 +21871,7 @@ c
 c        (i + b)*d*(i + t)*x = y                  if ipropa = 0
 c        (d + b)*inv(d)*(d + t)*x = y             if ipropa = 1
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndimr  row dimension of floating point arrays
 c        ndimi  row dimension of integer arrays
@@ -21892,7 +21892,7 @@ c                triangle of the factorization if ipropa = 0
 c                or the lower triangle of the matrix if ipropa = 1
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        y      right-hand-side vector
 c        x      on output, x is the solution
 c
@@ -21904,19 +21904,19 @@ c
       n = nn
       maxt = maxtt
       maxb = maxbb
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call icfsp (ndimr,ndimi,n,maxb,jb,d,b,ipropa,x)
       if (ipropa .eq. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = x(i)*d(i)
       go to 30
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   x(i) = x(i)/d(i)
  30   continue
       call icbsp (ndimr,ndimi,n,maxt,jt,d,t,ipropa,x)
       return
-      end 
+      end
       subroutine icsntp (ndimr,ndimi,nn,maxtt,maxbb,jt,jb,d,t,b,
      a                   ipropa,y,x)
       implicit double precision (a-h, o-z)
@@ -21927,7 +21927,7 @@ c
 c        (i + (t**t))*d*(i + (b**t))*x = y        if ipropa = 0
 c        (d + (t**t))*inv(d)*(d + (b**t))*x = y   if ipropa = 1
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndimr  row dimension of floating point arrays
 c        ndimi  row dimension of integer arrays
@@ -21948,7 +21948,7 @@ c                triangle of the factorization if ipropa = 0
 c                or the lower triangle of the matrix if ipropa = 1
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        y      right-hand-side vector
 c        x      on output, x is the solution
 c
@@ -21960,26 +21960,26 @@ c
       n = nn
       maxt = maxtt
       maxb = maxbb
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call icfstp (ndimr,ndimi,n,maxt,jt,d,t,ipropa,x)
       if (ipropa .eq. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = x(i)*d(i)
       go to 30
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   x(i) = x(i)/d(i)
  30   continue
       call icbstp (ndimr,ndimi,n,maxb,jb,d,b,ipropa,x)
       return
-      end 
+      end
       subroutine icsnp1 (ndimr,ndimi,nn,maxb,jb,d,b,ipropa,y,x)
       implicit double precision (a-h, o-z)
 c
-c ... icsnp1 does an ic forward solution (natural ordering, 
+c ... icsnp1 does an ic forward solution (natural ordering,
 c     purdue storage, nonsymmetric matrix).
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndimr  row dimension of floating point arrays
 c        ndimi  row dimension of integer arrays
@@ -21994,7 +21994,7 @@ c                triangle of the factorization if ipropa = 0
 c                or the lower triangle of the matrix if ipropa = 1
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        y      right-hand-side vector
 c        x      on output, x is the solution
 c
@@ -22004,24 +22004,24 @@ c
       integer   jb(ndimi,1)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call icfsp (ndimr,ndimi,n,maxb,jb,d,b,ipropa,x)
       if (ipropa .eq. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = x(i)*sqrt(abs(d(i)))
       return
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   x(i) = x(i)/sqrt(abs(d(i)))
       return
-      end 
+      end
       subroutine icsnp2 (ndimr,ndimi,n,maxt,jt,d,t,ipropa,y,x)
       implicit double precision (a-h, o-z)
 c
 c ... icsnp2 does an ic back solution (natural ordering,
 c     purdue storage, nonsymmetric matrix).
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndimr  row dimension of floating point arrays
 c        ndimi  row dimension of integer arrays
@@ -22036,7 +22036,7 @@ c                triangle of the factorization if ipropa = 0
 c                or the upper triangle of the matrix if ipropa = 1
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        y      right-hand-side vector
 c        x      on output, x is the solution
 c
@@ -22046,22 +22046,22 @@ c
       integer   jt(ndimi,1)
 c
       if (ipropa .eq. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = y(i)*sign(1.0d0,d(i))*sqrt(abs(d(i)))
       go to 30
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   x(i) = y(i)/(sign(1.0d0,d(i))*sqrt(abs(d(i))))
  30   continue
       call icbsp (ndimr,ndimi,n,maxt,jt,d,t,ipropa,x)
       return
-      end 
+      end
       subroutine icsnp3 (ndimr,ndimi,n,maxb,jb,d,b,ipropa,y,x)
       implicit double precision (a-h, o-z)
 c
-c ... icsnp3 does an transpose ic forward solution (natural ordering, 
+c ... icsnp3 does an transpose ic forward solution (natural ordering,
 c     purdue storage, nonsymmetric matrix).
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndimr  row dimension of floating point arrays
 c        ndimi  row dimension of integer arrays
@@ -22076,7 +22076,7 @@ c                triangle of the factorization if ipropa = 0
 c                or the lower triangle of the matrix if ipropa = 1
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        y      right-hand-side vector
 c        x      on output, x is the solution
 c
@@ -22086,22 +22086,22 @@ c
       integer   jb(ndimi,1)
 c
       if (ipropa .eq. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = y(i)*sqrt(abs(d(i)))
       go to 30
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   x(i)  = y(i)/sqrt(abs(d(i)))
  30   continue
       call icbstp (ndimr,ndimi,n,maxb,jb,d,b,ipropa,x)
       return
-      end 
+      end
       subroutine icsnp4 (ndimr,ndimi,n,maxt,jt,d,t,ipropa,y,x)
       implicit double precision (a-h, o-z)
 c
 c ... icsnp4 does an transpose ic back solution (natural ordering,
 c     purdue storage, nonsymmetric matrix).
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndimr  row dimension of floating point arrays
 c        ndimi  row dimension of integer arrays
@@ -22116,7 +22116,7 @@ c                triangle of the factorization if ipropa = 0
 c                or the upper triangle of the matrix if ipropa = 1
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        y      right-hand-side vector
 c        x      on output, x is the solution
 c
@@ -22125,27 +22125,27 @@ c
       dimension y(1), x(1), d(1), t(ndimr,1)
       integer   jt(ndimi,1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call icfstp (ndimr,ndimi,n,maxt,jt,d,t,ipropa,x)
       if (ipropa .eq. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = x(i)*sign(1.0d0,d(i))*sqrt(abs(d(i)))
       return
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   x(i) = x(i)/(sign(1.0d0,d(i))*sqrt(abs(d(i))))
       return
-      end 
+      end
       subroutine icsp (ndimr,ndimi,nn,maxtt,jt,d,t,ipropa,y,x)
       implicit double precision (a-h, o-z)
 c
-c ... icsp does an ic solution (natural ordering, 
+c ... icsp does an ic solution (natural ordering,
 c     purdue storage, symmetric matrix).
 c
 c        (i + (t**t))*d*(i + t)*x = y             if ipropa = 0
 c        (d + (t**t))*inv(d)*(d + t)*x = y        if ipropa = 1
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndimr  row dimension of floating point arrays
 c        ndimi  row dimension of integer arrays
@@ -22160,7 +22160,7 @@ c                triangle of the factorization if ipropa = 0
 c                or the upper triangle of the matrix if ipropa = 1
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        y      right-hand-side vector
 c        x      on output, x is the solution
 c
@@ -22171,26 +22171,26 @@ c
 c
       n = nn
       maxt = maxtt
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call icfstp (ndimr,ndimi,n,maxt,jt,d,t,ipropa,x)
       if (ipropa .eq. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = x(i)*d(i)
       go to 30
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   x(i) = x(i)/d(i)
  30   continue
       call icbsp (ndimr,ndimi,n,maxt,jt,d,t,ipropa,x)
       return
-      end 
+      end
       subroutine icsp1 (ndimr,ndimi,nn,maxt,jt,d,t,ipropa,y,x)
       implicit double precision (a-h, o-z)
 c
 c ... icsp1 does an ic forward solution (natural ordering,
 c     purdue storage, symmetric matrix).
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndimr  row dimension of floating point arrays
 c        ndimi  row dimension of integer arrays
@@ -22205,7 +22205,7 @@ c                triangle of the factorization if ipropa = 0
 c                or the upper triangle of the matrix if ipropa = 1
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        y      right-hand-side vector
 c        x      on output, x is the solution
 c
@@ -22215,24 +22215,24 @@ c
       integer   jt(ndimi,1)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call icfstp (ndimr,ndimi,n,maxt,jt,d,t,ipropa,x)
       if (ipropa .eq. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = x(i)*sqrt(abs(d(i)))
       return
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   x(i) = x(i)/sqrt(abs(d(i)))
       return
-      end 
+      end
       subroutine icsp2 (ndimr,ndimi,n,maxt,jt,d,t,ipropa,y,x)
       implicit double precision (a-h, o-z)
 c
 c ... icsp2 does an ic back solution (natural ordering,
 c     purdue storage, symmetric matrix).
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndimr  row dimension of floating point arrays
 c        ndimi  row dimension of integer arrays
@@ -22247,7 +22247,7 @@ c                triangle of the factorization if ipropa = 0
 c                or the upper triangle of the matrix if ipropa = 1
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        y      right-hand-side vector
 c        x      on output, x is the solution
 c
@@ -22257,22 +22257,22 @@ c
       integer   jt(ndimi,1)
 c
       if (ipropa .eq. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = y(i)*sign(1.0d0,d(i))*sqrt(abs(d(i)))
       go to 30
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   x(i) = y(i)/(sign(1.0d0,d(i))*sqrt(abs(d(i))))
  30   continue
       call icbsp (ndimr,ndimi,n,maxt,jt,d,t,ipropa,x)
       return
-      end 
+      end
       subroutine icsp3 (ndimr,ndimi,n,maxt,jt,d,t,ipropa,y,x)
       implicit double precision (a-h, o-z)
 c
 c ... icsp3 does an ic transpose forward solution (natural ordering,
 c     purdue storage, symmetric matrix).
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndimr  row dimension of floating point arrays
 c        ndimi  row dimension of integer arrays
@@ -22287,7 +22287,7 @@ c                triangle of the factorization if ipropa = 0
 c                or the upper triangle of the matrix if ipropa = 1
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        y      right-hand-side vector
 c        x      on output, x is the solution
 c
@@ -22297,22 +22297,22 @@ c
       integer   jt(ndimi,1)
 c
       if (ipropa .eq. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = y(i)*sqrt(abs(d(i)))
       go to 30
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   x(i) = y(i)/sqrt(abs(d(i)))
  30   continue
       call icbsp (ndimr,ndimi,n,maxt,jt,d,t,ipropa,x)
       return
-      end 
+      end
       subroutine icsp4 (ndimr,ndimi,n,maxt,jt,d,t,ipropa,y,x)
       implicit double precision (a-h, o-z)
 c
 c ... icsp4 does an ic transpose back solution (natural ordering,
 c     purdue storage, symmetric matrix).
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndimr  row dimension of floating point arrays
 c        ndimi  row dimension of integer arrays
@@ -22327,7 +22327,7 @@ c                triangle of the factorization if ipropa = 0
 c                or the upper triangle of the matrix if ipropa = 1
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        y      right-hand-side vector
 c        x      on output, x is the solution
 c
@@ -22336,28 +22336,28 @@ c
       dimension y(1), x(1), d(1), t(ndimr,1)
       integer   jt(ndimi,1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call icfstp (ndimr,ndimi,n,maxt,jt,d,t,ipropa,x)
       if (ipropa .eq. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = x(i)*sign(1.0d0,d(i))*sqrt(abs(d(i)))
       return
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   x(i) = x(i)/(sign(1.0d0,d(i))*sqrt(abs(d(i))))
       return
-      end 
-      subroutine icscp (ndimr,ndimi,nn,jc,d,c,ncolor,nc,nt,nb,ipropa, 
+      end
+      subroutine icscp (ndimr,ndimi,nn,jc,d,c,ncolor,nc,nt,nb,ipropa,
      a                  wksp,y,x)
       implicit double precision (a-h, o-z)
 c
-c ... icscp does an ic solve. 
+c ... icscp does an ic solve.
 c     (purdue storage, multicolor)
 c
 c      (i + b)*d*(i + t)*x = y         if ipropa = 0
 c      (d + b)*inv(d)*(d + t)*x = y    if ipropa = 1
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndimr  row dimension of c array
 c          ndimi  row dimension of jc array
@@ -22366,10 +22366,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -22382,7 +22382,7 @@ c                  = 1   matrix has property a
 c          wksp   workspace vector of length
 c                  max(nc(i))     if keygs = 1
 c                  0              if keygs = 2
-c          y      on input, y is the right-hand-side vector 
+c          y      on input, y is the right-hand-side vector
 c          x      on output, x is the solution to the forward solve
 c
 c ... specifications for parameters
@@ -22392,21 +22392,21 @@ c
 c
       n = nn
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call icfscp (ndimr,ndimi,jc,d,c,ncolor,nc,nt,nb,ipropa,wksp,
      a             x)
       if (ipropa .eq. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = x(i)*d(i)
       go to 30
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   x(i) = x(i)/d(i)
  30   continue
       call icbscp (ndimr,ndimi,n,jc,d,c,ncolor,nc,nt,ipropa,wksp,
      a             x)
       return
-      end 
+      end
       subroutine icscpt (ndimr,ndimi,nn,jc,d,c,ncolor,nc,nt,nb,ipropa,
      a                   wksp,y,x)
       implicit double precision (a-h, o-z)
@@ -22414,10 +22414,10 @@ c
 c ... icscpt does an transpose ic solve.
 c     (purdue storage, multicolor)
 c
-c     (i + (t**t))*d*(i + (b**t))*x = y       if ipropa = 0 
-c     (d + (t**t))*inv(d)*(d + (b**t))*x = y  if ipropa = 1 
+c     (i + (t**t))*d*(i + (b**t))*x = y       if ipropa = 0
+c     (d + (t**t))*inv(d)*(d + (b**t))*x = y  if ipropa = 1
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndimr  row dimension of c array
 c          ndimi  row dimension of jc array
@@ -22426,10 +22426,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -22440,7 +22440,7 @@ c          ipropa property a flag
 c                  = 0   matrix does not have property a
 c                  = 1   matrix has property a
 c          wksp   workspace vector of length max(nc(i))
-c          y      on input, y is the right-hand-side vector 
+c          y      on input, y is the right-hand-side vector
 c          x      on output, x is the solution vector
 c
 c ... specifications for parameters
@@ -22450,21 +22450,21 @@ c
 c
       n = nn
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call icfsct (ndimr,ndimi,jc,d,c,ncolor,nc,nt,ipropa,wksp,
      a             x)
       if (ipropa .eq. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = x(i)*d(i)
       go to 30
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   x(i) = x(i)/d(i)
  30   continue
       call icbsct (ndimr,ndimi,n,jc,d,c,ncolor,nc,nt,nb,ipropa,wksp,
      a             x)
       return
-      end 
+      end
       subroutine icscp1 (ndimr,ndimi,nn,jc,d,c,ncolor,nc,nt,nb,ipropa,
      a                  wksp,y,x)
       implicit double precision (a-h, o-z)
@@ -22473,7 +22473,7 @@ c ... icscp1 does an ic forward solve.
 c     (purdue storage, multicolor)
 c
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndimr  row dimension of c array
 c          ndimi  row dimension of jc array
@@ -22482,10 +22482,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -22498,7 +22498,7 @@ c                  = 1   matrix has property a
 c          wksp   workspace vector of length
 c                  max(nc(i))     if keygs = 1
 c                  0              if keygs = 2
-c          y      on input, y is the right-hand-side vector 
+c          y      on input, y is the right-hand-side vector
 c          x      on output, x is the solution to the forward solve
 c
 c ... specifications for parameters
@@ -22508,18 +22508,18 @@ c
 c
       n = nn
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call icfscp (ndimr,ndimi,jc,d,c,ncolor,nc,nt,nb,ipropa,wksp,
      a             x)
       if (ipropa .eq. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = x(i)*sqrt(abs(d(i)))
       return
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   x(i) = x(i)/sqrt(abs(d(i)))
       return
-      end 
+      end
       subroutine icscp2 (ndimr,ndimi,nn,jc,d,c,ncolor,nc,nt,ipropa,
      a                  wksp,y,x)
       implicit double precision (a-h, o-z)
@@ -22528,7 +22528,7 @@ c ... icscp2 does an ic back solve.
 c     (purdue storage, multicolor)
 c
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndimr  row dimension of c array
 c          ndimi  row dimension of jc array
@@ -22537,10 +22537,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -22551,7 +22551,7 @@ c                  = 1   matrix has property a
 c          wksp   workspace vector of length
 c                  max(nc(i))     if keygs = 1
 c                  0              if keygs = 2
-c          y      on input, y is the right-hand-side vector 
+c          y      on input, y is the right-hand-side vector
 c          x      on output, x is the solution to the forward solve
 c
 c ... specifications for parameters
@@ -22562,16 +22562,16 @@ c
       n = nn
 c
       if (ipropa .eq. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = y(i)*sign(1.0d0,d(i))*sqrt(abs(d(i)))
       go to 30
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   x(i) = y(i)/(sign(1.0d0,d(i))*sqrt(abs(d(i))))
  30   continue
       call icbscp (ndimr,ndimi,n,jc,d,c,ncolor,nc,nt,ipropa,wksp,
      a             x)
       return
-      end 
+      end
       subroutine icscp3 (ndimr,ndimi,nn,jc,d,c,ncolor,nc,nt,nb,ipropa,
      a                   wksp,y,x)
       implicit double precision (a-h, o-z)
@@ -22580,7 +22580,7 @@ c ... icscp3 does an transpose ic forward solve.
 c     (purdue storage, multicolor)
 c
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndimr  row dimension of c array
 c          ndimi  row dimension of jc array
@@ -22589,10 +22589,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -22603,7 +22603,7 @@ c          ipropa property a flag
 c                  = 0   matrix does not have property a
 c                  = 1   matrix has property a
 c          wksp   workspace vector of length max(nc(i))
-c          y      on input, y is the right-hand-side vector 
+c          y      on input, y is the right-hand-side vector
 c          x      on output, x is the solution vector
 c
 c ... specifications for parameters
@@ -22614,16 +22614,16 @@ c
       n = nn
 c
       if (ipropa .eq. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = y(i)*sqrt(abs(d(i)))
       go to 30
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   x(i) = y(i)/sqrt(abs(d(i)))
  30   continue
       call icbsct (ndimr,ndimi,n,jc,d,c,ncolor,nc,nt,nb,ipropa,wksp,
      a             x)
       return
-      end 
+      end
       subroutine icscp4 (ndimr,ndimi,nn,jc,d,c,ncolor,nc,nt,ipropa,
      a                   wksp,y,x)
       implicit double precision (a-h, o-z)
@@ -22632,7 +22632,7 @@ c ... icscp4 does an transpose ic back solve.
 c     (purdue storage, multicolor)
 c
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndimr  row dimension of c array
 c          ndimi  row dimension of jc array
@@ -22641,10 +22641,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -22653,7 +22653,7 @@ c          ipropa property a flag
 c                  = 0   matrix does not have property a
 c                  = 1   matrix has property a
 c          wksp   workspace vector of length max(nc(i))
-c          y      on input, y is the right-hand-side vector 
+c          y      on input, y is the right-hand-side vector
 c          x      on output, x is the solution vector
 c
 c ... specifications for parameters
@@ -22663,27 +22663,27 @@ c
 c
       n = nn
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call icfsct (ndimr,ndimi,jc,d,c,ncolor,nc,nt,ipropa,wksp,
      a             x)
       if (ipropa .eq. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = x(i)*sign(1.0d0,d(i))*sqrt(abs(d(i)))
       return
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   x(i) = x(i)/(sign(1.0d0,d(i))*sqrt(abs(d(i))))
       return
-      end 
+      end
       subroutine icbs (ndim,nn,maxtt,jt,d,t,ipropa,irwise,iwksp,x)
       implicit double precision (a-h, o-z)
 c
 c ... icbs does an ic back solve (natural ordering,
 c     diagonal storage).
 c        (i + t)*x = y    if not property a
-c        (i + d*t)*x = y  if property a 
+c        (i + d*t)*x = y  if property a
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system (= nn)
@@ -22696,7 +22696,7 @@ c                diagonals of the factorization if not property a
 c                or the super-diagonals of the matrix if property a
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        irwise rowwise algorithm switch
 c                = 0  use diagonal algorithm
 c                = 1  use row-wise algorithm
@@ -22716,7 +22716,7 @@ c
       maxt = maxtt
       nm1 = n - 1
       propa = ipropa .eq. 1
-      if (maxt .lt. 1) return 
+      if (maxt .lt. 1) return
 c
 c ... select rowwise or diagonal-wise algorithm.
 c
@@ -22731,14 +22731,14 @@ c ... determine nc, imax.
 c
  20   nc = 1
       do 25 i = 1,maxt
-         nterm = iwksp(i) + 1 
+         nterm = iwksp(i) + 1
          if (nterm .le. nc) go to 25
-         nc = nterm 
+         nc = nterm
          imax = i
  25   continue
       if (nc .le. 1) return
       ndel = jt(imax)
-      iend = nc - 1 
+      iend = nc - 1
       if (ndel .gt. 1) go to 50
 c
 c ... special case for first super diagonal.
@@ -22764,7 +22764,7 @@ c
       if (propa) go to 60
 cdir$ ivdep
       do 55 i = ibeg,iend
- 55   x(i) = x(i) - t(i,imax)*x(i+ndel) 
+ 55   x(i) = x(i) - t(i,imax)*x(i+ndel)
       go to 20
 cdir$ ivdep
  60   do 65 i = ibeg,iend
@@ -22778,12 +22778,12 @@ c
  75      iwksp(j) = min (n,i+jt(j))
          sum = 0.0d0
          do 80 j = 1,maxt
- 80      sum = sum + t(i,j)*x(iwksp(j)) 
+ 80      sum = sum + t(i,j)*x(iwksp(j))
          if (propa) sum = d(i)*sum
          x(i) = x(i) - sum
  85   continue
       return
-      end 
+      end
       subroutine icbst (ndim,nn,maxbb,jb,d,b,ipropa,irwise,iwksp,x)
       implicit double precision (a-h, o-z)
 c
@@ -22792,7 +22792,7 @@ c     diagonal storage).
 c        (i + (b**t))*x = y    if not property a
 c        (i + d*(b**t))*x = y  if property a
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of b array
 c        n      order of system (= nn)
@@ -22806,7 +22806,7 @@ c                diagonals of the factorization if not property a
 c                or the sub-diagonals of the matrix if property a
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        irwise rowwise algorithm switch
 c                = 0  use diagonal algorithm
 c                = 1  use row-wise algorithm
@@ -22823,7 +22823,7 @@ c
       n = nn
       maxb = maxbb
       propa = ipropa .eq. 1
-      if (maxb .lt. 1) return 
+      if (maxb .lt. 1) return
 c
 c ... select rowwise or diagonal-wise algorithm.
 c
@@ -22838,14 +22838,14 @@ c ... determine nc, imax.
 c
  20   nc = 1
       do 25 i = 1,maxb
-         nterm = iwksp(i) + 1 
+         nterm = iwksp(i) + 1
          if (nterm .le. nc) go to 25
-         nc = nterm 
+         nc = nterm
          imax = i
  25   continue
       if (nc .le. 1) return
       ndel = -jb(imax)
-      iend = nc - 1 
+      iend = nc - 1
       if (ndel .gt. 1) go to 50
 c
 c ... special case for first sub diagonal.
@@ -22875,7 +22875,7 @@ cdir$ ivdep
       go to 20
 cdir$ ivdep
  60   do 65 i = ibeg,iend
- 65   x(i) = x(i) - d(i)*b(i+ndel,imax)*x(i+ndel) 
+ 65   x(i) = x(i) - d(i)*b(i+ndel,imax)*x(i+ndel)
       go to 20
 c
 c ... rowwise algorithm.
@@ -22897,16 +22897,16 @@ c
  100     x(iwksp(j)) = x(iwksp(j)) - d(iwksp(j))*b(i,j)*term
  105  continue
       return
-      end 
+      end
       subroutine icfs (ndim,nn,maxbb,jb,d,b,ipropa,irwise,iwksp,x)
       implicit double precision (a-h, o-z)
 c
 c ... icfs does an ic forward solve (natural ordering,
 c     diagonal storage).
 c        (i + b)*x = y    if not property a
-c        (i + b*d)*x = y  if property a 
+c        (i + b*d)*x = y  if property a
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of b array
 c        n      order of system (= nn)
@@ -22920,7 +22920,7 @@ c                diagonals of the factorization if not property a
 c                or the super-diagonals of the matrix if property a
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        irwise rowwise algorithm switch
 c                = 0  use diagonal algorithm
 c                = 1  use row-wise algorithm
@@ -22937,7 +22937,7 @@ c
       n = nn
       maxb = maxbb
       propa = ipropa .eq. 1
-      if (maxb .lt. 1) return 
+      if (maxb .lt. 1) return
 c
 c ... select rowwise or diagonal-wise algorithm.
 c
@@ -22952,14 +22952,14 @@ c ... determine nc, imin.
 c
  20   nc = n
       do 25 i = 1,maxb
-         nterm = iwksp(i) - 1 
+         nterm = iwksp(i) - 1
          if (nterm .ge. nc) go to 25
-         nc = nterm 
+         nc = nterm
          imin = i
  25   continue
       if (nc .ge. n) return
       ndel = -jb(imin)
-      ibeg = nc + 1 
+      ibeg = nc + 1
       if (ndel .gt. 1) go to 50
 c
 c ... special case for first minor subdiagonal.
@@ -22985,35 +22985,35 @@ c
       if (propa) go to 60
 cdir$ ivdep
       do 55 i = ibeg,iend
- 55   x(i) = x(i) - b(i,imin)*x(i-ndel) 
+ 55   x(i) = x(i) - b(i,imin)*x(i-ndel)
       go to 20
 cdir$ ivdep
  60   do 65 i = ibeg,iend
- 65   x(i) = x(i) - d(i-ndel)*b(i,imin)*x(i-ndel) 
+ 65   x(i) = x(i) - d(i-ndel)*b(i,imin)*x(i-ndel)
       go to 20
 c
 c ... rowwise algorithm.
 c
  70   if (propa) go to 90
-      do 85 i = 2,n 
+      do 85 i = 2,n
          do 75 j = 1,maxb
  75      iwksp(j) = max (1,i+jb(j))
-         sum = x(i) 
+         sum = x(i)
          do 80 j = 1,maxb
- 80      sum = sum - b(i,j)*x(iwksp(j)) 
-         x(i) = sum 
+ 80      sum = sum - b(i,j)*x(iwksp(j))
+         x(i) = sum
  85   continue
       return
  90   do 105 i = 2,n
          do 95 j = 1,maxb
  95      iwksp(j) = max (1,i+jb(j))
-         sum = x(i) 
+         sum = x(i)
          do 100 j = 1,maxb
  100     sum = sum - d(iwksp(j))*b(i,j)*x(iwksp(j))
-         x(i) = sum 
+         x(i) = sum
  105  continue
       return
-      end 
+      end
       subroutine icfst (ndim,nn,maxtt,jt,d,t,ipropa,irwise,iwksp,x)
       implicit double precision (a-h, o-z)
 c
@@ -23022,7 +23022,7 @@ c     diagonal storage).
 c        (i + (t**t))*x = y    if not property a
 c        (i + (t**t)*d)*x = y  if property a
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system (= nn)
@@ -23036,7 +23036,7 @@ c                diagonals of the factorization if not property a
 c                or the super-diagonals of the matrix if property a
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        irwise rowwise algorithm switch
 c                = 0  use diagonal algorithm
 c                = 1  use row-wise algorithm
@@ -23054,7 +23054,7 @@ c
       maxt = maxtt
       nm1 = n - 1
       propa = ipropa .eq. 1
-      if (maxt .lt. 1) return 
+      if (maxt .lt. 1) return
 c
 c ... select rowwise or diagonal-wise algorithm.
 c
@@ -23069,14 +23069,14 @@ c ... determine nc, imin.
 c
  20   nc = n
       do 25 i = 1,maxt
-         nterm = iwksp(i) - 1 
+         nterm = iwksp(i) - 1
          if (nterm .ge. nc) go to 25
-         nc = nterm 
+         nc = nterm
          imin = i
  25   continue
       if (nc .ge. n) return
       ndel = jt(imin)
-      ibeg = nc + 1 
+      ibeg = nc + 1
       if (ndel .gt. 1) go to 50
 c
 c ... special case for first minor subdiagonal.
@@ -23120,17 +23120,17 @@ c
  80      x(iwksp(j)) = x(iwksp(j)) - t(i,j)*term
  85   continue
       return
-      end 
-      subroutine icbsp (ndimr,ndimi,n,maxt,jt,d,t,ipropa,x) 
+      end
+      subroutine icbsp (ndimr,ndimi,n,maxt,jt,d,t,ipropa,x)
       implicit double precision (a-h, o-z)
 c
 c ... icbsp does an ic back solve (natural ordering,
 c     purdue storage).
 c
-c        (i + t)*x = y    if ipropa = 0 
-c        (d + t)*x = y    if ipropa = 1 
+c        (i + t)*x = y    if ipropa = 0
+c        (d + t)*x = y    if ipropa = 1
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndimr  row dimension of floating point arrays
 c        ndimi  row dimension of integer arrays
@@ -23145,7 +23145,7 @@ c                triangle of the factorization if ipropa = 0
 c                or the upper triangle of the matrix if ipropa = 1
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        x      on input, x contains y
 c               on output, x is the solution to back-solve
 c
@@ -23157,20 +23157,20 @@ c
 c
       propa = ipropa .eq. 1
       if (maxt .ge. 1) go to 15
-      if (.not. propa) return 
-      do 10 i = 1,n 
+      if (.not. propa) return
+      do 10 i = 1,n
  10   x(i) = x(i)*d(i)
       return
  15   do 25 i = n,1,-1
-         sum = x(i) 
+         sum = x(i)
          do 20 j = 1,maxt
             sum = sum - t(i,j)*x(jt(i,j))
  20      continue
          if (propa) sum = sum*d(i)
-         x(i) = sum 
+         x(i) = sum
  25   continue
       return
-      end 
+      end
       subroutine icbstp (ndimr,ndimi,n,maxb,jb,d,b,ipropa,x)
       implicit double precision (a-h, o-z)
 c
@@ -23180,7 +23180,7 @@ c
 c        (i + (b**t))*x = y    if ipropa = 0
 c        (d + (b**t))*x = y    if ipropa = 1
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n      order of system
 c        ndimr  row dimension of floating point arrays
@@ -23195,7 +23195,7 @@ c                triangle of the factorization if ipropa = 0
 c                or the lower triangle of the matrix if ipropa = 1
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        x      on input, x contains y
 c               on output, x is the solution to back-solve
 c
@@ -23207,29 +23207,29 @@ c
 c
       propa = ipropa .eq. 1
       if (maxb .ge. 1) go to 15
-      if (.not. propa) return 
-      do 10 i = 1,n 
+      if (.not. propa) return
+      do 10 i = 1,n
  10   x(i) = x(i)*d(i)
       return
  15   do 25 i = n,1,-1
          if (propa) x(i) = x(i)*d(i)
          term = x(i)
          do 20 j = 1,maxb
-            x(jb(i,j)) = x(jb(i,j)) - b(i,j)*term 
+            x(jb(i,j)) = x(jb(i,j)) - b(i,j)*term
  20      continue
  25   continue
       return
-      end 
-      subroutine icfsp (ndimr,ndimi,n,maxb,jb,d,b,ipropa,x) 
+      end
+      subroutine icfsp (ndimr,ndimi,n,maxb,jb,d,b,ipropa,x)
       implicit double precision (a-h, o-z)
 c
 c ... icfsp does an ic forward solve (natural ordering,
 c     purdue storage).
 c
-c        (i + b)*x = y    if ipropa = 0 
-c        (d + b)*x = y    if ipropa = 1 
+c        (i + b)*x = y    if ipropa = 0
+c        (d + b)*x = y    if ipropa = 1
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndimr  row dimension of floating point arrays
 c        ndimi  row dimension of integer arrays
@@ -23244,7 +23244,7 @@ c                triangle of the factorization if ipropa = 0
 c                or the lower triangle of the matrix if ipropa = 1
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        x      on input, x contains y
 c               on output, x is the solution to forward-solve
 c
@@ -23256,20 +23256,20 @@ c
 c
       propa = ipropa .eq. 1
       if (maxb .ge. 1) go to 15
-      if (.not. propa) return 
-      do 10 i = 1,n 
+      if (.not. propa) return
+      do 10 i = 1,n
  10   x(i) = x(i)*d(i)
       return
- 15   do 25 i = 1,n 
-         sum = x(i) 
+ 15   do 25 i = 1,n
+         sum = x(i)
          do 20 j = 1,maxb
             sum = sum - b(i,j)*x(jb(i,j))
  20      continue
          if (propa) sum = sum*d(i)
-         x(i) = sum 
+         x(i) = sum
  25   continue
       return
-      end 
+      end
       subroutine icfstp (ndimr,ndimi,n,maxt,jt,d,t,ipropa,x)
       implicit double precision (a-h, o-z)
 c
@@ -23279,7 +23279,7 @@ c
 c        (i + (t**t))*x = y    if ipropa = 0
 c        (d + (t**t))*x = y    if ipropa = 1
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndimr  row dimension of floating point arrays
 c        ndimi  row dimension of integer arrays
@@ -23294,7 +23294,7 @@ c                triangle of the factorization if ipropa = 0
 c                or the upper triangle of the matrix if ipropa = 1
 c        ipropa property a switch
 c                = 0  matrix does not have property a
-c                = 1  matrix does have property a 
+c                = 1  matrix does have property a
 c        x      on input, x contains y
 c               on output, x is the solution to forward-solve
 c
@@ -23306,19 +23306,19 @@ c
 c
       propa = ipropa .eq. 1
       if (maxt .ge. 1) go to 15
-      if (.not. propa) return 
-      do 10 i = 1,n 
+      if (.not. propa) return
+      do 10 i = 1,n
  10   x(i) = x(i)*d(i)
       return
- 15   do 25 i = 1,n 
+ 15   do 25 i = 1,n
          if (propa) x(i) = x(i)*d(i)
          term = x(i)
          do 20 j = 1,maxt
-            x(jt(i,j)) = x(jt(i,j)) - t(i,j)*term 
+            x(jt(i,j)) = x(jt(i,j)) - t(i,j)*term
  20      continue
  25   continue
       return
-      end 
+      end
       subroutine icbscp (ndimr,ndimi,n,jc,d,c,ncolor,nc,nt,ipropa,
      a                   wksp,x)
       implicit double precision (a-h, o-z)
@@ -23329,7 +23329,7 @@ c
 c       (i + t)*x = y    if ipropa = 0
 c       (d + t)*x = y    if ipropa = 1
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndimr  row dimension of c array
 c          ndimi  row dimension of jc array
@@ -23338,10 +23338,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -23376,8 +23376,8 @@ c
  20      ied = ied - npt
  25   continue
       return
-      end 
-      subroutine icbsct (ndimr,ndimi,n,jc,d,c,ncolor,nc,nt,nb,ipropa, 
+      end
+      subroutine icbsct (ndimr,ndimi,n,jc,d,c,ncolor,nc,nt,nb,ipropa,
      a                   wksp,x)
       implicit double precision (a-h, o-z)
 c
@@ -23387,7 +23387,7 @@ c
 c     (i + (b**t))*x = y    if ipropa = 0
 c     (d + (b**t))*x = y    if ipropa = 1
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndimr  row dimension of c array
 c          ndimi  row dimension of jc array
@@ -23396,10 +23396,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -23435,7 +23435,7 @@ c
          ied = ied - npt
  25   continue
       return
-      end 
+      end
       subroutine icfscp (ndimr,ndimi,jc,d,c,ncolor,nc,nt,nb,ipropa,
      a                   wksp,x)
       implicit double precision (a-h, o-z)
@@ -23446,7 +23446,7 @@ c
 c       (i + b)*x = y    if ipropa = 0
 c       (d + b)*x = y    if ipropa = 1
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndimr  row dimension of c array
 c          ndimi  row dimension of jc array
@@ -23454,10 +23454,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -23495,7 +23495,7 @@ c
  20      ist = ist + npt
  25   continue
       return
-      end 
+      end
       subroutine icfsct (ndimr,ndimi,jc,d,c,ncolor,nc,nt,ipropa,
      a                   wksp,x)
       implicit double precision (a-h, o-z)
@@ -23506,7 +23506,7 @@ c
 c     (i + (t**t))*x = y    if ipropa = 0
 c     (d + (t**t))*x = y    if ipropa = 1
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndimr  row dimension of c array
 c          ndimi  row dimension of jc array
@@ -23514,10 +23514,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -23545,12 +23545,12 @@ c
          do 15 i = ist,ied
  15      x(i) = x(i)*d(i)
  20      j2 = nt(icol)
-         call vsubpt (ndimr,ndimi,npt,j2,c(ist,1),jc(ist,1),x,x(ist), 
+         call vsubpt (ndimr,ndimi,npt,j2,c(ist,1),jc(ist,1),x,x(ist),
      a                wksp)
          ist = ist + npt
  25   continue
       return
-      end 
+      end
       integer function ipstr (omega)
       implicit double precision (a-h, o-z)
 c
@@ -23558,7 +23558,7 @@ c     ipstr finds the smallest integer, ipstr, greater than 5 such
 c     that    ipstr * (omega-1)**(ipstr-1) .le. 0.50. ipstr will be
 c          set in loop.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          omega  relaxation factor for sor method
 c
@@ -23576,14 +23576,14 @@ c
    15 continue
       ipstr = ip
       return
-      end 
-      subroutine iptgen (ncolor,ipt,nc) 
+      end
+      subroutine iptgen (ncolor,ipt,nc)
       implicit double precision (a-h, o-z)
 c
 c ... iptgen generates ipt, the pointer vector to block rows,
 c     for block structured matrices with nonconstant block size.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c     ncolor   the number of colors (block rows)
 c     ipt      upon input, an integer vector of length ncolor+1
@@ -23600,15 +23600,15 @@ c
          ipt(k+1) = ipt(k) + nc(k)
  10   continue
       return
-      end 
-      subroutine iterm (nn,u) 
+      end
+      subroutine iterm (nn,u)
       implicit double precision (a-h, o-z)
 c
 c     iterm produces the iteration summary line at the end
 c     of each iteration. if level .ge. 4, the latest approximation
 c     to the solution will be printed.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system  (= nn)
 c          u      solution estimate
@@ -23617,13 +23617,13 @@ c ... specifications for parameters
 c
       dimension u(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
       logical           halt, maxadp, minadp, maxadd, minadd
       common / itcom2 / halt, maxadp, minadp, maxadd, minadd
-      common / itcom3 / alpha, beta, zeta, emax, emin, pap, 
+      common / itcom3 / alpha, beta, zeta, emax, emin, pap,
      b                  alphao, gamma, sigma, rr, rho, dkq, dkm1,
      b                  ff, rqmin, rqmax, stptst, udnm, ubarnm,
      b                  bnorm, bnorm1
@@ -23631,23 +23631,23 @@ c
       logical           omgadp
       common / itcom5 / omega, alphab, betab, fff, specr, omgadp
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       n = nn
 c
 c ... print various parameters after each iteration
 c
-      if (in .gt. 0) go to 15 
+      if (in .gt. 0) go to 15
 c
 c ... print header
 c
-      if (iacel .ne. 3) write (nout,10) 
+      if (iacel .ne. 3) write (nout,10)
  10   format (/5x,'intermediate output after each iteration'
      a       /' iteration',11x,'convergence ',
-     b      5x,'emax',9x,'emin' /7x,'n',7x,'s',8x,'test' /) 
-      if (iacel .eq. 3) write (nout,12) 
+     b      5x,'emax',9x,'emin' /7x,'n',7x,'s',8x,'test' /)
+      if (iacel .eq. 3) write (nout,12)
  12   format (////5x,'intermediate output after each iteration'
-     a       //' number of',11x,'convergence',5x, 
+     a       //' number of',11x,'convergence',5x,
      b       'emax',8x,'omega',7x,'spectral' /' iterations',
      c       13x,'test',34x,'radius' //)
 c
@@ -23655,7 +23655,7 @@ c ... print summary line
 c
  15   if (iacel .ne. 3) write (nout,20) in,is,stptst,emax,emin
  20   format (3x,i5,3x,i5,3x,3d13.5)
-      if (iacel .eq. 3) write (nout,22) in,is,stptst,emax,omega,specr 
+      if (iacel .eq. 3) write (nout,22) in,is,stptst,emax,omega,specr
  22   format (3x,i5,3x,i5,3x,5d13.5)
       if (level .ge. 4) go to 25
       return
@@ -23668,17 +23668,17 @@ c
  40   format (//)
 c
       return
-      end 
+      end
       subroutine mcopy (lda,ldb,n,m,a,b)
       implicit double precision (a-h, o-z)
 c
 c ... mcopy copies an array a into array b.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        lda     leading dimension of array a
 c        ldb     leading dimension of array b
-c        n       number of rows in a to be copied 
+c        n       number of rows in a to be copied
 c        m       number of columns in a to be copied
 c        a,b     arrays
 c
@@ -23686,12 +23686,12 @@ c ... specifications for parameters
 c
       dimension a(lda,1), b(ldb,1)
 c
-      do 15 j = 1,m 
+      do 15 j = 1,m
          do 10 i = 1,n
  10      b(i,j) = a(i,j)
  15   continue
       return
-      end 
+      end
       subroutine move1 (ndim,mdim,nn,maxnzz,jcoef,coef,nt,nb,ier)
       implicit double precision (a-h, o-z)
 c
@@ -23704,10 +23704,10 @@ c     with the upper elements coming first.
 c     (purdue data structure, natural ordering, with point
 c     ic or point ssor preconditionings)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim     row dimension of coef array in defining routine
-c         mdim     column dimension of coef array in defining routine 
+c         mdim     column dimension of coef array in defining routine
 c         n        order of system (= nn)
 c         maxnz    number of columns in coef array (= maxnzz)
 c         jcoef    integer matrix representation array
@@ -23716,20 +23716,20 @@ c         nt       number of columns needed to store t, the upper
 c                   triangular part of coef
 c         nb       number of columns needed to store b, the lower
 c                   triangular part of coef
-c         ier      error code 
+c         ier      error code
 c                  =  0  no errors detected
 c                  = -9  mdim .lt. 1+nt+nb.  hence insufficient room
-c                        to store adjusted matrix 
+c                        to store adjusted matrix
 c
 c ... specifications for parameters
 c
-      integer   jcoef(ndim,1) 
+      integer   jcoef(ndim,1)
       dimension coef(ndim,1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       n = nn
       maxnz = maxnzz
@@ -23739,14 +23739,14 @@ c
       ntt = 0
       nbb = 0
       if (maxnz .le. 1) go to 999
-      do 25 i = 1,n 
+      do 25 i = 1,n
          ntrow = 0
          nbrow = 0
          do 20 j = 2,maxnz
             if (jcoef(i,j) - i) 10,20,15
- 10         nbrow = nbrow + 1 
+ 10         nbrow = nbrow + 1
             go to 20
- 15         ntrow = ntrow + 1 
+ 15         ntrow = ntrow + 1
  20      continue
          if (ntrow .gt. ntt) ntt = ntrow
          if (nbrow .gt. nbb) nbb = nbrow
@@ -23768,21 +23768,21 @@ c
       if (ndtb .le. maxnz) go to 40
       maxz = maxnz + 1
       do 35 j = maxz,ndtb
-      do 35 i = 1,n 
+      do 35 i = 1,n
          coef(i,j) = 0.0d0
          jcoef(i,j) = i
  35   continue
       maxnz = ndtb
- 40   nt2 = ntt + 1 
-      nb1 = nt2 + 1 
-      do 65 i = 1,n 
+ 40   nt2 = ntt + 1
+      nb1 = nt2 + 1
+      do 65 i = 1,n
          jbc = nt2
          do 50 jtc = 2,nt2
             if (jcoef(i,jtc) .ge. i) go to 50
  45         jbc = jbc + 1
             if (jcoef(i,jbc) .lt. i) go to 45
             jtemp = jcoef(i,jtc)
-            jcoef(i,jtc) = jcoef(i,jbc) 
+            jcoef(i,jtc) = jcoef(i,jbc)
             jcoef(i,jbc) = jtemp
             temp = coef(i,jtc)
             coef(i,jtc) = coef(i,jbc)
@@ -23794,7 +23794,7 @@ c
  55         jtc = jtc + 1
             if (jcoef(i,jtc) .gt. i) go to 55
             jtemp = jcoef(i,jtc)
-            jcoef(i,jtc) = jcoef(i,jbc) 
+            jcoef(i,jtc) = jcoef(i,jbc)
             jcoef(i,jbc) = jtemp
             temp = coef(i,jtc)
             coef(i,jtc) = coef(i,jbc)
@@ -23808,7 +23808,7 @@ c
       nb = nbb
       maxnzz = maxnz
       return
-      end 
+      end
       subroutine move2 (ndim,nn,maxnzz,jcoef,coef,work,iwork,
      a                  nt,nb)
       implicit double precision (a-h, o-z)
@@ -23822,7 +23822,7 @@ c     with the upper elements coming first.
 c     (diagonal data structure, natural ordering, with point
 c     ic or point ssor preconditionings)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim     row dimension of coef array in defining routine
 c         n        order of system (= nn)
@@ -23875,7 +23875,7 @@ c
  25      iwork(i+1) = j
  30   continue
 c
-c ... decode jcoef. 
+c ... decode jcoef.
 c
       do 35 j = 1,maxnz
          if (jcoef(j) .gt. n) jcoef(j) = n - jcoef(j)
@@ -23913,7 +23913,7 @@ c
  999  nt = ntt
       nb = nbb
       return
-      end 
+      end
       subroutine move3 (ndim,mdim,nn,maxnzz,jcoef,coef,nt,nb,
      a                  ncolor,nc,ier)
       implicit double precision (a-h, o-z)
@@ -23928,10 +23928,10 @@ c     the above segregation is done for each color.
 c     (purdue data structure, multi-color ordering, with point
 c     ic or point ssor preconditionings)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim     row dimension of coef array in defining routine
-c         mdim     column dimension of coef array in defining routine 
+c         mdim     column dimension of coef array in defining routine
 c         n        order of system (= nn)
 c         maxnz    number of columns in coef array (= maxnzz)
 c         jcoef    integer matrix representation array
@@ -23943,12 +23943,12 @@ c         nb       integer vector of length ncolor.  for each color,
 c                   the number of columns needed to store b, the lower
 c                   triangular part of the matrix for those rows.
 c         ncolor   number of colors
-c         nc       integer vector of length ncolor, giving the number 
+c         nc       integer vector of length ncolor, giving the number
 c                   of nodes for each color.
-c         ier      error code 
+c         ier      error code
 c                  =  0  no errors detected
 c                  = -9  mdim .lt. 1+nt+nb.  hence insufficient room
-c                        to store adjusted matrix 
+c                        to store adjusted matrix
 c
 c ... specifications for parameters
 c
@@ -23962,7 +23962,7 @@ c
       ist = 1
       do 85 icol = 1,ncolor
          ncol = nc(icol)
-         ied = ist + ncol - 1 
+         ied = ist + ncol - 1
 c
 c ... determine maximum number of nonzeros per row in t and b.
 c
@@ -23972,7 +23972,7 @@ c
          do 25 i = ist,ied
             ntrow = 0
             nbrow = 0
-            do 20 j = 2,maxnz 
+            do 20 j = 2,maxnz
                if (jcoef(i,j) - i) 10,20,15
  10            nbrow = nbrow + 1
                go to 20
@@ -23984,7 +23984,7 @@ c
 c
 c ... shuffle matrix so that t is first.
 c
-         ndtb = ntt + nbb + 1 
+         ndtb = ntt + nbb + 1
          if (ndtb .le. mdim) go to 30
 c
 c ... error -- mdim is too small.
@@ -24007,7 +24007,7 @@ c
          nz1 = 2 + ntt + nbb
          do 75 i = ist,ied
             jbc = nt2
-            do 50 jtc = 2,nt2 
+            do 50 jtc = 2,nt2
                if (jtc .gt. nt2) go to 50
                if (jcoef(i,jtc) .ge. i) go to 50
  45            jbc = jbc + 1
@@ -24019,7 +24019,7 @@ c
                coef(i,jtc) = coef(i,jbc)
                coef(i,jbc) = temp
  50         continue
-            jtc = 1 
+            jtc = 1
             do 60 jbc = nb1,maxnz
                if (jbc .gt. maxnz) go to 60
                if (jcoef(i,jbc) .le. i) go to 60
@@ -24056,7 +24056,7 @@ c ... exit.
 c
  999  maxnzz = maxnz
       return
-      end 
+      end
       subroutine move4 (ndim,nn,maxnew,jcnew,coef,ncol,nc,
      a                  work,iwork)
       implicit double precision (a-h, o-z)
@@ -24069,7 +24069,7 @@ c     the above segregation is done for each color.
 c     (diagonal data structure, multi-color ordering, with
 c     ic or ssor preconditionings (point or block))
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim     row dimension of coef array in defining routine
 c         n        order of system (= nn)
@@ -24079,7 +24079,7 @@ c         jcnew    integer array of size ncolor*max(maxnew(i))
 c                   giving the diagonal numbers for each color
 c         coef     matrix representation array
 c         ncolor   number of colors
-c         nc       integer vector of length ncolor, giving the number 
+c         nc       integer vector of length ncolor, giving the number
 c                   of nodes for each color.
 c         work     floating point workspace array of length max (nc(i))
 c         iwork    integer work array of length max (maxnew(i))
@@ -24090,7 +24090,7 @@ c
       dimension coef(ndim,1), work(1)
 c
       n = nn
-      ncolor = ncol 
+      ncolor = ncol
       ist = 1
       do 70 icol = 1,ncolor
          ncc = nc(icol)
@@ -24100,7 +24100,7 @@ c ... compute pointers into sorted jcnew.
 c
 c ... code jcnew.
 c
-         maxnz = maxnew(icol) 
+         maxnz = maxnew(icol)
          do 15 j = 1,maxnz
             do 5 i = ist,ied
                if (coef(i,j) .ne. 0.0d0) go to 10
@@ -24126,7 +24126,7 @@ c
  25         iwork(i+1) = j
  30      continue
 c
-c ... decode jcnew. 
+c ... decode jcnew.
 c
          do 35 j = 1,maxnz
             jd = jcnew(icol,j)
@@ -24148,7 +24148,7 @@ c
  45         jtemp = jcnew(icol,i)
             jcnew(icol,i) = jcnew(icol,k)
             jcnew(icol,k) = jtemp
-            do 50 l = ist,ied 
+            do 50 l = ist,ied
                work(l-ist+1) = coef(l,i)
                coef(l,i) = coef(l,k)
                coef(l,k) = work(l-ist+1)
@@ -24168,7 +24168,7 @@ c
 c ... exit.
 c
       return
-      end 
+      end
       subroutine move5 (ndim,n,maxnz,jcoef,coef)
       implicit double precision (a-h, o-z)
 c
@@ -24178,7 +24178,7 @@ c     block matrices, and db is the lower triangular block
 c     matrices.
 c     (diagonal data structure, with constant block size)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim     row dimension of coef array in defining routine
 c         n        order of system
@@ -24205,7 +24205,7 @@ c
       jget = -1
       go to 5
  15   if (j .eq. jcol) go to 25
-      do 20 i = 1,n 
+      do 20 i = 1,n
          temp = coef(i,j)
          coef(i,j) = coef(i,jcol)
          coef(i,jcol) = temp
@@ -24223,14 +24223,14 @@ c
          jd = jcoef(j)
          if (jd .lt. 0) jcoef(j) = n - jd
  35   continue
-      jcolsv = jcol 
+      jcolsv = jcol
  40   jsml = jcol
       do 45 j = jcol,maxnz
          jd = jcoef(j)
          if (jd .lt. jcoef(jsml)) jsml = j
  45   continue
       if (jsml .eq. jcol) go to 55
-      do 50 i = 1,n 
+      do 50 i = 1,n
          temp = coef(i,jsml)
          coef(i,jsml) = coef(i,jcol)
          coef(i,jcol) = temp
@@ -24241,21 +24241,21 @@ c
  55   jcol = jcol + 1
       if (jcol .le. maxnz) go to 40
 c
-c ... uncode jcoef. 
+c ... uncode jcoef.
 c
       do 60 j = jcolsv,maxnz
          jd = jcoef(j)
          if (jd .gt. n) jcoef(j) = n - jd
  60   continue
       return
-      end 
+      end
       subroutine muldc (ndim,nn,coef,ncolor,nc,maxnew,jcnew,x,y)
       implicit double precision (a-h, o-z)
 c
 c ... muldc computes  y = a*x  for a matrix permuted to an
 c     ncolor x ncolor block matrix stored in diagonal format.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim      row dimension of coef array
 c        n         order of system
@@ -24282,21 +24282,21 @@ c
       joff = 0
       do 15 k = 1,ncolor
          ncc = nc(k)
-         jlim = maxnew(k) - 1 
+         jlim = maxnew(k) - 1
          call vaddd (ndim,ncolor,ncc,n,jlim,coef(i1,2),jcnew(k,2),
      a               y(i1),x,joff)
          i1 = i1 + ncc
          joff = joff - ncc
  15   continue
       return
-      end 
+      end
       subroutine muldct (ndim,nn,coef,ncolor,nc,maxnew,jcnew,x,y)
       implicit double precision (a-h, o-z)
 c
 c ... muldct computes  y = (a**t)*x  for a matrix permuted to an
 c     ncolor x ncolor block matrix stored in diagonal format.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim      row dimension of coef array
 c        n         order of system
@@ -24323,44 +24323,44 @@ c
       joff = 0
       do 15 k = 1,ncolor
          ncc = nc(k)
-         jlim = maxnew(k) - 1 
+         jlim = maxnew(k) - 1
          call vadddt (ndim,ncolor,ncc,n,jlim,coef(i1,2),jcnew(k,2),
      a                y,x(i1),joff)
          i1 = i1 + ncc
          joff = joff - ncc
  15   continue
       return
-      end 
+      end
       subroutine mult1 (ndim,maxnz,coef,jcoef,wksp,nn,x,y)
       implicit double precision (a-h, o-z)
 c
 c ... mult1 computes y = a*x, a matrix-vector product.
 c     the diagonal is assumed to be in column one.
-c     (purdue storage format) 
+c     (purdue storage format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim     row dimension of coef in defining routine
 c         maxnz    number of columns in coef
 c         coef     array of matrix nonzeros
-c         jcoef    array of matrix column numbers 
+c         jcoef    array of matrix column numbers
 c         wksp     workspace array of length n
 c         n        order of matrix (= nn)
-c         x        multiplying vector of length n 
+c         x        multiplying vector of length n
 c         y        product vector of length n
 c
 c ... specifications for parameters
 c
-      dimension coef(ndim,2), x(1), y(1), wksp(1) 
-      integer   jcoef(ndim,2) 
+      dimension coef(ndim,2), x(1), y(1), wksp(1)
+      integer   jcoef(ndim,2)
 c
       n = nn
       maxm1 = maxnz - 1
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   y(i) = coef(i,1)*x(i)
       call vaddp (ndim,ndim,n,maxm1,coef(1,2),jcoef(1,2),y,x,wksp)
       return
-      end 
+      end
       subroutine mult2n (ndim,maxnz,coef,jcoef,nn,x,y)
       implicit double precision (a-h, o-z)
 c
@@ -24369,14 +24369,14 @@ c     the diagonal is assumed to be in column one.  all diagonals of
 c     the matrix must be stored.
 c     (nonsymmetric diagonal storage format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim     row dimension of coef in defining routine
 c         maxnz    number of columns in coef
 c         coef     array of matrix diagonals
 c         jcoef    array of matrix diagonal numbers
 c         n        dimension of matrix (= nn)
-c         x        multiplying vector of length n 
+c         x        multiplying vector of length n
 c         y        product vector of length n
 c
 c ... specifications for parameters
@@ -24385,13 +24385,13 @@ c
       integer   jcoef(2)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   y(i) = coef(i,1)*x(i)
       if (maxnz .le. 1) return
       maxm1 = maxnz - 1
       call vaddd (ndim,1,n,n,maxm1,coef(1,2),jcoef(2),y,x,0)
       return
-      end 
+      end
       subroutine mult2s (ndim,maxnz,coef,jcoef,nn,x,y)
       implicit double precision (a-h, o-z)
 c
@@ -24400,14 +24400,14 @@ c     the diagonal is assumed to be in column 1.  only the upper
 c     diagonals and the main diagonal are assumed stored.
 c     (symmetric diagonal storage format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim     row dimension of coef in defining routine
 c         maxnz    number of columns in coef
 c         coef     array of matrix diagonals
 c         jcoef    array of matrix diagonal numbers
 c         n        dimension of matrix (= nn)
-c         x        multiplying vector of length n 
+c         x        multiplying vector of length n
 c         y        product vector of length n
 c
 c ... specifications for parameters
@@ -24416,7 +24416,7 @@ c
       integer   jcoef(2)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   y(i) = coef(i,1)*x(i)
       if (maxnz .le. 1) return
 c
@@ -24429,38 +24429,38 @@ c
  20      y(i+ind) = y(i+ind) + coef(i,j)*x(i)
  25   continue
       return
-      end 
+      end
       subroutine mul1t (ndim,maxnz,coef,jcoef,wksp,nn,x,y)
       implicit double precision (a-h, o-z)
 c
-c ... mul1t computes y = (a**t)*x, a matrix-vector product. 
+c ... mul1t computes y = (a**t)*x, a matrix-vector product.
 c     the diagonal is assumed to be in column one.
-c     (purdue storage format) 
+c     (purdue storage format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim     row dimension of coef in defining routine
 c         maxnz    number of columns in coef
 c         coef     array of matrix nonzeros
-c         jcoef    array of matrix column numbers 
+c         jcoef    array of matrix column numbers
 c         wksp     workspace array of length n
 c         n        dimension of matrix (= nn)
-c         x        multiplying vector of length n 
+c         x        multiplying vector of length n
 c         y        product vector of length n
 c
 c ... specifications for parameters
 c
-      dimension coef(ndim,2), x(1), y(1), wksp(1) 
-      integer   jcoef(ndim,2) 
+      dimension coef(ndim,2), x(1), y(1), wksp(1)
+      integer   jcoef(ndim,2)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   y(i) = coef(i,1)*x(i)
       if (maxnz .le. 1) return
       maxm1 = maxnz - 1
       call vaddpt (ndim,ndim,n,maxm1,coef(1,2),jcoef(1,2),y,x,wksp)
       return
-      end 
+      end
       subroutine mul2nt (ndim,maxnz,coef,jcoef,nn,x,y)
       implicit double precision (a-h, o-z)
 c
@@ -24469,14 +24469,14 @@ c     the diagonal is assumed to be in column one.  all diagonals of
 c     the matrix must be stored.
 c     (nonsymmetric diagonal storage format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim     row dimension of coef in defining routine
 c         maxnz    number of columns in coef
 c         coef     array of matrix diagonals
 c         jcoef    array of matrix diagonal numbers
 c         n        dimension of matrix (= nn)
-c         x        multiplying vector of length n 
+c         x        multiplying vector of length n
 c         y        product vector of length n
 c
 c ... specifications for parameters
@@ -24485,30 +24485,30 @@ c
       integer   jcoef(2)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   y(i) = coef(i,1)*x(i)
       if (maxnz .le. 1) return
       maxm1 = maxnz - 1
       call vadddt (ndim,1,n,n,maxm1,coef(1,2),jcoef(2),y,x,0)
       return
-      end 
+      end
       subroutine mult3 (mm,np,a,ia,ja,wksp,x,y)
       implicit double precision (a-h, o-z)
 c
 c ... mult3 computes y = a*x, a matrix-vector product.
-c     the diagonal is assumed to be in the first partition. 
-c     (symmetric sparse storage format) 
+c     the diagonal is assumed to be in the first partition.
+c     (symmetric sparse storage format)
 c
-c ... parameters -- 
+c ... parameters --
 c
-c         m        number of partitions 
+c         m        number of partitions
 c         np       integer vector of length m+1 giving partition
-c                    pointers 
+c                    pointers
 c         a        floating point vector giving matrix coefficients
-c         ia       integer vector giving i values 
-c         ja       integer vector giving j values 
+c         ia       integer vector giving i values
+c         ja       integer vector giving j values
 c         wksp     workspace vector of length 2*n (keygs = 1 only)
-c         x        multiplying vector of length n 
+c         x        multiplying vector of length n
 c         y        product vector of length n
 c
 c ... specifications for parameters
@@ -24524,24 +24524,24 @@ c
       call vadds (mm1,np(2),ia,ja,a,y,x,wksp)
       call vadds (mm1,np(2),ja,ia,a,y,x,wksp)
       return
-      end 
+      end
       subroutine mult3n (mm,np,a,ia,ja,wksp,x,y)
       implicit double precision (a-h, o-z)
 c
 c ... mult3n computes y = a*x, a matrix-vector product.
-c     the diagonal is assumed to be in the first partition. 
+c     the diagonal is assumed to be in the first partition.
 c     (nonsymmetric sparse storage format)
 c
-c ... parameters -- 
+c ... parameters --
 c
-c         m        number of partitions 
+c         m        number of partitions
 c         np       integer vector of length m+1 giving partition
-c                    pointers 
+c                    pointers
 c         a        floating point vector giving matrix coefficients
-c         ia       integer vector giving i values 
-c         ja       integer vector giving j values 
+c         ia       integer vector giving i values
+c         ja       integer vector giving j values
 c         wksp     workspace vector of length 2*n (keygs = 1 only)
-c         x        multiplying vector of length n 
+c         x        multiplying vector of length n
 c         y        product vector of length n
 c
 c ... specifications for parameters
@@ -24556,24 +24556,24 @@ c
       mm1 = m - 1
       call vadds (mm1,np(2),ia,ja,a,y,x,wksp)
       return
-      end 
+      end
       subroutine mul3nt (mm,np,a,ia,ja,wksp,x,y)
       implicit double precision (a-h, o-z)
 c
 c ... mul3nt computes y = (a**t)*x, a matrix-vector product.
-c     the diagonal is assumed to be in the first partition. 
+c     the diagonal is assumed to be in the first partition.
 c     (nonsymmetric sparse storage format)
 c
-c ... parameters -- 
+c ... parameters --
 c
-c         m        number of partitions 
+c         m        number of partitions
 c         np       integer vector of length m+1 giving partition
-c                    pointers 
+c                    pointers
 c         a        floating point vector giving matrix coefficients
-c         ia       integer vector giving i values 
-c         ja       integer vector giving j values 
+c         ia       integer vector giving i values
+c         ja       integer vector giving j values
 c         wksp     workspace vector of length 2*n (keygs = 1 only)
-c         x        multiplying vector of length n 
+c         x        multiplying vector of length n
 c         y        product vector of length n
 c
 c ... specifications for parameters
@@ -24588,7 +24588,7 @@ c
       mm1 = m - 1
       call vadds (mm1,np(2),ja,ia,a,y,x,wksp)
       return
-      end 
+      end
       subroutine nmcalc (coef,jcoef,wfac,jwfac,icall,subq,nn,
      a                   rhs,ubar,wksp,ier)
       implicit double precision (a-h, o-z)
@@ -24614,10 +24614,10 @@ c    (8)  ( 1.0/emin) * sqrt ( (z,z)/(u,u) )
 c    (9)  (emax/emin) * sqrt ( (z,z)/(inv(ql)*rhs,inv(ql)*rhs) )
 c   (10)                sqrt ( (z,z)/(inv(ql)*rhs,inv(ql)*rhs) )
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        icall      key for initial or secondary call
-c                    = 1   initial call 
+c                    = 1   initial call
 c                    = 2   later call (needed if q is changed)
 c        subq       preconditioning routine
 c        n          order of system
@@ -24632,30 +24632,30 @@ c ... specifications for parameters
 c
       dimension rhs(1), ubar(1), wksp(1), coef(1), jcoef(2),
      a          wfac(1), jwfac(1)
-      external subq 
+      external subq
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
-      common / itcom3 / alpha, beta, zeta, emax, emin, pap, 
+      common / itcom3 / alpha, beta, zeta, emax, emin, pap,
      b                  alphao, gamma, sigma, rr, rho, dkq, dkm1,
      b                  ff, rqmin, rqmax, stptst, udnm, ubarnm,
      b                  bnorm, bnorm1
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
 c
       n = nn
       nteste = ntest
       if (ntest .gt. 6) nteste = ntest - 6
-      go to (10,50,20,20,30,40), nteste 
+      go to (10,50,20,20,30,40), nteste
 c
 c ... bnorm1: sqrt(b,q(inv)b).
 c
  10   call subq (coef,jcoef,wfac,jwfac,n,rhs,wksp)
-      sum = vdot (n,rhs,wksp) 
+      sum = vdot (n,rhs,wksp)
       if (sum .ge. 0.0d0) go to 15
       ier = -7
       call ershow (ier,'nmcalc')
@@ -24688,13 +24688,13 @@ c
 c ... exit.
 c
  50   return
-      end 
+      end
       subroutine omgchg (ssorcp,coef,jcoef,wfac,jwfac,n,p,r)
       implicit double precision (a-h, o-z)
 c
 c ... omgchg changes alphab and betab for a new estimate of omega.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n       order of system (= nn)
 c         p       vector from acceleration algorithm
@@ -24705,16 +24705,16 @@ c
       dimension p(1), r(1), coef(1), jcoef(2), wfac(1), jwfac(1)
       external ssorcp
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
-      common / itcom3 / alpha, beta, zeta, emax, emin, pap, 
+      common / itcom3 / alpha, beta, zeta, emax, emin, pap,
      b                  alphao, gamma, sigma, rr, rho, dkq, dkm1,
      b                  ff, rqmin, rqmax, stptst, udnm, ubarnm,
      b                  bnorm, bnorm1
       logical           omgadp
       common / itcom5 / omega, alphab, betab, fff, specr, omgadp
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
 c
 c ... update alphab and betab.
@@ -24723,17 +24723,17 @@ c
       alphab = min (alphab, (pap/pdp) - 1.0d0)
       betab  = max (betab , pldup/pdp)
       return
-      end 
+      end
       subroutine out (nn,v,iswt,noutt)
       implicit double precision (a-h, o-z)
 c
 c     out effects printing of residual and solution
 c     vectors - called from perror1
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          v      vector of length n
-c          iswt   labelling information 
+c          iswt   labelling information
 c          nout   output device number (= noutt)
 c
 c ... specifications for parameters
@@ -24742,14 +24742,14 @@ c
 c
          n = nn
          nout = noutt
-         if (n .le. 0) return 
+         if (n .le. 0) return
 c
-         kupper = min (n, 4) 
+         kupper = min (n, 4)
          if (iswt .eq. 1) write (nout,10)
  10      format (//5x,'residual vector')
          if (iswt .eq. 2) write (nout,15)
  15      format (//5x,'solution vector')
-         write (nout,20) (i,i=1,kupper) 
+         write (nout,20) (i,i=1,kupper)
  20      format (10x,4i15)
          write (nout,25)
  25      format (10x,65('-') /)
@@ -24757,17 +24757,17 @@ c
          do 35 j = 1,n,4
             kupper = min (j+3,n)
             jm1 = j - 1
-            write (nout,30) jm1,(v(k),k=j,kupper) 
- 30         format (4x,i5,'+  ',4d15.5) 
+            write (nout,30) jm1,(v(k),k=j,kupper)
+ 30         format (4x,i5,'+  ',4d15.5)
  35      continue
 c
          return
-      end 
+      end
       subroutine pbneu (suba,dsolve,coef,jcoef,wfac,jwfac,
-     a                  nd,wksp,nn,r,z) 
+     a                  nd,wksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
-c ... pbneu computes the nd-degree block neumann polynomial 
+c ... pbneu computes the nd-degree block neumann polynomial
 c ... approximation to the matrix inv(a).
 c     if a = d - b, where d is a dense banded matrix
 c     then the output vector is --
@@ -24776,7 +24776,7 @@ c             z = (i + p + p**2 + ... + p**nd)*inv(d) * r
 c
 c     where   p = inv(d)*b .
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         suba    matrix-vector multiplication routine
 c         dsolve  routine for computing inv(d)*vector
@@ -24806,7 +24806,7 @@ c
  15      z(i) = z(i) + wksp(i+n)
  20   continue
       return
-      end 
+      end
       subroutine pbpii (suba,dsolve,coef,jcoef,wfac,jwfac,
      a                  ainf,alpha,beta,nd,wksp,nn,r,z)
       implicit double precision (a-h, o-z)
@@ -24817,7 +24817,7 @@ c
 c ...        z = inv(d)*p  (a*inv(d)) * r
 c ...                    np
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         suba    matrix-vector multiplication routine
 c         dsolve  routine to compute inv(d)*vector
@@ -24844,11 +24844,11 @@ c
 c
       c1 = ((al+be+2.0d0)*(al+be+3.0d0))/(ainf*(al+2.0d0)*(al+be+2.0d0))
       call dsolve (coef,jcoef,wfac,jwfac,n,r,z)
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   z(i) = c1*z(i)
       if (nd .le. 0) return
 c
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   wksp(i) = r(i)
       do 35 k = 1,nd
          fk = dble (k)
@@ -24866,7 +24866,7 @@ c
  30      z(i) = z(i) + c1*wksp(n+i)
  35   continue
       return
-      end 
+      end
       subroutine pneu (suba,coef,jcoef,wfac,jwfac,d,nd,wksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
@@ -24875,13 +24875,13 @@ c ... approximation to the matrix inv(a).  the output vector is --
 c ...        z = p  (a)*r
 c ...             np
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         suba    matrix-vector multiplication routine
 c         d       vector of length n giving the diagonal elements
 c                  of the matrix
 c         nd      the degree of the polynomial desired
-c         wksp    workspace of length n 
+c         wksp    workspace of length n
 c         n       order of system (= nn)
 c         r       residual
 c         z       output vector
@@ -24893,7 +24893,7 @@ c
      a          wfac(1), jwfac(1)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   z(i) = r(i)/d(i)
       if (nd .le. 0) return
 c
@@ -24903,9 +24903,9 @@ c
  15      z(i) = z(i) + (r(i) - wksp(i))/d(i)
  20   continue
       return
-      end 
+      end
       subroutine ppii (suba,coef,jcoef,wfac,jwfac,ainf,
-     a                 alpha,beta,nd,wksp,nn,r,z) 
+     a                 alpha,beta,nd,wksp,nn,r,z)
       implicit double precision (a-h, o-z)
 c
 c ... ppii computes the nd-degree least squares polynomial
@@ -24913,7 +24913,7 @@ c ... approximation to the matrix inv(a).  the output vector is --
 c ...        z = p  (a)*r
 c ...             np
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         suba    matrix-vector multiplication routine
 c         ainf    the infinity norm of matrix a
@@ -24938,11 +24938,11 @@ c
       be = beta
 c
       c1 = ((al+be+2.0d0)*(al+be+3.0d0))/(ainf*(al+2.0d0)*(al+be+2.0d0))
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   z(i) = c1*r(i)
       if (nd .le. 0) return
 c
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   wksp(i) = r(i)
       do 35 k = 1,nd
          fk = dble (k)
@@ -24959,14 +24959,14 @@ c
  30      z(i) = z(i) + c1*wksp(i)
  35   continue
       return
-      end 
+      end
       subroutine pbs (n,t1,t2,x)
       implicit double precision (a-h, o-z)
 c
 c ... pbs does a penta-diagonal back substitution (i+t1+t2)*x = y
 c     where t1 and t2 are the first and second super diagonals.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of the system
 c          t1     vector of length n-1 containing the first super-
@@ -24985,7 +24985,7 @@ c
       do 10 i = n-2,1,-1
  10   x(i) = x(i) - t1(i)*x(i+1) - t2(i)*x(i+2)
       return
-      end 
+      end
       subroutine pbsm (nn,nsize,t1,t2,x)
       implicit double precision (a-h, o-z)
 c
@@ -24993,7 +24993,7 @@ c ... pbsm does a penta-diagonal back substitution (i+t1+t2)*x = y
 c     where t1 and t2 are superdiagonals of a system composed of
 c     independent subsystems of size nsize.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
 c          nsize  order of the individual subsystems
@@ -25017,7 +25017,7 @@ c
  15      x(i,j) = x(i,j) - t1(i,j)*x(i+1,j) - t2(i,j)*x(i+2,j)
  20   continue
       return
-      end 
+      end
       subroutine pfac (nn,d,t1,t2)
       implicit double precision (a-h, o-z)
 c
@@ -25025,12 +25025,12 @@ c ... pfac computes a factorization of a single symmetric
 c     pentadiagonal matrix contained in d, t1, and t2 and
 c     replaces it.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system (= nn)
 c          d      vector of length n containing the diagonal
 c                  elements of the matrix
-c          t1     vector of length n-1 containing the first 
+c          t1     vector of length n-1 containing the first
 c                  super-diagonal elements of the matrix
 c          t2     vector of length n-2 containing the second
 c                  super-diagonal elements of the matrix
@@ -25047,29 +25047,29 @@ c
          t1(i+1) = t1(i+1) - t1(i)*t2(i)*dii
  10   continue
       d(n) = d(n) - t1(n-1)*t1(n-1)/d(n-1)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   d(i) = 1.0d0/d(i)
       do 20 i = 1,n-1
  20   t1(i) = d(i)*t1(i)
       do 25 i = 1,n-2
  25   t2(i) = d(i)*t2(i)
       return
-      end 
+      end
       subroutine pfacm (nn,nsize,d,t1,t2)
       implicit double precision (a-h, o-z)
 c
-c ... pfacm computes factorizations of multiple independent 
+c ... pfacm computes factorizations of multiple independent
 c     symmetric pentadiagonal matrices contained in d, t1, and t2.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of global system (= nn)
 c          nsize  size of the individual subsystems
 c          d      linear array of length n containing the
 c                  diagonal elements of the systems
-c          t1     linear array of length n-1 containing the 
+c          t1     linear array of length n-1 containing the
 c                  first super-diagonal elements of the systems
-c          t2     linear array of length n-2 containing the 
+c          t2     linear array of length n-2 containing the
 c                  second super-diagonal elements of the systems
 c
 c ... specifications for parameters
@@ -25091,7 +25091,7 @@ c
       call vexopy (n-1,t1,d,t1,3)
       call vexopy (n-2,t2,d,t2,3)
       return
-      end 
+      end
       subroutine pfacn (nn,d,t1,t2,b1,b2)
       implicit double precision (a-h, o-z)
 c
@@ -25099,16 +25099,16 @@ c ... pfacn computes a factorization of a single nonsymmetric
 c     pentadiagonal matrix contained in d,t1,t2,b1, and b2
 c     and replaces it.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system (= nn)
 c          d      vector of length n containing the diagonal
 c                  elements of the matrix
-c          t1     vector of length n-1 containing the first 
+c          t1     vector of length n-1 containing the first
 c                  super-diagonal elements of the matrix
 c          t2     vector of length n-2 containing the second
 c                  super-diagonal elements of the matrix
-c          b1     vector of length n-1 containing the first 
+c          b1     vector of length n-1 containing the first
 c                  sub-diagonal elements of the matrix
 c          b2     vector of length n-2 containing the second
 c                  sub-diagonal elements of the matrix
@@ -25126,7 +25126,7 @@ c
          b1(i+1) = b1(i+1) - b2(i)*t1(i)*dii
  10   continue
       d(n) = d(n) - b1(n-1)*t1(n-1)/d(n-1)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   d(i) = 1.0d0/d(i)
       do 20 i = 1,n-1
          t1(i) = d(i)*t1(i)
@@ -25137,7 +25137,7 @@ c
          b2(i) = d(i)*b2(i)
  25   continue
       return
-      end 
+      end
       subroutine pfacnm (nn,nsize,d,t1,t2,b1,b2)
       implicit double precision (a-h, o-z)
 c
@@ -25145,7 +25145,7 @@ c ... pfacnm computes factorizations of multiple independent
 c     nonsymmetric pentadiagonal matrices contained in
 c     d,t1,t2,b1, and b2.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of global system (= nn)
 c          nsize  order of single subsystem
@@ -25163,7 +25163,7 @@ c
 c ... specifications for parameters
 c
       dimension d(nsize,1), t1(nsize,1), b1(nsize,1), t2(nsize,1),
-     a            b2(nsize,1) 
+     a            b2(nsize,1)
 c
       n = nn
       nsys = n/nsize
@@ -25184,17 +25184,17 @@ c
       call vexopy (n-1,b1,d,b1,3)
       call vexopy (n-2,b2,d,b2,3)
       return
-      end 
+      end
       subroutine pfs (n,b1,b2,x)
       implicit double precision (a-h, o-z)
 c
-c ... pfs does a penta-diagonal forward substitution  (i+b1+b2)*x = y 
+c ... pfs does a penta-diagonal forward substitution  (i+b1+b2)*x = y
 c     where b1 and b2 are the first and second sub-diagonals.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
-c          b1     vector of length n-1 containing the first 
+c          b1     vector of length n-1 containing the first
 c                  sub-diagonal elements
 c          b2     vector of length n-2 containing the second
 c                  sub-diagonal elements
@@ -25207,18 +25207,18 @@ c
       dimension b1(1), b2(1), x(2)
 c
       x(2) = x(2) - b1(1)*x(1)
-      do 10 i = 3,n 
+      do 10 i = 3,n
  10   x(i) = x(i) - b1(i-1)*x(i-1) - b2(i-2)*x(i-2)
       return
-      end 
+      end
       subroutine pfsm (nn,nsize,b1,b2,x)
       implicit double precision (a-h, o-z)
 c
-c ... pfsm does a penta-diagonal forward substitution (i+b1+b2)*x = y 
+c ... pfsm does a penta-diagonal forward substitution (i+b1+b2)*x = y
 c     where b1 and b2 are subdiagonals of a system composed of
 c     independent subsystems of size nsize.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
 c          nsize  order of the individual subsystems
@@ -25227,7 +25227,7 @@ c                  sub-diagonal elements of the factorizations
 c          b2     linear array of length n-2 containing the second
 c                  sub-diagonal elements of the factorizations
 c          x      on input, x contains y
-c                 on output, x contains 
+c                 on output, x contains
 c                 the solution to (i + b1 + b2)*x = y
 c
 c ... specifications for parameters
@@ -25243,7 +25243,7 @@ c
  15      x(i,j) = x(i,j) - b1(i-1,j)*x(i-1,j) - b2(i-2,j)*x(i-2,j)
  20   continue
       return
-      end 
+      end
       subroutine psoln (nn,d,t1,t2,b1,b2,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -25252,16 +25252,16 @@ c     pentadiagonal system.  d, t1, t2, b1, and b2 contain
 c     the main, first and second super, and first and second sub
 c     diagonals, respectively, of the factorization.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
 c          d      vector of length n containing the diagonal
 c                  elements of the factorization matrix
-c          t1     vector of length n-1 containing the first 
+c          t1     vector of length n-1 containing the first
 c                  super-diagonal elements of the factorization
 c          t2     vector of length n-2 containing the second
 c                  super-diagonal elements of the factorization
-c          b1     vector of length n-1 containing the first 
+c          b1     vector of length n-1 containing the first
 c                  sub-diagonal elements of the factorization
 c          b2     vector of length n-2 containing the second
 c                  sub-diagonal elements of the factorization
@@ -25273,14 +25273,14 @@ c
       dimension d(1), t1(1), t2(1), b1(1), b2(1), x(1), y(1)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call pfs (n,b1,b2,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = d(i)*x(i)
       call pbs (n,t1,t2,x)
       return
-      end 
+      end
       subroutine psolnm (nn,nsize,d,t1,t2,b1,b2,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -25289,17 +25289,17 @@ c     multiple pentadiagonal systems.  d, t1, t2, b1, and b2 are
 c     the main, first and second super, and the first and second
 c     sub diagonals, respectively, of the factorization.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
-c          nsize  size of an individual subsystem 
+c          nsize  size of an individual subsystem
 c          d      vector of length n containing the diagonal
 c                  elements of the factorization matrix
-c          t1     vector of length n-1 containing the first 
+c          t1     vector of length n-1 containing the first
 c                  super-diagonal elements of the factorization
 c          t2     vector of length n-2 containing the second
 c                  super-diagonal elements of the factorization
-c          b1     vector of length n-1 containing the first 
+c          b1     vector of length n-1 containing the first
 c                  sub-diagonal elements of the factorization
 c          b2     vector of length n-2 containing the second
 c                  sub-diagonal elements of the factorization
@@ -25311,39 +25311,39 @@ c
       dimension d(1), t1(1), t2(1), b1(1), b2(1), x(1), y(1)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call pfsm (n,nsize,b1,b2,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = d(i)*x(i)
       call pbsm (n,nsize,t1,t2,x)
       return
-      end 
+      end
       subroutine parsi
       implicit double precision (a-h, o-z)
 c
 c ... parsi computes the iteration parameters.
 c
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
       logical           halt, maxadp, minadp, maxadd, minadd
       common / itcom2 / halt, maxadp, minadp, maxadd, minadd
-      common / itcom3 / alpha, beta, zeta, emax, emin, pap, 
+      common / itcom3 / alpha, beta, zeta, emax, emin, pap,
      b                  alphao, gamma, sigma, rr, rho, dkq, dkm1,
      b                  ff, rqmin, rqmax, stptst, udnm, ubarnm,
      b                  bnorm, bnorm1
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       rhol = rho
       if (is - 1) 10,15,20
  10   rho = 1.0d0
       go to 25
- 15   rho = 1.0d0/(1.0d0 - sigma*sigma/2.0d0) 
+ 15   rho = 1.0d0/(1.0d0 - sigma*sigma/2.0d0)
       go to 25
  20   rho = 1.0d0/(1.0d0 - sigma*sigma*rhol/4.0d0)
 c
@@ -25352,7 +25352,7 @@ c
  25   alpha = rho*gamma
       beta = rhol*(rho - 1.0d0)/rho
       return
-      end 
+      end
       subroutine permas (isym,nn,nzz,ia,ja,a,wksp,p)
       implicit double precision (a-h, o-z)
 c
@@ -25360,18 +25360,18 @@ c ... permas takes the sparse matrix representation of the
 c     matrix and permutes both rows and columns, overwriting
 c     the previous structure.  (sparse data structure)
 c
-c ... parameters -- 
+c ... parameters --
 c
-c          isym      switch for symmetric storage 
+c          isym      switch for symmetric storage
 c                     = 0   matrix is symmetric
 c                     = 1   matrix is nonsymmetric
 c          n         size of system
 c          nz        length of ia, ja, and a vectors
-c          ia        vector of i values 
-c          ja        vector of j values 
+c          ia        vector of i values
+c          ja        vector of j values
 c          a         vector of matrix coefficients
-c          wksp      workspace vector of length n 
-c          p         permutation vector 
+c          wksp      workspace vector of length n
+c          p         permutation vector
 c
 c ... it is assumed that the i-th entry of the permutation vector
 c     p indicates the row the i-th row gets mapped into.  (i.e.
@@ -25379,7 +25379,7 @@ c     if ( p(i) = j ) row i gets mapped into row j)
 c
 c ... specifications for parameters
 c
-      dimension a(1), wksp(1) 
+      dimension a(1), wksp(1)
       integer   ia(1), ja(1), p(1)
 c
       n = nn
@@ -25392,23 +25392,23 @@ c
       do 5 i = 1,n
  5    wksp(i) = a(i)
       call vscatr (n,wksp,p,a)
-      do 10 i = 1,n 
+      do 10 i = 1,n
          ia(i) = i
          ja(i) = i
  10   continue
 c
 c ... convert to upper triangular elements for symmetric storage
 c
-      if (isym .eq. 1) return 
+      if (isym .eq. 1) return
       np1 = n + 1
       do 15 i = np1,nz
-         if (ia(i) .le. ja(i)) go to 15 
+         if (ia(i) .le. ja(i)) go to 15
          idum = ia(i)
          ia(i) = ja(i)
          ja(i) = idum
  15   continue
       return
-      end 
+      end
       subroutine permat (ndim,maxnz,coef,jcoef,wksp,iwksp,nn,p)
       implicit double precision (a-h, o-z)
 c
@@ -25416,16 +25416,16 @@ c ... permat takes the sparse matrix representation of the
 c     matrix and permutes both rows and columns, overwriting
 c     the previous structure.  (purdue data structure)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim      row dimension of coef array in defining routine
 c          maxnz     number of columns in coef and jcoef arrays
-c          coef      array of matrix coefficients 
+c          coef      array of matrix coefficients
 c          jcoef     array of matrix columns numbers
 c          wksp      workspace array of length n
 c          iwksp     integer workspace array of length n
 c          n         order of system (= nn)
-c          p         permutation vector 
+c          p         permutation vector
 c
 c ... it is assumed that the i-th entry of the permutation vector
 c     p indicates the row the i-th row gets mapped into.  (i.e.
@@ -25448,7 +25448,7 @@ c
          call vgathi (n,p,jcoef(1,j),jcoef(1,j))
  20   continue
       return
-      end 
+      end
       subroutine perror1 (suba,coef,jcoef,wfac,jwfac,nn,u,rhs,
      a                   wksp,digtt1,digtt2,idgtts)
       implicit double precision (a-h, o-z)
@@ -25457,7 +25457,7 @@ c     perror1 computes the residual, r = rhs - a*u.  the user
 c     also has the option of printing the residual and/or the
 c     unknown vector depending on idgts.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          suba   matrix-vector multiplication routine
 c          n      dimension of matrix (= nn)
@@ -25465,7 +25465,7 @@ c          u      latest estimate of solution
 c          rhs    right hand side of matrix problem
 c          wksp   workspace vector of length n
 c          digit1 output - measure of accuracy of stopping test (= digtt1
-c          digit2 output - measure of accuracy of solution (= digtt2) 
+c          digit2 output - measure of accuracy of solution (= digtt2)
 c          idgts   parameter controlling level of output (= idgtts)
 c                    if idgts < 1 or idgts > 4, then no output.
 c                            = 1, then number of digits is printed, pro-
@@ -25474,28 +25474,28 @@ c                            = 2, then solution vector is printed, pro-
 c                                 vided level .ge. 1
 c                            = 3, then residual vector is printed, pro-
 c                                 vided level .ge. 1
-c                            = 4, then both vectors are printed, pro- 
+c                            = 4, then both vectors are printed, pro-
 c                                 vided level .ge. 1
 c
 c ... specifications for parameters
 c
-      external suba 
+      external suba
       dimension rhs(1), u(1), wksp(1), coef(1), jcoef(2),
      a          wfac(1), jwfac(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
       logical           halt, maxadp, minadp, maxadd, minadd
       common / itcom2 / halt, maxadp, minadp, maxadd, minadd
-      common / itcom3 / alpha, beta, zeta, emax, emin, pap, 
+      common / itcom3 / alpha, beta, zeta, emax, emin, pap,
      b                  alphao, gamma, sigma, rr, rho, dkq, dkm1,
      b                  ff, rqmin, rqmax, stptst, udnm, ubarnm,
      b                  bnorm, bnorm1
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       n = nn
       idgts = idgtts
@@ -25531,16 +25531,16 @@ c
       digtt1 = digit1
       digtt2 = digit2
       return
-      end 
+      end
       subroutine pervec (nn,p,v,wksp)
       implicit double precision (a-h, o-z)
 c
 c ... pervec permutes a vector as dictated by the permutation
 c ... vector p.  if p(i) = j, then v(j) gets v(i).
 c
-c ... parameters -- 
+c ... parameters --
 c
-c          n       length of vectors p, v, and wksp  (= nn) 
+c          n       length of vectors p, v, and wksp  (= nn)
 c          p       integer permutation vector
 c          v       vector to be permuted
 c          wksp    workspace vector of length n
@@ -25548,26 +25548,26 @@ c
 c ... specifications for parameters
 c
       integer   p(1)
-      dimension v(1), wksp(1) 
+      dimension v(1), wksp(1)
 c
       n = nn
       if (n .le. 0) return
-      do 10 i = 1,n 
+      do 10 i = 1,n
          wksp(i) = v(i)
  10   continue
       call vscatr (n,wksp,p,v)
       return
-      end 
+      end
       subroutine pgen (nn,p,ip,nc,ncolor)
       implicit double precision (a-h, o-z)
 c
 c ... pgen constructs the permutation vector p and its inverse
 c ... ip for a coloring given by p.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n         order of system (= nn)
-c         p         vector from prbndx upon input 
+c         p         vector from prbndx upon input
 c                   permutation vector upon output
 c         ip        integer workspace vector upon input
 c                   inverse permutation vector upon output
@@ -25586,7 +25586,7 @@ c
       ncolor = 0
       do 5 i = 1,n
  5    nc(i) = 0
-      do 10 i = 1,n 
+      do 10 i = 1,n
          ic = p(i)
          if (ncolor .lt. ic) ncolor = ic
          nc(ic) = nc(ic) + 1
@@ -25598,7 +25598,7 @@ c
       do 15 i = 2,ncolor
          ip(i) = ip(i-1) + nc(i-1)
  15   continue
-      do 20 i = 1,n 
+      do 20 i = 1,n
          ic = p(i)
          p(i) = ip(ic)
          ip(ic) = ip(ic) + 1
@@ -25606,18 +25606,18 @@ c
 c
 c ... construct inverse permutation vector.
 c
-      do 25 i = 1,n 
+      do 25 i = 1,n
          j = p(i)
          ip(j) = i
  25   continue
       return
-      end 
+      end
       subroutine pjac (diag,nn,r,z)
       implicit double precision (a-h, o-z)
 c
-c ... pjac does the point jacobi preconditioning. 
+c ... pjac does the point jacobi preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         diag    vector of length n containing the diagonal
 c                  elements of the coefficient matrix
@@ -25630,23 +25630,23 @@ c
       dimension r(1), z(1), diag(1)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   z(i) = r(i)/diag(i)
       return
-      end 
+      end
       subroutine pmdg (ndim,mdim,nn,maxnz,jcoef,coef,ncol,nc,p,ip,
      a                 maxd,maxnew,jcnew,wksp,iwksp,isym,ier)
       implicit double precision (a-h, o-z)
 c
-c ... pmdg permutes the matrix according to index vector p, 
+c ... pmdg permutes the matrix according to index vector p,
 c     and, if room allows, stores the permuted matrix in
 c     diagonal format.  there will be enough room if the number
 c     of diagonals needed does not exceed mdim.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim      row dimension of coef and jcoef arrays
-c                   in defining routine 
+c                   in defining routine
 c        mdim      column dimension of coef and jcoef arrays in
 c                   defining routine
 c        n         order of system (active row size of coef and jcoef)
@@ -25668,7 +25668,7 @@ c        iwksp     integer workspace of length 2*n
 c        isym      symmetric storage switch
 c                   = 0    symmetric storage
 c                   = 1    nonsymmetric storage
-c        ier       error flag 
+c        ier       error flag
 c                  =  0   no errors detected
 c                  = -9   mdim is less than the number of columns
 c                          needed in coef to store the permuted
@@ -25677,14 +25677,14 @@ c
 c ... specifications for parameters
 c
       integer jcoef(2), nc(1), p(1), maxnew(1), jcnew(ncol,1),
-     a        iwksp(1), ip(1) 
+     a        iwksp(1), ip(1)
       dimension coef(ndim,1), wksp(1)
 c
 c
       n = nn
-      ncolor = ncol 
+      ncolor = ncol
 c
-c ... fill out rest of matrix if symmetric storage is used. 
+c ... fill out rest of matrix if symmetric storage is used.
 c
       if (isym .ne. 0) go to 2
       maxd = 2*maxnz - 1
@@ -25694,7 +25694,7 @@ c
       do 1 j = 2,maxnz
          ind = jcoef(j)
          len = n - ind
-         jcol = maxnz + j - 1 
+         jcol = maxnz + j - 1
          jcoef(jcol) = -ind
          call vfill (ind,coef(1,jcol),0.0d0)
          call vcopy (len,coef(1,j),coef(ind+1,jcol))
@@ -25722,7 +25722,7 @@ c
             ncc = nc(k)
             ied = ist + ncc - 1
             lim = maxnew(k)
-            do 25 i = ist,ied 
+            do 25 i = ist,ied
                id = iwksp(i)
                do 20 jj = 1,lim
                   if (jcnew(k,jj) .eq. id) go to 25
@@ -25760,16 +25760,16 @@ c
          ied = ist + ncc - 1
          lim = maxnew(k)
          do 62 l = 1,lim
-            jcol = jcnew(k,l) 
-            iwksp(n+jcol) = l 
+            jcol = jcnew(k,l)
+            iwksp(n+jcol) = l
  62      continue
          do 80 i = ist,ied
             iip = ip(i)
-            do 60 j = 2,maxnz 
+            do 60 j = 2,maxnz
  60         wksp(j) = coef(i,j)
             do 63 j = 2,maxd
  63         coef(i,j) = 0.0d0
-            do 75 j = 2,maxnz 
+            do 75 j = 2,maxnz
                if (wksp(j) .eq. 0.0d0) go to 75
                icol = p(iip + jcoef(j)) - i
                l = iwksp(n+icol)
@@ -25779,8 +25779,8 @@ c
          ist = ist + ncc
  85   continue
       return
-      end 
-      subroutine prbndx (nn,ndim,maxnzz,jcoef,coef,p,ip,propa,nstore) 
+      end
+      subroutine prbndx (nn,ndim,maxnzz,jcoef,coef,p,ip,propa,nstore)
       implicit double precision (a-h, o-z)
 c
 c**************************************************************
@@ -25800,7 +25800,7 @@ c
 c     the array p is used both to keep track of the color of a node
 c     (red node is positive, black is negative) but also the father
 c     node that caused the color marking of that point.  since
-c     complete information on the adjacency structure is hard to come 
+c     complete information on the adjacency structure is hard to come
 c     by, this forms a link to enable the color change of a partial
 c     tree when a recoverable color conflict occurs.
 c
@@ -25825,13 +25825,13 @@ c                = 2  diagonal (symmetric or nonsymmetric)
 c
 c ... output parameters --
 c
-c        p      contains information for constructing the permutation 
+c        p      contains information for constructing the permutation
 c               array upon output
 c        propa  a logical variable which is set to .true. if the
-c               matrix has property a and .false. otherwise 
+c               matrix has property a and .false. otherwise
 c
 c
-c******************************************************************** 
+c********************************************************************
 c
 c ... specifications for parameters
 c
@@ -25906,7 +25906,7 @@ c ... case i.  if the adjacent node has already been labeled with
 c              label equal to nxttyp, then skip to the next adjacent
 c              node.
 c
-         if (type .eq. nxttyp) go to 50 
+         if (type .eq. nxttyp) go to 50
 c
 c ... case ii.  if the adjacent node has not been labeled yet label
 c               it with nxttyp and enter it in the stack
@@ -25943,7 +25943,7 @@ c              father node, then change all nodes of the youngest father
 c              node to point to the oldest father node along with
 c              changing their colors.  since until this time the
 c              youngest father node tree has been independent no other
-c              color conflicts will arise from this change. 
+c              color conflicts will arise from this change.
 c
  40      old   = min ( iabs(type), iabs(nxttyp) )
          young = max ( iabs(type), iabs(nxttyp) )
@@ -25959,7 +25959,7 @@ c
 c==================================================================
  50      continue
 c
-c ... advance to next node in the stack 
+c ... advance to next node in the stack
 c
  55      next = next + 1
          if (next .le. last) go to 25
@@ -25995,14 +25995,14 @@ c ...... type conflict
 c
  999  propa = .false.
       return
-      end 
+      end
       subroutine prbblk (ncol,ndis,iblock,lbhb,p,ip,propa)
       implicit double precision (a-h, o-z)
 c
 c**************************************************************
 c
 c     (block structure)
-c     prbblk determines if the matrix has block property a. 
+c     prbblk determines if the matrix has block property a.
 c     see routine prbndx for an explanation of the algorithm
 c
 c**************************************************************
@@ -26019,13 +26019,13 @@ c         p,ip     integer workspace vectors of length ncolor
 c
 c ... output parameters --
 c
-c        p      contains information for constructing the permutation 
+c        p      contains information for constructing the permutation
 c               array upon output
 c        propa  a logical variable which is set to .true. if the
 c               matrix has block property a and .false. otherwise
 c
 c
-c******************************************************************** 
+c********************************************************************
 c
 c ... specifications for parameters
 c
@@ -26100,7 +26100,7 @@ c ... case i.  if the adjacent node has already been labeled with
 c              label equal to nxttyp, then skip to the next adjacent
 c              node.
 c
-         if (type .eq. nxttyp) go to 50 
+         if (type .eq. nxttyp) go to 50
 c
 c ... case ii.  if the adjacent node has not been labeled yet label
 c               it with nxttyp and enter it in the stack
@@ -26137,7 +26137,7 @@ c              father node, then change all nodes of the youngest father
 c              node to point to the oldest father node along with
 c              changing their colors.  since until this time the
 c              youngest father node tree has been independent no other
-c              color conflicts will arise from this change. 
+c              color conflicts will arise from this change.
 c
  40      old   = min ( iabs(type), iabs(nxttyp) )
          young = max ( iabs(type), iabs(nxttyp) )
@@ -26153,7 +26153,7 @@ c
 c==================================================================
  50      continue
 c
-c ... advance to next node in the stack 
+c ... advance to next node in the stack
 c
  55      next = next + 1
          if (next .le. last) go to 25
@@ -26188,14 +26188,14 @@ c ...... type conflict
 c
  999  propa = .false.
       return
-      end 
+      end
       subroutine prep1 (nn,ndim,maxnzz,jcoef,coef,ier)
       implicit double precision (a-h, o-z)
 c
 c ... prep1 puts the diagonal elements of the matrix in column one
 c     of coef  (purdue data structure)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n       dimension of matrix ( = nn)
 c         ndim    row dimension of coef array in defining routine
@@ -26208,13 +26208,13 @@ c                     -5 -- nonexistent diagonal element
 c
 c ... specifications for parameters
 c
-      integer   jcoef(ndim,1) 
+      integer   jcoef(ndim,1)
       dimension coef(ndim,1)
 c
       n = nn
       maxnz = maxnzz
 c
-      do 20 i = 1,n 
+      do 20 i = 1,n
          do 10 j = 1,maxnz
             if (jcoef(i,j) .eq. i) go to 15
  10      continue
@@ -26234,14 +26234,14 @@ c
          jcoef(i,1) = i
  20   continue
       return
-      end 
-      subroutine prep2 (nn,ndim,maxnzz,jcoef,coef,wksp,ier) 
+      end
+      subroutine prep2 (nn,ndim,maxnzz,jcoef,coef,wksp,ier)
       implicit double precision (a-h, o-z)
 c
 c ... prep2 puts the diagonal entries of the matrix into column
 c     one of coef.  (diagonal data structure)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n       dimension of matrix ( = nn)
 c         ndim    row dimension of coef array in defining routine
@@ -26273,7 +26273,7 @@ c
 c ... switch diagonals so that main diagonal is in column 1.
 c
  15   if (j .eq. 1) return
-      do 20 i = 1,n 
+      do 20 i = 1,n
          wksp(i) = coef(i,1)
          coef(i,1) = coef(i,j)
          coef(i,j) = wksp(i)
@@ -26281,19 +26281,19 @@ c
       jcoef(j) = jcoef(1)
       jcoef(1) = 0
       return
-      end 
+      end
       subroutine prep3 (n,nz,ia,ja,a,m,np,iwksp)
       implicit double precision (a-h, o-z)
 c
-c ... prep3 puts the diagonal elements of the matrix in the 
+c ... prep3 puts the diagonal elements of the matrix in the
 c     first n locations of the data structure, adds duplicate
 c     triples, and defines the partition for matrix-vector
 c     products.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n       number of equations
-c         nz      length of ia, ja, and a vectors 
+c         nz      length of ia, ja, and a vectors
 c         ia      vector of i values
 c         ja      vector of j values
 c         a       vector of matrix coefficients
@@ -26307,7 +26307,7 @@ c
       integer ia(1), ja(1), iwksp(1), np(1)
       dimension a(1)
 c
-c ... eliminate duplicates from the vectors by adding their 
+c ... eliminate duplicates from the vectors by adding their
 c     values in the a vector.  first, sort the vectors by
 c     rows first and then by columns within each row.
 c
@@ -26330,20 +26330,20 @@ c
  10   continue
       nz = l
 c
-c ... put main diagonal elements first. 
+c ... put main diagonal elements first.
 c
       do 20 k = 1,nz
  15      i = ia(k)
          j = ja(k)
          if (i .ne. j) go to 20
          if (i .eq. k) go to 20
-         val = a(k) 
+         val = a(k)
          ia(k) = ia(i)
          ja(k) = ja(i)
          a(k) = a(i)
          ia(i) = i
          ja(i) = i
-         a(i) = val 
+         a(i) = val
          go to 15
  20   continue
 c
@@ -26354,8 +26354,8 @@ c
       mm = 1
       np(1) = 1
  25   mm = mm + 1
-      np(mm) = kbgn 
-      do 30 i = 1,n 
+      np(mm) = kbgn
+      do 30 i = 1,n
  30   iwksp(i) = 0
       nval = 0
       if (kbgn .gt. nz) go to 50
@@ -26375,8 +26375,8 @@ c
          ia(krep) = i
          ja(krep) = j
          a(k) = at
-         ia(k) = it 
-         ja(k) = jt 
+         ia(k) = it
+         ja(k) = jt
  35      krep = krep + 1
          if (nval .ge. n) go to 45
  40   continue
@@ -26384,13 +26384,13 @@ c
       go to 25
  50   m = mm - 1
       return
-      end 
+      end
       subroutine prich (nn,r,z)
       implicit double precision (a-h, o-z)
 c
 c ... prich does the richardson preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n       order of system (= nn)
 c         r       residual
@@ -26401,10 +26401,10 @@ c
       dimension r(1), z(1)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   z(i) = r(i)
       return
-      end 
+      end
       subroutine pstops (nn,r,z,u,ubar,ier)
       implicit double precision (a-h, o-z)
 c
@@ -26426,7 +26426,7 @@ c    (9)  (emax/emin) * sqrt ( (z,z)/(inv(ql)*rhs,inv(ql)*rhs) )
 c   (10)                sqrt ( (z,z)/(inv(ql)*rhs,inv(ql)*rhs) )
 c
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n       order of system
 c         r       residual vector
@@ -26440,13 +26440,13 @@ c ... specifications for parameters
 c
       dimension r(1), z(1), u(1), ubar(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
       logical           halt, maxadp, minadp, maxadd, minadd
       common / itcom2 / halt, maxadp, minadp, maxadd, minadd
-      common / itcom3 / alpha, beta, zeta, emax, emin, pap, 
+      common / itcom3 / alpha, beta, zeta, emax, emin, pap,
      b                  alphao, gamma, sigma, rr, rho, dkq, dkm1,
      b                  ff, rqmin, rqmax, stptst, udnm, ubarnm,
      b                  bnorm, bnorm1
@@ -26457,7 +26457,7 @@ c
       logical rhave, zhave, zthave, rcalp, zcalp, ztcalp,
      a        udhav, rdhav, rzhav, rzthav, zdhav, zzthav, ztdhav
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       logical q1
       save    q1
@@ -26467,7 +26467,7 @@ c
       nteste = ntest
       if (ntest .gt. 6) nteste = nteste - 6
 c
-      go to (10,20,30,40,50,60), nteste 
+      go to (10,20,30,40,50,60), nteste
 c
 c ... test 1
 c
@@ -26477,8 +26477,8 @@ c
       return
  15   emaxl = emax
       eminl = emin
-      if (eminl .lt. tiny) eminl = tiny 
-      tl = emaxl*sqrt (rzdot) 
+      if (eminl .lt. tiny) eminl = tiny
+      tl = emaxl*sqrt (rzdot)
       tr = eminl*bnorm1
       stptst = tl/tr
       if (tl .lt. tr*zeta) halt = .true.
@@ -26488,7 +26488,7 @@ c ... test 2
 c
 c ... special procedure for zeroth iteration
 c
- 20   if (in .ge. 1) go to 25 
+ 20   if (in .ge. 1) go to 25
       q1 = .false.
       udnm = 1.0d0
       stptst = sqrt (rzdot)
@@ -26503,14 +26503,14 @@ c
       if ((in .gt. 5)  .and.  (mod(in,5) .ne. 0)) go to 28
          uold = udnm
          udnm = sqrt ( vdot (n,u,u) )
-         if (udnm .lt. tiny) udnm = 1.0d0 
+         if (udnm .lt. tiny) udnm = 1.0d0
          if ((in .gt. 5)  .and.
      a       (abs (udnm-uold) .lt. udnm*zeta)) q1 = .true.
 c
 c ... compute stopping test.
 c
  28   eminl = emin
-      if (eminl .lt. tiny) eminl = tiny 
+      if (eminl .lt. tiny) eminl = tiny
       tl = sqrt ( vdot (n,z,z) )
       tr = udnm*eminl
       stptst = tl/tr
@@ -26521,7 +26521,7 @@ c ... test 3.
 c
  30   emaxl = emax
       eminl = emin
-      if (eminl .lt. tiny) eminl = tiny 
+      if (eminl .lt. tiny) eminl = tiny
       tl = emaxl*sqrt ( vdot (n,z,z) )
       tr = eminl*bnorm1
       stptst = tl/tr
@@ -26547,30 +26547,30 @@ c
 c ... test 6.
 c
  60   sum = 0.0d0
-      do 65 i = 1,n 
+      do 65 i = 1,n
  65   sum = sum + (u(i) - ubar(i))**2
       tl = sqrt (sum)
       tr = ubarnm
       stptst = tl/tr
       if (tl .lt. tr*zeta) halt = .true.
       return
-      end 
+      end
       subroutine rowise (maxnz,jcoef,irwise)
       implicit double precision (a-h, o-z)
 c
-c ... rowise determines whether a row-wise or diagonal-wise 
+c ... rowise determines whether a row-wise or diagonal-wise
 c     algorithm should be used for ic and ssor splittings with
 c     diagonal storage.  this routine should be called after
 c     final factorization is computed.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          maxnz  number of number of diagonals stored
 c          jcoef  vector of diagonal numbers for factorization
 c                  array or matrix
 c          irwise has a value upon output of
 c                  0   if diagonal-wise algorithm should be used
-c                  1   if row-wise algorithm should be used 
+c                  1   if row-wise algorithm should be used
 c
 c ... specifications for parameters
 c
@@ -26585,20 +26585,20 @@ c
       do 15 j = 1,maxnz
          jcol = iabs(jcoef(j))
          if (jcol .le. 1 .or. jcol .gt. maxd) go to 15
-         irwise = 1 
+         irwise = 1
          return
  15   continue
       return
-      end 
+      end
       subroutine rowsum (lda,n,maxnzz,a,x,isym)
       implicit double precision (a-h, o-z)
 c
 c ... rowsum computes the row sum of the matrix a.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        lda     leading dimension of array a
-c        n       active size of array a 
+c        n       active size of array a
 c        maxnz   number of columns in array a
 c        a       array of size n by maxnz
 c        x       vector of length n containing the row
@@ -26613,11 +26613,11 @@ c
       dimension a(lda,1), x(1)
 c
       maxnz = maxnzz
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = 0.0d0
       do 20 j = 1,maxnz
          do 15 i = 1,n
- 15      x(i) = x(i) + a(i,j) 
+ 15      x(i) = x(i) + a(i,j)
  20   continue
       if (isym .eq. 1 .or. maxnz .le. 1) return
       do 30 j = 2,maxnz
@@ -26625,7 +26625,7 @@ c
  25      x(i) = x(i) + a(i-j+1,j)
  30   continue
       return
-      end 
+      end
       subroutine rsad (nn,nsize,nrr,ndim,maxnew,ndtt,ndbb,jcnew,
      a                 coef,c,b,dfac,wksp)
       implicit double precision (a-h, o-z)
@@ -26637,22 +26637,22 @@ c                       ( b   db )
 c
 c     diagonal storage
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n          order of system
 c        nsize      size of an individual subsystem (if multiple
-c                    systems) 
+c                    systems)
 c        nr         order of the red subsystem
 c        ndim       row dimension of coef array
 c        maxnew     number of columns in coef array
 c        ndt        number of upper diagonals in diagonal block
 c        ndb        number of lower diagonals in diagonal block
-c        coef       floating point data structure 
+c        coef       floating point data structure
 c        b          vector of length n containing bb behind br
 c        c          vector of length nr containing cr
-c        dfac       vector of length (1+nt+nb)*n to contain 
+c        dfac       vector of length (1+nt+nb)*n to contain
 c                    factorization of diagonal block upon output
-c        wksp       workspace vector of length nb 
+c        wksp       workspace vector of length nb
 c
 c ... specifications for parameters
 c
@@ -26663,11 +26663,11 @@ c
       nr = nrr
       ndt = ndtt
       ndb = ndbb
-      nrp1 = nr + 1 
+      nrp1 = nr + 1
       nb = n - nr
       maxd = 1 + ndt + ndb
-      maxz = maxnew(1) - maxd 
-      max2 = maxnew(2) - maxd 
+      maxz = maxnew(1) - maxd
+      max2 = maxnew(2) - maxd
 c
 c ... cr = dr*br.
 c
@@ -26681,7 +26681,7 @@ c ... wksp = b*br
 c
  20   if (maxz*max2 .eq. 0) return
       do 25 i = 1,nb
- 25   wksp(i) = 0.0d0 
+ 25   wksp(i) = 0.0d0
       call vaddd (ndim,2,nb,nr,max2,coef(nrp1,maxd+1),
      a            jcnew(2,maxd+1),wksp,b,-nr)
 c
@@ -26698,7 +26698,7 @@ c
  40   call vsubd (ndim,2,nr,nb,maxz,coef(1,maxd+1),jcnew(1,maxd+1),
      a            c,wksp,nr)
       return
-      end 
+      end
       subroutine rsap (ndimm,n,nr,maxnz,jcoef,coef,b,c,wksp)
       implicit double precision (a-h, o-z)
 c
@@ -26707,9 +26707,9 @@ c
 c       where      a  = ( dr   t )
 c                       ( b   db )
 c
-c     purdue format 
+c     purdue format
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim       row dimension of coef,jcoef arrays
 c        n          order of total system
@@ -26731,17 +26731,17 @@ c
       if (maxnz .le. 1) return
       np1 = n + 1
       nb = n - nr
-      nrp1 = nr + 1 
+      nrp1 = nr + 1
       maxm1 = maxnz - 1
-      do 15 i = 1,n 
- 15   wksp(i) = 0.0d0 
+      do 15 i = 1,n
+ 15   wksp(i) = 0.0d0
       call vaddp (ndim,ndim,nb,maxm1,coef(nrp1,2),jcoef(nrp1,2),
      a            wksp(nrp1),b,wksp(np1))
       do 20 i = nrp1,n
  20   wksp(i) = wksp(i)/coef(i,1)
       call vsubp (ndim,ndim,nr,maxm1,coef(1,2),jcoef(1,2),c,wksp,wksp)
       return
-      end 
+      end
       subroutine rsatd (nn,nsize,nrr,ndim,maxnew,ndtt,ndbb,jcnew,
      a                  coef,c,b,dfac,wksp)
       implicit double precision (a-h, o-z)
@@ -26753,22 +26753,22 @@ c                       ( b   db )
 c
 c     diagonal storage
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n          order of system
 c        nsize      size of an individual subsystem (if multiple
-c                    systems) 
+c                    systems)
 c        nr         order of the red subsystem
 c        ndim       row dimension of coef array
 c        maxnew     number of columns in coef array
 c        ndt        number of upper diagonals in diagonal block
 c        ndb        number of lower diagonals in diagonal block
-c        coef       floating point data structure 
+c        coef       floating point data structure
 c        b          vector of length n containing bb behind br
 c        c          vector of length nr containing cr
-c        dfac       vector of length (1+nt+nb)*n to contain 
+c        dfac       vector of length (1+nt+nb)*n to contain
 c                    factorization of diagonal block upon output
-c        wksp       workspace vector of length nb 
+c        wksp       workspace vector of length nb
 c
 c ... specifications for parameters
 c
@@ -26779,11 +26779,11 @@ c
       nr = nrr
       ndt = ndtt
       ndb = ndbb
-      nrp1 = nr + 1 
+      nrp1 = nr + 1
       nb = n - nr
       maxd = 1 + ndt + ndb
-      maxz = maxnew(1) - maxd 
-      max2 = maxnew(2) - maxd 
+      maxz = maxnew(1) - maxd
+      max2 = maxnew(2) - maxd
 c
 c ... cr = (dr**t)*br.
 c
@@ -26797,7 +26797,7 @@ c ... wksp = (t**t)*br
 c
  20   if (maxz*max2 .eq. 0) return
       do 25 i = 1,nb
- 25   wksp(i) = 0.0d0 
+ 25   wksp(i) = 0.0d0
       call vadddt (ndim,2,nr,nb,maxz,coef(1,maxd+1),
      a            jcnew(1,maxd+1),wksp,b,nr)
 c
@@ -26807,14 +26807,14 @@ c
       do 30 i = 1,nb
  30   wksp(i) = wksp(i)*dfac(i+nr)
       go to 40
- 35   call bdsolt (n,nb,nsize,ndt,ndb,dfac(nrp1),wksp,wksp) 
+ 35   call bdsolt (n,nb,nsize,ndt,ndb,dfac(nrp1),wksp,wksp)
 c
 c ... cr = cr - (b**t)*wksp
 c
  40   call vsubdt (ndim,2,nb,nr,max2,coef(nrp1,maxd+1),
      a            jcnew(2,maxd+1),c,wksp,-nr)
       return
-      end 
+      end
       subroutine rsatp (ndimm,n,nr,maxnz,jcoef,coef,b,c,wksp)
       implicit double precision (a-h, o-z)
 c
@@ -26823,9 +26823,9 @@ c
 c       where      a  = ( dr   t )
 c                       ( b   db )
 c
-c     purdue format 
+c     purdue format
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim       row dimension of coef,jcoef arrays
 c        n          order of total system
@@ -26847,10 +26847,10 @@ c
       if (maxnz .le. 1) return
       np1 = n + 1
       nb = n - nr
-      nrp1 = nr + 1 
+      nrp1 = nr + 1
       maxm1 = maxnz - 1
-      do 15 i = 1,n 
- 15   wksp(i) = 0.0d0 
+      do 15 i = 1,n
+ 15   wksp(i) = 0.0d0
       call vaddpt (ndim,ndim,nr,maxm1,coef(1,2),jcoef(1,2),wksp,b,
      a             wksp)
       do 20 i = nrp1,n
@@ -26858,7 +26858,7 @@ c
       call vsubpt (ndim,ndim,nb,maxm1,coef(nrp1,2),jcoef(nrp1,2),c,
      a             wksp(nrp1),wksp(np1))
       return
-      end 
+      end
       subroutine rsbegd (nn,nsize,nrr,ndim,maxnew,ndtt,ndbb,jcnew,
      a                   coef,c,b,dfac,wksp)
       implicit double precision (a-h, o-z)
@@ -26870,22 +26870,22 @@ c                       ( b   db )
 c
 c     diagonal storage
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n          order of system
 c        nsize      size of an individual subsystem (if multiple
-c                    systems) 
+c                    systems)
 c        nr         order of the red subsystem
 c        ndim       row dimension of coef array
 c        maxnew     number of columns in coef array
 c        ndt        number of upper diagonals in diagonal block
 c        ndb        number of lower diagonals in diagonal block
-c        coef       floating point data structure 
+c        coef       floating point data structure
 c        b          vector of length n containing bb behind br
 c        c          vector of length nr containing cr
-c        dfac       vector of length (1+nt+nb)*n containing 
+c        dfac       vector of length (1+nt+nb)*n containing
 c                    factorization of diagonal block upon input
-c        wksp       workspace vector of length nb 
+c        wksp       workspace vector of length nb
 c
 c ... specifications for parameters
 c
@@ -26896,7 +26896,7 @@ c
       nr = nrr
       ndt = ndtt
       ndb = ndbb
-      nrp1 = nr + 1 
+      nrp1 = nr + 1
       nb = n - nr
       maxd = 1 + ndt + ndb
 c
@@ -26909,7 +26909,7 @@ c
       call vsubd (ndim,2,nr,nb,maxm1,coef(1,maxd+1),jcnew(1,maxd+1),
      a            c,wksp,nr)
       return
-      end 
+      end
       subroutine rsbegp (n,nr,ndim,maxnz,jcoef,coef,c,b,wksp)
       implicit double precision (a-h, o-z)
 c
@@ -26920,24 +26920,24 @@ c                       ( b   db )
 c
 c     purdue storage
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n          order of system
 c        nr         order of the red subsystem
 c        ndim       row dimension of coef array
 c        maxnz      number of columns in coef array
 c        jcoef      integer data structure
-c        coef       floating point data structure 
+c        coef       floating point data structure
 c        b          vector of length n containing bb behind br
 c        c          vector of length nr containing cr
 c        wksp       workspace vector of length n
 c
 c ... specifications for parameters
 c
-      integer   jcoef(ndim,2) 
-      dimension coef(ndim,2), b(1), c(1), wksp(1) 
+      integer   jcoef(ndim,2)
+      dimension coef(ndim,2), b(1), c(1), wksp(1)
 c
-      nrp1 = nr + 1 
+      nrp1 = nr + 1
       do 10 i = 1,nr
  10   c(i) = b(i)
       if (maxnz .le. 1) return
@@ -26947,9 +26947,9 @@ c
       call vsubp (ndim,ndim,nr,maxm1,coef(1,2),jcoef(1,2),c,
      a            wksp,wksp)
       return
-      end 
+      end
       subroutine rsendd (nn,nsize,nrr,ndim,maxnew,ndtt,ndbb,jcnew,
-     a                   coef,x,b,dfac) 
+     a                   coef,x,b,dfac)
       implicit double precision (a-h, o-z)
 c
 c ... rsendd computes  xb = inv(db)*(bb - b*xr)
@@ -26959,33 +26959,33 @@ c                       ( b   db )
 c
 c     diagonal storage
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n          order of system
 c        nsize      size of an individual subsystem (if multiple
-c                    systems) 
+c                    systems)
 c        nr         order of the red subsystem
 c        ndim       row dimension of coef array
 c        maxnew     number of columns in coef array
 c        ndt        number of upper diagonals in diagonal block
 c        ndb        number of lower diagonals in diagonal block
-c        coef       floating point data structure 
+c        coef       floating point data structure
 c        x          vector of length n containing  xr, xb
 c        b          vector of length n containing bb in the last
 c                    nb locations
-c        dfac       vector of length (1+nt+nb)*n containing 
+c        dfac       vector of length (1+nt+nb)*n containing
 c                    factorization of diagonal block upon input
 c
 c ... specifications for parameters
 c
       integer   jcnew(2,1), maxnew(2)
-      dimension coef(ndim,2), x(1), b(1), dfac(1) 
+      dimension coef(ndim,2), x(1), b(1), dfac(1)
 c
       n = nn
       nr = nrr
       ndt = ndtt
       ndb = ndbb
-      nrp1 = nr + 1 
+      nrp1 = nr + 1
       nb = n - nr
       maxd = 1 + ndt + ndb
 c
@@ -26993,12 +26993,12 @@ c ... compute xb.
 c
       do 10 i = nrp1,n
  10   x(i) = b(i)
-      max2 = maxnew(2) - maxd 
+      max2 = maxnew(2) - maxd
       call vsubd (ndim,2,nb,nr,max2,coef(nrp1,maxd+1),
      a            jcnew(2,maxd+1),x(nrp1),x,-nr)
       call bdsol (n,nb,nsize,ndt,ndb,dfac(nrp1),x(nrp1),x(nrp1),1)
       return
-      end 
+      end
       subroutine rsendp (n,nr,ndim,maxnz,jcoef,coef,x,b,wksp)
       implicit double precision (a-h, o-z)
 c
@@ -27007,9 +27007,9 @@ c
 c       where      a  = ( dr   t )
 c                       ( b   db )
 c
-c     purdue format 
+c     purdue format
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n          order of matrix
 c        nr         order of red subsystem
@@ -27024,10 +27024,10 @@ c        wksp       workspace array of length nb
 c
 c ... specifications for parameters
 c
-      integer   jcoef(ndim,2) 
-      dimension coef(ndim,2), x(1), b(1), wksp(1) 
+      integer   jcoef(ndim,2)
+      dimension coef(ndim,2), x(1), b(1), wksp(1)
 c
-      nrp1 = nr + 1 
+      nrp1 = nr + 1
       nb = n - nr
       do 10 i = nrp1,n
  10   x(i) = b(i)
@@ -27038,7 +27038,7 @@ c
  15   do 20 i = nrp1,n
  20   x(i) = x(i)/coef(i,1)
       return
-      end 
+      end
       subroutine rsmatd (ndim,nrr,nb,maxnew,jcnew,dr,ah,ak,db,
      a                   maxrss,jcrs,rs,maxlim,isym,ier)
       implicit double precision (a-h, o-z)
@@ -27088,14 +27088,14 @@ c
       nr = nrr
       maxrs = 1
       jcrs(1) = 0
-      do 5 i = 1,nr 
+      do 5 i = 1,nr
  5    rs(i,1) = dr(i)
       maxh = maxnew(1) - 1
       maxk = maxnew(2) - 1
       do 35 lh = 1,maxh
          i = jcnew(1,lh+1) - nr
          ia1 = max (1,1-i)
-         ib1 = min (nr,nb-i) 
+         ib1 = min (nr,nb-i)
          do 30 lk = 1,maxk
             k = jcnew(2,lk+1) + nr
             l = i + k
@@ -27104,14 +27104,14 @@ c
                if (jcrs(ld) .eq. l) go to 20
  10         continue
             if (maxrs .eq. maxlim) go to 999
-            maxrs = maxrs + 1 
+            maxrs = maxrs + 1
             ld = maxrs
             jcrs(maxrs) = l
             do 15 ii = 1,nr
  15         rs(ii,maxrs) = 0.0d0
  20         ist = max (ia1,1-l)
             ied = min (ib1,nr-l)
-            do 25 m = ist,ied 
+            do 25 m = ist,ied
  25         rs(m,ld) = rs(m,ld) - ah(m,lh)*ak(m+i,lk)/db(m+i)
  30      continue
  35   continue
@@ -27122,7 +27122,7 @@ c ... error exit -- maxlim too small.
 c
  999  ier = -2
       return
-      end 
+      end
       subroutine rsmatp (ndim,nrr,maxnzz,jcoef,coef,maxrss,jcrs,
      a                   rs,maxlim,wksp,iwksp,ier)
       implicit double precision (a-h, o-z)
@@ -27143,7 +27143,7 @@ c ... definition of parameters --
 c
 c         ndim          row dimension of coef and jcoef arrays
 c         nr            number of red points
-c         maxnz         number of columns in coef and jcoef 
+c         maxnz         number of columns in coef and jcoef
 c         jcoef         array of column indices
 c         coef          array of matrix coefficients
 c         maxrs         number of columns needed to store reduced
@@ -27165,7 +27165,7 @@ c
       nr = nrr
       maxnz = maxnzz
       maxrs = 1
-      do 5 i = 1,nr 
+      do 5 i = 1,nr
          rs(i,1) = coef(i,1)
          jcrs(i,1) = i
  5    continue
@@ -27210,9 +27210,9 @@ c
 c
 c ... error exit -- maxlim too small.
 c
- 999  ier = -2 
+ 999  ier = -2
       return
-      end 
+      end
       subroutine rsrhsd (nn,nrr,ndim,maxnew,jcnew,coef,c,b,wksp)
       implicit double precision (a-h, o-z)
 c
@@ -27223,22 +27223,22 @@ c                       ( b   db )
 c
 c     diagonal storage
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n          order of system
-c                    systems) 
+c                    systems)
 c        nr         order of the red subsystem
 c        ndim       row dimension of coef array
 c        maxnew     number of columns in coef array
-c        coef       floating point data structure 
+c        coef       floating point data structure
 c        b          vector of length n containing bb behind br
 c        c          vector of length nr containing cr
-c        wksp       workspace vector of length nb 
+c        wksp       workspace vector of length nb
 c
 c ... specifications for parameters
 c
       integer   jcnew(2,2), maxnew(2)
-      dimension coef(ndim,2), b(1), c(1), wksp(1) 
+      dimension coef(ndim,2), b(1), c(1), wksp(1)
 c
       n = nn
       nr = nrr
@@ -27254,7 +27254,7 @@ c
       call vsubd (ndim,2,nr,nb,maxm1,coef(1,2),jcnew(1,2),
      a            c,wksp,nr)
       return
-      end 
+      end
       subroutine rsxbd (nn,nrr,ndim,maxnew,jcnew,coef,x,b)
       implicit double precision (a-h, o-z)
 c
@@ -27265,14 +27265,14 @@ c                       ( b   db )
 c
 c     diagonal storage
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n          order of system
-c                    systems) 
+c                    systems)
 c        nr         order of the red subsystem
 c        ndim       row dimension of coef array
 c        maxnew     number of columns in coef array
-c        coef       floating point data structure 
+c        coef       floating point data structure
 c        x          vector of length n containing  xr, xb
 c        b          vector of length n containing bb in the last
 c                    nb locations
@@ -27284,7 +27284,7 @@ c
 c
       n = nn
       nr = nrr
-      nrp1 = nr + 1 
+      nrp1 = nr + 1
       nb = n - nr
 c
 c ... compute xb.
@@ -27292,12 +27292,12 @@ c
       do 10 i = nrp1,n
  10   x(i) = b(i)
       max2 = maxnew(2) - 1
-      call vsubd (ndim,2,nb,nr,max2,coef(nrp1,2), 
+      call vsubd (ndim,2,nb,nr,max2,coef(nrp1,2),
      a            jcnew(2,2),x(nrp1),x,-nr)
       do 15 i = nrp1,n
  15   x(i) = x(i)/coef(i,1)
       return
-      end 
+      end
       subroutine sbbs (ldd,ldt,n,kblszz,nsize,lbhb,iblock,d,t,
      a                 jt,x,omega)
       implicit double precision (a-h, o-z)
@@ -27306,15 +27306,15 @@ c ... sbbs does an block ssor backward pass.
 c     symmetric diagonal data structure, natural ordering.
 c     block ssor preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         kblsz    block size 
-c         nsize    size of an individual subsystem within a 
+c         kblsz    block size
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         lbhb     number of blocks per block row 
+c         lbhb     number of blocks per block row
 c         iblock   integer array of size 3 by lbhb
 c                   giving block constants
 c         d        array for diagonal block
@@ -27357,7 +27357,7 @@ c
  30      x(i) = omega*x(i)
  35   continue
       return
-      end 
+      end
       subroutine sbbsn (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,omega,iunif,wksp)
       implicit double precision (a-h, o-z)
@@ -27366,16 +27366,16 @@ c ... sbbsn does an block ssor backward solve.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ssor preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -27387,7 +27387,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -27402,7 +27402,7 @@ c ... specifications for parameters
 c
       integer   ipt(1), jt(ncolor,1), nci(1), lbhb(1),
      a          iblock(3,ncolor,2)
-      dimension d(ldd,2), t(ldt,1), wksp(1), x(1) 
+      dimension d(ldd,2), t(ldt,1), wksp(1), x(1)
       logical   unif
 c
       unif = iunif .eq. 1
@@ -27413,7 +27413,7 @@ c
       nb = na
       jlim = lbhb(1)
       l = n/na
-      ndt = iblock(3,1,1) - 1 
+      ndt = iblock(3,1,1) - 1
       ndb = iblock(3,1,2)
       kk = 1
 c
@@ -27429,7 +27429,7 @@ c
          ndt = iblock(3,k,1) - 1
          ndb = iblock(3,k,2)
          go to 20
- 15      ist = (k - 1)*na + 1 
+ 15      ist = (k - 1)*na + 1
  20      ied = ist + na - 1
          do 25 i = 1,na
  25      wksp(i) = 0.0d0
@@ -27445,16 +27445,16 @@ c
             call vaddd (ldt,ncolor,na,nb,mb,t(ist,jstb),jt(kk,jstb),
      a                  wksp,x(istb),inc)
  30      continue
-         if (ndt + ndb .ge. 1) go to 40 
+         if (ndt + ndb .ge. 1) go to 40
          do 35 i = ist,ied
- 35      x(i) = x(i) - omega*d(i,1)*wksp(i-ist+1) 
+ 35      x(i) = x(i) - omega*d(i,1)*wksp(i-ist+1)
          go to 50
  40      call bdsol (ldd,na,nsize,ndt,ndb,d(ist,1),wksp,wksp,1)
          do 45 i = ist,ied
  45      x(i) = x(i) - omega*wksp(i-ist+1)
  50   continue
       return
-      end 
+      end
       subroutine sbbsnt (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                   iblock,d,t,jt,x,omega,iunif)
       implicit double precision (a-h, o-z)
@@ -27463,16 +27463,16 @@ c ... sbbsnt does an block ssor transpose backward solve.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ssor preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -27484,7 +27484,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -27509,7 +27509,7 @@ c
       nb = na
       jlim = lbhb(1)
       l = n/na
-      ndt = iblock(3,1,1) - 1 
+      ndt = iblock(3,1,1) - 1
       ndb = iblock(3,1,2)
       kk = 1
 c
@@ -27524,9 +27524,9 @@ c
          ndt = iblock(3,k,1) - 1
          ndb = iblock(3,k,2)
          go to 20
- 15      ist = (k - 1)*na + 1 
+ 15      ist = (k - 1)*na + 1
  20      ied = ist + na - 1
-         if (ndt + ndb .ge. 1) go to 30 
+         if (ndt + ndb .ge. 1) go to 30
          do 25 i = ist,ied
  25      x(i) = omega*d(i,1)*x(i)
          go to 40
@@ -27542,29 +27542,29 @@ c
             if (.not. unif) inc = ipt(jcol) - ipt(k)
             if (.not. unif) nb = nci(jcol)
             istb = ist + inc
-            call vsubdt (ldt,ncolor,na,nb,mb,t(ist,jstb),jt(kk,jstb), 
+            call vsubdt (ldt,ncolor,na,nb,mb,t(ist,jstb),jt(kk,jstb),
      a                  x(istb),x(ist),inc)
  45      continue
  50   continue
       return
-      end 
+      end
       subroutine sbfs (ldd,ldt,n,kblszz,nsize,lbhb,iblock,d,t,
-     a                 jt,x,omega,wksp) 
+     a                 jt,x,omega,wksp)
       implicit double precision (a-h, o-z)
 c
 c ... sbfs does an block ssor forward pass.
 c     symmetric diagonal data structure, natural ordering.
 c     block ssor preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         kblsz    block size 
-c         nsize    size of an individual subsystem within a 
+c         kblsz    block size
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         lbhb     number of blocks per block row 
+c         lbhb     number of blocks per block row
 c         iblock   integer array of size 3 by lbhb
 c                   giving block constants
 c         d        array for diagonal block
@@ -27578,7 +27578,7 @@ c
 c ... specifications for parameters
 c
       integer   jt(1), iblock(3,1)
-      dimension d(ldd,2), t(ldt,1), wksp(1), x(1) 
+      dimension d(ldd,2), t(ldt,1), wksp(1), x(1)
 c
       kblsz = kblszz
       l = n/kblsz
@@ -27608,7 +27608,7 @@ c
  30      continue
  35   continue
       return
-      end 
+      end
       subroutine sbfsn (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,omega,iunif)
       implicit double precision (a-h, o-z)
@@ -27617,16 +27617,16 @@ c ... sbfsn does an block ssor forward solve.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ssor preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -27638,7 +27638,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -27663,13 +27663,13 @@ c
       nb = na
       jlim = lbhb(1)
       l = n/na
-      ndt = iblock(3,1,1) - 1 
+      ndt = iblock(3,1,1) - 1
       ndb = iblock(3,1,2)
       kk = 1
 c
 c ... do forward solution.
 c
- 10   do 45 k = 1,l 
+ 10   do 45 k = 1,l
          if (unif) go to 15
          kk = k
          ist = ipt(k) + 1
@@ -27678,7 +27678,7 @@ c
          ndt = iblock(3,k,1) - 1
          ndb = iblock(3,k,2)
          go to 20
- 15      ist = (k - 1)*na + 1 
+ 15      ist = (k - 1)*na + 1
  20      ied = ist + na - 1
          do 25 j = 3,jlim
             jcol = k + iblock(1,kk,j)
@@ -27692,7 +27692,7 @@ c
             call vsubd (ldt,ncolor,na,nb,mb,t(ist,jstb),jt(kk,jstb),
      a                  x(ist),x(istb),inc)
  25      continue
-         if (ndt + ndb .ge. 1) go to 35 
+         if (ndt + ndb .ge. 1) go to 35
          do 30 i = ist,ied
  30      x(i) = omega*d(i,1)*x(i)
          go to 45
@@ -27701,7 +27701,7 @@ c
  40      x(i) = omega*x(i)
  45   continue
       return
-      end 
+      end
       subroutine sbfsnt (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                   iblock,d,t,jt,x,omega,iunif,wksp)
       implicit double precision (a-h, o-z)
@@ -27710,16 +27710,16 @@ c ... sbfsnt does an block ssor transpose forward solve.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ssor preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -27731,7 +27731,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -27746,7 +27746,7 @@ c ... specifications for parameters
 c
       integer   ipt(1), jt(ncolor,1), nci(1), lbhb(1),
      a          iblock(3,ncolor,2)
-      dimension d(ldd,2), t(ldt,1), wksp(1), x(1) 
+      dimension d(ldd,2), t(ldt,1), wksp(1), x(1)
       logical   unif
 c
       unif = iunif .eq. 1
@@ -27757,7 +27757,7 @@ c
       nb = na
       jlim = lbhb(1)
       l = n/na
-      ndt = iblock(3,1,1) - 1 
+      ndt = iblock(3,1,1) - 1
       ndb = iblock(3,1,2)
       kk = 1
 c
@@ -27773,9 +27773,9 @@ c
          ndt = iblock(3,k,1) - 1
          ndb = iblock(3,k,2)
          go to 20
- 15      ist = (k - 1)*na + 1 
+ 15      ist = (k - 1)*na + 1
  20      ied = ist + na - 1
-         if (ndt + ndb .ge. 1) go to 30 
+         if (ndt + ndb .ge. 1) go to 30
          do 25 i = ist,ied
  25      wksp(i-ist+1) = omega*d(i,1)*x(i)
          go to 40
@@ -27791,29 +27791,29 @@ c
             if (.not. unif) inc = ipt(jcol) - ipt(k)
             if (.not. unif) nb = nci(jcol)
             istb = ist + inc
-            call vsubdt (ldt,ncolor,na,nb,mb,t(ist,jstb),jt(kk,jstb), 
+            call vsubdt (ldt,ncolor,na,nb,mb,t(ist,jstb),jt(kk,jstb),
      a                  x(istb),wksp,inc)
  45      continue
  50   continue
       return
-      end 
+      end
       subroutine sbsl (ldd,ldt,n,kblsz,nsize,lbhb,iblock,d,t,
      a                 jt,y,x,omega,wksp)
       implicit double precision (a-h, o-z)
 c
-c ... sbsl does an block ssor solution. 
+c ... sbsl does an block ssor solution.
 c     symmetric diagonal data structure, natural ordering.
 c     block ssor preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         kblsz    block size 
-c         nsize    size of an individual subsystem within a 
+c         kblsz    block size
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         lbhb     number of blocks per block row 
+c         lbhb     number of blocks per block row
 c         iblock   integer array of size 3 by lbhb
 c                   giving block constants
 c         d        array for diagonal block
@@ -27831,32 +27831,32 @@ c
       dimension d(ldd,1), t(ldt,1), wksp(1), x(1), y(1)
 c
       const = 2.0d0 - omega
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = const*y(i)
       call sbfs (ldd,ldt,n,kblsz,nsize,lbhb,iblock,d,t,
      a           jt,x,omega,wksp)
       call sbbs (ldd,ldt,n,kblsz,nsize,lbhb,iblock,d,t,
      a           jt,x,omega)
       return
-      end 
+      end
       subroutine sbsln (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
-     a                  iblock,d,t,jt,y,x,omega,iunif,wksp) 
+     a                  iblock,d,t,jt,y,x,omega,iunif,wksp)
       implicit double precision (a-h, o-z)
 c
 c ... sbsln does an block ssor solution.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ssor preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -27868,7 +27868,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -27887,14 +27887,14 @@ c
       dimension d(ldd,1), t(ldt,1), wksp(1), x(1), y(1)
 c
       const = 2.0d0 - omega
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = const*y(i)
       call sbfsn (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,omega,iunif)
       call sbbsn (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,omega,iunif,wksp)
       return
-      end 
+      end
       subroutine sbslnt (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                   iblock,d,t,jt,y,x,omega,iunif,wksp)
       implicit double precision (a-h, o-z)
@@ -27903,16 +27903,16 @@ c ... sbslnt does an block ssor transpose solution.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ssor preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -27924,7 +27924,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -27943,32 +27943,32 @@ c
       dimension d(ldd,1), t(ldt,1), wksp(1), x(1), y(1)
 c
       const = 2.0d0 - omega
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = const*y(i)
       call sbfsnt (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,omega,iunif,wksp)
       call sbbsnt (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,omega,iunif)
       return
-      end 
+      end
       subroutine sbsln1 (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,y,x,omega,iunif)
       implicit double precision (a-h, o-z)
 c
-c ... sbsln1 does an block ssor forward solution. 
+c ... sbsln1 does an block ssor forward solution.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ssor preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -27980,7 +27980,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -27998,30 +27998,30 @@ c
       dimension d(ldd,1), t(ldt,1), x(1), y(1)
 c
       const = 2.0d0 - omega
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = const*y(i)
       call sbfsn (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,omega,iunif)
       return
-      end 
+      end
       subroutine sbsln2 (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
-     a                  iblock,d,t,jt,y,x,omega,iunif,wksp) 
+     a                  iblock,d,t,jt,y,x,omega,iunif,wksp)
       implicit double precision (a-h, o-z)
 c
 c ... sbsln2 does an block ssor back solution.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ssor preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -28033,7 +28033,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -28051,30 +28051,30 @@ c
      a          iblock(3,ncolor,2)
       dimension d(ldd,1), t(ldt,1), wksp(1), x(1), y(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call sbbsn (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,omega,iunif,wksp)
       return
-      end 
+      end
       subroutine sbsln3 (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                   iblock,d,t,jt,y,x,omega,iunif)
       implicit double precision (a-h, o-z)
 c
-c ... sbsln3 does an block ssor transpose forward solution. 
+c ... sbsln3 does an block ssor transpose forward solution.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ssor preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -28086,7 +28086,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -28104,12 +28104,12 @@ c
       dimension d(ldd,1), t(ldt,1), x(1), y(1)
 c
       const = 2.0d0 - omega
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = const*y(i)
       call sbbsnt (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,omega,iunif)
       return
-      end 
+      end
       subroutine sbsln4 (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                   iblock,d,t,jt,y,x,omega,iunif,wksp)
       implicit double precision (a-h, o-z)
@@ -28118,16 +28118,16 @@ c ... sbsln4 does an block ssor transpose back solution.
 c     nonsymmetric diagonal data structure, natural or multi-color
 c     orderings, block ssor preconditioning.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldd      row dimension of d array
 c         ldt      row dimension of t array
 c         n        size of system
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
+c         ncolor   number of distinct block sizes
 c                   ncolor = 1 if iunif = 1.
-c         nci      integer vector of length ncolor, giving the number 
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c                   if iunif = 1, nci(1) is the constant block size.
 c         ipt      integer pointer vector of length ncolor+1 if
@@ -28139,7 +28139,7 @@ c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         d        array for diagonal block
 c         t        array for off-diagonal blocks
-c         jt       integer array of size ncolor by whatever 
+c         jt       integer array of size ncolor by whatever
 c                   giving the off-diagonal block diagonal numbers
 c                   for each distinct block size.  jd is 1 by whatever
 c                   if iunif = 1.
@@ -28157,28 +28157,28 @@ c
      a          iblock(3,ncolor,2)
       dimension d(ldd,1), t(ldt,1), wksp(1), x(1), y(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call sbfsnt (ldd,ldt,n,nsize,ncolor,nci,ipt,lbhb,
      a                  iblock,d,t,jt,x,omega,iunif,wksp)
       return
-      end 
+      end
       subroutine scal1 (nn,ndim,maxnzz,jcoef,coef,rhs,u,ubar,
      a                  diag,work,iflag,ier)
       implicit double precision (a-h, o-z)
 c
 c ... scal1 scales the original matrix to a unit diagonal matrix.
-c     (purdue data structure) 
+c     (purdue data structure)
 c     rhs and u vectors are scaled accordingly.  upon output, diag
 c     contains the reciprocal square roots of the diagonal elements.
 c     it is assumed that the diagonal of the matrix is in column one
 c     of coef.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n       dimension of matrix
 c         ndim    row dimension of coef array in defining routine
-c         maxnz   number of columns in coef array 
+c         maxnz   number of columns in coef array
 c         jcoef   integer matrix representation array
 c         coef    matrix representation array
 c         rhs     right hand side of matrix problem
@@ -28195,15 +28195,15 @@ c                     -4 -- nonpositive diagonal element
 c
 c ... specifications for parameters
 c
-      integer   jcoef(ndim,1) 
+      integer   jcoef(ndim,1)
       dimension coef(ndim,1), rhs(1), u(1), diag(1), work(1),
      a          ubar(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       n = nn
       maxnz = maxnzz
@@ -28221,20 +28221,20 @@ c
 c ... scale matrix.  store reciprocal square roots
 c ... of diagonal entries in diag.
 c
- 10   do 15 i = 1,n 
+ 10   do 15 i = 1,n
  15   diag(i) = sqrt (coef(i,1))
 c
-c ... scale rhs, u, and ubar. 
+c ... scale rhs, u, and ubar.
 c
-      do 20 i = 1,n 
+      do 20 i = 1,n
  20   u(i) = diag(i)*u(i)
       if (iflag .eq. 0) go to 30
-      do 25 i = 1,n 
+      do 25 i = 1,n
  25   ubar(i) = diag(i)*ubar(i)
- 30   do 35 i = 1,n 
+ 30   do 35 i = 1,n
  35   diag(i) = 1.0d0/diag(i)
-      do 40 i = 1,n 
- 40   rhs(i) = diag(i)*rhs(i) 
+      do 40 i = 1,n
+ 40   rhs(i) = diag(i)*rhs(i)
       if (keygs .eq. 2) go to 55
 c
 c ... using gathers.
@@ -28253,9 +28253,9 @@ c
  60      coef(i,j) = diag(i)*coef(i,j)*diag(jcoef(i,j))
  65   continue
       return
-      end 
+      end
       subroutine scal2 (nn,ndim,maxnz,jcoef,coef,rhs,u,ubar,
-     a                  diag,iflag,ier) 
+     a                  diag,iflag,ier)
       implicit double precision (a-h, o-z)
 c
 c ... scal2 scales the original matrix to a unit diagonal matrix.
@@ -28265,11 +28265,11 @@ c     contains the reciprocal square roots of the diagonal elements.
 c     it is assumed that the diagonal of the matrix is in column one
 c     of coef.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n       dimension of matrix
 c         ndim    row dimension of coef array in defining routine
-c         maxnz   number of columns in coef array 
+c         maxnz   number of columns in coef array
 c         jcoef   integer matrix representation array
 c         coef    matrix representation array
 c         rhs     right hand side of matrix problem
@@ -28304,22 +28304,22 @@ c
 c ... scale matrix.  store reciprocal square roots
 c ... of diagonal entries in diag.
 c
- 10   do 15 i = 1,n 
+ 10   do 15 i = 1,n
  15   diag(i) = sqrt (coef(i,1))
 c
-c ... scale rhs, u, and ubar. 
+c ... scale rhs, u, and ubar.
 c
-      do 20 i = 1,n 
+      do 20 i = 1,n
  20   u(i) = diag(i)*u(i)
       if (iflag .eq. 0) go to 30
-      do 25 i = 1,n 
+      do 25 i = 1,n
  25   ubar(i) = diag(i)*ubar(i)
- 30   do 35 i = 1,n 
+ 30   do 35 i = 1,n
  35   diag(i) = 1.0d0/diag(i)
-      do 40 i = 1,n 
- 40   rhs(i) = diag(i)*rhs(i) 
+      do 40 i = 1,n
+ 40   rhs(i) = diag(i)*rhs(i)
 c
-c ... scale matrix. 
+c ... scale matrix.
 c
       do 60 j = 1,maxnz
          ind = jcoef(j)
@@ -28332,22 +28332,22 @@ c
  55      coef(i-ind,j) = diag(i-ind)*coef(i-ind,j)*diag(i)
  60   continue
       return
-      end 
+      end
       subroutine scal3 (nn,nz,ia,ja,a,rhs,u,ubar,diag,
-     a                  work,iflag,ier) 
+     a                  work,iflag,ier)
       implicit double precision (a-h, o-z)
 c
 c ... scal3 scales the original matrix to a unit diagonal matrix.
-c     (sparse data structure) 
+c     (sparse data structure)
 c     rhs and u vectors are scaled accordingly.  upon output, diag
 c     contains the reciprocal square roots of the diagonal elements.
 c     it is assumed that the diagonal of the matrix is in the
-c     n first locations of a. 
+c     n first locations of a.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n       dimension of matrix
-c         nz      length of ia, ja, and a vectors 
+c         nz      length of ia, ja, and a vectors
 c         a       vector containing matrix coefficients
 c         ia      vector of i values
 c         ja      vector of j values
@@ -28371,11 +28371,11 @@ c
       dimension a(1), rhs(1), u(1), diag(1), work(1),
      a          ubar(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       n = nn
 c
@@ -28392,26 +28392,26 @@ c
 c ... scale matrix.  store reciprocal square roots
 c ... of diagonal entries in diag.
 c
- 10   do 15 i = 1,n 
+ 10   do 15 i = 1,n
  15   diag(i) = sqrt (a(i))
 c
-c ... scale rhs, u, and ubar. 
+c ... scale rhs, u, and ubar.
 c
-      do 20 i = 1,n 
+      do 20 i = 1,n
  20   u(i) = diag(i)*u(i)
       if (iflag .eq. 0) go to 30
-      do 25 i = 1,n 
+      do 25 i = 1,n
  25   ubar(i) = diag(i)*ubar(i)
- 30   do 35 i = 1,n 
+ 30   do 35 i = 1,n
  35   diag(i) = 1.0d0/diag(i)
-      do 40 i = 1,n 
- 40   rhs(i) = diag(i)*rhs(i) 
+      do 40 i = 1,n
+ 40   rhs(i) = diag(i)*rhs(i)
       if (keygs .eq. 2) go to 60
 c
 c ... using gathers.
 c
       ist = 1
- 45   ied = min (ist-1+n,nz) 
+ 45   ied = min (ist-1+n,nz)
       if (ied .lt. ist) return
          len = ied - ist + 1
          call vgathr (len,diag,ia(ist),work)
@@ -28420,7 +28420,7 @@ c
          call vgathr (len,diag,ja(ist),work)
          do 55 i = ist,ied
  55      a(i) = a(i)*work(i-ist+1)
-      ist = ied + 1 
+      ist = ied + 1
       go to 45
 c
 c ... not using gathers.
@@ -28428,7 +28428,7 @@ c
  60   do 65 i = 1,nz
  65   a(i) = a(i)*diag(ia(i))*diag(ja(i))
       return
-      end 
+      end
       subroutine sorstp (n,u,ubar,dnrm,ccon)
       implicit double precision (a-h, o-z)
 c
@@ -28436,7 +28436,7 @@ c ... sorstp performs a test to see if the sor
 c     method has converged to a solution inside the error
 c     tolerance, zeta.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
 c          u      present solution estimate
@@ -28447,7 +28447,7 @@ c          con    stopping test parameter (= ccon)
 c
 c ... specifications for parameters
 c
-      dimension u(1), ubar(1) 
+      dimension u(1), ubar(1)
       logical q1
       save    q1
 c
@@ -28457,7 +28457,7 @@ c
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
       logical           halt, maxadp, minadp, maxadd, minadd
       common / itcom2 / halt, maxadp, minadp, maxadd, minadd
-      common / itcom3 / alpha, beta, zeta, emax, emin, pap, 
+      common / itcom3 / alpha, beta, zeta, emax, emin, pap,
      b                  alphao, gamma, sigma, rr, rho, dkq, dkm1,
      b                  ff, rqmin, rqmax, stptst, udnm, ubarnm,
      b                  bnorm, bnorm1
@@ -28482,8 +28482,8 @@ c
       if ((in .gt. 5)  .and.  (mod(in,5) .ne. 0)) go to 15
       uold = udnm
       udnm = 0.0d0
-      do 10 i = 1,n 
- 10   udnm = udnm + u(i)*u(i) 
+      do 10 i = 1,n
+ 10   udnm = udnm + u(i)*u(i)
       if (udnm .eq. 0.0d0) udnm = 1.0d0
       if ((in .gt. 5) .and.
      a       (abs (udnm-uold) .le. udnm*zeta)) q1 = .true.
@@ -28497,22 +28497,22 @@ c
       tr = tr*(1.0d0 - con)
  20   stptst = tl/tr
       if (tl .ge. tr*zeta) return
-      halt = .true. 
+      halt = .true.
       return
 c
 c ... second test.
 c
  25   if (in .eq. 0) ubarnm = sqrt (vdot(n,ubar,ubar))
       sum = 0.0d0
-      do 30 i = 1,n 
+      do 30 i = 1,n
  30   sum = sum + (u(i) - ubar(i))**2
       tl = sqrt (sum)
       tr = ubarnm
       stptst = tl/tr
       if (tl .lt. tr*zeta) halt = .true.
       return
-      end 
-      subroutine sords (ndim,nn,maxtt,jt,d,t,omegaa,irwise, 
+      end
+      subroutine sords (ndim,nn,maxtt,jt,d,t,omegaa,irwise,
      a                  u,rhs,unew,iwksp)
       implicit double precision (a-h, o-z)
 c
@@ -28521,7 +28521,7 @@ c     symmetric diagonal storage).
 c
 c        unew = inv(d + w*l)*((1-w)*d*un + w*(rhs - u*un))
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system (= nn)
@@ -28536,9 +28536,9 @@ c        omega  over-relaxation factor
 c        irwise rowwise algorithm switch
 c                = 0  use diagonal algorithm
 c                = 1  use row-wise algorithm
-c        u      current solution vector 
+c        u      current solution vector
 c        rhs    right hand side
-c        unew   updated solution vector 
+c        unew   updated solution vector
 c        iwksp  integer workspace of length maxt
 c
 c ... specifications for parameters
@@ -28551,11 +28551,11 @@ c
       maxt = maxtt
       omega = omegaa
 c
-c ... rhs = (1-w)*d*un + w*(rhs - u*un) 
+c ... rhs = (1-w)*d*un + w*(rhs - u*un)
 c
       call vsubd (ndim,1,n,n,maxt,t,jt,rhs,u,0)
       con = 1.0d0 - omega
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   rhs(i) = con*d(i)*u(i) + omega*rhs(i)
 c
 c ... rhs = inv(i+w*l*inv(d))*rhs
@@ -28573,14 +28573,14 @@ c ... determine nc, imin.
 c
  20   nc = n
       do 25 i = 1,maxt
-         nterm = iwksp(i) - 1 
+         nterm = iwksp(i) - 1
          if (nterm .ge. nc) go to 25
-         nc = nterm 
+         nc = nterm
          imin = i
  25   continue
-      if (nc .ge. n) go to 70 
+      if (nc .ge. n) go to 70
       ndel = jt(imin)
-      ibeg = nc + 1 
+      ibeg = nc + 1
       if (ndel .gt. 1) go to 40
 c
 c ... special case for first minor subdiagonal.
@@ -28605,7 +28605,7 @@ c
 c
 c ... rowwise algorithm.
 c
- 50   do 65 i = 1,n 
+ 50   do 65 i = 1,n
          do 55 j = 1,maxt
  55      iwksp(j) = min (n,i+jt(j))
          term = omega*rhs(i)/d(i)
@@ -28615,10 +28615,10 @@ c
 c
 c ... unew = inv(d)*rhs
 c
- 70   do 75 i = 1,n 
+ 70   do 75 i = 1,n
  75   unew(i) = rhs(i)/d(i)
       return
-      end 
+      end
       subroutine sordn (ndim,nn,maxtt,maxbb,jt,jb,d,t,b,omegaa,
      a                  irwise,u,rhs,unew,iwksp)
       implicit double precision (a-h, o-z)
@@ -28628,7 +28628,7 @@ c     nonsymmetric diagonal storage).
 c
 c        unew = inv(d + w*l)*((1-w)*d*un + w*(rhs - u*un))
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system (= nn)
@@ -28648,9 +28648,9 @@ c        omega  over-relaxation factor
 c        irwise rowwise algorithm switch
 c                = 0  use diagonal algorithm
 c                = 1  use row-wise algorithm
-c        u      current solution vector 
+c        u      current solution vector
 c        rhs    right hand side
-c        unew   updated solution vector 
+c        unew   updated solution vector
 c        iwksp  integer workspace of length maxt
 c
 c ... specifications for parameters
@@ -28664,11 +28664,11 @@ c
       maxb = maxbb
       omega = omegaa
 c
-c ... rhs = (1-w)*d*un + w*(rhs - u*un) 
+c ... rhs = (1-w)*d*un + w*(rhs - u*un)
 c
       call vsubd (ndim,1,n,n,maxt,t,jt,rhs,u,0)
       con = 1.0d0 - omega
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   rhs(i) = con*d(i)*u(i) + omega*rhs(i)
 c
 c ... rhs = inv(i+w*l*inv(d))*rhs
@@ -28686,14 +28686,14 @@ c ... determine nc, imin.
 c
  20   nc = n
       do 25 i = 1,maxb
-         nterm = iwksp(i) - 1 
+         nterm = iwksp(i) - 1
          if (nterm .ge. nc) go to 25
-         nc = nterm 
+         nc = nterm
          imin = i
  25   continue
-      if (nc .ge. n) go to 70 
+      if (nc .ge. n) go to 70
       ndel = -jb(imin)
-      ibeg = nc + 1 
+      ibeg = nc + 1
       if (ndel .gt. 1) go to 40
 c
 c ... special case for first minor subdiagonal.
@@ -28718,7 +28718,7 @@ c
 c
 c ... rowwise algorithm.
 c
- 50   do 65 i = 1,n 
+ 50   do 65 i = 1,n
          do 55 j = 1,maxb
  55      iwksp(j) = max (1,i+jb(j))
          sum = 0.0d0
@@ -28729,10 +28729,10 @@ c
 c
 c ... unew = inv(d)*rhs
 c
- 70   do 75 i = 1,n 
+ 70   do 75 i = 1,n
  75   unew(i) = rhs(i)/d(i)
       return
-      end 
+      end
       subroutine sorp (ndim,nn,maxt,maxb,jt,jb,d,t,b,omega,u,
      a                 rhs,unew)
       implicit double precision (a-h, o-z)
@@ -28742,7 +28742,7 @@ c     (natural ordering, purdue storage).
 c
 c        unew = inv((1/w)*d + l)*(((1-w)/w)*d*un + (rhs - u*un))
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system
@@ -28755,13 +28755,13 @@ c                corresponding elements in b
 c        d      vector of length n giving the diagonal elements
 c                of the matrix
 c        t      array of active size n by maxt giving the upper
-c                triangle of the matrix 
+c                triangle of the matrix
 c        b      array of active size n by maxb giving the lower
-c                triangle of the matrix 
+c                triangle of the matrix
 c        omega  over-relaxation factor
-c        u      current solution vector 
+c        u      current solution vector
 c        rhs    right hand side
-c        unew   updated solution vector 
+c        unew   updated solution vector
 c
 c ... specifications for parameters
 c
@@ -28773,16 +28773,16 @@ c ... rhs = ((1-w)/w)*d*un + (rhs - u*un)
 c
       call vsubp (ndim,ndim,n,maxt,t,jt,rhs,u,unew)
       con = (1.0d0 - omega)/omega
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   unew(i) = con*d(i)*u(i) + rhs(i)
 c
 c ... unew = inv((1/w)*d + l)*rhs
 c
       if (maxb .ge. 1) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   unew(i) = omega*unew(i)/d(i)
       return
- 20   do 30 i = 1,n 
+ 20   do 30 i = 1,n
          sum = unew(i)
          do 25 j = 1,maxb
             sum = sum - b(i,j)*unew(jb(i,j))
@@ -28790,8 +28790,8 @@ c
          unew(i) = omega*sum/d(i)
  30   continue
       return
-      end 
-      subroutine sorcp (ndimm,n,jc,d,c,ncol,nc,nt,nb,omega, 
+      end
+      subroutine sorcp (ndimm,n,jc,d,c,ncol,nc,nt,nb,omega,
      a                  u,rhs,unew)
       implicit double precision (a-h, o-z)
 c
@@ -28800,7 +28800,7 @@ c     (purdue storage, multicolor)
 c
 c        unew = inv((1/w)*d + l)*(((1-w)/w)*d*un + (rhs - u*un))
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of c,jc arrays
 c          n      order of system
@@ -28808,10 +28808,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -28829,7 +28829,7 @@ c
       dimension d(1), c(ndimm,1), u(1), rhs(1), unew(1)
 c
       ndim = ndimm
-      ncolor = ncol 
+      ncolor = ncol
 c
 c ... rhs = ((1-w)/w)*d*un + (rhs - u*un)
 c
@@ -28842,7 +28842,7 @@ c
          ist = ist + npt
  10   continue
       con = (1.0d0 - omega)/omega
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   unew(i) = con*d(i)*u(i) + rhs(i)
 c
 c ... unew = inv((1/w)*d + l)*rhs
@@ -28853,14 +28853,14 @@ c
          ied = ist + npt - 1
          j1 = nt(icol) + 1
          mj = nb(icol)
-         call vsubp (ndim,ndim,npt,mj,c(ist,j1),jc(ist,j1),unew(ist), 
+         call vsubp (ndim,ndim,npt,mj,c(ist,j1),jc(ist,j1),unew(ist),
      a               unew,rhs)
          do 20 i = ist,ied
  20      unew(i) = omega*unew(i)/d(i)
          ist = ist + npt
  25   continue
       return
-      end 
+      end
       subroutine sordb (ldf,ndim,nsize,kblszz,iblock,lbhb,
      a                  dfac,coef,jcoef,nn,omega,u,rhs,unew)
       implicit double precision (a-h, o-z)
@@ -28870,11 +28870,11 @@ c     (symmetric block diagonal format, constant block size)
 c
 c        unew = inv((1/w)*d + l)*(((1-w)/w)*d*un + (rhs - u*un))
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldf      row dimension of dfac
 c         ndim     row dimension of coef array
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
 c         iblock   integer array of size 3 by lbhb
 c                   giving block constants
@@ -28883,7 +28883,7 @@ c         dfac     array for diagonal block factorization
 c         coef     array for matrix coefficients
 c         jcoef    vector for diagonal numbers
 c         n        size of system
-c         omega    relaxation parameter 
+c         omega    relaxation parameter
 c         u        current solution estimate
 c         rhs      right-hand-side
 c         unew     updated solution estimate
@@ -28908,15 +28908,15 @@ c
  15   jbgn = nwdiag + 1
       call vsubd (ndim,1,n,n,maxt,coef(1,jbgn),jcoef(jbgn),rhs,
      a            u,0)
-      call bmul (ndim,n,nt,coef,coef(1,2),u,unew) 
+      call bmul (ndim,n,nt,coef,coef(1,2),u,unew)
       con = (1.0d0 - omega)/omega
-      do 20 i = 1,n 
+      do 20 i = 1,n
  20   unew(i) = con*unew(i) + rhs(i)
 c
 c ... unew = inv((1/w)*d + l)*rhs
 c
       l = n/kblsz
-      do 50 k = 1,l 
+      do 50 k = 1,l
          ist = (k - 1)*kblsz + 1
          ied = k*kblsz
          if (nt .ge. 1) go to 30
@@ -28931,7 +28931,7 @@ c
          jjlim = min (lbhb,l-k+2)
          do 45 jj = 3,jjlim
             jblk = iblock(1,jj)
-            jst = iblock(2,jj) + nwdiag 
+            jst = iblock(2,jj) + nwdiag
             mjj = iblock(3,jj)
             inc = jblk*kblsz
             istf = ist + inc
@@ -28941,21 +28941,21 @@ c
  45      continue
  50   continue
       return
-      end 
+      end
       subroutine sordnb (ldf,ndim,nsize,kblszz,iblock,lbhbb,
      a                   dfac,coef,jcoef,nn,omega,u,rhs,unew)
       implicit double precision (a-h, o-z)
 c
-c ... sordnb does an sor pass 
+c ... sordnb does an sor pass
 c     (nonsymmetric block diagonal format, constant block size)
 c
 c        unew = inv((1/w)*d + l)*(((1-w)/w)*d*un + (rhs - u*un))
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldf      row dimension of dfac
 c         ndim     row dimension of coef array
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
 c         iblock   integer array of size 3 by lbhb
 c                   giving block constants
@@ -28964,7 +28964,7 @@ c         dfac     array for diagonal block factorization
 c         coef     array for matrix coefficients
 c         jcoef    vector for diagonal numbers
 c         n        size of system
-c         omega    relaxation parameter 
+c         omega    relaxation parameter
 c         u        current solution estimate
 c         rhs      right-hand-side
 c         unew     updated solution estimate
@@ -28995,19 +28995,19 @@ c
       ind = nt + 2
       call bmuln (ndim,n,nt,nb,coef,coef(1,2),coef(1,ind),u,unew)
       con = (1.0d0 - omega)/omega
-      do 20 i = 1,n 
+      do 20 i = 1,n
  20   unew(i) = con*unew(i) + rhs(i)
 c
 c ... unew = inv((1/w)*d + l)*rhs
 c
       l = n/kblsz
-      do 45 k = 1,l 
+      do 45 k = 1,l
          ist = (k - 1)*kblsz + 1
          ied = k*kblsz
          do 25 j = 3,lbhb
             jcol = k + iblock(1,j)
             if (jcol .ge. k .or. jcol .le. 0) go to 25
-            jstb = iblock(2,j) + nwdiag 
+            jstb = iblock(2,j) + nwdiag
             mb = iblock(3,j)
             inc = (jcol - k)*kblsz
             istb = ist + inc
@@ -29024,28 +29024,28 @@ c
  40      unew(i) = omega*unew(i)
  45   continue
       return
-      end 
+      end
       subroutine sordmb (ldf,ndim,nsize,iblock,lbhb,ncol,nc,ipt,
      a                   dfac,coef,jcnew,nn,omega,u,rhs,unew)
       implicit double precision (a-h, o-z)
 c
-c ... sordmb does an sor pass 
+c ... sordmb does an sor pass
 c     (nonsymmetric block diagonal format, nonconstant block size)
 c
 c        unew = inv((1/w)*d + l)*(((1-w)/w)*d*un + (rhs - u*un))
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldf      row dimension of dfac array
 c         ndim     row dimension of coef array
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
 c         iblock   integer array of size 3 by ncolor by max(lbhb(i))
 c                   giving block constants
 c         lbhb     integer vector of size ncolor giving the number
 c                   of diagonal blocks for each distinct block size.
-c         ncolor   number of distinct block sizes 
-c         nc       integer vector of length ncolor, giving the number 
+c         ncolor   number of distinct block sizes
+c         nc       integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c         ipt      integer pointer vector of length ncolor+1
 c                   giving the starting locations of new block
@@ -29055,7 +29055,7 @@ c         coef     array of matrix coefficients
 c         jcnew    integer array of row dimension ncolor giving the
 c                   diagonal numbers for each block
 c         n        size of system
-c         omega    relaxation parameter 
+c         omega    relaxation parameter
 c         u        current solution estimate
 c         rhs      right-hand-side
 c         unew     updated solution estimate
@@ -29067,7 +29067,7 @@ c
       dimension dfac(ldf,1), coef(ndim,2), u(1), rhs(1), unew(1)
 c
       n = nn
-      ncolor = ncol 
+      ncolor = ncol
 c
 c ... rhs = ((1-w)/w)*d*un + (rhs - u*un)
 c
@@ -29077,23 +29077,23 @@ c
       do 15 k = 1,ncolor
          ist = ipt(k) + 1
          jlim = lbhb(k)
-         na = nc(k) 
+         na = nc(k)
          do 10 j = 3,jlim
             jcol = k + iblock(1,k,j)
-            if (jcol .le. k .or. jcol .gt. ncolor) go to 10 
+            if (jcol .le. k .or. jcol .gt. ncolor) go to 10
             jstb = iblock(2,k,j) + nwdiag
             mb = iblock(3,k,j)
             inc = ipt(jcol) - ipt(k)
             nb = nc(jcol)
             istb = ist + inc
             call vsubd (ndim,ncolor,na,nb,mb,coef(ist,jstb),
-     a                  jcnew(k,jstb),rhs(ist),u(istb),inc) 
+     a                  jcnew(k,jstb),rhs(ist),u(istb),inc)
  10      continue
  15   continue
-      ind = ndt + 2 
+      ind = ndt + 2
       call bmuln (ndim,n,ndt,ndb,coef,coef(1,2),coef(1,ind),u,unew)
       con = (1.0d0 - omega)/omega
-      do 20 i = 1,n 
+      do 20 i = 1,n
  20   unew(i) = con*unew(i) + rhs(i)
 c
 c ... unew = inv((1/w)*d + l)*rhs
@@ -29101,7 +29101,7 @@ c
       do 45 k = 1,ncolor
          ist = ipt(k) + 1
          jlim = lbhb(k)
-         na = nc(k) 
+         na = nc(k)
          ndt = iblock(3,k,1) - 1
          ndb = iblock(3,k,2)
          ied = ist + na - 1
@@ -29116,7 +29116,7 @@ c
             call vsubd (ndim,ncolor,na,nb,mb,coef(ist,jstb),
      a                  jcnew(k,jstb),unew(ist),unew(istb),inc)
  25      continue
-         if (ndt + ndb .ge. 1) go to 35 
+         if (ndt + ndb .ge. 1) go to 35
          do 30 i = ist,ied
  30      unew(i) = omega*dfac(i,1)*unew(i)
          go to 45
@@ -29126,7 +29126,7 @@ c
  40      unew(i) = omega*unew(i)
  45   continue
       return
-      end 
+      end
       subroutine srbs (ndim,nn,maxtt,jt,d,t,omega,irwise,iwksp,x)
       implicit double precision (a-h, o-z)
 c
@@ -29135,7 +29135,7 @@ c     diagonal storage).
 c
 c        (i + omega*inv(d)*t)*x = y
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system (= nn)
@@ -29162,7 +29162,7 @@ c
 c
       n = nn
       maxt = maxtt
-      if (maxt .le. 0) return 
+      if (maxt .le. 0) return
 c
 c ... select rowwise or diagonal-wise algorithm.
 c
@@ -29177,14 +29177,14 @@ c ... determine nc, imax.
 c
  25   nc = 1
       do 30 i = 1,maxt
-         nterm = iwksp(i) + 1 
+         nterm = iwksp(i) + 1
          if (nterm .le. nc) go to 30
-         nc = nterm 
+         nc = nterm
          imax = i
  30   continue
       if (nc .le. 1) return
       ndel = jt(imax)
-      iend = nc - 1 
+      iend = nc - 1
       if (ndel .gt. 1) go to 50
 c
 c ... special case for first super diagonal.
@@ -29214,11 +29214,11 @@ c
  65      iwksp(j) = min (n,i+jt(j))
          sum = 0.0d0
          do 70 j = 1,maxt
- 70      sum = sum + t(i,j)*x(iwksp(j)) 
+ 70      sum = sum + t(i,j)*x(iwksp(j))
          x(i) = x(i) - omega*sum/d(i)
  75   continue
       return
-      end 
+      end
       subroutine srbst (ndim,nn,maxbb,jb,d,b,omega,irwise,iwksp,x)
       implicit double precision (a-h, o-z)
 c
@@ -29227,7 +29227,7 @@ c     diagonal storage).
 c
 c        (i + omega*inv(d)*(b**t))*x = y
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of b array
 c        n      order of system (= nn)
@@ -29253,7 +29253,7 @@ c
 c
       n = nn
       maxb = maxbb
-      if (maxb .lt. 1) return 
+      if (maxb .lt. 1) return
 c
 c ... select rowwise or diagonal-wise algorithm.
 c
@@ -29268,14 +29268,14 @@ c ... determine nc, imax.
 c
  20   nc = 1
       do 25 i = 1,maxb
-         nterm = iwksp(i) + 1 
+         nterm = iwksp(i) + 1
          if (nterm .le. nc) go to 25
-         nc = nterm 
+         nc = nterm
          imax = i
  25   continue
       if (nc .le. 1) return
       ndel = -jb(imax)
-      iend = nc - 1 
+      iend = nc - 1
       if (ndel .gt. 1) go to 50
 c
 c ... special case for first sub diagonal.
@@ -29287,7 +29287,7 @@ c
  30   continue
       iwksp(imax) = nc1 - 1
       do 45 k = iend,nc1,-1
- 45   x(k) = x(k) - omega*b(k+1,imax)*x(k+1)/d(k) 
+ 45   x(k) = x(k) - omega*b(k+1,imax)*x(k+1)/d(k)
       go to 20
 c
 c ... far diagonals  (do vector computations).
@@ -29308,7 +29308,7 @@ c
  80      x(iwksp(j)) = x(iwksp(j)) - b(i,j)*term/d(iwksp(j))
  85   continue
       return
-      end 
+      end
       subroutine srfs (ndim,nn,maxbb,jb,d,b,omega,irwise,iwksp,x)
       implicit double precision (a-h, o-z)
 c
@@ -29317,7 +29317,7 @@ c     diagonal storage).
 c
 c        (i + omega*b*inv(d))*x = y
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of b array
 c        n      order of system (= nn)
@@ -29344,7 +29344,7 @@ c
 c
       n = nn
       maxb = maxbb
-      if (maxb .le. 0) return 
+      if (maxb .le. 0) return
 c
 c ... select rowwise or diagonal-wise algorithm.
 c
@@ -29359,14 +29359,14 @@ c ... determine nc, imin.
 c
  25   nc = n
       do 30 i = 1,maxb
-         nterm = iwksp(i) - 1 
+         nterm = iwksp(i) - 1
          if (nterm .ge. nc) go to 30
-         nc = nterm 
+         nc = nterm
          imin = i
  30   continue
       if (nc .ge. n) return
       ndel = -jb(imin)
-      ibeg = nc + 1 
+      ibeg = nc + 1
       if (ndel .gt. 1) go to 50
 c
 c ... special case for first minor subdiagonal.
@@ -29378,7 +29378,7 @@ c
  40   continue
       iwksp(imin) = nc1 + 1
       do 45 j = ibeg,nc1
- 45   x(j) = x(j) - omega*b(j,imin)*x(j-1)/d(j-1) 
+ 45   x(j) = x(j) - omega*b(j,imin)*x(j-1)/d(j-1)
       go to 25
 c
 c ... far diagonals  (do vector computations).
@@ -29391,7 +29391,7 @@ c
 c
 c ... rowwise algorithm.
 c
- 60   do 75 i = 1,n 
+ 60   do 75 i = 1,n
          do 65 j = 1,maxb
  65      iwksp(j) = max (1,i+jb(j))
          sum = 0.0d0
@@ -29400,7 +29400,7 @@ c
          x(i) = x(i) - omega*sum
  75   continue
       return
-      end 
+      end
       subroutine srfst (ndim,nn,maxtt,jt,d,t,omega,irwise,iwksp,x)
       implicit double precision (a-h, o-z)
 c
@@ -29409,7 +29409,7 @@ c     diagonal storage).
 c
 c        (i + omega*(t**t)*inv(d))*x = y
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system (= nn)
@@ -29435,7 +29435,7 @@ c
 c
       n = nn
       maxt = maxtt
-      if (maxt .lt. 1) return 
+      if (maxt .lt. 1) return
 c
 c ... select rowwise or diagonal-wise algorithm.
 c
@@ -29450,14 +29450,14 @@ c ... determine nc, imin.
 c
  20   nc = n
       do 25 i = 1,maxt
-         nterm = iwksp(i) - 1 
+         nterm = iwksp(i) - 1
          if (nterm .ge. nc) go to 25
-         nc = nterm 
+         nc = nterm
          imin = i
  25   continue
       if (nc .ge. n) return
       ndel = jt(imin)
-      ibeg = nc + 1 
+      ibeg = nc + 1
       if (ndel .gt. 1) go to 50
 c
 c ... special case for first minor subdiagonal.
@@ -29482,7 +29482,7 @@ c
 c
 c ... rowwise algorithm.
 c
- 70   do 85 i = 1,n 
+ 70   do 85 i = 1,n
          do 75 j = 1,maxt
  75      iwksp(j) = min (n,i+jt(j))
          term = omega*x(i)/d(i)
@@ -29490,7 +29490,7 @@ c
  80      x(iwksp(j)) = x(iwksp(j)) - t(i,j)*term
  85   continue
       return
-      end 
+      end
       subroutine srbsp (ndim,nn,maxt,jt,d,t,omega,x)
       implicit double precision (a-h, o-z)
 c
@@ -29498,7 +29498,7 @@ c ... srbsp does an sor backward solve (natural ordering,
 c     purdue storage).
 c        ((1/omega)*d + t)*x = y
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system
@@ -29508,7 +29508,7 @@ c                corresponding elements in t
 c        d      vector of length n giving the diagonal elements
 c                of the matrix
 c        t      array of active size n by maxt giving the upper
-c                triangle of the matrix 
+c                triangle of the matrix
 c        omega  relaxation factor
 c        x      on input, x contains y
 c               on output, x is the solution to backward-solve
@@ -29520,18 +29520,18 @@ c
 c
       n = nn
       if (maxt .ge. 1) go to 15
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = omega*x(i)/d(i)
       return
  15   do 30 i = n,1,-1
-         sum = x(i) 
+         sum = x(i)
          do 25 j = 1,maxt
             sum = sum - t(i,j)*x(jt(i,j))
  25      continue
          x(i) = omega*sum/d(i)
  30   continue
       return
-      end 
+      end
       subroutine srbstp (ndim,nn,maxb,jb,d,b,omega,x)
       implicit double precision (a-h, o-z)
 c
@@ -29539,7 +29539,7 @@ c ... srbstp does an sor transpose back solve
 c     (natural ordering, purdue storage).
 c        ((1/omega)*d + (b**t))*x = y
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of b array
 c        n      order of system
@@ -29549,7 +29549,7 @@ c                corresponding elements in b
 c        d      vector of length n giving the diagonal elements
 c                of the matrix
 c        b      array of active size n by maxb giving the lower
-c                triangle of the matrix 
+c                triangle of the matrix
 c        omega  over-relaxation factor
 c        x      on input, x contains y
 c        x      on output, x is the solution to back-solve
@@ -29561,18 +29561,18 @@ c
 c
       n = nn
       if (maxb .ge. 1) go to 15
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = omega*x(i)/d(i)
       return
  15   do 30 i = n,1,-1
          x(i) = omega*x(i)/d(i)
          term = x(i)
          do 25 j = 1,maxb
-            x(jb(i,j)) = x(jb(i,j)) - b(i,j)*term 
+            x(jb(i,j)) = x(jb(i,j)) - b(i,j)*term
  25      continue
  30   continue
       return
-      end 
+      end
       subroutine srfsp (ndim,nn,maxb,jb,d,b,omega,x)
       implicit double precision (a-h, o-z)
 c
@@ -29580,7 +29580,7 @@ c ... srfsp does an sor forward solve (natural ordering,
 c     purdue storage).
 c        ((1/omega)*d + b)*x = y
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of b array
 c        n      order of system
@@ -29590,7 +29590,7 @@ c                corresponding elements in b
 c        d      vector of length n giving the diagonal elements
 c                of the matrix
 c        b      array of active size n by maxb giving the lower
-c                triangle of the matrix 
+c                triangle of the matrix
 c        omega  relaxation factor
 c        x      on input, x contains y
 c               on output, x is the solution to forward-solve
@@ -29602,18 +29602,18 @@ c
 c
       n = nn
       if (maxb .ge. 1) go to 15
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = omega*x(i)/d(i)
       return
- 15   do 30 i = 1,n 
-         sum = x(i) 
+ 15   do 30 i = 1,n
+         sum = x(i)
          do 25 j = 1,maxb
             sum = sum - b(i,j)*x(jb(i,j))
  25      continue
          x(i) = omega*sum/d(i)
  30   continue
       return
-      end 
+      end
       subroutine srfstp (ndim,n,maxt,jt,d,t,omega,x)
       implicit double precision (a-h, o-z)
 c
@@ -29621,7 +29621,7 @@ c ... srfstp does an sor transpose forward solve
 c     (natural ordering, purdue storage).
 c        ((1/omega)*d + (t**t))*x = y
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system
@@ -29631,7 +29631,7 @@ c                corresponding elements in t
 c        d      vector of length n giving the diagonal elements
 c                of the matrix
 c        t      array of active size n by maxt giving the upper
-c                triangle of the matrix 
+c                triangle of the matrix
 c        omega  over-relaxation factor
 c        x      on input, x contains y
 c               on output, x is the solution to forward-solve
@@ -29642,28 +29642,28 @@ c
       integer   jt(ndim,1)
 c
       if (maxt .ge. 1) go to 15
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = omega*x(i)/d(i)
       return
- 15   do 30 i = 1,n 
+ 15   do 30 i = 1,n
          x(i) = omega*x(i)/d(i)
          term = x(i)
          do 25 j = 1,maxt
-            x(jt(i,j)) = x(jt(i,j)) - t(i,j)*term 
+            x(jt(i,j)) = x(jt(i,j)) - t(i,j)*term
  25      continue
  30   continue
       return
-      end 
+      end
       subroutine srs (ndim,nn,maxtt,jt,d,t,omega,irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
 c
 c ... srs does an ssor solution (natural ordering,
 c     symmetric diagonal storage).
 c
-c        con*(i + w*(t**t)*inv(d))*d*(i + w*inv(d)*t)*x = y 
+c        con*(i + w*(t**t)*inv(d))*d*(i + w*inv(d)*t)*x = y
 c         con = 1/(w*(2-w))   and  w = omega
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system (= nn)
@@ -29691,14 +29691,14 @@ c
       n = nn
       maxt = maxtt
       fac = omega*(2.0d0 - omega)
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srfst (ndim,n,maxt,jt,d,t,omega,irwise,iwksp,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = fac*x(i)/d(i)
       call srbs (ndim,n,maxt,jt,d,t,omega,irwise,iwksp,x)
       return
-      end 
+      end
       subroutine srs1 (ndim,nn,maxtt,jt,d,t,omega,irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -29708,7 +29708,7 @@ c
 c        con*(i + w*(t**t)*inv(d))*d*x = y
 c         con = 1/(w*(2-w))   and  w = omega
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system (= nn)
@@ -29736,13 +29736,13 @@ c
       n = nn
       maxt = maxtt
       fac = omega*(2.0d0 - omega)
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srfst (ndim,n,maxt,jt,d,t,omega,irwise,iwksp,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = fac*x(i)/d(i)
       return
-      end 
+      end
       subroutine srs2 (ndim,nn,maxtt,jt,d,t,omega,irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -29752,7 +29752,7 @@ c
 c        (i + w*inv(d)*t)*x = y
 c            w = omega
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system (= nn)
@@ -29779,11 +29779,11 @@ c
 c
       n = nn
       maxt = maxtt
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srbs (ndim,n,maxt,jt,d,t,omega,irwise,iwksp,x)
       return
-      end 
+      end
       subroutine srs3 (ndim,nn,maxtt,jt,d,t,omega,irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -29793,7 +29793,7 @@ c
 c        con*d*(i + w*inv(d)*t)*x = y
 c         con = 1/(w*(2-w))   and  w = omega
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system (= nn)
@@ -29821,11 +29821,11 @@ c
       n = nn
       maxt = maxtt
       fac = omega*(2.0d0 - omega)
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = fac*y(i)/d(i)
       call srbs (ndim,n,maxt,jt,d,t,omega,irwise,iwksp,x)
       return
-      end 
+      end
       subroutine srs4 (ndim,nn,maxtt,jt,d,t,omega,irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -29835,7 +29835,7 @@ c
 c        (i + w*(t**t)*inv(d))*x = y
 c            w = omega
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t array
 c        n      order of system (= nn)
@@ -29862,11 +29862,11 @@ c
 c
       n = nn
       maxt = maxtt
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srfst (ndim,n,maxt,jt,d,t,omega,irwise,iwksp,x)
       return
-      end 
+      end
       subroutine srsn (ndim,nn,maxtt,maxbb,jt,jb,d,t,b,omega,
      a                 irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
@@ -29877,7 +29877,7 @@ c
 c        con*(i + w*b*inv(d))*d*(i + w*inv(d)*t)*x = y
 c         where  con = 1/(w*(2-w))  and  w = omega
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t and b arrays
 c        n      order of system (= nn)
@@ -29911,14 +29911,14 @@ c
       maxt = maxtt
       maxb = maxbb
       fac = omega*(2.0d0 - omega)
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srfs (ndim,n,maxb,jb,d,b,omega,irwise,iwksp,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = fac*x(i)/d(i)
       call srbs (ndim,n,maxt,jt,d,t,omega,irwise,iwksp,x)
       return
-      end 
+      end
       subroutine srsnt (ndim,nn,maxtt,maxbb,jt,jb,d,t,b,omega,
      a                  irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
@@ -29929,7 +29929,7 @@ c
 c       con*(i + w*(t**t)*inv(d))*d*(i + w*inv(d)*(b**t))*x = y
 c        con = 1/(w*(2-w))  and  w = omega
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t and b arrays
 c        n      order of system (= nn)
@@ -29963,15 +29963,15 @@ c
       maxt = maxtt
       maxb = maxbb
       fac = omega*(2.0d0 - omega)
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srfst (ndim,n,maxt,jt,d,t,omega,irwise,iwksp,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = fac*x(i)/d(i)
       call srbst (ndim,n,maxb,jb,d,b,omega,irwise,iwksp,x)
       return
-      end 
-      subroutine srsn1 (ndim,n,maxb,jb,d,b,omega, 
+      end
+      subroutine srsn1 (ndim,n,maxb,jb,d,b,omega,
      a                  irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -29981,7 +29981,7 @@ c
 c        con*(i + w*b*inv(d))*d*(i + w*inv(d)*t)*x = y
 c         where  con = 1/(w*(2-w))  and  w = omega
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t and b arrays
 c        n      order of system (= nn)
@@ -30007,14 +30007,14 @@ c
 c
 c
       fac = omega*(2.0d0 - omega)
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srfs (ndim,n,maxb,jb,d,b,omega,irwise,iwksp,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = fac*x(i)/d(i)
       return
-      end 
-      subroutine srsn2 (ndim,n,maxt,jt,d,t,omega, 
+      end
+      subroutine srsn2 (ndim,n,maxt,jt,d,t,omega,
      a                  irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -30024,7 +30024,7 @@ c
 c        con*(i + w*b*inv(d))*d*(i + w*inv(d)*t)*x = y
 c         where  con = 1/(w*(2-w))  and  w = omega
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t and b arrays
 c        n      order of system (= nn)
@@ -30048,12 +30048,12 @@ c
       dimension y(1), x(1), d(1), t(ndim,1)
       integer   jt(1), iwksp(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srbs (ndim,n,maxt,jt,d,t,omega,irwise,iwksp,x)
       return
-      end 
-      subroutine srsn3 (ndim,n,maxb,jb,d,b,omega, 
+      end
+      subroutine srsn3 (ndim,n,maxb,jb,d,b,omega,
      a                  irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -30063,7 +30063,7 @@ c
 c       con*(i + w*(t**t)*inv(d))*d*(i + w*inv(d)*(b**t))*x = y
 c        con = 1/(w*(2-w))  and  w = omega
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t and b arrays
 c        n      order of system (= nn)
@@ -30089,12 +30089,12 @@ c
 c
 c
       fac = omega*(2.0d0 - omega)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = fac*y(i)/d(i)
       call srbst (ndim,n,maxb,jb,d,b,omega,irwise,iwksp,x)
       return
-      end 
-      subroutine srsn4 (ndim,n,maxt,jt,d,t,omega, 
+      end
+      subroutine srsn4 (ndim,n,maxt,jt,d,t,omega,
      a                  irwise,iwksp,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -30104,7 +30104,7 @@ c
 c       con*(i + w*(t**t)*inv(d))*d*(i + w*inv(d)*(b**t))*x = y
 c        con = 1/(w*(2-w))  and  w = omega
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t and b arrays
 c        n      order of system (= nn)
@@ -30128,11 +30128,11 @@ c
       dimension y(1), x(1), d(1), t(ndim,1)
       integer   jt(1), iwksp(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srfst (ndim,n,maxt,jt,d,t,omega,irwise,iwksp,x)
       return
-      end 
+      end
       subroutine srsp (ndim,nn,maxtt,maxbb,jt,jb,d,t,b,omega,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -30141,7 +30141,7 @@ c     purdue storage).
 c        con*((1/w)*d + b)*inv(d)*((1/w)*d + t)*x = y
 c        where con = w/(2-w) and w = omega
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t,b arrays
 c        n      order of system
@@ -30154,9 +30154,9 @@ c                corresponding elements in b
 c        d      vector of length n giving the diagonal elements
 c                of the matrix
 c        t      array of active size n by maxt giving the upper
-c                triangle of the matrix 
+c                triangle of the matrix
 c        b      array of active size n by maxb giving the lower
-c                triangle of the matrix 
+c                triangle of the matrix
 c        omega  relaxation factor
 c        y      right-hand-side vector
 c        x      on output, x is the solution
@@ -30171,21 +30171,21 @@ c
       maxt = maxtt
       maxb = maxbb
       fac = (2.0d0 - omega)/omega
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srfsp (ndim,n,maxb,jb,d,b,omega,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = fac*d(i)*x(i)
       call srbsp (ndim,n,maxt,jt,d,t,omega,x)
       return
-      end 
+      end
       subroutine srsp1 (ndim,n,maxb,jb,d,b,omega,y,x)
       implicit double precision (a-h, o-z)
 c
 c ... srsp1 does an ssor forward solve (natural ordering,
 c     purdue storage).
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t,b arrays
 c        n      order of system
@@ -30195,7 +30195,7 @@ c                corresponding elements in b
 c        d      vector of length n giving the diagonal elements
 c                of the matrix
 c        b      array of active size n by maxb giving the lower
-c                triangle of the matrix 
+c                triangle of the matrix
 c        omega  relaxation factor
 c        y      right-hand-side vector
 c        x      on output, x is the solution
@@ -30207,20 +30207,20 @@ c
 c
 c
       fac = (2.0d0 - omega)/omega
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srfsp (ndim,n,maxb,jb,d,b,omega,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = fac*d(i)*x(i)
       return
-      end 
+      end
       subroutine srsp2 (ndim,n,maxt,jt,d,t,omega,y,x)
       implicit double precision (a-h, o-z)
 c
 c ... srsp2 does an ssor back solve (natural ordering,
 c     purdue storage).
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t,b arrays
 c        n      order of system
@@ -30230,7 +30230,7 @@ c                corresponding elements in t
 c        d      vector of length n giving the diagonal elements
 c                of the matrix
 c        t      array of active size n by maxt giving the upper
-c                triangle of the matrix 
+c                triangle of the matrix
 c        omega  relaxation factor
 c        y      right-hand-side vector
 c        x      on output, x is the solution
@@ -30240,18 +30240,18 @@ c
       dimension y(1), x(1), d(1), t(ndim,1)
       integer   jt(ndim,1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srbsp (ndim,n,maxt,jt,d,t,omega,x)
       return
-      end 
+      end
       subroutine srsp3 (ndim,n,maxb,jb,d,b,omega,y,x)
       implicit double precision (a-h, o-z)
 c
 c ... srsp3 does an ssor transpose back solve (natural ordering,
 c     purdue storage).
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t,b arrays
 c        n      order of system
@@ -30261,7 +30261,7 @@ c                corresponding elements in b
 c        d      vector of length n giving the diagonal elements
 c                of the matrix
 c        b      array of active size n by maxb giving the lower
-c                triangle of the matrix 
+c                triangle of the matrix
 c        omega  relaxation factor
 c        y      right-hand-side vector
 c        x      on output, x is the solution
@@ -30273,18 +30273,18 @@ c
 c
 c
       fac = (2.0d0 - omega)/omega
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = fac*d(i)*y(i)
       call srbstp (ndim,n,maxb,jb,d,b,omega,x)
       return
-      end 
+      end
       subroutine srsp4 (ndim,n,maxt,jt,d,t,omega,y,x)
       implicit double precision (a-h, o-z)
 c
 c ... srsp4 does an ssor transpose forward solve (natural ordering,
 c     purdue storage).
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t,b arrays
 c        n      order of system
@@ -30294,7 +30294,7 @@ c                corresponding elements in t
 c        d      vector of length n giving the diagonal elements
 c                of the matrix
 c        t      array of active size n by maxt giving the upper
-c                triangle of the matrix 
+c                triangle of the matrix
 c        omega  relaxation factor
 c        y      right-hand-side vector
 c        x      on output, x is the solution
@@ -30304,11 +30304,11 @@ c
       dimension y(1), x(1), d(1), t(ndim,1)
       integer   jt(ndim,1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srfstp (ndim,n,maxt,jt,d,t,omega,x)
       return
-      end 
+      end
       subroutine srsntp (ndim,nn,maxtt,maxbb,jt,jb,d,t,b,omega,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -30317,7 +30317,7 @@ c     purdue storage).
 c        con*((1/w)*d + (t**t))*inv(d)*((1/w)*d + (b**t))*x = y
 c        where con = w/(2-w) and w = omega
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim   row dimension of t,b arrays
 c        n      order of system
@@ -30330,9 +30330,9 @@ c                corresponding elements in b
 c        d      vector of length n giving the diagonal elements
 c                of the matrix
 c        t      array of active size n by maxt giving the upper
-c                triangle of the matrix 
+c                triangle of the matrix
 c        b      array of active size n by maxb giving the lower
-c                triangle of the matrix 
+c                triangle of the matrix
 c        omega  relaxation factor
 c        y      right-hand-side vector
 c        x      on output, x is the solution
@@ -30347,20 +30347,20 @@ c
       maxt = maxtt
       maxb = maxbb
       fac = (2.0d0 - omega)/omega
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srfstp (ndim,n,maxt,jt,d,t,omega,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = fac*d(i)*x(i)
       call srbstp (ndim,n,maxb,jb,d,b,omega,x)
       return
-      end 
+      end
       subroutine ssorad (ssorcp,coef,jcoef,wfac,jwfac,n,p,z,r,icode)
       implicit double precision (a-h, o-z)
 c
 c ... ssorad does the ssor adaptive process.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n       order of system
 c         p,z,r   vectors from acceleration algorithm
@@ -30374,30 +30374,30 @@ c
      a          jwfac(1)
       external ssorcp
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom1 / in, itmax, level, nout, ns1, ns2, ns3,
      a      iplr, iqlr, ntest, is, iacel, idgts, nbl1d, nbl2d
       logical           halt, maxadp, minadp, maxadd, minadd
       common / itcom2 / halt, maxadp, minadp, maxadd, minadd
-      common / itcom3 / alpha, beta, zeta, emax, emin, pap, 
+      common / itcom3 / alpha, beta, zeta, emax, emin, pap,
      b                  alphao, gamma, sigma, rr, rho, dkq, dkm1,
      b                  ff, rqmin, rqmax, stptst, udnm, ubarnm,
      b                  bnorm, bnorm1
       logical           omgadp
       common / itcom5 / omega, alphab, betab, fff, specr, omgadp
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
 c
 c------------------------------------------------------------------
 c  parameter estimation formulas
 c------------------------------------------------------------------
 c
-      alp (w,beta,s) = ((1.0d0 + beta*w*w)*s - w*(2.0d0 - w)) / 
+      alp (w,beta,s) = ((1.0d0 + beta*w*w)*s - w*(2.0d0 - w)) /
      a                            (w*(2.0d0 - w - s))
 c
-      omg (alpha,beta) = 2.0d0/(1.0d0 + sqrt (1.0d0 + 2.0d0*alpha + 
+      omg (alpha,beta) = 2.0d0/(1.0d0 + sqrt (1.0d0 + 2.0d0*alpha +
      a                         4.0d0*beta))
 c
       se (w,alpha,beta) = ((1.0d0 + alpha)*w*(2.0d0 - w)) /
@@ -30414,7 +30414,7 @@ c
       if (is .ge. 6  .and.  (.not. minadp)) go to 5
       tmo = 2.0d0 - omega
       if (emin .lt. tmo) alphab = min (alphab, alp(omega,betab,emin))
- 5    if ((.not. omgadp) .or. (.not. minadp) .or. (is .le. 5)) return 
+ 5    if ((.not. omgadp) .or. (.not. minadp) .or. (is .le. 5)) return
       omegab = max (1.0d0, omg (alphab,betab))
       if (rc(omega,alphab,betab) .gt. fff*rc(omegab,alphab,betab))
      a            return
@@ -30428,7 +30428,7 @@ c
      a        1x,20x,19hbetab              ,f15.9/
      a        1x,20x,19homega              ,f15.9/)
       return
-      end 
+      end
       subroutine ssord (ndim,maxt,jt,d,t,nn,p,r,pdp,pldup)
       implicit double precision (a-h, o-z)
 c
@@ -30437,7 +30437,7 @@ c                     pldup = (p,l*inv(d)*u*p)
 c
 c     for symmetric diagonal storage format.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim    row dimension of coef array in defining routine
 c         maxt    number of diagonals in t
@@ -30448,7 +30448,7 @@ c         n       order of system
 c         p       vector from acceleration algorithm
 c         r       workspace vector from acceleration algorithm
 c         pdp     (p,d*p)
-c         pldup   (p,l*d*u*p) 
+c         pldup   (p,l*d*u*p)
 c
 c ... specifications for parameters
 c
@@ -30459,24 +30459,24 @@ c ... compute pdp = (p,d*p).
 c
       n = nn
       sum = 0.0d0
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   sum = sum + p(i)*d(i)*p(i)
       pdp = sum
 c
 c ... compute pldup = (p,l*inv(d)*u*p) = (u*p,inv(d)*u*p)
 c
       pldup = 0.0d0
-      if (maxt .le. 0) return 
-      do 15 i = 1,n 
+      if (maxt .le. 0) return
+      do 15 i = 1,n
  15   r(i) = 0.0d0
       call vaddd (ndim,1,n,n,maxt,t,jt,r,p,0)
       sum = 0.0d0
-      do 20 i = 1,n 
+      do 20 i = 1,n
  20   sum = sum + r(i)*r(i)/d(i)
       pldup = sum
       return
-      end 
-      subroutine ssordn (ndim,maxt,maxb,jt,jb,d,t,b,nn,p,r, 
+      end
+      subroutine ssordn (ndim,maxt,maxb,jt,jb,d,t,b,nn,p,r,
      a                   wksp,pdp,pldup)
       implicit double precision (a-h, o-z)
 c
@@ -30485,7 +30485,7 @@ c                      pldup = (p,l*inv(d)*u*p)
 c
 c     for nonsymmetric diagonal storage format.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim    row dimension of coef array in defining routine
 c         maxt    number of diagonals in t
@@ -30500,7 +30500,7 @@ c         p       vector from acceleration algorithm
 c         r       workspace vector from acceleration algorithm
 c         wksp    workspace vector of length n
 c         pdp     (p,d*p)
-c         pldup   (p,l*d*u*p) 
+c         pldup   (p,l*d*u*p)
 c
 c ... specifications for parameters
 c
@@ -30511,7 +30511,7 @@ c ... compute pdp = (p,d*p).
 c
       n = nn
       sum = 0.0d0
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   sum = sum + p(i)*d(i)*p(i)
       pdp = sum
 c
@@ -30519,20 +30519,20 @@ c ... compute pldup = (p,l*inv(d)*u*p)
 c
       pldup = 0.0d0
       if (maxt .le. 0 .or. maxb .le. 0) return
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   r(i) = 0.0d0
       call vaddd (ndim,1,n,n,maxt,t,jt,r,p,0)
-      do 20 i = 1,n 
+      do 20 i = 1,n
  20   r(i) = r(i)/d(i)
-      do 25 i = 1,n 
- 25   wksp(i) = 0.0d0 
+      do 25 i = 1,n
+ 25   wksp(i) = 0.0d0
       call vaddd (ndim,1,n,n,maxb,b,jb,wksp,r,0)
       sum = 0.0d0
-      do 30 i = 1,n 
+      do 30 i = 1,n
  30   sum = sum + p(i)*wksp(i)
       pldup = sum
       return
-      end 
+      end
       subroutine ssorp (ndim,maxt,jt,d,t,nn,p,r,wksp,pdp,pldup)
       implicit double precision (a-h, o-z)
 c
@@ -30541,7 +30541,7 @@ c                     pldup = (p,l*inv(d)*u*p)
 c
 c     for symmetric purdue storage format.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim    row dimension of coef array in defining routine
 c         maxt    number of columns in t
@@ -30554,7 +30554,7 @@ c         r       workspace vector from acceleration algorithm
 c         wksp    workspace vector of length n
 c                  (keygs = 1 only)
 c         pdp     (p,d*p)
-c         pldup   (p,l*d*u*p) 
+c         pldup   (p,l*d*u*p)
 c
 c ... specifications for parameters
 c
@@ -30565,23 +30565,23 @@ c ... compute pdp = (p,d*p).
 c
       n = nn
       sum = 0.0d0
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   sum = sum + p(i)*d(i)*p(i)
       pdp = sum
 c
 c ... compute pldup = (p,l*inv(d)*u*p) = (u*p,inv(d)*u*p)
 c
       pldup = 0.0d0
-      if (maxt .le. 0) return 
-      do 15 i = 1,n 
+      if (maxt .le. 0) return
+      do 15 i = 1,n
  15   r(i) = 0.0d0
-      call vaddp (ndim,ndim,n,maxt,t,jt,r,p,wksp) 
+      call vaddp (ndim,ndim,n,maxt,t,jt,r,p,wksp)
       sum = 0.0d0
-      do 20 i = 1,n 
+      do 20 i = 1,n
  20   sum = sum + r(i)*r(i)/d(i)
       pldup = sum
       return
-      end 
+      end
       subroutine ssorpn (ndimm,maxt,maxb,jt,jb,d,t,b,nn,p,r,
      a                   wksp,pdp,pldup)
       implicit double precision (a-h, o-z)
@@ -30591,7 +30591,7 @@ c                      pldup = (p,l*inv(d)*u*p)
 c
 c     for nonsymmetric purdue storage format.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim    row dimension of coef array in defining routine
 c         maxt    number of columns in t
@@ -30599,15 +30599,15 @@ c         maxb    number of columns in b
 c         jt      column numbers for upper triangular part
 c         jb      column numbers for lower triangular part
 c         d       diagonal
-c         t       upper triangular part 
-c         b       lower triangular part 
+c         t       upper triangular part
+c         b       lower triangular part
 c         n       order of system
 c         p       vector from acceleration algorithm
 c         r       workspace vector from acceleration algorithm
 c         wksp    workspace vector of length n
 c                  2*n if keygs = 1
 c         pdp     (p,d*p)
-c         pldup   (p,l*d*u*p) 
+c         pldup   (p,l*d*u*p)
 c
 c ... specifications for parameters
 c
@@ -30619,7 +30619,7 @@ c
       n = nn
       ndim = ndimm
       sum = 0.0d0
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   sum = sum + p(i)*d(i)*p(i)
       pdp = sum
 c
@@ -30627,21 +30627,21 @@ c ... compute pldup = (p,l*inv(d)*u*p)
 c
       pldup = 0.0d0
       if (maxt .le. 0 .or. maxb .le. 0) return
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   r(i) = 0.0d0
-      call vaddp (ndim,ndim,n,maxt,t,jt,r,p,wksp) 
-      do 20 i = 1,n 
+      call vaddp (ndim,ndim,n,maxt,t,jt,r,p,wksp)
+      do 20 i = 1,n
  20   r(i) = r(i)/d(i)
-      do 25 i = 1,n 
- 25   wksp(i) = 0.0d0 
+      do 25 i = 1,n
+ 25   wksp(i) = 0.0d0
       np1 = n + 1
       call vaddp (ndim,ndim,n,maxb,b,jb,wksp,r,wksp(np1))
       sum = 0.0d0
-      do 30 i = 1,n 
+      do 30 i = 1,n
  30   sum = sum + p(i)*wksp(i)
       pldup = sum
       return
-      end 
+      end
       subroutine ssrcd (ldf,ndim,maxnz,nsize,iblock,dfac,coef,
      a                  jcoef,nn,p,r,wksp,pdp,pldup)
       implicit double precision (a-h, o-z)
@@ -30651,12 +30651,12 @@ c                     pldup = (p,l*inv(d)*u*p)
 c
 c     for symmetric block diagonal storage format.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldf      row dimension of dfac
 c         ndim     row dimension of coef array
 c         maxnz    number of diagonals stored in coef
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
 c         iblock   integer array of size 3 by lbhb
 c                   giving block constants
@@ -30682,25 +30682,25 @@ c
       nt = nwdiag - 1
       call bmul (ndim,n,nt,coef,coef(1,2),p,r)
       sum = 0.0d0
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   sum = sum + p(i)*r(i)
       pdp = sum
 c
 c ... compute pldup = (p,l*inv(d)*u*p) = (u*p,inv(d)*u*p)
 c
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   r(i) = 0.0d0
       jbgn = nwdiag + 1
       mdiag = maxnz - nwdiag
       call vaddd (ndim,1,n,n,mdiag,coef(1,jbgn),jcoef(jbgn),
      a            r,p,0)
-      call bdsol (ldf,n,nsize,nt,0,dfac,r,wksp,0) 
+      call bdsol (ldf,n,nsize,nt,0,dfac,r,wksp,0)
       sum = 0.0d0
-      do 25 i = 1,n 
+      do 25 i = 1,n
  25   sum = sum + r(i)*wksp(i)
       pldup = sum
       return
-      end 
+      end
       subroutine ssrcdm (ldf,ndim,lbhb,nsize,ncol,nci,ipt,
      a                   iblock,dfac,coef,jcnew,nn,p,r,wksp,
      a                   pdp,pldup)
@@ -30712,16 +30712,16 @@ c
 c     for nonsymmetric block diagonal storage format.
 c     (nonconstant block size)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldf      row dimension of dfac array
 c         ndim     row dimension of coef array
 c         lbhb     integer vector of size ncolor giving the number
 c                   of diagonal blocks for each distinct block size.
-c         nsize    size of an individual subsystem within a 
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
-c         ncolor   number of distinct block sizes 
-c         nci      integer vector of length ncolor, giving the number 
+c         ncolor   number of distinct block sizes
+c         nci      integer vector of length ncolor, giving the number
 c                   of nodes for each distinct block size.
 c         ipt      integer pointer vector of length ncolor+1
 c                   giving the starting locations of new block
@@ -30748,24 +30748,24 @@ c
 c ... define constants ndt, ndb.
 c
       n = nn
-      ncolor = ncol 
-      ndt = iblock(3,1,1) - 1 
+      ncolor = ncol
+      ndt = iblock(3,1,1) - 1
       ndb = iblock(3,1,2)
       nwdiag = ndt + ndb + 1
 c
 c ... compute pdp = (p,d*p).
 c
-      ind = ndt + 2 
+      ind = ndt + 2
       call bmuln (ndim,n,ndt,ndb,coef,coef(1,2),coef(1,ind),p,r)
       sum = 0.0d0
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   sum = sum + p(i)*r(i)
       pdp = sum
 c
 c ... compute pldup = (p,l*inv(d)*u*p)
 c
-      do 15 i = 1,n 
-         r(i) = 0.0d0 
+      do 15 i = 1,n
+         r(i) = 0.0d0
          wksp(i) = 0.0d0
  15   continue
       do 25 k = 1,ncolor
@@ -30784,7 +30784,7 @@ c
      a                  jcnew(k,jstb),r(ist),p(istb),inc)
  20      continue
  25   continue
-      call bdsol (ldf,n,nsize,ndt,ndb,dfac,r,r,1) 
+      call bdsol (ldf,n,nsize,ndt,ndb,dfac,r,r,1)
       do 35 k = 1,ncolor
          ist = ipt(k) + 1
          jlim = lbhb(k)
@@ -30802,11 +30802,11 @@ c
  30      continue
  35   continue
       sum = 0.0d0
-      do 40 i = 1,n 
+      do 40 i = 1,n
  40   sum = sum + p(i)*wksp(i)
       pldup = sum
       return
-      end 
+      end
       subroutine ssrcdn (ldf,ndim,lbhb,nsize,iblock,dfac,coef,
      a                   jcoef,nn,p,r,wksp,pdp,pldup)
       implicit double precision (a-h, o-z)
@@ -30817,12 +30817,12 @@ c
 c     for nonsymmetric block diagonal storage format.
 c     (constant block size)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ldf      row dimension of dfac
 c         ndim     row dimension of coef array
-c         lbhb     number of blocks per block row 
-c         nsize    size of an individual subsystem within a 
+c         lbhb     number of blocks per block row
+c         nsize    size of an individual subsystem within a
 c                   diagonal block
 c         iblock   integer array of size 3 by lbhb
 c                   giving block constants
@@ -30860,29 +30860,29 @@ c
  15   ind = nt + 2
       call bmuln (ndim,n,nt,nb,coef,coef(1,2),coef(1,ind),p,r)
       sum = 0.0d0
-      do 20 i = 1,n 
+      do 20 i = 1,n
  20   sum = sum + p(i)*r(i)
       pdp = sum
 c
 c ... compute pldup = (p,l*inv(d)*u*p)
 c
-      do 25 i = 1,n 
+      do 25 i = 1,n
          wksp(i) = 0.0d0
-         r(i) = 0.0d0 
+         r(i) = 0.0d0
  25   continue
       ind = nt + nb + 2
       indd = ind + maxt
       call vaddd (ndim,1,n,n,maxt,coef(1,ind),jcoef(ind),
      a            r,p,0)
       call bdsol (ldf,n,nsize,nt,nb,dfac,r,r,1)
-      call vaddd (ndim,1,n,n,maxb,coef(1,indd),jcoef(indd), 
+      call vaddd (ndim,1,n,n,maxb,coef(1,indd),jcoef(indd),
      a           wksp,r,0)
       sum = 0.0d0
-      do 30 i = 1,n 
+      do 30 i = 1,n
  30   sum = sum + p(i)*wksp(i)
       pldup = sum
       return
-      end 
+      end
       subroutine srbscp (ndim,n,jc,d,c,ncolor,nc,nt,omega,
      a                   wksp,x)
       implicit double precision (a-h, o-z)
@@ -30892,7 +30892,7 @@ c     (purdue storage, multicolor)
 c
 c     ((1/w)*d + t)*x = y
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of c,jc arrays
 c          n      order of system (= nn)
@@ -30900,10 +30900,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -30931,7 +30931,7 @@ c
          ied = ied - npt
  20   continue
       return
-      end 
+      end
       subroutine srbsct (ndim,n,jc,d,c,ncolor,nc,nt,nb,omega,
      a                   wksp,x)
       implicit double precision (a-h, o-z)
@@ -30941,7 +30941,7 @@ c     (purdue storage, multicolor)
 c
 c     ((1/w)*d + (b**t))*x = y
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of c,jc arrays
 c          n      order of system (= nn)
@@ -30949,10 +30949,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -30977,13 +30977,13 @@ c
  15      x(i) = omega*x(i)/d(i)
          j1 = nt(icol) + 1
          mj = nb(icol)
-         call vsubpt (ndim,ndim,npt,mj,c(ist,j1),jc(ist,j1),x,x(ist), 
+         call vsubpt (ndim,ndim,npt,mj,c(ist,j1),jc(ist,j1),x,x(ist),
      a                wksp)
          ied = ied - npt
  20   continue
       return
-      end 
-      subroutine srfscp (ndim,jc,d,c,ncolor,nc,nt,nb,omega, 
+      end
+      subroutine srfscp (ndim,jc,d,c,ncolor,nc,nt,nb,omega,
      a                   wksp,x)
       implicit double precision (a-h, o-z)
 c
@@ -30992,17 +30992,17 @@ c     (purdue storage, multicolor)
 c
 c     ((1/w)*d + b)*x = y
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of c,jc arrays
 c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -31034,7 +31034,7 @@ c
          ist = ist + npt
  20   continue
       return
-      end 
+      end
       subroutine srfsct (ndim,jc,d,c,ncolor,nc,nt,omega,
      a                   wksp,x)
       implicit double precision (a-h, o-z)
@@ -31044,17 +31044,17 @@ c     (purdue storage, multicolor)
 c
 c     ((1/w)*d + (t**t))*x = y
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of c,jc arrays
 c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -31081,7 +31081,7 @@ c
          ist = ist + npt
  20   continue
       return
-      end 
+      end
       subroutine srscp (ndim,nn,jc,d,c,ncolor,nc,nt,nb,omega,
      a                  wksp,y,x)
       implicit double precision (a-h, o-z)
@@ -31091,7 +31091,7 @@ c     (purdue storage, multicolor)
 c        con*((1/w)*d + b)*inv(d)*((1/w)*d + t)*x = y
 c        where con = w/(2-w) and w = omega
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of c,jc arrays
 c          n      order of system (= nn)
@@ -31099,10 +31099,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -31123,14 +31123,14 @@ c
       n = nn
       fac = (2.0d0 - omega)/omega
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srfscp (ndim,jc,d,c,ncolor,nc,nt,nb,omega,wksp,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = fac*d(i)*x(i)
-      call srbscp (ndim,n,jc,d,c,ncolor,nc,nt,omega,wksp,x) 
+      call srbscp (ndim,n,jc,d,c,ncolor,nc,nt,omega,wksp,x)
       return
-      end 
+      end
       subroutine srscpt (ndim,nn,jc,d,c,ncolor,nc,nt,nb,omega,
      a                   wksp,y,x)
       implicit double precision (a-h, o-z)
@@ -31138,7 +31138,7 @@ c
 c ... srscpt does an transpose ssor solve.
 c     (purdue storage, multicolor)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of c,jc arrays
 c          n      order of system (= nn)
@@ -31146,10 +31146,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -31168,14 +31168,14 @@ c
       n = nn
       fac = (2.0d0 - omega)/omega
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srfsct (ndim,jc,d,c,ncolor,nc,nt,omega,wksp,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = fac*d(i)*x(i)
       call srbsct (ndim,n,jc,d,c,ncolor,nc,nt,nb,omega,wksp,x)
       return
-      end 
+      end
       subroutine ssrcp (ndim,jc,d,c,nn,ncolor,nc,nt,p,r,wksp,
      a                  pdp,pldup)
       implicit double precision (a-h, o-z)
@@ -31185,18 +31185,18 @@ c                     pldup = (p,l*inv(d)*u*p)
 c
 c     for symmetric multicolor purdue storage format.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim    row dimension of c,jc arrays
 c         jc      integer array giving the column indices of the
 c                  corresponding elements in c
 c         d       vector of length n giving the diagonal elements
 c                  of the matrix
-c         c       array of active size n by maxc giving the 
+c         c       array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
 c         n       order of system
-c         ncolor  number of colors used 
+c         ncolor  number of colors used
 c         nc      integer vector of length ncolor giving the number
 c                  of nodes for each color
 c         nt      integer vector of length ncolor giving the number
@@ -31207,7 +31207,7 @@ c         wksp    workspace vector of length
 c                  max(nc(i))     if keygs = 1
 c                  0              if keygs = 2
 c         pdp     (p,d*p)
-c         pldup   (p,l*d*u*p) 
+c         pldup   (p,l*d*u*p)
 c
 c ... specifications for parameters
 c
@@ -31218,13 +31218,13 @@ c ... compute pdp = (p,d*p).
 c
       n = nn
       sum = 0.0d0
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   sum = sum + p(i)*d(i)*p(i)
       pdp = sum
 c
 c ... compute pldup = (p,l*inv(d)*u*p) = (u*p,inv(d)*u*p)
 c
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   r(i) = 0.0d0
       ist = 1
       do 20 icol = 1,ncolor
@@ -31234,11 +31234,11 @@ c
          ist = ist + npt
  20   continue
       sum = 0.0d0
-      do 25 i = 1,n 
+      do 25 i = 1,n
  25   sum = sum + r(i)*r(i)/d(i)
       pldup = sum
       return
-      end 
+      end
       subroutine ssrcpn (ndimm,jc,d,c,nn,ncol,nc,nt,nb,p,r,wksp,
      a                   pdp,pldup)
       implicit double precision (a-h, o-z)
@@ -31248,18 +31248,18 @@ c                      pldup = (p,l*inv(d)*u*p)
 c
 c     for nonsymmetric multicolor purdue storage format.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         ndim    row dimension of c,jc arrays
 c         jc      integer array giving the column indices of the
 c                  corresponding elements in c
 c         d       vector of length n giving the diagonal elements
 c                  of the matrix
-c         c       array of active size n by maxc giving the 
+c         c       array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
 c         n       order of system
-c         ncolor  number of colors used 
+c         ncolor  number of colors used
 c         nc      integer vector of length ncolor giving the number
 c                  of nodes for each color
 c         nt      integer vector of length ncolor giving the number
@@ -31272,7 +31272,7 @@ c         wksp    workspace vector of length
 c                  n + max(nc(i))     if keygs = 1
 c                  n                  if keygs = 2
 c         pdp     (p,d*p)
-c         pldup   (p,l*d*u*p) 
+c         pldup   (p,l*d*u*p)
 c
 c ... specifications for parameters
 c
@@ -31283,16 +31283,16 @@ c ... compute pdp = (p,d*p).
 c
       n = nn
       ndim = ndimm
-      ncolor = ncol 
+      ncolor = ncol
       sum = 0.0d0
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   sum = sum + p(i)*d(i)*p(i)
       pdp = sum
 c
 c ... compute pldup = (p,l*inv(d)*u*p) = (u*p,inv(d)*u*p)
 c
       np1 = n + 1
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   r(i) = 0.0d0
       ist = 1
       do 20 icol = 1,ncolor
@@ -31301,25 +31301,25 @@ c
          call vaddp (ndim,ndim,npt,mj,c(ist,1),jc(ist,1),r(ist),p,wksp)
          ist = ist + npt
  20   continue
-      do 25 i = 1,n 
+      do 25 i = 1,n
  25   r(i) = r(i)/d(i)
-      do 30 i = 1,n 
- 30   wksp(i) = 0.0d0 
+      do 30 i = 1,n
+ 30   wksp(i) = 0.0d0
       ist = 1
       do 35 icol = 1,ncolor
          npt = nc(icol)
          j1 = nt(icol) + 1
          mj = nb(icol)
-         call vaddp (ndim,ndim,npt,mj,c(ist,j1),jc(ist,j1),wksp(ist), 
+         call vaddp (ndim,ndim,npt,mj,c(ist,j1),jc(ist,j1),wksp(ist),
      a               r,wksp(np1))
          ist = ist + npt
  35   continue
       sum = 0.0d0
-      do 40 i = 1,n 
+      do 40 i = 1,n
  40   sum = sum + p(i)*wksp(i)
       pldup = sum
       return
-      end 
+      end
       subroutine srscp1 (ndim,nn,jc,d,c,ncolor,nc,nt,nb,omega,
      a                  wksp,y,x)
       implicit double precision (a-h, o-z)
@@ -31327,7 +31327,7 @@ c
 c ... srscp1 does an ssor forward solve.
 c     (purdue storage, multicolor)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of c,jc arrays
 c          n      order of system (= nn)
@@ -31335,10 +31335,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -31359,13 +31359,13 @@ c
       n = nn
       fac = (2.0d0 - omega)/omega
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srfscp (ndim,jc,d,c,ncolor,nc,nt,nb,omega,wksp,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = fac*d(i)*x(i)
       return
-      end 
+      end
       subroutine srscp2 (ndim,n,jc,d,c,ncolor,nc,nt,omega,
      a                  wksp,y,x)
       implicit double precision (a-h, o-z)
@@ -31373,7 +31373,7 @@ c
 c ... srscp2 does an ssor back solve.
 c     (purdue storage, multicolor)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of c,jc arrays
 c          n      order of system (= nn)
@@ -31381,10 +31381,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -31399,11 +31399,11 @@ c
       integer   jc(ndim,1), nc(1), nt(1)
       dimension d(1), c(ndim,1), x(1), y(1), wksp(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
-      call srbscp (ndim,n,jc,d,c,ncolor,nc,nt,omega,wksp,x) 
+      call srbscp (ndim,n,jc,d,c,ncolor,nc,nt,omega,wksp,x)
       return
-      end 
+      end
       subroutine srscp3 (ndim,n,jc,d,c,ncolor,nc,nt,nb,omega,
      a                   wksp,y,x)
       implicit double precision (a-h, o-z)
@@ -31411,7 +31411,7 @@ c
 c ... srscp3 does an transpose ssor back solve.
 c     (purdue storage, multicolor)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of c,jc arrays
 c          n      order of system (= nn)
@@ -31419,10 +31419,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -31440,11 +31440,11 @@ c
 c
       fac = (2.0d0 - omega)/omega
 c
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = fac*d(i)*y(i)
       call srbsct (ndim,n,jc,d,c,ncolor,nc,nt,nb,omega,wksp,x)
       return
-      end 
+      end
       subroutine srscp4 (ndim,n,jc,d,c,ncolor,nc,nt,omega,
      a                   wksp,y,x)
       implicit double precision (a-h, o-z)
@@ -31452,7 +31452,7 @@ c
 c ... srscp4 does an transpose ssor forward solve.
 c     (purdue storage, multicolor)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ndim   row dimension of c,jc arrays
 c          n      order of system (= nn)
@@ -31460,10 +31460,10 @@ c          jc     integer array giving the column indices of the
 c                  corresponding elements in c
 c          d      vector of length n giving the diagonal elements
 c                  of the matrix
-c          c      array of active size n by maxc giving the 
+c          c      array of active size n by maxc giving the
 c                  off diagonal elements of the matrix.
 c                  thus, a = d + c
-c          ncolor number of colors used 
+c          ncolor number of colors used
 c          nc     integer vector of length ncolor giving the number
 c                  of nodes for each color
 c          nt     integer vector of length ncolor giving the number
@@ -31476,17 +31476,17 @@ c
       integer   jc(ndim,1), nc(1), nt(1)
       dimension d(1), c(ndim,1), x(1), y(1), wksp(1)
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call srfsct (ndim,jc,d,c,ncolor,nc,nt,omega,wksp,x)
       return
-      end 
+      end
       double precision function tau (ii)
       implicit double precision (a-h, o-z)
 c
 c ... tau sets tau(ii) for the sor method.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          ii     number of times parameters have been changed
 c
@@ -31496,26 +31496,26 @@ c
       dimension t(9)
 c
       data  t(1), t(2), t(3), t(4), t(5), t(6),  t(7),  t(8), t(9)
-     a    / 1.5d0, 1.8d0, 1.85d0, 1.9d0, 1.94d0, 1.96d0, 1.975d0, 
+     a    / 1.5d0, 1.8d0, 1.85d0, 1.9d0, 1.94d0, 1.96d0, 1.975d0,
      a      1.985d0, 1.992d0 /
 c
       tau = t(9)
       if (ii .le. 8) tau = t(ii)
       return
-      end 
+      end
       subroutine tbs (n,t,x)
       implicit double precision (a-h, o-z)
 c
 c ... tbs does a back substitution  (i + t)*x = y  where t is the
 c     first super-diagonal.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of the system
 c          t      vector of length n-1 containing the super-
 c                  diagonal elements
 c          x      on input, x contains y
-c                 on output, x contains the solution to (i - t)*x = y 
+c                 on output, x contains the solution to (i - t)*x = y
 c
 c ... specifications for parameters
 c
@@ -31524,15 +31524,15 @@ c
       do 10 i = n-1,1,-1
  10   x(i) = x(i) - t(i)*x(i+1)
       return
-      end 
+      end
       subroutine tbsm (nn,nsize,t,x)
       implicit double precision (a-h, o-z)
 c
-c ... tbsm does a back substitution  (i + t)*x = y  where t 
+c ... tbsm does a back substitution  (i + t)*x = y  where t
 c     is a super diagonal composed of independent subsystems of
 c     size nsize.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
 c          nsize  order of the individual subsystems
@@ -31552,14 +31552,14 @@ c
  10      x(i,j) = x(i,j) - t(i,j)*x(i+1,j)
  15   continue
       return
-      end 
+      end
       subroutine tfac (nn,d,t)
       implicit double precision (a-h, o-z)
 c
 c ... tfac computes a factorization of a single symmetric
 c     tridiagonal matrix contained in d and t and replaces it.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system (= nn)
 c          d      vector of length n containing the diagonal
@@ -31573,27 +31573,27 @@ c
 c
       n = nn
       nm1 = n - 1
-      do 10 i = 2,n 
+      do 10 i = 2,n
  10   d(i) = d(i) - (t(i-1)*t(i-1))/d(i-1)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   d(i) = 1.0d0/d(i)
       do 20 i = 1,nm1
  20   t(i) = d(i)*t(i)
       return
-      end 
+      end
       subroutine tfacm (nn,nsize,d,t)
       implicit double precision (a-h, o-z)
 c
-c ... tfacm computes factorizations of multiple independent 
+c ... tfacm computes factorizations of multiple independent
 c     symmetric tridiagonal matrices contained in d and t.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of global system (= nn)
 c          nsize  size of the individual subsystems
 c          d      linear array of length n containing the
 c                  diagonal elements of the systems
-c          t      linear array of length n-1 containing the 
+c          t      linear array of length n-1 containing the
 c                  super-diagonal elements of the systems
 c
 c ... specifications for parameters
@@ -31605,12 +31605,12 @@ c
       nsys = n/nsize
       do 10 i = 2,nsize
          do 5 j = 1,nsys
- 5       d(i,j) = d(i,j) - (t(i-1,j)**2)/d(i-1,j) 
+ 5       d(i,j) = d(i,j) - (t(i-1,j)**2)/d(i-1,j)
  10   continue
       call vinv (n,d)
       call vexopy (nm1,t,d,t,3)
       return
-      end 
+      end
       subroutine tfacn (nn,d,t,b)
       implicit double precision (a-h, o-z)
 c
@@ -31618,7 +31618,7 @@ c ... tfacn computes a factorization of a single nonsymmetric
 c     tridiagonal matrix contained in d, t, and b and
 c     replaces it.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system (= nn)
 c          d      vector of length n containing the diagonal
@@ -31634,16 +31634,16 @@ c
 c
       n = nn
       nm1 = n - 1
-      do 10 i = 2,n 
+      do 10 i = 2,n
  10   d(i) = d(i) - b(i-1)*t(i-1)/d(i-1)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   d(i) = 1.0d0/d(i)
       do 20 i = 1,nm1
          t(i) = d(i)*t(i)
          b(i) = d(i)*b(i)
  20   continue
       return
-      end 
+      end
       subroutine tfacnm (nn,nsize,d,t,b)
       implicit double precision (a-h, o-z)
 c
@@ -31651,15 +31651,15 @@ c ... tfacnm computes factorizations of multiple independent
 c     nonsymmetric tridiagonal matrices contained in
 c     d, t, and b.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of global system (= nn)
 c          nsize  order of single subsystem
 c          d      linear array of length n containing the
 c                  diagonal elements of the systems
-c          t      linear array of length n-1 containing the 
+c          t      linear array of length n-1 containing the
 c                  super-diagonal elements of the systems
-c          b      linear array of length n-1 containing the 
+c          b      linear array of length n-1 containing the
 c                  sub-diagonal elements of the systems
 c
 c ... specifications for parameters
@@ -31677,29 +31677,29 @@ c
       call vexopy (nm1,t,d,t,3)
       call vexopy (nm1,b,d,b,3)
       return
-      end 
+      end
       subroutine tfs (n,b,x)
       implicit double precision (a-h, o-z)
 c
 c ... tfs does a forward substitution  (i + b)*x = y,
 c     where b is the first sub-diagonal.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
 c          b      vector of length n-1 containing the sub-
 c                  diagonal elements
 c          x      on input, x contains y
-c                 on output, x contains the solution to (i - b)*x = y 
+c                 on output, x contains the solution to (i - b)*x = y
 c
 c ... specifications for parameters
 c
       dimension b(1), x(1)
 c
-      do 10 i = 2,n 
+      do 10 i = 2,n
  10   x(i) = x(i) - b(i-1)*x(i-1)
       return
-      end 
+      end
       subroutine tfsm (nn,nsize,b,x)
       implicit double precision (a-h, o-z)
 c
@@ -31707,14 +31707,14 @@ c ... tfsm does a forward substitution  (i + b)*x = y  where b
 c     is a sub-diagonal composed of independent subsystems of
 c     size nsize.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
 c          nsize  order of the individual subsystems
 c          b      linear array of length n-1 containing the sub-
 c                  diagonal elements of the factorizations
 c          x      on input, x contains y
-c                 on output, x contains the solution to (i + b)*x = y 
+c                 on output, x contains the solution to (i + b)*x = y
 c
 c ... specifications for parameters
 c
@@ -31727,7 +31727,7 @@ c
  15      x(i,j) = x(i,j) - b(i-1,j)*x(i-1,j)
  20   continue
       return
-      end 
+      end
       subroutine tinv (nn,d,t)
       implicit double precision (a-h, o-z)
 c
@@ -31735,7 +31735,7 @@ c ... tinv computes an approximate inverse to a single tridiagonal
 c     symmetric matrix.  d and u must contain upon input the
 c     output from a factorization routine.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system (= nn)
 c          d      vector of length n containing the diagonal
@@ -31755,7 +31755,7 @@ c
       do 15 i = 1,nm1
  15   t(i) = -d(i+1)*t(i)
       return
-      end 
+      end
       subroutine tinvm (nn,nsize,d,t)
       implicit double precision (a-h, o-z)
 c
@@ -31763,7 +31763,7 @@ c ... tinvm computes an approximate inverse to multiple tridiagonal
 c     symmetric matrices.  d and t must contain upon input the
 c     output from a factorization routine.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system (= nn)
 c          nsize  size of a single subsystem
@@ -31783,11 +31783,11 @@ c
 c
       do 20 i = nsm1,1,-1
          do 15 l = 1,nsys
- 15      d(i,l) = d(i,l) + t(i,l)*t(i,l)*d(i+1,l) 
+ 15      d(i,l) = d(i,l) + t(i,l)*t(i,l)*d(i+1,l)
  20   continue
       call vemxty (nm1,t,d(2,1),t)
       return
-      end 
+      end
       subroutine tinvn (nn,d,t,b)
       implicit double precision (a-h, o-z)
 c
@@ -31795,7 +31795,7 @@ c ... tinvn computes an approximate inverse to a single tridiagonal
 c     nonsymmetric matrix.  d, b, and t must contain upon
 c     input the output from a factorization routine.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system (= nn)
 c          d      vector of length n containing the diagonal
@@ -31819,15 +31819,15 @@ c
          b(i) = -d(i+1)*b(i)
  20   continue
       return
-      end 
+      end
       subroutine tinvnm (nn,nsize,d,t,b)
       implicit double precision (a-h, o-z)
 c
 c ... tinvnm computes an approximate inverse to multiple tridiagonal
-c     nonsymmetric matrices.  d, t, and b must contain upon 
+c     nonsymmetric matrices.  d, t, and b must contain upon
 c     input the output from a factorization routine.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system (= nn)
 c          nsize  size of a single subsystem
@@ -31849,12 +31849,12 @@ c
 c
       do 20 i = nsm1,1,-1
          do 15 l = 1,nsys
- 15      d(i,l) = d(i,l) + b(i,l)*t(i,l)*d(i+1,l) 
+ 15      d(i,l) = d(i,l) + b(i,l)*t(i,l)*d(i+1,l)
  20   continue
       call vemxty (nm1,t,d(2,1),t)
       call vemxty (nm1,b,d(2,1),b)
       return
-      end 
+      end
       subroutine tsoln (nn,d,t,b,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -31863,7 +31863,7 @@ c     tridiagonal system.  d, t, and b contain
 c     the main diagonal, the first super-diagonal, and the first
 c     sub-diagonal, respectively of the factorization.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
 c          d      vector of length n containing the diagonal
@@ -31880,14 +31880,14 @@ c
       dimension d(1), t(1), b(1), x(1), y(1)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
       call tfs (n,b,x)
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   x(i) = d(i)*x(i)
       call tbs (n,t,x)
       return
-      end 
+      end
       subroutine tsolnm (nn,nsize,d,t,b,y,x)
       implicit double precision (a-h, o-z)
 c
@@ -31896,10 +31896,10 @@ c     multiple tridiagonal systems.  d, t, and b contain
 c     the main diagonal, the first super-diagonal, and the first
 c     sub-diagonal, respectively of the factorization.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      order of system
-c          nsize  size of an individual subsystem 
+c          nsize  size of an individual subsystem
 c          d      vector of length n containing the diagonal
 c                  elements of the factorization matrix
 c          t      vector of length n-1 containing the super-
@@ -31914,14 +31914,14 @@ c
       dimension d(1), t(1), b(1), x(1), y(1)
 c
       n = nn
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   x(i) = y(i)
-      call tfsm (n,nsize,b,x) 
-      do 15 i = 1,n 
+      call tfsm (n,nsize,b,x)
+      do 15 i = 1,n
  15   x(i) = d(i)*x(i)
-      call tbsm (n,nsize,t,x) 
+      call tbsm (n,nsize,t,x)
       return
-      end 
+      end
       subroutine tsum (nn,lda,ldb,ldc,ma,mbb,mc,mdd,incb,incc,
      a                 incdd,ja,jb,jc,jd,a,b,c,rows,cols,wksp,
      a                 icodee,omegaa)
@@ -31930,7 +31930,7 @@ c
 c ... tsum computes the row and column sum of (c**t)*a*b restricted
 c ... to the sparsity pattern of jd.  a is assumed to be symmetric.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n             orders of arrays a,b,c,d
 c         lda,ldb,ldc   row dimensions of arrays a,b,c
@@ -31981,7 +31981,7 @@ c
                do 25 kk = ist,ied
  25            rows(kk) = rows(kk) + omega*wksp(kk-ist+1)
                if (l .eq. 0  .or.  icode .ne. 1) go to 35
-                     do 30 kk = ist,ied 
+                     do 30 kk = ist,ied
  30                  rows(kk+l) = rows(kk+l) + omega*wksp(kk-ist+1)
  35            if (icode .eq. 1) go to 45
                do 40 kk = ist,ied
@@ -32005,7 +32005,7 @@ c
                do 65 kk = ist,ied
  65            rows(kk) = rows(kk) + omega*wksp(kk-ist+1)
                if (l .eq. 0  .or.  icode .ne. 1) go to 75
-                     do 70 kk = ist,ied 
+                     do 70 kk = ist,ied
  70                  rows(kk+l) = rows(kk+l) + omega*wksp(kk-ist+1)
  75            if (icode .eq. 1) go to 85
                do 80 kk = ist,ied
@@ -32014,7 +32014,7 @@ c
  90      continue
  95   continue
       return
-      end 
+      end
       subroutine tsumn (nn,np,nq,lda,ldb,ldc,ldj,ma,mb,mc,md,
      a                  incb,incc,incd,ja,jb,jc,jd,a,b,c,
      a                  rows,omega)
@@ -32023,8 +32023,8 @@ c
 c ... tsumn computes the row sum of c*a*b restricted
 c ... to the sparsity pattern of jd.
 c
-c      c is np x nn        b is nn x nq 
-c      a is nn x nn        d is np x nq 
+c      c is np x nn        b is nn x nq
+c      a is nn x nn        d is np x nq
 c
 c ... definition of parameters --
 c
@@ -32064,12 +32064,12 @@ c
  20            ist = max (ia2,1-l)
                ied = min (ib2,nq-l)
                do 25 m = ist,ied
- 25            rows(m) = rows(m) + omega*c(m,lc)*a(m+i,la)*b(m+l1,lb) 
+ 25            rows(m) = rows(m) + omega*c(m,lc)*a(m+i,la)*b(m+l1,lb)
  30         continue
  35      continue
  40   continue
       return
-      end 
+      end
       subroutine t1prod (lda,ldb,ldc,ldd,ldj,nn,np,nq,ma,mb,mc,md,
      a                   incb,incc,incd,ja,jb,jc,jd,a,b,c,d)
       implicit double precision (a-h, o-z)
@@ -32079,14 +32079,14 @@ c ...
 c ... but restricted to the sparsity pattern of d.  a is assumed to
 c ... be in nonsymmetric storage mode.
 c
-c      c is np x nn        b is nn x nq 
-c      a is nn x nn        d is np x nq 
+c      c is np x nn        b is nn x nq
+c      a is nn x nn        d is np x nq
 c
 c ... definition of parameters --
 c
 c         lda,ldb,      row dimension of arrays a,b,c,d
 c          ldc,ldd
-c         ldj           row dimension of arrays ja,jb,jc,jd 
+c         ldj           row dimension of arrays ja,jb,jc,jd
 c         nn,np,nq      orders of arrays
 c         ma,mb,mc,md   columns (diagonals) in arrays a,b,c,d
 c         incb,incc,    offsets for diagonal numbers of b,c,d arrays
@@ -32124,15 +32124,15 @@ c
  35      continue
  40   continue
       return
-      end 
+      end
       subroutine t2prod (nn,nda,ndb,ndc,ndd,ma,mbb,mc,mdd,incb,incc,
      a                   incd,ja,jb,jc,jd,a,b,c,d)
       implicit double precision (a-h, o-z)
 c
 c ... t2prod computes  d = d - (c**t)*a*b  restricted to the
-c ... sparsity pattern of d.  a is assumed to be symmetric. 
+c ... sparsity pattern of d.  a is assumed to be symmetric.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n             orders of arrays a,b,c,d
 c         nda,ndb,ndc,  row dimensions of arrays a,b,c,d
@@ -32191,19 +32191,19 @@ c
  60      continue
  65   continue
       return
-      end 
+      end
       subroutine unpmdg (ndim,nn,maxnz,jcoef,coef,ncol,nc,p,ip,
-     a                   maxd,maxnew,jcnew,wksp,iwksp,isym) 
+     a                   maxd,maxnew,jcnew,wksp,iwksp,isym)
       implicit double precision (a-h, o-z)
 c
 c ... unpmdg reverses the permutation done by pmdiag.  it
 c     permutates the matrix according to index vector ip.
 c     the permuted matrix is stored in diagonal format.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        ndim      row dimension of coef and jcoef arrays
-c                   in defining routine 
+c                   in defining routine
 c        n         order of system (active row size of coef and jcoef)
 c        maxnz     active column size of coef and jcoef
 c        jcoef     integer array of column numbers
@@ -32225,12 +32225,12 @@ c
 c ... specifications for parameters
 c
       integer jcoef(2), nc(1), p(1), jcnew(ncol,1), maxnew(1),
-     a        iwksp(1), ip(1) 
+     a        iwksp(1), ip(1)
       dimension coef(ndim,1), wksp(1)
 c
 c
       n = nn
-      ncolor = ncol 
+      ncolor = ncol
 c
 c ... set up pointer vector.
 c
@@ -32272,7 +32272,7 @@ c
 c
 c ... zero out lower triangular matrix if symmeteric storage used.
 c
-      if (isym .ne. 0) return 
+      if (isym .ne. 0) return
       maxold = (maxnz + 1)/2
       mp1 = maxold + 1
       do 45 j = mp1,maxnz
@@ -32282,20 +32282,20 @@ c
  45   continue
       maxnz = maxold
       return
-      end 
+      end
       subroutine uscal1 (nn,ndim,maxnzz,jcoef,coef,rhs,u,ubar,
      a                   diag,work,iflag)
       implicit double precision (a-h, o-z)
 c
 c ... uscal1 reverses the scaling done in routine scal1.  diag must
 c     contain upon input the output from scal1.
-c     (purdue data structure) 
+c     (purdue data structure)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n       dimension of matrix
 c         ndim    row dimension of coef array in defining routine
-c         maxnz   number of columns in coef array 
+c         maxnz   number of columns in coef array
 c         jcoef   integer matrix representation array
 c         coef    matrix representation array
 c         rhs     right hand side of matrix problem
@@ -32309,30 +32309,30 @@ c                  = 1  unscale ubar
 c
 c ... specifications for parameters
 c
-      integer   jcoef(ndim,1) 
+      integer   jcoef(ndim,1)
       dimension coef(ndim,1), rhs(1), u(1), diag(1), work(1),
      a          ubar(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       n = nn
       maxnz = maxnzz
 c
 c ... unscale u and rhs arrays.
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   u(i) = diag(i)*u(i)
       if (iflag .eq. 0) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   ubar(i) = diag(i)*ubar(i)
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   diag(i) = 1.0d0/diag(i)
-      do 30 i = 1,n 
- 30   rhs(i) = diag(i)*rhs(i) 
+      do 30 i = 1,n
+ 30   rhs(i) = diag(i)*rhs(i)
 c
 c ... unscale matrix.
 c
@@ -32354,7 +32354,7 @@ c
  50      coef(i,j) = diag(i)*coef(i,j)*diag(jcoef(i,j))
  55   continue
       return
-      end 
+      end
       subroutine uscal2 (nn,ndim,maxnz,jcoef,coef,rhs,u,ubar,
      a                   diag,iflag)
       implicit double precision (a-h, o-z)
@@ -32363,11 +32363,11 @@ c ... uscal2 reverses the scaling done in routine scal2.  diag must
 c     contain upon input the output from scal2.
 c     (diagonal data structure)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n       dimension of matrix
 c         ndim    row dimension of coef array in defining routine
-c         maxnz   number of columns in coef array 
+c         maxnz   number of columns in coef array
 c         jcoef   integer matrix representation array
 c         coef    matrix representation array
 c         rhs     right hand side of matrix problem
@@ -32388,15 +32388,15 @@ c
 c
 c ... unscale u and rhs arrays.
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   u(i) = diag(i)*u(i)
       if (iflag .eq. 0) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   ubar(i) = diag(i)*ubar(i)
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   diag(i) = 1.0d0/diag(i)
-      do 30 i = 1,n 
- 30   rhs(i) = diag(i)*rhs(i) 
+      do 30 i = 1,n
+ 30   rhs(i) = diag(i)*rhs(i)
 c
 c ... unscale matrix.
 c
@@ -32411,15 +32411,15 @@ c
  45      coef(i-ind,j) = diag(i)*coef(i-ind,j)*diag(i-ind)
  50   continue
       return
-      end 
+      end
       subroutine uscal3 (nn,nz,ia,ja,a,rhs,u,ubar,diag,work,iflag)
       implicit double precision (a-h, o-z)
 c
 c ... uscal3 reverses the scaling done in routine scal3.  diag must
 c     contain upon input the output from scal3.
-c     (sparse data structure) 
+c     (sparse data structure)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n       dimension of matrix
 c         nz      length of the vectors a, ia, and ja
@@ -32441,25 +32441,25 @@ c
       dimension a(1), rhs(1), u(1), diag(1), work(1),
      a          ubar(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       n = nn
 c
 c ... unscale u and rhs arrays.
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   u(i) = diag(i)*u(i)
       if (iflag .eq. 0) go to 20
-      do 15 i = 1,n 
+      do 15 i = 1,n
  15   ubar(i) = diag(i)*ubar(i)
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   diag(i) = 1.0d0/diag(i)
-      do 30 i = 1,n 
- 30   rhs(i) = diag(i)*rhs(i) 
+      do 30 i = 1,n
+ 30   rhs(i) = diag(i)*rhs(i)
 c
 c ... unscale matrix.
 c
@@ -32468,7 +32468,7 @@ c
 c ... using gathers.
 c
       ist = 1
- 35   ied = min (ist-1+n,nz) 
+ 35   ied = min (ist-1+n,nz)
       if (ied .lt. ist) return
          len = ied - ist + 1
          call vgathr (len,diag,ia(ist),work)
@@ -32477,7 +32477,7 @@ c
          call vgathr (len,diag,ja(ist),work)
          do 45 i = ist,ied
  45      a(i) = a(i)*work(i-ist+1)
-      ist = ied + 1 
+      ist = ied + 1
       go to 35
 c
 c ... not using gathers.
@@ -32485,7 +32485,7 @@ c
  50   do 55 i = 1,nz
  55   a(i) = a(i)*diag(ia(i))*diag(ja(i))
       return
-      end 
+      end
       subroutine vaddd (lda,ldja,nn,m,mdiagg,a,ja,y,x,jofff)
       implicit double precision (a-h, o-z)
 c
@@ -32493,7 +32493,7 @@ c ... vaddd computes  y = y + a*x
 c
 c     (diagonal storage)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         lda      leading dimension of a array
 c         ldja     leading dimension of ja array
@@ -32510,11 +32510,11 @@ c
       dimension a(lda,3), x(1), y(1)
       integer   ja(ldja,3)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       n = nn
       mdiag = mdiagg
@@ -32522,9 +32522,9 @@ c
       if (mdiag .lt. 1) return
       if (keyzer .eq. 1) go to 20
       do 15 j = 1,mdiag
-         ind = ja(1,j) - joff 
-         ist = max (1,1-ind) 
-         ied = min (n,m-ind) 
+         ind = ja(1,j) - joff
+         ist = max (1,1-ind)
+         ied = min (n,m-ind)
          do 10 i = ist,ied
  10      y(i) = y(i) + a(i,j)*x(i+ind)
  15   continue
@@ -32538,13 +32538,13 @@ c
 c ... initial short computations
 c
       go to (25,35,45), l
- 25   do 30 i = 1,n 
+ 25   do 30 i = 1,n
  30   y(i) = y(i) + a(i,1)*x(i+ja(1,1)-joff)
       go to 55
- 35   do 40 i = 1,n 
+ 35   do 40 i = 1,n
  40   y(i) = y(i) + a(i,1)*x(i+ja(1,1)-joff) + a(i,2)*x(i+ja(1,2)-joff)
       go to 55
- 45   do 50 i = 1,n 
+ 45   do 50 i = 1,n
  50   y(i) = y(i) + a(i,1)*x(i+ja(1,1)-joff) + a(i,2)*x(i+ja(1,2)-joff)
      a            + a(i,3)*x(i+ja(1,3)-joff)
  55   if (mdiag .le. 4) return
@@ -32560,15 +32560,15 @@ c
      a               + a(i,j+3)*x(i+ja(1,j+3)-joff)
  70   continue
       return
-      end 
+      end
       subroutine vadddt (lda,ldja,nn,m,mdiagg,a,ja,y,x,jofff)
       implicit double precision (a-h, o-z)
 c
-c ... vadddt computes  y = y + (a**t)*x 
+c ... vadddt computes  y = y + (a**t)*x
 c
 c     (diagonal storage)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         lda      leading dimension of a array
 c         ldja     leading dimension of ja array
@@ -32590,20 +32590,20 @@ c
       joff = jofff
       if (mdiag .lt. 1) return
       do 15 j = 1,mdiag
-         ind = ja(1,j) - joff 
-         ist = max (1,1-ind) 
-         ied = min (n,m-ind) 
+         ind = ja(1,j) - joff
+         ist = max (1,1-ind)
+         ied = min (n,m-ind)
          do 10 i = ist,ied
  10      y(i+ind) = y(i+ind) + a(i,j)*x(i)
  15   continue
       return
-      end 
+      end
       subroutine vaddp (ndimr,ndimi,nn,mm,a,ja,y,x,wksp)
       implicit double precision (a-h, o-z)
 c
 c ... vaddp does  y = y + a*x  (purdue format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       ndimr     row dimension of a array
 c       ndimi     row dimension of ja array
@@ -32619,11 +32619,11 @@ c ... specifications for parameters
 c
       dimension a(ndimr,3), ja(ndimi,3), x(1), y(1), wksp(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       n = nn
       m = mm
@@ -32632,19 +32632,19 @@ c
 c
 c ... implicit gathers.
 c
-      l = mod (m,4) 
+      l = mod (m,4)
       if (l .eq. 0) go to 45
 c
 c ... initial short computations
 c
       go to (10,20,30), l
- 10   do 15 i = 1,n 
+ 10   do 15 i = 1,n
  15   y(i) = y(i) + a(i,1)*x(ja(i,1))
       go to 40
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   y(i) = y(i) + a(i,1)*x(ja(i,1)) + a(i,2)*x(ja(i,2))
       go to 40
- 30   do 35 i = 1,n 
+ 30   do 35 i = 1,n
  35   y(i) = y(i) + a(i,1)*x(ja(i,1)) + a(i,2)*x(ja(i,2))
      a            + a(i,3)*x(ja(i,3))
  40   if (m .le. 4) return
@@ -32662,18 +32662,18 @@ c
 c ... explicit gathers.
 c
  100  do 110 j = 1,m
-         call vgathr (n,x,ja(1,j),wksp) 
+         call vgathr (n,x,ja(1,j),wksp)
          do 105 i = 1,n
  105     y(i) = y(i) + a(i,j)*wksp(i)
  110  continue
       return
-      end 
+      end
       subroutine vaddpt (ndimr,ndimi,n,m,a,ja,y,x,wksp)
       implicit double precision (a-h, o-z)
 c
 c ... vaddpt does  y = y + (a**t)*x  (purdue format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       ndimr     row dimension of a array
 c       ndimi     row dimension of ja array
@@ -32691,19 +32691,19 @@ c
 c
       if (m .le. 0) return
 c
-      do 20 j = 1,m 
+      do 20 j = 1,m
          do 15 i = 1,n
             y(ja(i,j)) = y(ja(i,j)) + a(i,j)*x(i)
  15      continue
  20   continue
       return
-      end 
+      end
       subroutine vadds (mm,np,ia,ja,a,y,x,wksp)
       implicit double precision (a-h, o-z)
 c
 c ... vadds does  y = y + a*x  (sparse format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       m         number of partitions
 c       np        partition pointers
@@ -32718,11 +32718,11 @@ c ... specifications for parameters
 c
       dimension np(1), a(1), ia(1), ja(1), x(1), y(1), wksp(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       m = mm
       if (m .le. 0) return
@@ -32730,7 +32730,7 @@ c
 c
 c ... implicit gathers.
 c
-      do 15 k = 1,m 
+      do 15 k = 1,m
          ist = np(k)
          ied = np(k+1) - 1
 cdir$ ivdep
@@ -32741,7 +32741,7 @@ cdir$ ivdep
 c
 c ... explicit gathers.
 c
- 20   do 30 k = 1,m 
+ 20   do 30 k = 1,m
          ist = np(k)
          nel = np(k+1) - ist
          call vgathr (nel,x,ja(ist),wksp)
@@ -32751,13 +32751,13 @@ c
          call vscatr (nel,wksp,ia(ist),y)
  30   continue
       return
-      end 
+      end
       subroutine vcopy (n,x,y)
       implicit double precision (a-h, o-z)
 c
 c ... vcopy copies vector x to vector y.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n       length of vectors
 c          x,y     vectors of length n
@@ -32767,16 +32767,16 @@ c
       dimension x(1), y(1)
 c
       if (n .le. 0) return
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   y(i) = x(i)
       return
-      end 
+      end
       double precision function vdot (n,x,y)
       implicit double precision (a-h, o-z)
 c
 c ... vdot computes the dot product of vectors x and y.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n       length of vectors
 c          x,y     vectors of length n
@@ -32788,18 +32788,18 @@ c
 c
       vdot = 0.0d0
       if (n .le. 0) return
-      do i = 1,n 
-         vdot = vdot + x(i)*y(i) 
+      do i = 1,n
+         vdot = vdot + x(i)*y(i)
       enddo
       return
-      end 
+      end
       subroutine vexopy (nn,v,x,y,icode)
       implicit double precision (a-h, o-z)
 c
 c ... vexopy computes  v = x  op  y  where v, x, and y are vectors
 c ... and op is one of the operations  + - * / .
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n       length of vectors  (= nn)
 c          v,x,y   vectors of length n
@@ -32819,34 +32819,34 @@ c
 c
 c ... compute   v = x + y
 c
- 10   do 15 i = 1,n 
+ 10   do 15 i = 1,n
  15   v(i) = x(i) + y(i)
       return
 c
 c ... compute   v = x - y
 c
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   v(i) = x(i) - y(i)
       return
 c
 c ... compute   v = x * y
 c
- 30   do 35 i = 1,n 
+ 30   do 35 i = 1,n
  35   v(i) = x(i)*y(i)
       return
 c
 c ... compute   v = x / y
 c
- 40   do 45 i = 1,n 
+ 40   do 45 i = 1,n
  45   v(i) = x(i)/y(i)
       return
-      end 
+      end
       subroutine vfill (n,v,val)
       implicit double precision (a-h, o-z)
 c
 c     vfill fills a vector, v, with a constant value, val.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n      integer length of vector v
 c          v      vector
@@ -32857,18 +32857,18 @@ c
       dimension v(n)
 c
       if (n .le. 0) return
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   v(i) = val
       return
-      end 
+      end
       subroutine vgathi (n,ja,ia,jb)
       implicit double precision (a-h, o-z)
 c
 c ... vgathi gathers elements from array ja according to index
-c ... list ia and places them into consecutive locations in 
+c ... list ia and places them into consecutive locations in
 c ... array jb.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n        order of arrays ia and jb
 c          ja       integer array of source elements
@@ -32881,26 +32881,26 @@ c
       integer   ia(1), ja(1), jb(1)
 c
       if (n .le. 0) return
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   jb(i) = ja(ia(i))
 c
 c205  jb(1;n) = q8vgathr (ja(1;n),ia(1;n);jb(1;n))
 cray1 call gather (n,jb,ja,ia)
 c
       return
-      end 
+      end
       subroutine vgathr (n,a,ia,b)
       implicit double precision (a-h, o-z)
 c
 c ... vgathr gathers elements from array a according to index
-c ... list ia and places them into consecutive locations in 
+c ... list ia and places them into consecutive locations in
 c ... array b.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n       order of arrays ia and b
 c          a       array of source elements
-c          ia      integer array of length n giving desired 
+c          ia      integer array of length n giving desired
 c                     elements of array a
 c          b       target array of length n
 c
@@ -32910,23 +32910,23 @@ c
       dimension a(1), b(1)
 c
       if (n .le. 0) return
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   b(i) = a(ia(i))
 c
 c205  b(1;n) = q8vgathr (a(1;n),ia(1;n);b(1;n))
 cray1 call gather (n,b,a,ia)
 c
       return
-      end 
+      end
       subroutine vinv (nn,v)
       implicit double precision (a-h, o-z)
 c
-c ... vinv computes   v = 1/v 
+c ... vinv computes   v = 1/v
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n       length of vector (= nn)
-c        v       input/output vector of length n. 
+c        v       input/output vector of length n.
 c
 c ... specifications for parameters
 c
@@ -32934,16 +32934,16 @@ c
 c
       n = nn
       if (n .le. 0) return
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   v(i) = 1.0d0 / v(i)
       return
-      end 
+      end
       double precision function vmax (n,v)
       implicit double precision (a-h, o-z)
 c
 c ... vmax determaxes the maximum algebraic element of vector v.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n     length of vector
 c        v     floating point vector of length n
@@ -32954,17 +32954,17 @@ c
 c
       vmax = v(1)
       if (n .le. 1) return
-      do i = 2,n 
+      do i = 2,n
          if (v(i) .gt. vmax) vmax = v(i)
       enddo
       return
-      end 
+      end
       double precision function vmin (n,v)
       implicit double precision (a-h, o-z)
 c
 c ... vmin determines the minimum algebraic element of vector v.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n     length of vector
 c        v     floating point vector of length n
@@ -32975,18 +32975,18 @@ c
 c
       vmin = v(1)
       if (n .le. 1) return
-      do i = 2,n 
+      do i = 2,n
          if (v(i) .lt. vmin) vmin = v(i)
       enddo
       return
-      end 
+      end
       subroutine vscati (n,ja,ia,jb)
       implicit double precision (a-h, o-z)
 c
 c ... vscati scatters elements from consecutive locations in array
 c ... ja to positions in array jb according to index list ia.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         n       order of arrays ia and ja
 c         ja      integer array of source elements
@@ -32999,21 +32999,21 @@ c
       integer   ia(1), ja(1), jb(1)
 c
       if (n .le. 0) return
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   jb(ia(i)) = ja(i)
 c
 c205  jb(1;n) = q8vscatr (ja(1;n),ia(1;n);jb(1;n))
 cray1 call scatter (n,jb,ia,ja)
 c
       return
-      end 
+      end
       subroutine vscatr (n,a,ia,b)
       implicit double precision (a-h, o-z)
 c
 c ... vscatr scatters elements from consecutive locations in array a
 c ... to positions in array b according to index list ia.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n       order of arrays ia and a
 c          a       array of source elements
@@ -33027,14 +33027,14 @@ c
       dimension a(1), b(1)
 c
       if (n .le. 0) return
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   b(ia(i)) = a(i)
 c
 c205  b(1;n) = q8vscatr (a(1;n),ia(1;n);b(1;n))
-cray1 call scatter (n,b,ia,a) 
+cray1 call scatter (n,b,ia,a)
 c
       return
-      end 
+      end
       subroutine vsubd (lda,ldja,nn,m,mdiagg,a,ja,y,x,jofff)
       implicit double precision (a-h, o-z)
 c
@@ -33042,7 +33042,7 @@ c ... vsubd computes  y = y - a*x
 c
 c     (diagonal storage)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         lda      leading dimension of a array
 c         ldja     leading dimension of ja array
@@ -33059,11 +33059,11 @@ c
       dimension a(lda,3), x(1), y(1)
       integer   ja(ldja,3)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       n = nn
       mdiag = mdiagg
@@ -33071,9 +33071,9 @@ c
       if (mdiag .lt. 1) return
       if (keyzer .eq. 1) go to 20
       do 15 j = 1,mdiag
-         ind = ja(1,j) - joff 
-         ist = max (1,1-ind) 
-         ied = min (n,m-ind) 
+         ind = ja(1,j) - joff
+         ist = max (1,1-ind)
+         ied = min (n,m-ind)
          do 10 i = ist,ied
  10      y(i) = y(i) - a(i,j)*x(i+ind)
  15   continue
@@ -33087,13 +33087,13 @@ c
 c ... initial short computations
 c
       go to (25,35,45), l
- 25   do 30 i = 1,n 
+ 25   do 30 i = 1,n
  30   y(i) = y(i) - a(i,1)*x(i+ja(1,1)-joff)
       go to 55
- 35   do 40 i = 1,n 
+ 35   do 40 i = 1,n
  40   y(i) = y(i) - a(i,1)*x(i+ja(1,1)-joff) - a(i,2)*x(i+ja(1,2)-joff)
       go to 55
- 45   do 50 i = 1,n 
+ 45   do 50 i = 1,n
  50   y(i) = y(i) - a(i,1)*x(i+ja(1,1)-joff) - a(i,2)*x(i+ja(1,2)-joff)
      a            - a(i,3)*x(i+ja(1,3)-joff)
  55   if (mdiag .le. 4) return
@@ -33109,15 +33109,15 @@ c
      a               - a(i,j+3)*x(i+ja(1,j+3)-joff)
  70   continue
       return
-      end 
+      end
       subroutine vsubdt (lda,ldja,nn,m,mdiagg,a,ja,y,x,jofff)
       implicit double precision (a-h, o-z)
 c
-c ... vsubdt computes  y = y - (a**t)*x 
+c ... vsubdt computes  y = y - (a**t)*x
 c
 c     (diagonal storage)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c         lda      leading dimension of a array
 c         ldja     leading dimension of ja array
@@ -33139,20 +33139,20 @@ c
       joff = jofff
       if (mdiag .lt. 1) return
       do 15 j = 1,mdiag
-         ind = ja(1,j) - joff 
-         ist = max (1,1-ind) 
-         ied = min (n,m-ind) 
+         ind = ja(1,j) - joff
+         ist = max (1,1-ind)
+         ied = min (n,m-ind)
          do 10 i = ist,ied
  10      y(i+ind) = y(i+ind) - a(i,j)*x(i)
  15   continue
       return
-      end 
+      end
       subroutine vsubp (ndimr,ndimi,nn,mm,a,ja,y,x,wksp)
       implicit double precision (a-h, o-z)
 c
 c ... vsubp does  y = y - a*x  (purdue format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       ndimr     row dimension of a array
 c       ndimi     row dimension of ja array
@@ -33168,11 +33168,11 @@ c ... specifications for parameters
 c
       dimension a(ndimr,3), ja(ndimi,3), x(1), y(1), wksp(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       n = nn
       m = mm
@@ -33181,19 +33181,19 @@ c
 c
 c ... implicit gathers.
 c
-      l = mod (m,4) 
+      l = mod (m,4)
       if (l .eq. 0) go to 45
 c
 c ... initial short computations
 c
       go to (10,20,30), l
- 10   do 15 i = 1,n 
+ 10   do 15 i = 1,n
  15   y(i) = y(i) - a(i,1)*x(ja(i,1))
       go to 40
- 20   do 25 i = 1,n 
+ 20   do 25 i = 1,n
  25   y(i) = y(i) - a(i,1)*x(ja(i,1)) - a(i,2)*x(ja(i,2))
       go to 40
- 30   do 35 i = 1,n 
+ 30   do 35 i = 1,n
  35   y(i) = y(i) - a(i,1)*x(ja(i,1)) - a(i,2)*x(ja(i,2))
      a            - a(i,3)*x(ja(i,3))
  40   if (m .le. 4) return
@@ -33211,18 +33211,18 @@ c
 c ... explicit gathers.
 c
  100  do 110 j = 1,m
-         call vgathr (n,x,ja(1,j),wksp) 
+         call vgathr (n,x,ja(1,j),wksp)
          do 105 i = 1,n
  105     y(i) = y(i) - a(i,j)*wksp(i)
  110  continue
       return
-      end 
+      end
       subroutine vsubpt (ndimr,ndimi,n,m,a,ja,y,x,wksp)
       implicit double precision (a-h, o-z)
 c
 c ... vsubpt does  y = y - (a**t)*x  (purdue format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       ndimr     row dimension of a array
 c       ndimi     row dimension of ja array
@@ -33240,19 +33240,19 @@ c
 c
       if (m .le. 0) return
 c
-      do 20 j = 1,m 
+      do 20 j = 1,m
          do 15 i = 1,n
             y(ja(i,j)) = y(ja(i,j)) - a(i,j)*x(i)
  15      continue
  20   continue
       return
-      end 
+      end
       subroutine vsubs (mm,np,ia,ja,a,y,x,wksp)
       implicit double precision (a-h, o-z)
 c
 c ... vsubs does  y = y - a*x  (sparse format)
 c
-c ... parameters -- 
+c ... parameters --
 c
 c       m         number of partitions
 c       np        partition pointers
@@ -33267,11 +33267,11 @@ c ... specifications for parameters
 c
       dimension np(1), a(1), ia(1), ja(1), x(1), y(1), wksp(1)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
       m = mm
       if (m .le. 0) return
@@ -33279,7 +33279,7 @@ c
 c
 c ... implicit gathers.
 c
-      do 15 k = 1,m 
+      do 15 k = 1,m
          ist = np(k)
          ied = np(k+1) - 1
 cdir$ ivdep
@@ -33290,7 +33290,7 @@ cdir$ ivdep
 c
 c ... explicit gathers.
 c
- 20   do 30 k = 1,m 
+ 20   do 30 k = 1,m
          ist = np(k)
          nel = np(k+1) - ist
          call vgathr (nel,x,ja(ist),wksp)
@@ -33300,14 +33300,14 @@ c
          call vscatr (nel,wksp,ia(ist),y)
  30   continue
       return
-      end 
+      end
       subroutine vtriad (n,c,a,con,b,icode)
       implicit double precision (a-h, o-z)
 c
 c ... vtriad computes    c = a + con*b    if  icode = 1
 c                        c = con*b        if  icode = 2
 c
-c ... parameters -- 
+c ... parameters --
 c
 c        n         length of vectors
 c        c,a,b     vectors of length n
@@ -33323,38 +33323,38 @@ c
 c
 c ... compute    c = a + con*b
 c
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   c(i) = a(i) + con*b(i)
       return
 c
 c ... compute    c = con*b
 c
- 15   do 20 i = 1,n 
+ 15   do 20 i = 1,n
  20   c(i) = con*b(i)
       return
-      end 
+      end
       subroutine vsqrt (n,v,w)
       implicit double precision (a-h, o-z)
 c
-c routine to compute square root of a matrix,   w = sqrt(v) 
+c routine to compute square root of a matrix,   w = sqrt(v)
 c
       dimension v(1), w(1)
 c
       do 1 i=1,n
  1    w(i) = sqrt(v(i))
       return
-      end 
+      end
       subroutine vifill (n, iv, ival)
       implicit double precision (a-h, o-z)
 c
-c routine to fill an integer vector with a value. 
+c routine to fill an integer vector with a value.
 c
-      integer iv(1) 
+      integer iv(1)
       if (n .le. 0) return
       do 1 i=1,n
  1    iv(i) = ival
       return
-      end 
+      end
       subroutine vicopy (n,iv1,iv2)
       implicit double precision (a-h, o-z)
 c
@@ -33365,13 +33365,13 @@ c
       do 1 i=1,n
  1    iv2(i) = iv1(i)
       return
-      end 
+      end
       subroutine vemxty (nn,v,x,y)
       implicit double precision (a-h, o-z)
 c
 c ... vemxty computes  v = -x * y  where v, x, and y are vectors
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          n       length of vectors  (= nn)
 c          v,x,y   vectors of length n
@@ -33382,10 +33382,10 @@ c
 c
       n = nn
       if (n .le. 0) return
-      do 10 i = 1,n 
+      do 10 i = 1,n
  10   v(i) = -x(i)*y(i)
       return
-      end 
+      end
       subroutine vsrta1 (nz,ia,ja,a)
       implicit double precision (a-h, o-z)
 c
@@ -33416,7 +33416,7 @@ c                           elements in the array to be sorted.
 c
 c   precision/hardware  - single/all
 c
-c   reqd. imsl routines - none required 
+c   reqd. imsl routines - none required
 c
 c   notation            - information on special notation and
 c                           conventions is available in the manual
@@ -33425,14 +33425,14 @@ c
 c   copyright           - 1978 by imsl, inc. all rights reserved.
 c
 c   warranty            - imsl warrants only that imsl testing has been
-c                           applied to this code.  no other warranty, 
+c                           applied to this code.  no other warranty,
 c                           expressed or implied, is applicable.
 c
 c-----------------------------------------------------------------------
 c                                  specifications for arguments
-      integer            ia(nz), ja(nz) 
+      integer            ia(nz), ja(nz)
       dimension          a(nz)
-c                                  specifications for local variables 
+c                                  specifications for local variables
       integer            iu(21),il(21)
 c
       logical lt, le, eq
@@ -33496,12 +33496,12 @@ c                                  than t, interchange with t
       a(i) = t
       t = a(ij)
       go to 40
-   35 if ( eq(ia(l),ja(l),ia(k),ja(k)) ) go to 40 
+   35 if ( eq(ia(l),ja(l),ia(k),ja(k)) ) go to 40
       itt = ia(l)
-      ia(l) = ia(k) 
+      ia(l) = ia(k)
       ia(k) = itt
       jtt = ja(l)
-      ja(l) = ja(k) 
+      ja(l) = ja(k)
       ja(k) = jtt
       tt = a(l)
       a(l) = a(k)
@@ -33509,14 +33509,14 @@ c                                  than t, interchange with t
 c                                  find an element in the second half of
 c                                  the array which is smaller than t
    40 l = l - 1
-      if (.not. le (ia(l),ja(l),it,jt) ) go to 40 
+      if (.not. le (ia(l),ja(l),it,jt) ) go to 40
 c                                  find an element in the first half of
 c                                  the array which is greater than t
    45 k = k + 1
       if ( lt (ia(k),ja(k),it,jt) ) go to 45
 c                                  interchange these elements
       if (k .le. l) go to 35
-c                                  save upper and lower subscripts of 
+c                                  save upper and lower subscripts of
 c                                  the array yet to be sorted
       if (l-i .le. j-k) go to 50
       il(m) = i
@@ -33547,14 +33547,14 @@ c                                  the unsorted array
       k = i
    70 ia(k+1) = ia(k)
       ja(k+1) = ja(k)
-      a(k+1) = a(k) 
+      a(k+1) = a(k)
       k = k - 1
       if ( lt (it,jt,ia(k),ja(k)) ) go to 70
       ia(k+1) = it
       ja(k+1) = jt
       a(k+1) = t
       go to 65
-      end 
+      end
       subroutine zbrent (n,tri,eps,nsig,aa,bb,maxfnn,ier)
       implicit double precision (a-h, o-z)
 c   modified imsl routine name   - zbrent
@@ -33591,7 +33591,7 @@ c                           will contain the actual number of function
 c                           evaluations used. (= maxfnn)
 c                ier    - error parameter. (output)
 c                         terminal error
-c                           ier = 3 indicates the algorithm failed to 
+c                           ier = 3 indicates the algorithm failed to
 c                             converge in maxfn evaluations.
 c                           ier = 4 indicates f(a) and f(b) have the
 c                             same sign.
@@ -33606,7 +33606,7 @@ c                           introduction or through imsl routine uhelp
 c
 c   remarks  1.  let f(x) be the characteristic function of the matrix
 c                tri evaluated at x. function determ evaluates f(x).
-c                on exit from zbrent, when ier=0, a and b satisfy the 
+c                on exit from zbrent, when ier=0, a and b satisfy the
 c                following,
 c                f(a)*f(b) .le. 0,
 c                abs(f(b)) .le. abs(f(a)), and
@@ -33621,9 +33621,9 @@ c            2.  zbrent is guaranteed to reach convergence within
 c                k = (dlog((b-a)/d)+1.0)**2 function evaluations where
 c                  d=min(over x in (a,b) of
 c                    max(abs(x),0.1)*10.0**(-nsig)).
-c                this is an upper bound on the number of evaluations. 
-c                rarely does the actual number of evaluations used by 
-c                zbrent exceed sqrt(k). d can be computed as follows, 
+c                this is an upper bound on the number of evaluations.
+c                rarely does the actual number of evaluations used by
+c                zbrent exceed sqrt(k). d can be computed as follows,
 c                  p = min (abs(a),abs(b))
 c                  p = max (0.1,p)
 c                  if ((a-0.1)*(b-0.1).lt.0.0) p = 0.1
@@ -33649,7 +33649,7 @@ c                                  first executable statement
       a = aa
       b = bb
       maxfn = maxfnn
-      t = 0.1d0**nsig 
+      t = 0.1d0**nsig
       ic = 2
       fa = determ(n,tri,a)
       fb = determ(n,tri,b)
@@ -33674,7 +33674,7 @@ c                                  test for first convergence criteria
       if (abs (fb) .le. eps) go to 40
 c                                  test for second convergence criteria
       if (abs (c-b) .le. tol) go to 40
-c                                  check evaluation counter 
+c                                  check evaluation counter
       if (ic .ge. maxfn) go to 45
 c                                  is bisection forced
       if (abs (e) .lt. tol) go to 30
@@ -33682,7 +33682,7 @@ c                                  is bisection forced
       s = fb/fa
       if (a .ne. c) go to 20
 c                                  linear interpolation
-      p = (c - b)*s 
+      p = (c - b)*s
       q = 1.0d0 - s
       go to 25
 c                                  inverse quadratic interpolation
@@ -33697,10 +33697,10 @@ c                                  inverse quadratic interpolation
       e = d
 c                                  if abs(p/q).ge.75*abs(c-b) then
 c                                     force bisection
-      if (p + p .ge. 3.0d0*rm*q) go to 30 
+      if (p + p .ge. 3.0d0*rm*q) go to 30
 c                                  if abs(p/q).ge.0.5d0*abs(s) then force
-c                                     bisection. s = the value of p/q 
-c                                     on the step before the last one 
+c                                     bisection. s = the value of p/q
+c                                     on the step before the last one
       if (p + p .ge. abs (s*q)) go to 30
       d = p/q
       go to 35
@@ -33711,7 +33711,7 @@ c                                  increment b
    35 a = b
       fa = fb
       temp = d
-      if (abs (temp) .le. tol/2.0d0) temp = sign (tol/2.0d0,rm) 
+      if (abs (temp) .le. tol/2.0d0) temp = sign (tol/2.0d0,rm)
       b = b + temp
       s = b
       fb = determ(n,tri,s)
@@ -33738,13 +33738,13 @@ c                                  the same sign
       bb = b
       maxfnn = maxfn
       return
-      end 
+      end
       subroutine dfault (iparm,rparm)
       implicit double precision (a-h, o-z)
 c
 c ... dfault sets the default values of iparm and rparm.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          iparm
 c           and
@@ -33756,18 +33756,18 @@ c
       integer   iparm(30)
       dimension rparm(30)
 c
-c *** begin -- package common 
+c *** begin -- package common
 c
       common / itcom4 / srelpr, keyzer, keygs
 c
-c *** end   -- package common 
+c *** end   -- package common
 c
 c     description of variables in common blocks in main routine
 c
 c     srelpr  - computer precision (approx.)
 c     if installer of package does not know srelpr value,
 c     an approximate value can be determined from a simple
-c     fortran program such as 
+c     fortran program such as
 c
 c     srelpr = 1.0d0
 c  2  srelpr = 0.5d0*srelpr
@@ -33777,7 +33777,7 @@ c     srelpr = 2.0d0*srelpr
 c     write (6,3) srelpr
 c  3  format (1x,'srelpr = ',d20.10)
 c     stop
-c     end 
+c     end
 c
 c
 c     some values are-
@@ -33804,7 +33804,7 @@ c
       keygs = 1
 c
 c ... keyzer is a flag to specify if memory has been zeroed out.
-c     i.e., is the operation  0.0 * indefinite = 0.0  legal 
+c     i.e., is the operation  0.0 * indefinite = 0.0  legal
 c       = 0    not legal
 c       = 1    legal
 c
@@ -33855,20 +33855,20 @@ c
       rparm(16) = 0.0d0
 c
       return
-      end 
-      double precision function timer (timdmy) 
+      end
+      double precision function timer (timdmy)
       implicit double precision (a-h, o-z)
 c
 c ... timer is a routine to return the execution time in
 c ... seconds.  timer uses the fortran timing routine second.
 c
-c ... parameters -- 
+c ... parameters --
 c
 c          timdmy   dummy argument
 c
 c
-c     note -- on many computer systems there is a cpu-time subprogram 
-c             which is more accurate than the fortran routine second. 
+c     note -- on many computer systems there is a cpu-time subprogram
+c             which is more accurate than the fortran routine second.
 c
 c
 c     use the following when using second
@@ -33894,4 +33894,4 @@ c     call system_clock (count = icount, count_rate = irate)
 c     timer = dble(icount) / dble(irate)
 c
       return
-      end 
+      end
