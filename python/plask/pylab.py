@@ -17,45 +17,28 @@ This is an interface to Matplotlib and pylab.
 import sys as _sys
 import os as _os
 
-_qt_api = _os.environ.get('PLASK_QT_API', _os.environ.get('QT_API'))
-
 if 'PLASK_MPLBACKEND' in _os.environ:
     _os.environ['MPLBACKEND'] = _os.environ['PLASK_MPLBACKEND']
-elif 'MPLBACKEND' not in _os.environ:
-    if _qt_api in ('pyside2', 'pyqt5'):
-        _os.environ['MPLBACKEND'] = 'Qt5Agg'
-    elif _qt_api in ('pyside', 'pyqt', 'pyqt4'):
-        _os.environ['MPLBACKEND'] = 'Qt4Agg'
 
-if _qt_api == 'pyqt4' and _os.environ['MPLBACKEND'] == 'Qt4Agg':
-    _os.environ['QT_API'] = 'pyqt'
-elif _qt_api is not None:
+_qt_api = _os.environ.get('PLASK_QT_API', _os.environ.get('QT_API'))
+if _qt_api:
     _os.environ['QT_API'] = _qt_api
+
+import matplotlib
+
+# Fix for old Anaconda bug
+_mpl_backend = matplotlib.get_backend()
+if _mpl_backend.startswith('Qt'):
+    from matplotlib.backends.qt_compat import QT_API as _qt_api
+    if _os.name == 'nt' and (_mpl_backend == 'Qt5Agg' or _mpl_backend == 'QtAgg' and _qt_api in ('PyQt5', 'PySide2')):
+        from PyQt5 import QtWidgets as _QtWidgets
+        _QtWidgets.QApplication.addLibraryPath(_os.path.join(_sys.prefix, 'Library', 'plugins'))
+        _QtWidgets.QApplication.addLibraryPath(_os.path.join(_os.path.dirname(_QtWidgets.__file__), 'plugins'))
 
 import matplotlib.colors
 import matplotlib.lines
 import matplotlib.patches
 import matplotlib.artist
-
-backend = matplotlib.get_backend()
-
-# Specify Qt4 API v2 while it is not too late
-if backend == 'Qt4Agg' and _qt_api != 'pyside' and matplotlib.rcParams.get('backend.qt4', 'PyQt4') == 'PyQt4':
-    try:
-        import sip
-        for n in ("QString", "QVariant"):
-            try:
-                sip.setapi(n, 2)
-            except:
-                pass
-    except:
-        pass
-
-# Fix for Anaconda bug
-elif backend == 'Qt5Agg' and _os.name == 'nt':
-    from PyQt5 import QtWidgets as _QtWidgets
-    _QtWidgets.QApplication.addLibraryPath(_os.path.join(_sys.prefix, 'Library', 'plugins'))
-    _QtWidgets.QApplication.addLibraryPath(_os.path.join(_os.path.dirname(_QtWidgets.__file__), 'plugins'))
 
 # Save Python builtin functions
 python_min, python_max, python_abs = min, max, abs
