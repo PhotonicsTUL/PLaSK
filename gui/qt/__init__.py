@@ -15,13 +15,13 @@ import sys
 import os
 
 if sys.modules.get("PyQt6.QtCore"):
-    QT_API = 'PyQt6'
+    QT_API = 'pyqt6'
 elif sys.modules.get("PySide6.QtCore"):
-    QT_API = 'PySide6'
+    QT_API = 'pyside6'
 elif sys.modules.get("PyQt5.QtCore"):
-    QT_API = 'PyQt5'
+    QT_API = 'pyqt5'
 elif sys.modules.get("PySide2.QtCore"):
-    QT_API = 'PySide2'
+    QT_API = 'pyside2'
 else:
     QT_API = os.environ.get('PLASK_QT_API', os.environ.get('QT_API'))
 
