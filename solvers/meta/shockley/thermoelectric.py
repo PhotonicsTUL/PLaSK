@@ -552,6 +552,9 @@ class ThermoElectric2D(ThermoElectric):
     outConductivity = property(lambda self: self.electrical.outConductivity,
                                doc=_Electrical.outConductivity.__doc__)
 
+    outDifferentialConductivity = property(lambda self: self.electrical.outDifferentialConductivity,
+                                           doc=_Electrical.outDifferentialConductivity.__doc__)
+
     thermal = attribute(_Thermal.__name__+"()")
     """
     :class:`thermal.static.Static2D` solver used for thermal calculations.

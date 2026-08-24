@@ -1,4 +1,4 @@
-/*
+/*ModeEffectiveIndex
  * This file is part of PLaSK (https://plask.app) by Photonics Group at TUL
  * Copyright (c) 2022 Lodz University of Technology
  *
@@ -13,6 +13,7 @@
  */
 #include "thermal.hpp"
 #include "electrical.hpp"
+#include "capacitance.hpp"
 #include "gain.hpp"
 #include "optical.hpp"
 #include "energylevels.hpp"
@@ -32,6 +33,9 @@ constexpr const char* Conductivity::NAME;                       constexpr const 
 constexpr const char* FermiLevels::NAME;                        constexpr const char* FermiLevels::UNIT;
 constexpr const char* BandEdges::NAME;                          constexpr const char* BandEdges::UNIT;
 constexpr const char* EnergyLevels::NAME;                       constexpr const char* EnergyLevels::UNIT;
+
+constexpr const char* AcVoltage::NAME;                          constexpr const char* AcVoltage::UNIT;
+constexpr const char* AcCurrentDensity::NAME;                   constexpr const char* AcCurrentDensity::UNIT;
 
 constexpr const char* Gain::NAME;                               constexpr const char* Gain::UNIT;
 constexpr const char* Luminescence::NAME;                       constexpr const char* Luminescence::UNIT;

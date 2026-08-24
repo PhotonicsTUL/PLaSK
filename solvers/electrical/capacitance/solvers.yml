@@ -1,0 +1,63 @@
+- solver: Capacitance2D
+  lib: capacitance
+  category: electrical
+  help: >
+    Two-dimensional RC solver in Cartesian geometry using finite-element method.
+  geometry: Cartesian2D
+  tags:
+    - &mesh
+      tag: mesh
+      label: Mesh
+      help: >
+        Rectangular2D mesh used by this solver.
+      attrs:
+        - attr: ref
+          label: Mesh
+          required: true
+          type: mesh
+          mesh types: [Rectangular2D]
+          help: >
+            Name of a Rectangular2D mesh defined in the :xml:tag:`<grids>` section.
+        - &full-mesh
+          attr: empty-elements
+          label: Empty elements
+          type: choice
+          choices: [ default, include, exclude ]
+          default: default
+          help: >
+            Should empty regions (e.g. air) be included into electrical computations?
+    - &signal
+      tag: signal
+      label: Signal
+      help:  Configuration of the input signal.
+      attrs:
+        - attr: frequency
+          label: Frequency
+          type: float
+          unit: GHz
+          default: 20
+          help: Frequency of the AC voltage.
+    - &voltage
+      bcond: ac-voltage
+      label: AC Voltage
+      mesh type: Rectangular2D
+      mesh: { tag: mesh, attr: ref }
+  providers: &providers
+    - outAcVoltage
+    - outAcCurrentDensity
+  receivers: &receivers
+    - inTemperature
+    - inDifferentialConductivity
+
+- solver: CapacitanceCyl
+  lib: capacitance
+  category: electrical
+  help: >
+      Two-dimensional RC solver in cylindrical geometry using finite-element method.
+  geometry: Cylindrical
+  tags:
+    - *mesh
+    - *signal
+    - *voltage
+  providers: *providers
+  receivers: *receivers

@@ -20,5 +20,5 @@ Material gain                                1/cm
 Modal loss/gain                              1/cm
 Propagation constant                         1/µm
 Temperature                                  K
-Modulation frequency                         MHz
+Modulation frequency                         GHz
 ============================================ ===============================

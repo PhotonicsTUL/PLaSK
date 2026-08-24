@@ -224,6 +224,7 @@
   - outCurrentDensity
   - outHeat
   - outConductivity
+  - outDifferentialConductivity
 
 ###########################################################################################
 
@@ -829,6 +830,7 @@
   - outCurrentDensity
   - outHeat
   - outConductivity
+  - outDifferentialConductivity
   - outLightMagnitude
   - outLightE
   - outRefractiveIndex
@@ -1141,6 +1143,7 @@
   - outCurrentDensity
   - outHeat
   - outConductivity
+  - outDifferentialConductivity
   - outLightMagnitude
   - outLightE
   - outEpsilon

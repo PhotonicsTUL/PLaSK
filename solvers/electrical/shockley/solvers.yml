@@ -103,6 +103,7 @@
     - outCurrentDensity
     - outHeat
     - outConductivity
+    - outDifferentialConductivity
   receivers: &receivers
     - inTemperature
 
