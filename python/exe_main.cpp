@@ -722,16 +722,13 @@ int
                     PyErr_SetString(PyExc_RuntimeError, "Command-line defines can only be specified when running XPL file");
                     throw py::error_already_set();
                 }
-                PyObject* pyfile = nullptr;
                 PyObject* result;
                 if (realfile) {
                     FILE* file = system_Py_fopen(filename.c_str(), CSTR(r));
-                    // TODO conversion to UTF-8 might not be proper here, especially for windows
                     result = PyRun_FileEx(file, system_to_utf8(filename).c_str(), Py_file_input, globals->ptr(), globals->ptr(), 1);
                 } else {
                     result = PyRun_File(stdin, system_to_utf8(filename).c_str(), Py_file_input, globals->ptr(), globals->ptr());
                 }
-                Py_XDECREF(pyfile);
                 if (!result)
                     py::throw_error_already_set();
                 else

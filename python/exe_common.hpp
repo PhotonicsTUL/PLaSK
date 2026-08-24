@@ -63,7 +63,11 @@ constexpr auto system_fopen = &_wfopen;
         char mode[4];
         wcstombs(mode, wmode, 3);
         PyObject* py_path = PyUnicode_FromWideChar(path, -1);
-        FILE* result = py_path? _Py_fopen_obj(py_path, mode) : nullptr;
+#       if PY_VERSION_HEX >= 0x030E0000
+            FILE* result = py_path? Py_fopen(py_path, mode) : nullptr;
+#       else
+            FILE* result = py_path? _Py_fopen_obj(py_path, mode) : nullptr;
+#       endif
         Py_XDECREF(py_path);
         return result;
     }
@@ -73,7 +77,11 @@ constexpr auto system_fopen = &_wfopen;
 #   endif
     constexpr auto system_Py_fopen = &_Py_wfopen;
 #endif
-
+#if PY_VERSION_HEX >= 0x030E0000
+#   define system_Py_fclose Py_fclose
+#else
+#   define system_Py_fclose fclose
+#endif
 
 static PyObject* system_Py_CompileString(const char *str, const system_char *filename, int start) {
 	PyObject* fname = PyUnicode_FromWideChar(filename, -1);
@@ -113,6 +121,7 @@ typedef std::string system_string;
 constexpr auto system_fopen = &fopen;
 #define system_Py_CompileString Py_CompileString
 #define system_Py_fopen fopen
+#define system_Py_fclose fclose
 #define system_main main
 #define CSTR(s) #s
 
