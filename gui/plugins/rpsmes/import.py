@@ -19,6 +19,7 @@ import os
 
 try:
     import gui
+    from gui.qt import qt_exec
     from gui.qt.QtCore import Qt
     from gui.qt.QtWidgets import *
     from gui.qt.QtGui import *

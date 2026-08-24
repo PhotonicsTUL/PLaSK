@@ -503,7 +503,7 @@ def plot_gain(sub=None, suffix=''):
 def plot_gain_spectrum(new=False, label='PLaSK'):
     spectrum = GAIN.spectrum(0, zqw)(glams)
     print(spectrum.shape)
-    print(sys.getrefcount(spectrum)-1)
+    print(sys.getrefcount(spectrum) - int(sys.version_info < (3,14)))
     if new:
         figure()
         plot(glams, spectrum, '#7A68A6', label=label)

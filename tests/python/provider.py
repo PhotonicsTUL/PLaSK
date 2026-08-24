@@ -47,17 +47,17 @@ class ReceiverTest(unittest.TestCase):
 
     def testExternalData(self):
         v = plask.array([[ [1.,10.], [2.,20.] ], [ [3.,30.], [4.,40.] ]])
-        self.assertEqual(sys.getrefcount(v), 2)
+        self.assertEqual(sys.getrefcount(v), 1 + int(sys.version_info < (3,14)))
         data = plask.Data(v, self.mesh2)
         self.assertEqual(data.dtype, type(plask.vec(0.,0.)))
         self.solver.inVectors = data
         self.assertEqual(self.solver.show_vectors(), "[1, 5]: [1, 10]\n[1, 15]: [2, 20]\n[3, 5]: [3, 30]\n[3, 15]: [4, 40]\n")
                                            #TODO was: "[1, 5]: [1, 10]\n[3, 5]: [2, 20]\n[1, 15]: [3, 30]\n[3, 15]: [4, 40]\n"
-        self.assertEqual(sys.getrefcount(v), 3)
+        self.assertEqual(sys.getrefcount(v), 2 + int(sys.version_info < (3,14)))
         del data
-        self.assertEqual(sys.getrefcount(v), 3)
+        self.assertEqual(sys.getrefcount(v), 2 + int(sys.version_info < (3,14)))
         self.solver.inVectors = None
-        self.assertEqual(sys.getrefcount(v), 2)
+        self.assertEqual(sys.getrefcount(v), 1 + int(sys.version_info < (3,14)))
 
 
     def testMultiProviders(self):

@@ -118,7 +118,7 @@ class PathHints(unittest.TestCase):
         self.assertAlmostEqual(stack.get_leafs_positions({stack: 2})[0][1], 2.)
         self.assertAlmostEqual(stack.get_leafs_positions({stack: (3, )})[0][1], 3.)
         del stack, hint
-        self.assertEqual(sys.getrefcount(rect), 2)
+        self.assertEqual(sys.getrefcount(rect), 1 + int(sys.version_info < (3,14)))
 
 
 class Containers(unittest.TestCase):

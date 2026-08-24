@@ -103,7 +103,7 @@ class Vector(unittest.TestCase):
         #self.assertEqual(list(a), [100, 200, 300])
         #many = plasktest.getVecs()
         #arr = numpy.array(many, copy=False)
-        #self.assertEqual(sys.getrefcount(many), 3) # many, arr, getrefcount
+        #self.assertEqual(sys.getrefcount(many), 2 + int(sys.version_info < (3,14))) # many, arr, getrefcount
         #self.assertEqual(list(arr.shape), [5, 2])
         #del many
         #self.assertEqual(arr[3,0], 7)
