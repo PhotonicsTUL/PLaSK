@@ -1005,15 +1005,25 @@ if(WIN32)
     set(CPACK_GENERATOR "NSIS")
 
     set(NSIS_DLLS_DIR IGNORE CACHE PATH "Directory with DLLs to be copied to the installation directory")
+    set(NSIS_CORE_PYTHON_DIR IGNORE CACHE PATH "Directory with Python modules to be copied to the installation directory for core component")
+    set(NSIS_GUI_PYTHON_DIR IGNORE CACHE PATH "Directory with Python modules to be copied to the installation directory for GUI component")
     set(NSIS_DEV_LIBS_DIR IGNORE CACHE PATH "Directory with external libraries and headers to be copied to the installation directory")
     set(NSIS_DEV_DOWNLOAD_SITE IGNORE CACHE STRING "URL of the download site")
 
-    if(NSIS_DLLS_DIR)
+    if(NSIS_DLLS_DIR AND EXISTS "${NSIS_DLLS_DIR}")
         file(GLOB dlls "${NSIS_DLLS_DIR}/*")
         install(FILES ${dlls} DESTINATION bin COMPONENT core)
     endif()
 
-    if(INSTALL_DEV AND NSIS_DEV_LIBS_DIR)
+    if(NSIS_CORE_PYTHON_DIR AND EXISTS "${NSIS_CORE_PYTHON_DIR}")
+        install(DIRECTORY ${NSIS_CORE_PYTHON_DIR}/ DESTINATION lib/plask/python COMPONENT core)
+    endif()
+
+    if(NSIS_GUI_PYTHON_DIR AND EXISTS "${NSIS_GUI_PYTHON_DIR}")
+        install(DIRECTORY ${NSIS_GUI_PYTHON_DIR}/ DESTINATION lib/plask/python COMPONENT gui)
+    endif()
+
+    if(INSTALL_DEV AND NSIS_DEV_LIBS_DIR AND EXISTS "${NSIS_DEV_LIBS_DIR}")
         install(DIRECTORY ${NSIS_DEV_LIBS_DIR}/lib DESTINATION . COMPONENT dev_libs)
         install(DIRECTORY ${NSIS_DEV_LIBS_DIR}/include DESTINATION . COMPONENT dev_libs)
         set(CPACK_COMPONENT_DEV_LIBS_DISPLAY_NAME "External headers and libraries")
