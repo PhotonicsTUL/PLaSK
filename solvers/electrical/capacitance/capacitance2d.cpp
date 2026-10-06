@@ -368,7 +368,8 @@ template <typename Geometry2DType> dcomplex Capacitance2DSolver<Geometry2DType>:
 }
 
 template <typename Geometry2DType> dcomplex Capacitance2DSolver<Geometry2DType>::getS11(dcomplex Z0) const {
-    return (getImpedance() - Z0) / (getImpedance() + Z0);
+    dcomplex impedance = getImpedance();
+    return (impedance - Z0) / (impedance + Z0);
 }
 
 template <typename Geometry2DType>
