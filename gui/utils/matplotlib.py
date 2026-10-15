@@ -107,7 +107,6 @@ class FigureCanvasWithInfo(FigureCanvas):
         self.info_table.setCurrentIndex(QModelIndex())
 
 
-
 class PlotWidgetBase(QWidget):
 
     CanvasClass = FigureCanvas
@@ -121,6 +120,7 @@ class PlotWidgetBase(QWidget):
             ('Home', 'Zoom to whole geometry', 'go-home', 'home', None, 'plot_home'),
             ('Back', 'Back to previous view', 'go-previous', 'back', None, 'plot_back'),
             ('Forward', 'Forward to next view', 'go-next', 'forward', None, 'plot_forward'),
+            ('Limits', 'Manually set plot limits', 'zoom-limits', 'open_limits_widget', None, 'plot_limits'),
             (None, None, None, None, None, None),
             ('Save', 'Save the figure', 'document-save', 'save_figure', None, 'plot_save'),
             (None, None, None, None, None, None),
@@ -151,6 +151,8 @@ class PlotWidgetBase(QWidget):
             self.controller = weakref.proxy(controller)
             if 'select_plane' in self._actions:
                 self.disable_planes(('long', 'tran', 'vert'))
+
+            self._limits_popup = None
 
         def _icon(self, name):
             if name is not None:
@@ -328,6 +330,111 @@ class PlotWidgetBase(QWidget):
             else:
                 self._actions['back'].setEnabled(True)
                 self._actions['forward'].setEnabled(True)
+
+        class LimitsPopup(QDialog):
+
+            def __init__(self, parent):
+                super().__init__(parent)
+                self.setWindowFlags(Qt.WindowType.Popup)
+                self.setWindowTitle('Set plot limits')
+
+                layout = QHBoxLayout()
+                self.setLayout(layout)
+
+                self.xmin_edit = QLineEdit()
+                self.xmax_edit = QLineEdit()
+                self.ymin_edit = QLineEdit()
+                self.ymax_edit = QLineEdit()
+
+                self.update_limits()
+
+                self.xmin_edit.editingFinished.connect(lambda: self.apply_limit(self.xmin_edit, 'left'))
+                self.xmax_edit.editingFinished.connect(lambda: self.apply_limit(self.xmax_edit, 'right'))
+                self.ymin_edit.editingFinished.connect(lambda: self.apply_limit(self.ymin_edit, 'bottom'))
+                self.ymax_edit.editingFinished.connect(lambda: self.apply_limit(self.ymax_edit, 'top'))
+
+                for edit in (self.xmin_edit, self.xmax_edit, self.ymin_edit, self.ymax_edit):
+                    edit.setValidator(QDoubleValidator())
+                    edit.returnPressed.connect(self.close)
+
+                widget = parent.parent()
+                top_left = widget.mapToGlobal(widget.rect().topLeft())
+                self.setGeometry(
+                    top_left.x(),
+                    top_left.y() + parent.height() + 7,
+                    widget.width() - 2,
+                    self.xmin_edit.sizeHint().height() + 8
+                )
+
+                layout.addWidget(QLabel(f"{parent._axes[0]}:"))
+                layout.addWidget(self.xmin_edit)
+                layout.addWidget(QLabel("–"))
+                layout.addWidget(self.xmax_edit)
+                layout.addWidget(QLabel(f"    {parent._axes[1]}:"))
+                layout.addWidget(self.ymin_edit)
+                layout.addWidget(QLabel("–"))
+                layout.addWidget(self.ymax_edit)
+
+                try:
+                    self.stack = parent._nav_stack
+                except AttributeError:
+                    self.stack = parent._views
+
+                self.changed = False
+
+                self.xmin_edit.setFocus()
+                self.xmin_edit.selectAll()
+
+            def update_limits(self):
+                # Round to prevent truncation ugliness
+                self.xmin_edit.setText(str(round(self.parent().parent().axes.get_xlim()[0], 12)))
+                self.xmax_edit.setText(str(round(self.parent().parent().axes.get_xlim()[1], 12)))
+                self.ymin_edit.setText(str(round(self.parent().parent().axes.get_ylim()[0], 12)))
+                self.ymax_edit.setText(str(round(self.parent().parent().axes.get_ylim()[1], 12)))
+
+            def apply_limit(self, edit, side):
+                if not edit.isModified(): return
+
+                try:
+                    value = float(edit.text())
+                except ValueError:
+                    return
+
+                parent = self.parent()
+
+                if not self.changed:
+                    self.changed = True
+                    if len(self.stack) == 0:
+                        parent.push_current()
+
+                if side == 'left':
+                    parent.parent().axes.set_xlim(left=value)
+                elif side == 'right':
+                    parent.parent().axes.set_xlim(right=value)
+                elif side == 'bottom':
+                    parent.parent().axes.set_ylim(bottom=value)
+                elif side == 'top':
+                    parent.parent().axes.set_ylim(top=value)
+
+                edit.setModified(False)
+
+                # We update limits as other boxes could change if the aspect ratio is locked
+                self.update_limits()
+
+                parent.parent().canvas.draw()
+
+            def closeEvent(self, event):
+                self.apply_limit(self.xmin_edit, 'left')
+                self.apply_limit(self.xmax_edit, 'right')
+                self.apply_limit(self.ymin_edit, 'bottom')
+                self.apply_limit(self.ymax_edit, 'top')
+
+                if self.changed:
+                    self.parent().push_current()
+
+        def open_limits_widget(self):
+            self._limits_popup = self.LimitsPopup(self)
+            self._limits_popup.show()
 
     def __init__(self, controller=None, parent=None):
         super().__init__(parent)

@@ -87,3 +87,5 @@ syntax:
   xml_tag: 'color=#dc322f,bold=true'
   xml_text: 'color=#eee8d5'
   xml_value: 'color=#2aa198'
+main_window:
+  dark_style: true

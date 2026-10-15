@@ -180,6 +180,7 @@ class NavigationToolbar(NavigationToolbar2QT):
         ('Home', 'Zoom to initial view', 'go-home', 'home', None, 'plot_home'),
         ('Back', 'Back to previous view', 'go-previous', 'back', None, 'plot_back'),
         ('Forward', 'Forward to next view', 'go-next', 'forward', None, 'plot_forward'),
+        # ('Limits', 'Manually set plot limits', 'zoom-limits', 'open_limits_widget', None, 'plot_limits'),
         (None, None, None, None, None, None),
         ('Pan', 'Pan aHelp goes herexes with left mouse, zoom with right', 'transform-move', 'pan', False, 'plot_pan'),
         ('Zoom', 'Zoom to rectangle', 'zoom-in', 'zoom', False, 'plot_zoom'),

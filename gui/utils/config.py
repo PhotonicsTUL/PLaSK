@@ -205,6 +205,7 @@ KEYBOARD_SHORTCUTS = {
     'plot_save': ('Plot: Save', None),
     'plot_pan': ('Plot: Pan', None),
     'plot_zoom': ('Plot: Zoom', None),
+    'plot_limits': ('Plot: Set Limits', None),
     'plot_aspect': ('Plot: Aspect', None),
     'plot_plane': ('Plot: Select Plane', None),
     'plot_geometry': ('Plot: Select Geometry', None),

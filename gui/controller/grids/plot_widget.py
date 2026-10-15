@@ -34,6 +34,7 @@ class PlotWidget(PlotWidgetWithInfoBase):
             ('Home', 'Zoom to whole geometry', 'go-home', 'home', None, 'plot_home'),
             ('Back', 'Back to previous view', 'go-previous', 'back', None, 'plot_back'),
             ('Forward', 'Forward to next view', 'go-next', 'forward', None, 'plot_forward'),
+            ('Limits', 'Manually set plot limits', 'zoom-limits', 'open_limits_widget', None, 'plot_limits'),
             (None, None, None, None, None, None),
             ('Save', 'Save the figure', 'document-save', 'save_figure', None, 'plot_save'),
             (None, None, None, None, None, None),
