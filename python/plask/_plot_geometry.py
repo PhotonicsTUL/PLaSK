@@ -48,8 +48,8 @@ class BBoxIntersection(matplotlib.transforms.BboxBase):
         :param bbox1: a first child :class:`Bbox`
         :param bbox2: a second child :class:`Bbox`
         """
-        assert bbox1.is_bbox
-        assert bbox2.is_bbox
+        assert isinstance(bbox1, matplotlib.transforms.BboxBase)
+        assert isinstance(bbox2, matplotlib.transforms.BboxBase)
 
         matplotlib.transforms.BboxBase.__init__(self, **kwargs)
         self._bbox1 = bbox1

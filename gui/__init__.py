@@ -374,19 +374,13 @@ class MainWindow(QMainWindow):
         self.config_changed.connect(update_textedit)
 
         geometry = CONFIG['session/geometry']
-        if geometry is not None:
-            try:
-                screen = QApplication.screenAt(geometry.center()).availableGeometry()
-            except AttributeError:
-                screen = QDesktopWidget().availableGeometry(geometry.center())
+        if geometry is not None and (qscreen := QApplication.screenAt(geometry.center())) is not None:
+            screen = qscreen.availableGeometry()
             geometry.setWidth(min(geometry.width(), screen.right()-geometry.left()+1))
             geometry.setHeight(min(geometry.height(), screen.bottom()-geometry.top()+1))
             self.setGeometry(geometry)
         else:
-            try:
-                screen = self.screen().availableGeometry()
-            except AttributeError:
-                screen = QDesktopWidget().availableGeometry(self)
+            screen = self.screen().availableGeometry()
             self.resize(int(screen.width() * 0.8), int(screen.height() * 0.9))
 
         self.setAcceptDrops(True)
