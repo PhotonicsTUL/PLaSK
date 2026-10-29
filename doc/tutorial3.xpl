@@ -71,6 +71,7 @@
   <generator method="divide" name="default" type="rectangular2d">
     <postdiv by0="3" by1="2"/>
     <refinements>
+      <axis1 object="p-contact" at="0.05"/>
       <axis0 object="oxide" at="-0.1"/>
       <axis0 object="oxide" at="-0.05"/>
       <axis0 object="aperture" at="0.1"/>

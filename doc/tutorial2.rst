@@ -174,33 +174,36 @@ Searching for the threshold gain using Scipy
 
 We are now going to find the threshold gain of the simulated structure, which we define as the gain value in the provided ``StepProfile`` for which the material losses reach 0. This could be done by manually changing the gain value in the previous section until obtaining satisfyingly low losses, or writing an automated algorithm. But, naturally, there is better, simpler and faster solution — we may utilize the Brent root-finding algorithm from the ``scipy.optimize`` module [#module-scipy-optimize]_. The function we want to use from this module is named ``fsolve`` and it finds a root of a provided *f*\ (*x*) function starting from a given *x* value. You can read the function description in the *scipy* documentation at http://docs.scipy.org/doc/scipy-0.7.x/reference/generated/scipy.optimize.fsolve.html.
 
-In order to perform the root search, we have to import the ``scipy.optimize`` module, using Python built-in command ``import``, and define a function (*f*\ (*x*)) that takes the gain value in the active region as it's argument (*x*) and returns the modal loss of the resonant mode (which must be 0 at the threshold i.e. *f*\ (*threshold gain*) = 0)::
+In order to perform the root search, we have to import the ``scipy.optimize`` module, using Python built-in command ``import``, and define a function (*f*\ (*x*)) that takes the gain value in the active region as it's argument (*x*) and returns the modal loss of the resonant mode (which must be 0 at the threshold i.e. *f*\ (*threshold gain*) = 0)
 
-   import scipy.optimize
+   .. code-block:: python
+      import scipy.optimize
 
-   def loss_on_gain(gain):
-       profile[GEO.gain_region] = gain
-       mode_number = efm.find_mode(981.)
-       return efm.outLoss(mode_number)
+      def loss_on_gain(gain):
+          profile[GEO.gain_region] = gain
+          mode_number = efm.find_mode(981.)
+          return efm.outLoss(mode_number)
 
 You notice that first, we modify the gain profile in the *gain-region* geometry object and then recompute the resonant mode. Because of the gain modification, all the modes computed earlier are lost as they become obsolete with the new gain. However, the ``mode_number`` variable in the above function will always be set to the current, recently computed, mode number we are interested in. We use this information to retrieve the computed modal loss and return it as the result of the function.
 
-Now we can provide ``loss_on_gain`` to the ``fsolve`` function, together with the gain value, which we expect to be near the threshold (2000/cm). The function has to be continuous on this interval and may contain exactly one root, otherwise an error might occur. Hence, we set the reference wavelength (which is always the necessary step) and run the root search as follows::
+Now we can provide ``loss_on_gain`` to the ``fsolve`` function, together with the gain value, which we expect to be near the threshold (2000/cm). The function has to be continuous on this interval and may contain exactly one root, otherwise an error might occur. Hence, we set the reference wavelength (which is always the necessary step) and run the root search as follows
 
-   efm.lam0 = 980.
+   .. code-block:: python
+      efm.lam0 = 980.
 
-   threshold_gain = scipy.optimize.fsolve(loss_on_gain, 2000., xtol=0.1)[0]
+      threshold_gain = scipy.optimize.fsolve(loss_on_gain, 2000., xtol=0.1)[0]
 
 The ``xtol`` argument allows us to set the desired solution's tolerance.
 
-When the ``fsolve`` function completes it returns a Python list with the found solutions (which in this case hase only one element), so the ``threshold_gain`` variable contains the value we were looking for. Now we just have to set the found threshold gain and run the optical calculations for the last time and print the final result to the log::
+When the ``fsolve`` function completes it returns a Python list with the found solutions (which in this case hase only one element), so the ``threshold_gain`` variable contains the value we were looking for. Now we just have to set the found threshold gain and run the optical calculations for the last time and print the final result to the log
 
-   profile[GEO.gain_region] = threshold_gain
-   mode_number = efm.find_mode(981.)
-   mode_wavelength = efm.outWavelength(mode_number)
-   print_log(LOG_INFO,
-       "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"
-       .format(threshold_gain, mode_wavelength))
+   .. code-block:: python
+      profile[GEO.gain_region] = threshold_gain
+      mode_number = efm.find_mode(981.)
+      mode_wavelength = efm.outWavelength(mode_number)
+      print_log(LOG_INFO,
+          "Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm"
+          .format(threshold_gain, mode_wavelength))
 
 The complete Python script (with some clean-ups) for this tutorial is presented in the :ref:`listin <lis-listing-of-tutorial2>`. Feel free to expand it with the presentation of the light intensity for the found mode at the threshold.
 

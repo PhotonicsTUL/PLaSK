@@ -171,8 +171,8 @@ We could now run our calculations. However, it is a good habit, to check the geo
    plot_geometry(GEO.GeoE, margin=0.01)
    defmesh = MSG.default(GEO.GeoE.item)
    plot_mesh(defmesh, color="0.75")
-   plot_boundary(ELECTRICAL.voltage_boundary, defmesh,
-                 ELECTRICAL.geometry, color="b", marker="D")
+   plot_boundary(SOLVER.electrical.voltage_boundary, defmesh,
+                 SOLVER.electrical.geometry, color="b", marker="D")
    window_title("Default mesh")
 
    show()
@@ -184,13 +184,14 @@ Now, save the XPL and execute it. You can now see, that the default mesh is rath
    <generator type="rectilinear2d" method="divide" name="default">
      <postdiv by0="3" by1="2"/>
      <refinements>
+       <axis1 object="p-contact" at="0.05"/>
        <axis0 object="oxide" at="-0.1"/>
        <axis0 object="oxide" at="-0.05"/>
        <axis0 object="aperture" at="0.1"/>
      </refinements>
    </generator>
 
-The refinements have to be included within the ``<refinements>`` element and are described with the ``axis#`` tag, where ``#`` means the axis number (0 for horizontal and 1 for vertical; in our case *r* and *z*, respectively). The ``at`` attribute places a single refinement line at the location provided in the ``at`` attribute along the requested direction in the local coordinates of an object specified in the ``object`` attribute. So the first refinement will add a single refinement line 50 microns in the *z* direction above the bottom of the *‘p-contact’* (heatsink), while the next two will place two horizontal refinements to the left of the *‘oxide’* object's left edge. The last two refinements are defined outside the object they are referred to. However, we have defined these refinements this way on purpose, because this notation is simpler than referring to the *aperture* object and using expressions with predefined values (``<axis0 object="aperture" at="{aperture-0.1}"/>``) and we are sure that these refinements are still within our geometry. Therefore we can ignore corresponding warnings, however it is always important to check the warning-messages, as they may point to a serious flaw in our code, especially when lots of predefined variables and/or real-time geometry changes are involved.
+The refinements have to be included within the ``<refinements>`` element and are described with the ``axis#`` tag, where ``#`` means the axis number (0 for horizontal and 1 for vertical; in our case *r* and *z*, respectively). The ``at`` attribute places a single refinement line at the location provided in the ``at`` attribute along the requested direction in the local coordinates of an object specified in the ``object`` attribute. So the first refinement will add a single refinement line 50 nanometers in the *z* direction above the bottom of the *‘p-contact’* (heatsink), while the next two will place two horizontal refinements to the left of the *‘oxide’* object's left edge. The last two refinements are defined outside the object they are referred to. However, we have defined these refinements this way on purpose, because this notation is simpler than referring to the *aperture* object and using expressions with predefined values (``<axis0 object="aperture" at="{aperture-0.1}"/>``) and we are sure that these refinements are still within our geometry. Therefore we can ignore corresponding warnings, however it is always important to check the warning-messages, as they may point to a serious flaw in our code, especially when lots of predefined variables and/or real-time geometry changes are involved.
 
 Instead of the ``at`` attribute, it is also possible to use either ``by``, or ``every`` attribute. ``by`` results in dividing the specified objects into provided number of elements, while ``every`` places refinement lines spaced equally with a distance specified as this attribute value. We must remember that adding a single refinement line does not actually result in just one additional line in the final mesh, as the generator automatically ensures that the distance between adjacent grid lines never change too rapidly.
 
