@@ -488,7 +488,7 @@ double Diffusion3DSolver::ConcentrationDataImpl::at(size_t i) const {
             break;
         }
     }
-    if (!found) return 0.;
+    if (!found || concentrations[an][i] < 0.) return 0.;
     return concentrations[an][i];
 }
 

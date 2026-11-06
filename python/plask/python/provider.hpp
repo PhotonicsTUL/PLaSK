@@ -304,7 +304,7 @@ struct RegisterReceiverImpl<ReceiverT, SINGLE_VALUE_PROPERTY, VariadicTemplateTy
         }
         if (assignProvider(self, obj)) return;
         if (assignValue(self, obj)) return;
-        throw TypeError("you can only attach {0} provider or a {1}", type_name<typename ReceiverT::PropertyTag>(),
+        throw TypeError(u8"you can only attach {0} provider or a {1}", type_name<typename ReceiverT::PropertyTag>(),
                         std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
     }
 
