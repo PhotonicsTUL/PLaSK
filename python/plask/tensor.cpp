@@ -92,7 +92,10 @@ namespace detail {
                 auto len = PySequence_Length(obj);
                 if (len == 1 || len == 3 || len == 4 || len == 6 || len == 9) {
                     for (int i = 0; i < len; ++i) {
-                        if (!py::extract<T>(PySequence_GetItem(obj, i)).check()) return NULL;
+                        PyObject* item = PySequence_GetItem(obj, i);
+                        bool valid = py::extract<T>(item).check();
+                        Py_XDECREF(item);
+                        if (!valid) return NULL;
                     }
                     return obj;
                 }
