@@ -46,10 +46,10 @@ template <typename T> struct Tensor3 {
       c22;    ///< Value of the tensor in VERT direction
     // clang-format on
 
-    T& tran() { return c00; }
+    T& lon() { return c00; }
     const T& lon() const { return c00; }
 
-    T& lon() { return c11; }
+    T& tran() { return c11; }
     const T& tran() const { return c11; }
 
     T& vert() { return c22; }
