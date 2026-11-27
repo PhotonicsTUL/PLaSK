@@ -186,8 +186,9 @@ using aligned_unique_ptr = std::unique_ptr<T, aligned_deleter<T>>;
 template <typename T, typename... Args>
 inline T* aligned_new(Args&&... args) {
     T* mem = reinterpret_cast<T*>(aligned_malloc(sizeof(T)));
+    aligned_unique_ptr<T> storage(mem);
     new(mem) T(std::forward<Args>(args)...);
-    return mem;
+    return storage.release();
 }
 
 /**
@@ -210,7 +211,17 @@ inline void aligned_delete(T* ptr) {
 template <typename T, typename... Args>
 inline T* aligned_new_array(std::size_t num, Args&&... args) {
     T* mem = reinterpret_cast<T*>(aligned_malloc(num * sizeof(T)));
-    for (size_t i = 0; i != num; ++i) new(mem+i) T(std::forward<Args>(args)...);
+
+    size_t constructed = 0;
+    try {
+        for (; constructed != num; ++constructed)
+            new(mem + constructed) T(std::forward<Args>(args)...);
+    } catch (...) {
+        while (constructed)
+            mem[--constructed].~T();
+        aligned_free(mem);
+        throw;
+    }
     return mem;
 }
 
