@@ -15,6 +15,7 @@
 #define PLASK__MEMALLOC_H
 
 #include <cstdlib>
+#include <cstring>
 #include <memory>
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
@@ -61,13 +62,20 @@ namespace detail {
     /**
      * \internal Reallocate aligned memory.
      */
-    inline void* custom_aligned_realloc(void* ptr, std::size_t size, std::size_t=0)
+    inline void* custom_aligned_realloc(void* ptr, std::size_t size, std::size_t old_size=0)
     {
         if (ptr == 0) return custom_aligned_malloc(size);
         void *original = *(reinterpret_cast<void**>(ptr) - 1);
+        const auto offset = static_cast<char*>(ptr) - static_cast<char*>(original);
         original = std::realloc(original,size+16);
         if (original == 0) return 0;
         void *aligned = reinterpret_cast<void*>((reinterpret_cast<size_t>(original) & ~(size_t(15))) + 16);
+        char* payload = static_cast<char*>(original) + offset;
+        if (payload != aligned) {
+            // Without an old size, the resized block still has room for size bytes at either offset.
+            const std::size_t count = old_size && old_size < size ? old_size : size;
+            std::memmove(aligned, payload, count);
+        }
         *(reinterpret_cast<void**>(aligned) - 1) = original;
         return aligned;
     }
