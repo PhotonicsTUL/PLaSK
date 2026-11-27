@@ -19,6 +19,7 @@ This file contains classes which can hold (or points to) datas.
 */
 
 #include <iterator>
+#include <vector>
 #include <algorithm>
 #include <iostream>
 #include <initializer_list>
@@ -148,6 +149,25 @@ struct DataVector {
     /// Increase GC counter.
     void inc_ref() {
         if (gc_) gc_->count.fetch_add(1, std::memory_order_relaxed);
+    }
+
+    template <typename InIterT>
+    void resetRange(InIterT begin, InIterT end, std::input_iterator_tag) {
+        std::vector<VT> values(begin, end);
+        resetRange(std::make_move_iterator(values.begin()), std::make_move_iterator(values.end()),
+                   std::forward_iterator_tag{});
+    }
+
+    template <typename InIterT>
+    void resetRange(InIterT begin, InIterT end, std::forward_iterator_tag) {
+        const auto size = std::distance(begin, end);
+        std::unique_ptr<VT[], aligned_deleter<T>>
+            data_non_const(aligned_malloc<VT>(size));
+        std::copy(begin, end, data_non_const.get());    // this may throw, and than our vector will not be changed
+        dec_ref();
+        gc_ = new Gc(1);
+        size_ = size;
+        data_ = data_non_const.release();
     }
 
     friend struct DataVector<VT>;
@@ -408,15 +428,9 @@ struct DataVector {
      * Same as: DataVector(begin,end).swap(*this);
      * @param begin, end range of data to copy
      */
-    template <typename InIterT>
+    template <typename InIterT, typename Category = typename std::iterator_traits<InIterT>::iterator_category>
     void reset(InIterT begin, InIterT end) {
-        std::unique_ptr<VT[], aligned_deleter<T>>
-            data_non_const(aligned_malloc<VT>(std::distance(begin,end)));
-        std::copy(begin, end, data_non_const.get());    // this may throw, and than our vector will not be changed
-        dec_ref();
-        gc_ = new Gc(1);
-        size_ = std::distance(begin, end);
-        data_ = data_non_const.release();
+        resetRange(begin, end, Category{});
     }
 
     /**
