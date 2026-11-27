@@ -43,6 +43,7 @@ namespace detail {
      */
     inline void* custom_aligned_malloc(std::size_t size)
     {
+        if (size > (std::numeric_limits<std::size_t>::max)() - 16) return nullptr;
         void *original = std::malloc(size+16);
         if (original == 0) return 0;
         void *aligned = reinterpret_cast<void*>((reinterpret_cast<size_t>(original) & ~(size_t(15))) + 16);
@@ -63,6 +64,7 @@ namespace detail {
      */
     inline void* custom_aligned_realloc(void* ptr, std::size_t size, std::size_t=0)
     {
+        if (size > (std::numeric_limits<std::size_t>::max)() - 16) return nullptr;
         if (ptr == 0) return custom_aligned_malloc(size);
         void *original = *(reinterpret_cast<void**>(ptr) - 1);
         original = std::realloc(original,size+16);
@@ -132,6 +134,13 @@ inline void* aligned_realloc(void *ptr, std::size_t new_size, std::size_t old_si
     return result;
 }
 
+namespace detail {
+    template <typename T>
+    constexpr std::size_t max_aligned_count() {
+        return (std::numeric_limits<std::size_t>::max)() / sizeof(T);
+    }
+}
+
 /**
  * Create new data with aligned allocation.
  * \tparam T object type
@@ -140,8 +149,8 @@ inline void* aligned_realloc(void *ptr, std::size_t new_size, std::size_t old_si
  */
 template <typename T>
 inline T* aligned_malloc(std::size_t num=1) {
-    T* mem = reinterpret_cast<T*>(aligned_malloc(num * sizeof(T)));
-    return mem;
+    if (num > detail::max_aligned_count<T>()) throw std::bad_alloc();
+    return static_cast<T*>(aligned_malloc(num * sizeof(T)));
 }
 
 /**
@@ -209,6 +218,7 @@ inline void aligned_delete(T* ptr) {
  */
 template <typename T, typename... Args>
 inline T* aligned_new_array(std::size_t num, Args&&... args) {
+    if (num > detail::max_aligned_count<T>()) throw std::bad_alloc();
     T* mem = reinterpret_cast<T*>(aligned_malloc(num * sizeof(T)));
     for (size_t i = 0; i != num; ++i) new(mem+i) T(std::forward<Args>(args)...);
     return mem;
@@ -257,7 +267,7 @@ struct aligned_allocator {
 
     ~aligned_allocator(){}
 
-    size_type max_size() const { return (std::numeric_limits<size_type>::max)(); }
+    size_type max_size() const { return detail::max_aligned_count<T>(); }
 
     pointer allocate(size_type num) { return aligned_malloc<T>(num); }
 
