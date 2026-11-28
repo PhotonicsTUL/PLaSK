@@ -410,19 +410,19 @@ static py::object new_tensor(py::tuple args, py::dict kwargs) {
     if (n == 1 && nk == 0) {
         PyObject* obj = py::object(args[0]).ptr();
         if (PyArray_Check(obj) || PySequence_Check(obj)) {
-            PyArrayObject* array;
+            PyHandle<PyArrayObject> array;
             if (force_double)
-                array = (PyArrayObject*)PyArray_ContiguousFromObject(obj, NPY_DOUBLE, 2, 2);
+                array.reset((PyArrayObject*)PyArray_ContiguousFromObject(obj, NPY_DOUBLE, 2, 2));
             else if (force_complex)
-                array = (PyArrayObject*)PyArray_ContiguousFromObject(obj, NPY_CDOUBLE, 2, 2);
+                array.reset((PyArrayObject*)PyArray_ContiguousFromObject(obj, NPY_CDOUBLE, 2, 2));
             else {
                 force_double = true;
-                array = (PyArrayObject*)PyArray_ContiguousFromObject(obj, NPY_DOUBLE, 2, 2);
+                array.reset((PyArrayObject*)PyArray_ContiguousFromObject(obj, NPY_DOUBLE, 2, 2));
                 if (array == nullptr) {
                     PyErr_Clear();
                     force_double = false;
                     force_complex = true;
-                    array = (PyArrayObject*)PyArray_ContiguousFromObject(obj, NPY_CDOUBLE, 2, 2);
+                    array.reset((PyArrayObject*)PyArray_ContiguousFromObject(obj, NPY_CDOUBLE, 2, 2));
                 }
             }
             if (array == nullptr) throw plask::CriticalException(u8"Cannot create tensor from provided array");
