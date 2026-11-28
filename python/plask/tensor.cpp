@@ -113,12 +113,10 @@ namespace detail {
                 data->convertible = storage;
                 return;
             } else if (PyArray_Check(obj)) {
-                auto arr = py::object(py::handle<>(py::borrowed(obj)));
-                PyObject* array = PyArray_ContiguousFromObject(obj, typenum<T>(), 2, 2);
+                PyHandle<> array(PyArray_ContiguousFromObject(obj, typenum<T>(), 2, 2));
                 if (array == nullptr) throw plask::CriticalException(u8"Cannot create tensor from array");
-                T* data = reinterpret_cast<T*>(PyArray_DATA(A(array)));
+                const T* data = static_cast<const T*>(PyArray_DATA(array.ptr_cast<PyArrayObject>()));
                 new (storage) Tensor3<T>(data);
-                Py_DECREF(obj);
             } else {
                 auto seq = py::object(py::handle<>(py::borrowed(obj)));
                 auto len = py::len(seq);
