@@ -19,6 +19,7 @@ This file contains classes which can hold (or points to) datas.
 */
 
 #include <iterator>
+#include <vector>
 #include <algorithm>
 #include <iostream>
 #include <initializer_list>
@@ -41,9 +42,14 @@ namespace detail {
 
     template <class T>
     inline void _construct_array(T* first, T* last, const std::false_type&) {
-        while(first != last) {
-            new(first) T();
-            ++first;
+        T* current = first;
+        try {
+            for (; current != last; ++current)
+                ::new(static_cast<void*>(current)) T();
+        } catch (...) {
+            while (current != first)
+                (--current)->~T();
+            throw;
         }
     }
 
@@ -150,6 +156,30 @@ struct DataVector {
         if (gc_) gc_->count.fetch_add(1, std::memory_order_relaxed);
     }
 
+    // initialize constructs the elements and unwinds any partially constructed range on failure.
+    template <typename Initialize>
+    void resetOwned(std::size_t size, Initialize initialize) {
+        std::unique_ptr<Gc> gc(new Gc(1));
+        aligned_unique_ptr<VT> data(aligned_malloc<VT>(size));
+        initialize(data.get());
+        dec_ref();
+        size_ = size;
+        gc_ = gc.release();
+        data_ = data.release();
+    }
+
+    template <typename InIterT>
+    void resetRange(InIterT begin, InIterT end, std::input_iterator_tag) {
+        std::vector<VT> values(begin, end);
+        resetRange(std::make_move_iterator(values.begin()), std::make_move_iterator(values.end()),
+                   std::forward_iterator_tag{});
+    }
+
+    template <typename InIterT>
+    void resetRange(InIterT begin, InIterT end, std::forward_iterator_tag) {
+        resetOwned(std::distance(begin, end), [&](VT* data) { std::uninitialized_copy(begin, end, data); });
+    }
+
     friend struct DataVector<VT>;
     friend struct DataVector<CT>;
 
@@ -169,8 +199,8 @@ struct DataVector {
      * Reserve memory using aligned_malloc<T>(size) call.
      * @param size total size of the data
      */
-    explicit DataVector(std::size_t size): size_(size), gc_(new Gc(1)), data_(aligned_malloc<T>(size)) {
-        detail::construct_array(data_, data_ + size);
+    explicit DataVector(std::size_t size): DataVector() {
+        reset(size);
     }
 
     /**
@@ -178,12 +208,8 @@ struct DataVector {
      * @param size size of vector
      * @param value initial value for each cell
      */
-    DataVector(std::size_t size, const T& value): size_(size) {
-        std::unique_ptr<typename std::remove_const<T>::type[], aligned_deleter<T>>
-            data_non_const(aligned_malloc<VT>(size));
-        std::fill_n(data_non_const.get(), size, value);   // this may throw, but no memory leak than
-        gc_ = new Gc(1);
-        data_ = data_non_const.release();
+    DataVector(std::size_t size, const T& value): DataVector() {
+        reset(size, value);
     }
 
     /**
@@ -203,9 +229,9 @@ struct DataVector {
      * @param src data source
      */
     template <typename TS>
-    DataVector(const DataVector<TS>& src): size_(src.size()), gc_(new Gc(1)), data_(aligned_malloc<T>(src.size())) {
+    DataVector(const DataVector<TS>& src): DataVector() {
         write_debug("copying data in constructor");
-        std::copy(src.begin(), src.end(), const_cast<VT*>(data_));
+        resetOwned(src.size(), [&](VT* data) { std::uninitialized_copy(src.begin(), src.end(), data); });
     }
 
     /**
@@ -297,8 +323,8 @@ struct DataVector {
      * Create data vector and fill it with data from initializer list.
      * @param init initializer list with data
      */
-    DataVector(std::initializer_list<T> init): size_(init.size()), gc_(new Gc(1)), data_(aligned_malloc<T>(size_)) {
-        std::copy(init.begin(), init.end(), const_cast<VT*>(data_));
+    DataVector(std::initializer_list<T> init): DataVector() {
+        resetOwned(init.size(), [&](VT* data) { std::uninitialized_copy(init.begin(), init.end(), data); });
     }
 
     /**
@@ -306,8 +332,8 @@ struct DataVector {
      * @param init initializer list with data
      */
     template <typename TS>
-    DataVector(std::initializer_list<TS> init): size_(init.size()), gc_(new Gc(1)), data_(aligned_malloc<T>(size_)) {
-        std::copy(init.begin(), init.end(), const_cast<VT*>(data_));
+    DataVector(std::initializer_list<TS> init): DataVector() {
+        resetOwned(init.size(), [&](VT* data) { std::uninitialized_copy(init.begin(), init.end(), data); });
     }
 
     /// Delete data if this was last reference to it.
@@ -375,14 +401,7 @@ struct DataVector {
      * @param size total size of the data
      */
     void reset(std::size_t size) {
-        //TODO to consider: (when clang will be fixed, now it has no std::is_default_constructible but only non-standard std::has_trivial_default_constructor)
-        //if (std::is_default_constructible<T>::value &&   //this is known at compile time and I believe that compiler optimize-out whole if when it is false
-        //    size == size_ && gc_ && gc_->count == 1 && ! gc_->deleter) return;
-        dec_ref();
-        data_ = aligned_malloc<T>(size);
-        detail::construct_array(data_, data_ + size);
-        gc_ = new Gc(1);
-        size_ = size;
+        resetOwned(size, [size](VT* data) { detail::construct_array(data, data + size); });
     }
 
     /**
@@ -393,13 +412,7 @@ struct DataVector {
      * @param value initial value for each cell
      */
     void reset(std::size_t size, const T& value) {
-        std::unique_ptr<VT[], aligned_deleter<T>>
-            data_non_const(aligned_malloc<VT>(size));
-        std::fill_n(data_non_const.get(), size, value);   // this may throw, than our data will not be changed
-        dec_ref();
-        gc_ = new Gc(1);    //this also may throw
-        data_ = data_non_const.release();
-        size_ = size;
+        resetOwned(size, [&](VT* data) { std::uninitialized_fill_n(data, size, value); });
     }
 
     /**
@@ -408,15 +421,9 @@ struct DataVector {
      * Same as: DataVector(begin,end).swap(*this);
      * @param begin, end range of data to copy
      */
-    template <typename InIterT>
+    template <typename InIterT, typename Category = typename std::iterator_traits<InIterT>::iterator_category>
     void reset(InIterT begin, InIterT end) {
-        std::unique_ptr<VT[], aligned_deleter<T>>
-            data_non_const(aligned_malloc<VT>(std::distance(begin,end)));
-        std::copy(begin, end, data_non_const.get());    // this may throw, and than our vector will not be changed
-        dec_ref();
-        gc_ = new Gc(1);
-        size_ = std::distance(begin, end);
-        data_ = data_non_const.release();
+        resetRange(begin, end, Category{});
     }
 
     /**
