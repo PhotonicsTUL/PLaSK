@@ -372,10 +372,7 @@ struct DataVector {
      */
     template <typename TS>
     void reset(TS* existing_data, std::size_t size, const std::function<void(void*)>& deleter) {
-        dec_ref();
-        gc_ = new Gc(1, deleter);
-        size_ = size;
-        data_ = existing_data;
+        DataVector(existing_data, size, deleter).swap(*this);
     }
 
     /**
@@ -386,10 +383,7 @@ struct DataVector {
      */
     template <typename TS>
     void reset(TS* existing_data, std::size_t size, std::function<void(void*)>&& deleter) {
-        dec_ref();
-        gc_ = new Gc(1, std::forward<std::function<void(void*)>>(deleter));
-        size_ = size;
-        data_ = existing_data;
+        DataVector(existing_data, size, std::move(deleter)).swap(*this);
     }
 
     /**
